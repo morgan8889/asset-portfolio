@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, memo } from 'react';
 import {
   Table,
   TableBody,
@@ -31,7 +31,7 @@ interface HoldingDisplayData {
   type: string;
 }
 
-export function HoldingsTable() {
+const HoldingsTableComponent = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<keyof HoldingDisplayData>('symbol');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -353,4 +353,6 @@ export function HoldingsTable() {
       </CardContent>
     </Card>
   );
-}
+};
+
+export const HoldingsTable = memo(HoldingsTableComponent);

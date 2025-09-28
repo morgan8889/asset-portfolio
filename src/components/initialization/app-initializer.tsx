@@ -1,20 +1,34 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { initializePortfolioApp } from '@/lib/db';
 
 interface AppInitializerProps {
   children: React.ReactNode;
 }
 
+// Keep track of initialization globally to prevent multiple initializations
+let globalInitializationPromise: Promise<void> | null = null;
+
 export function AppInitializer({ children }: AppInitializerProps) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const initializationStarted = useRef(false);
 
   useEffect(() => {
     const initialize = async () => {
+      // Prevent multiple initializations
+      if (initializationStarted.current) {
+        return;
+      }
+      initializationStarted.current = true;
+
       try {
-        await initializePortfolioApp();
+        // Use global promise to ensure only one initialization happens
+        if (!globalInitializationPromise) {
+          globalInitializationPromise = initializePortfolioApp();
+        }
+        await globalInitializationPromise;
         setIsInitialized(true);
       } catch (err) {
         console.error('Failed to initialize app:', err);
