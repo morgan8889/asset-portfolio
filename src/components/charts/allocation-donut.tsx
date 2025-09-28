@@ -4,41 +4,42 @@ import { useMemo } from 'react';
 import { Cell, PieChart, Pie, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PieChart as PieChartIcon, TrendingUp } from 'lucide-react';
+import { PieChart as PieChartIcon, TrendingUp, DollarSign } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { usePortfolioStore } from '@/lib/stores';
+import { AssetType } from '@/types';
 
 interface AllocationData {
   name: string;
   value: number;
   percentage: number;
   color: string;
-  type: 'stock' | 'etf' | 'crypto' | 'bond' | 'real_estate' | 'commodity';
+  type: 'stock' | 'etf' | 'crypto' | 'bond' | 'real_estate' | 'commodity' | 'cash' | 'other';
 }
 
-// Mock allocation data - replace with actual store data
-const mockAllocationData: AllocationData[] = [
-  {
-    name: 'Stocks',
-    value: 81529.64,
-    percentage: 65.0,
-    color: '#3b82f6',
-    type: 'stock',
-  },
-  {
-    name: 'Cryptocurrency',
-    value: 25086.04,
-    percentage: 20.0,
-    color: '#f59e0b',
-    type: 'crypto',
-  },
-  {
-    name: 'ETFs',
-    value: 18814.53,
-    percentage: 15.0,
-    color: '#10b981',
-    type: 'etf',
-  },
-];
+// Color mapping for asset types
+const assetTypeColors: Record<AssetType, string> = {
+  stock: '#3b82f6',
+  etf: '#10b981',
+  crypto: '#f59e0b',
+  bond: '#8b5cf6',
+  real_estate: '#f97316',
+  commodity: '#84cc16',
+  cash: '#6b7280',
+  other: '#ec4899',
+};
+
+// Asset type display names
+const assetTypeNames: Record<AssetType, string> = {
+  stock: 'Stocks',
+  etf: 'ETFs',
+  crypto: 'Cryptocurrency',
+  bond: 'Bonds',
+  real_estate: 'Real Estate',
+  commodity: 'Commodities',
+  cash: 'Cash',
+  other: 'Other',
+};
 
 const RADIAN = Math.PI / 180;
 
@@ -110,15 +111,53 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export function AllocationDonut() {
+  const { metrics } = usePortfolioStore();
+
+  const allocationData = useMemo((): AllocationData[] => {
+    if (!metrics?.allocation || metrics.allocation.length === 0) {
+      return [];
+    }
+
+    return metrics.allocation.map((allocation) => ({
+      name: assetTypeNames[allocation.type] || allocation.type,
+      value: parseFloat(allocation.value.toString()),
+      percentage: allocation.percent,
+      color: assetTypeColors[allocation.type] || assetTypeColors.other,
+      type: allocation.type,
+    }));
+  }, [metrics?.allocation]);
+
   const totalValue = useMemo(() => {
-    return mockAllocationData.reduce((sum, item) => sum + item.value, 0);
-  }, []);
+    return allocationData.reduce((sum, item) => sum + item.value, 0);
+  }, [allocationData]);
 
   const topAllocation = useMemo(() => {
-    return mockAllocationData.reduce((prev, current) =>
+    if (allocationData.length === 0) return null;
+    return allocationData.reduce((prev, current) =>
       current.percentage > prev.percentage ? current : prev
     );
-  }, []);
+  }, [allocationData]);
+
+  // Show empty state if no data
+  if (allocationData.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <PieChartIcon className="h-5 w-5" />
+            Asset Allocation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground py-8">
+            <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p className="text-lg font-medium mb-2">No allocation data</p>
+            <p className="text-sm">Add holdings to see asset allocation breakdown.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -129,7 +168,7 @@ export function AllocationDonut() {
             Asset Allocation
           </CardTitle>
           <Badge variant="outline" className="text-xs">
-            {mockAllocationData.length} Types
+            {allocationData.length} Types
           </Badge>
         </div>
         <div className="text-sm text-muted-foreground">
@@ -143,7 +182,7 @@ export function AllocationDonut() {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={mockAllocationData}
+                data={allocationData}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
@@ -155,7 +194,7 @@ export function AllocationDonut() {
                 strokeWidth={2}
                 stroke="white"
               >
-                {mockAllocationData.map((entry, index) => (
+                {allocationData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
@@ -179,7 +218,7 @@ export function AllocationDonut() {
             <span className="text-muted-foreground">Value / %</span>
           </div>
 
-          {mockAllocationData
+          {allocationData
             .sort((a, b) => b.percentage - a.percentage)
             .map((item, index) => (
               <div key={item.name} className="flex items-center justify-between group hover:bg-muted/50 rounded-lg p-2 -m-2 transition-colors">
@@ -213,22 +252,26 @@ export function AllocationDonut() {
         <div className="grid grid-cols-2 gap-4 pt-4 border-t">
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground">Top Allocation</div>
-            <div className="flex items-center gap-2">
-              <div
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: topAllocation.color }}
-              />
-              <span className="text-sm font-medium">{topAllocation.name}</span>
-              <span className="text-xs text-muted-foreground">
-                ({topAllocation.percentage.toFixed(1)}%)
-              </span>
-            </div>
+            {topAllocation ? (
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: topAllocation.color }}
+                />
+                <span className="text-sm font-medium">{topAllocation.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  ({topAllocation.percentage.toFixed(1)}%)
+                </span>
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">No data</div>
+            )}
           </div>
 
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground">Diversification</div>
             <div className="text-sm font-medium">
-              {mockAllocationData.length} asset {mockAllocationData.length === 1 ? 'type' : 'types'}
+              {allocationData.length} asset {allocationData.length === 1 ? 'type' : 'types'}
             </div>
           </div>
         </div>
