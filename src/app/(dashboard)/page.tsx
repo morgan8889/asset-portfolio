@@ -10,6 +10,7 @@ import { PortfolioChart } from '@/components/charts/portfolio-chart';
 import { AllocationDonut } from '@/components/charts/allocation-donut';
 import { HoldingsTable } from '@/components/tables/holdings-table';
 import { AddTransactionDialog } from '@/components/forms/add-transaction';
+import { CreatePortfolioDialog } from '@/components/forms/create-portfolio';
 import {
   DollarSign,
   TrendingUp,
@@ -79,7 +80,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex gap-2 justify-center">
-            <Button>Create Portfolio</Button>
+            <CreatePortfolioDialog />
             <Button variant="outline">Import Data</Button>
           </div>
         </div>

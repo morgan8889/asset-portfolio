@@ -20,42 +20,42 @@ import { cn } from '@/lib/utils';
 const navigation = [
   {
     name: 'Dashboard',
-    href: '/dashboard',
+    href: '/',
     icon: Home,
   },
   {
     name: 'Holdings',
-    href: '/dashboard/holdings',
+    href: '/holdings',
     icon: Briefcase,
   },
   {
     name: 'Transactions',
-    href: '/dashboard/transactions',
+    href: '/transactions',
     icon: Wallet,
   },
   {
     name: 'Analysis',
-    href: '/dashboard/analysis',
+    href: '/analysis',
     icon: BarChart3,
   },
   {
     name: 'Performance',
-    href: '/dashboard/performance',
+    href: '/performance',
     icon: TrendingUp,
   },
   {
     name: 'Allocation',
-    href: '/dashboard/allocation',
+    href: '/allocation',
     icon: PieChart,
   },
   {
     name: 'Reports',
-    href: '/dashboard/reports',
+    href: '/reports',
     icon: FileText,
   },
   {
     name: 'Settings',
-    href: '/dashboard/settings',
+    href: '/settings',
     icon: Settings,
   },
 ];
