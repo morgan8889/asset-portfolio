@@ -72,27 +72,56 @@ export class HoldingsCalculator {
     // Get or create asset record
     let asset = await assetQueries.getById(assetId);
     if (!asset) {
-      // Create asset record if it doesn't exist
-      await assetQueries.create({
-        symbol: assetId.toUpperCase(),
-        name: assetId.toUpperCase(), // Will be updated when we fetch real data
-        type: 'stock', // Default type
-        exchange: 'NASDAQ', // Default exchange
-        currency: 'USD',
-        currentPrice: 0,
-        sector: null,
-        industry: null,
-        marketCap: null,
-        description: null,
-        website: null,
-        beta: null,
-        peRatio: null,
-        eps: null,
-        dividend: null,
-        dividendYield: null,
-        priceUpdatedAt: new Date(),
-      });
-      asset = await assetQueries.getById(assetId);
+      // Validate asset ID before creation
+      const cleanAssetId = assetId.trim().toUpperCase();
+      if (!cleanAssetId || cleanAssetId.length === 0) {
+        console.error(`Invalid asset ID: "${assetId}". Skipping asset creation.`);
+        return;
+      }
+
+      // Determine asset type based on common patterns
+      let assetType: 'stock' | 'etf' | 'crypto' | 'bond' | 'real_estate' | 'commodity' | 'cash' | 'other' = 'stock';
+      let exchange = 'NASDAQ';
+      let currency = 'USD';
+
+      // Simple heuristics for asset type detection
+      if (cleanAssetId.endsWith('USD') || cleanAssetId.endsWith('USDT') || cleanAssetId.includes('BTC') || cleanAssetId.includes('ETH')) {
+        assetType = 'crypto';
+        exchange = 'CRYPTO';
+      } else if (cleanAssetId.includes('BOND') || cleanAssetId.includes('TLT') || cleanAssetId.includes('AGG')) {
+        assetType = 'bond';
+        exchange = 'NYSE';
+      } else if (cleanAssetId.includes('GLD') || cleanAssetId.includes('SLV') || cleanAssetId.includes('GOLD')) {
+        assetType = 'commodity';
+        exchange = 'NYSE';
+      }
+
+      // Create asset record with validated data
+      try {
+        await assetQueries.create({
+          symbol: cleanAssetId,
+          name: cleanAssetId, // Will be updated when we fetch real data
+          type: assetType,
+          exchange,
+          currency,
+          currentPrice: 0,
+          sector: null,
+          industry: null,
+          marketCap: null,
+          description: null,
+          website: null,
+          beta: null,
+          peRatio: null,
+          eps: null,
+          dividend: null,
+          dividendYield: null,
+          priceUpdatedAt: new Date(),
+        });
+        asset = await assetQueries.getById(cleanAssetId);
+      } catch (err) {
+        console.error(`Failed to create asset "${cleanAssetId}":`, err);
+        return;
+      }
     }
 
     // Check if holding already exists
@@ -139,13 +168,30 @@ export class HoldingsCalculator {
         case 'sell':
         case 'transfer_out':
           const sellQuantity = transaction.quantity;
-          const sellRatio = totalQuantity.isZero() ? new Decimal(0) : sellQuantity.dividedBy(totalQuantity);
-          const costReduction = totalCostBasis.mul(sellRatio);
 
-          totalQuantity = totalQuantity.minus(sellQuantity);
-          totalCostBasis = totalCostBasis.minus(costReduction);
+          // Validate that we have enough quantity to sell
+          if (totalQuantity.lessThan(sellQuantity)) {
+            console.warn(
+              `Warning: Attempting to sell ${sellQuantity.toString()} but only have ${totalQuantity.toString()} available.`,
+              `Transaction date: ${transaction.date}, Asset: ${transaction.assetId}`
+            );
+            // Only sell what we have
+            const actualSellQuantity = totalQuantity;
+            const sellRatio = totalQuantity.isZero() ? new Decimal(0) : actualSellQuantity.dividedBy(totalQuantity);
+            const costReduction = totalCostBasis.mul(sellRatio);
 
-          // Ensure we don't go negative
+            totalQuantity = new Decimal(0);
+            totalCostBasis = totalCostBasis.minus(costReduction);
+          } else {
+            // Normal sell - we have enough quantity
+            const sellRatio = totalQuantity.isZero() ? new Decimal(0) : sellQuantity.dividedBy(totalQuantity);
+            const costReduction = totalCostBasis.mul(sellRatio);
+
+            totalQuantity = totalQuantity.minus(sellQuantity);
+            totalCostBasis = totalCostBasis.minus(costReduction);
+          }
+
+          // Ensure we don't go negative (extra safety check)
           if (totalQuantity.isNegative()) totalQuantity = new Decimal(0);
           if (totalCostBasis.isNegative()) totalCostBasis = new Decimal(0);
           break;
@@ -262,6 +308,36 @@ export class HoldingsCalculator {
   }
 }
 
+// Debounce helper for batching recalculation requests
+const debounceTimers = new Map<string, NodeJS.Timeout>();
+const DEBOUNCE_DELAY = 500; // 500ms delay
+
+function debounceHoldingsUpdate(
+  portfolioId: string,
+  assetId: string,
+  callback: () => Promise<void>
+) {
+  const key = `${portfolioId}-${assetId}`;
+
+  // Clear existing timer
+  const existingTimer = debounceTimers.get(key);
+  if (existingTimer) {
+    clearTimeout(existingTimer);
+  }
+
+  // Set new timer
+  const timer = setTimeout(async () => {
+    debounceTimers.delete(key);
+    try {
+      await callback();
+    } catch (error) {
+      console.error('Error in debounced holdings update:', error);
+    }
+  }, DEBOUNCE_DELAY);
+
+  debounceTimers.set(key, timer);
+}
+
 /**
  * Hook into transaction operations to automatically update holdings
  */
@@ -274,7 +350,12 @@ export const setupHoldingsSync = () => {
     trans.on('complete', async () => {
       const transaction = await db.getTransactionWithDecimals(obj.id);
       if (transaction) {
-        await HoldingsCalculator.updateHoldingsForTransaction(transaction);
+        // Use debouncing for batch operations
+        debounceHoldingsUpdate(
+          transaction.portfolioId,
+          transaction.assetId,
+          () => HoldingsCalculator.updateHoldingsForTransaction(transaction)
+        );
       }
     });
   });
@@ -283,7 +364,12 @@ export const setupHoldingsSync = () => {
     trans.on('complete', async () => {
       const transaction = await db.getTransactionWithDecimals(primKey as string);
       if (transaction) {
-        await HoldingsCalculator.updateHoldingsForTransaction(transaction);
+        // Use debouncing for batch operations
+        debounceHoldingsUpdate(
+          transaction.portfolioId,
+          transaction.assetId,
+          () => HoldingsCalculator.updateHoldingsForTransaction(transaction)
+        );
       }
     });
   });
@@ -291,18 +377,25 @@ export const setupHoldingsSync = () => {
   db.transactions.hook('deleting', async (primKey, obj, trans) => {
     const transaction = obj as Transaction;
     trans.on('complete', async () => {
-      // Recalculate holdings for the affected asset
-      const remainingTransactions = await db.transactions
-        .where('[portfolioId+assetId]')
-        .equals([transaction.portfolioId, transaction.assetId])
-        .toArray();
-
-      const convertedTransactions = remainingTransactions.map(t => (db as any).convertTransactionDecimals(t));
-
-      await HoldingsCalculator.calculateAssetHolding(
+      // Use debouncing for batch operations
+      debounceHoldingsUpdate(
         transaction.portfolioId,
         transaction.assetId,
-        convertedTransactions
+        async () => {
+          // Recalculate holdings for the affected asset
+          const remainingTransactions = await db.transactions
+            .where('[portfolioId+assetId]')
+            .equals([transaction.portfolioId, transaction.assetId])
+            .toArray();
+
+          const convertedTransactions = remainingTransactions.map(t => (db as any).convertTransactionDecimals(t));
+
+          await HoldingsCalculator.calculateAssetHolding(
+            transaction.portfolioId,
+            transaction.assetId,
+            convertedTransactions
+          );
+        }
       );
     });
   });

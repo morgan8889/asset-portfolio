@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import { Cell, PieChart, Pie, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -110,7 +110,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-export function AllocationDonut() {
+const AllocationDonutComponent = () => {
   const { metrics } = usePortfolioStore();
 
   const allocationData = useMemo((): AllocationData[] => {
@@ -278,4 +278,6 @@ export function AllocationDonut() {
       </CardContent>
     </Card>
   );
-}
+};
+
+export const AllocationDonut = memo(AllocationDonutComponent);

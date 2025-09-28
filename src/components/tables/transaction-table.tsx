@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import {
   Table,
   TableBody,
@@ -54,7 +54,7 @@ export const getTransactionTypeBadge = (type: TransactionType) => {
   );
 };
 
-export function TransactionTable({ showPortfolioFilter = false }: TransactionTableProps) {
+const TransactionTableComponent = ({ showPortfolioFilter = false }: TransactionTableProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<TransactionType | 'all'>('all');
 
@@ -251,4 +251,6 @@ export function TransactionTable({ showPortfolioFilter = false }: TransactionTab
       </CardContent>
     </Card>
   );
-}
+};
+
+export const TransactionTable = memo(TransactionTableComponent);
