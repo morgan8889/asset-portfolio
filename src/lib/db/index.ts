@@ -14,4 +14,6 @@ export {
   seedInitialData,
   migrations,
 } from './migrations';
+export { HoldingsCalculator, setupHoldingsSync } from './holdings-calculator';
+export { initializePortfolioApp, recalculateAllHoldings } from './initialization';
 export type { MigrationState } from './migrations';
