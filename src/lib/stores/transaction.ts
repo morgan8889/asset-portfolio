@@ -7,7 +7,7 @@ import {
   TransactionSummary,
   ImportResult,
 } from '@/types';
-import { transactionQueries } from '@/lib/db';
+import { transactionQueries, HoldingsCalculator } from '@/lib/db';
 
 interface TransactionState {
   // State
@@ -86,7 +86,13 @@ export const useTransactionStore = create<TransactionState>()(
       createTransaction: async (transactionData) => {
         set({ loading: true, error: null });
         try {
-          await transactionQueries.create(transactionData);
+          const transactionId = await transactionQueries.create(transactionData);
+
+          // Update holdings based on the new transaction
+          const newTransaction = await transactionQueries.getById(transactionId);
+          if (newTransaction) {
+            await HoldingsCalculator.updateHoldingsForTransaction(newTransaction);
+          }
 
           // Reload transactions to get the updated list
           const { currentFilter } = get();
@@ -116,6 +122,12 @@ export const useTransactionStore = create<TransactionState>()(
         try {
           await transactionQueries.createMany(transactionDataList);
 
+          // Recalculate holdings for affected portfolios
+          const portfolioIds = [...new Set(transactionDataList.map(t => t.portfolioId))];
+          for (const portfolioId of portfolioIds) {
+            await HoldingsCalculator.recalculatePortfolioHoldings(portfolioId);
+          }
+
           // Reload transactions
           const { currentFilter } = get();
           if (Object.keys(currentFilter).length > 0) {
@@ -143,7 +155,14 @@ export const useTransactionStore = create<TransactionState>()(
       updateTransaction: async (id, updates) => {
         set({ loading: true, error: null });
         try {
+          const originalTransaction = await transactionQueries.getById(id);
           await transactionQueries.update(id, updates);
+
+          // Update holdings based on the modified transaction
+          const updatedTransaction = await transactionQueries.getById(id);
+          if (updatedTransaction) {
+            await HoldingsCalculator.updateHoldingsForTransaction(updatedTransaction);
+          }
 
           // Reload transactions
           const { currentFilter } = get();
@@ -166,7 +185,18 @@ export const useTransactionStore = create<TransactionState>()(
       deleteTransaction: async (id) => {
         set({ loading: true, error: null });
         try {
+          const transaction = await transactionQueries.getById(id);
           await transactionQueries.delete(id);
+
+          // Recalculate holdings for the affected asset after deletion
+          if (transaction) {
+            // Get all remaining transactions for this portfolio/asset combination
+            const remainingTransactions = await transactionQueries.getByPortfolio(transaction.portfolioId);
+            const assetTransactions = remainingTransactions.filter(t => t.assetId === transaction.assetId);
+
+            // Recalculate holdings from scratch for this asset
+            await HoldingsCalculator.updateHoldingsForTransaction(transaction);
+          }
 
           // Remove from current transactions list
           const { transactions, filteredTransactions } = get();

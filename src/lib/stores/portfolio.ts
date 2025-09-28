@@ -3,7 +3,7 @@ import { devtools, persist } from 'zustand/middleware';
 import { Decimal } from 'decimal.js';
 
 import { Portfolio, PortfolioMetrics, Holding, Asset } from '@/types';
-import { portfolioQueries, holdingQueries } from '@/lib/db';
+import { portfolioQueries, holdingQueries, assetQueries, HoldingsCalculator } from '@/lib/db';
 
 interface PortfolioState {
   // State
@@ -131,7 +131,8 @@ export const usePortfolioStore = create<PortfolioState>()(
           set({ loading: true, error: null });
           try {
             const holdings = await holdingQueries.getByPortfolio(portfolioId);
-            set({ holdings, loading: false });
+            const assets = await assetQueries.getAll();
+            set({ holdings, assets, loading: false });
           } catch (error) {
             set({
               error: error instanceof Error ? error.message : 'Failed to load holdings',
