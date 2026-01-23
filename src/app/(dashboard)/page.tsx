@@ -4,13 +4,14 @@ import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { usePortfolioStore } from '@/lib/stores';
-import { formatCurrency, formatPercentage } from '@/lib/utils';
+import { usePortfolioStore, useTransactionStore } from '@/lib/stores';
+import { formatCurrency, formatPercentage, formatDate } from '@/lib/utils';
 import { PortfolioChart } from '@/components/charts/portfolio-chart';
 import { AllocationDonut } from '@/components/charts/allocation-donut';
 import { HoldingsTable } from '@/components/tables/holdings-table';
 import { AddTransactionDialog } from '@/components/forms/add-transaction';
 import { CreatePortfolioDialog } from '@/components/forms/create-portfolio';
+import { getTransactionTypeBadge } from '@/components/tables/transaction-table';
 import {
   DollarSign,
   TrendingUp,
@@ -21,6 +22,7 @@ import {
   FileSpreadsheet,
   BarChart3,
   RefreshCw,
+  Calendar,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -34,6 +36,12 @@ export default function DashboardPage() {
     error,
   } = usePortfolioStore();
 
+  const {
+    transactions,
+    loadTransactions,
+    loading: transactionsLoading,
+  } = useTransactionStore();
+
   useEffect(() => {
     loadPortfolios();
   }, [loadPortfolios]);
@@ -43,6 +51,12 @@ export default function DashboardPage() {
       setCurrentPortfolio(portfolios[0]);
     }
   }, [portfolios, currentPortfolio, setCurrentPortfolio]);
+
+  useEffect(() => {
+    if (currentPortfolio?.id) {
+      loadTransactions(currentPortfolio.id);
+    }
+  }, [currentPortfolio?.id, loadTransactions]);
 
   if (loading) {
     return (
@@ -220,7 +234,7 @@ export default function DashboardPage() {
       {/* Holdings Table */}
       <HoldingsTable />
 
-      {/* Recent Activity - Placeholder for now */}
+      {/* Recent Activity */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -229,16 +243,62 @@ export default function DashboardPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-muted-foreground py-8">
-            <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium mb-2">No recent activity</p>
-            <p className="text-sm">
-              Add your first transaction to see activity here
-            </p>
-            <div className="mt-4">
-              <AddTransactionDialog />
+          {transactionsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex items-center gap-3">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                <div>Loading activity...</div>
+              </div>
             </div>
-          </div>
+          ) : transactions.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium mb-2">No recent activity</p>
+              <p className="text-sm">
+                Add your first transaction to see activity here
+              </p>
+              <div className="mt-4">
+                <AddTransactionDialog />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {transactions
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .slice(0, 5)
+                .map((transaction) => (
+                  <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{transaction.assetId}</span>
+                          {getTransactionTypeBadge(transaction.type)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {formatDate(transaction.date)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">
+                        {formatCurrency(parseFloat(transaction.totalAmount.toString()))}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {transaction.quantity.toString()} shares
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              {transactions.length > 5 && (
+                <div className="text-center pt-2">
+                  <Button variant="outline" size="sm">
+                    View All Transactions
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

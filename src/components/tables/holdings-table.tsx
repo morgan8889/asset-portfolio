@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, memo } from 'react';
 import {
   Table,
   TableBody,
@@ -13,11 +13,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, TrendingUp, TrendingDown, MoreHorizontal } from 'lucide-react';
+import { Search, TrendingUp, TrendingDown, MoreHorizontal, DollarSign } from 'lucide-react';
 import { usePortfolioStore } from '@/lib/stores';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
+import { Holding } from '@/types';
 
-interface HoldingData {
+interface HoldingDisplayData {
+  id: string;
   symbol: string;
   name: string;
   quantity: number;
@@ -29,61 +31,54 @@ interface HoldingData {
   type: string;
 }
 
-export function HoldingsTable() {
+const HoldingsTableComponent = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState<keyof HoldingData>('symbol');
+  const [sortField, setSortField] = useState<keyof HoldingDisplayData>('symbol');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  // Mock data for now - replace with actual store data
-  const mockHoldings = useMemo((): HoldingData[] => [
-    {
-      symbol: 'AAPL',
-      name: 'Apple Inc.',
-      quantity: 100,
-      currentPrice: 195.89,
-      currentValue: 19589,
-      costBasis: 15000,
-      gainLoss: 4589,
-      gainLossPercent: 30.59,
-      type: 'stock',
-    },
-    {
-      symbol: 'MSFT',
-      name: 'Microsoft Corporation',
-      quantity: 50,
-      currentPrice: 378.85,
-      currentValue: 18942.5,
-      costBasis: 17500,
-      gainLoss: 1442.5,
-      gainLossPercent: 8.24,
-      type: 'stock',
-    },
-    {
-      symbol: 'BTC',
-      name: 'Bitcoin',
-      quantity: 0.5,
-      currentPrice: 43000,
-      currentValue: 21500,
-      costBasis: 22000,
-      gainLoss: -500,
-      gainLossPercent: -2.27,
-      type: 'crypto',
-    },
-    {
-      symbol: 'SPY',
-      name: 'SPDR S&P 500 ETF',
-      quantity: 25,
-      currentPrice: 451.02,
-      currentValue: 11275.5,
-      costBasis: 10500,
-      gainLoss: 775.5,
-      gainLossPercent: 7.38,
-      type: 'etf',
-    },
-  ], []);
+  const {
+    holdings,
+    assets,
+    currentPortfolio,
+    loading,
+    error,
+    loadHoldings,
+    clearError
+  } = usePortfolioStore();
+
+  useEffect(() => {
+    if (currentPortfolio?.id) {
+      loadHoldings(currentPortfolio.id);
+    }
+  }, [currentPortfolio?.id, loadHoldings]);
+
+  // Transform real holdings data for display
+  const displayHoldings = useMemo((): HoldingDisplayData[] => {
+    return holdings.map((holding) => {
+      const asset = assets.find((a) => a.id === holding.assetId);
+      const currentValue = parseFloat(holding.currentValue.toString());
+      const costBasis = parseFloat(holding.costBasis.toString());
+      const gainLoss = parseFloat(holding.unrealizedGain.toString());
+      const quantity = parseFloat(holding.quantity.toString());
+      const currentPrice = quantity > 0 ? currentValue / quantity : 0;
+
+      return {
+        id: holding.id,
+        symbol: asset?.symbol || holding.assetId,
+        name: asset?.name || 'Unknown Asset',
+        quantity,
+        currentPrice,
+        currentValue,
+        costBasis,
+        gainLoss,
+        gainLossPercent: holding.unrealizedGainPercent,
+        type: asset?.type || 'other',
+      };
+    });
+  }, [holdings, assets]);
 
   const filteredAndSortedHoldings = useMemo(() => {
-    let filtered = mockHoldings.filter(
+    let filtered = displayHoldings.filter(
       (holding) =>
         holding.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
         holding.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -99,9 +94,9 @@ export function HoldingsTable() {
     });
 
     return filtered;
-  }, [mockHoldings, searchTerm, sortField, sortDirection]);
+  }, [displayHoldings, searchTerm, sortField, sortDirection]);
 
-  const handleSort = (field: keyof HoldingData) => {
+  const handleSort = (field: keyof HoldingDisplayData) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -125,6 +120,59 @@ export function HoldingsTable() {
 
   const totalValue = filteredAndSortedHoldings.reduce((sum, holding) => sum + holding.currentValue, 0);
   const totalGainLoss = filteredAndSortedHoldings.reduce((sum, holding) => sum + holding.gainLoss, 0);
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Holdings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <div className="flex items-center gap-3">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              <div>Loading holdings...</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Holdings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <div className="text-red-600 mb-2">Error loading holdings: {error}</div>
+            <Button onClick={() => { clearError(); if (currentPortfolio?.id) loadHoldings(currentPortfolio.id); }} variant="outline">
+              Retry
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (displayHoldings.length === 0 && !searchTerm) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Holdings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground py-8">
+            <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p className="text-lg font-medium mb-2">No holdings found</p>
+            <p className="text-sm">Add your first transaction to see your holdings here.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -305,4 +353,6 @@ export function HoldingsTable() {
       </CardContent>
     </Card>
   );
-}
+};
+
+export const HoldingsTable = memo(HoldingsTableComponent);

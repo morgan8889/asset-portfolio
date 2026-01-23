@@ -3,6 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Import } from 'lucide-react';
+import { AddTransactionDialog } from '@/components/forms/add-transaction';
+import { TransactionTable } from '@/components/tables/transaction-table';
 
 export default function TransactionsPage() {
   return (
@@ -19,23 +21,11 @@ export default function TransactionsPage() {
             <Import className="mr-2 h-4 w-4" />
             Import CSV
           </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Transaction
-          </Button>
+          <AddTransactionDialog />
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Transaction History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-muted-foreground py-8">
-            No transactions found. Add your first transaction to get started.
-          </div>
-        </CardContent>
-      </Card>
+      <TransactionTable />
     </div>
   );
 }
