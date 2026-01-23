@@ -99,20 +99,29 @@ export const assetQueries = {
   },
 
   async delete(id: string): Promise<void> {
-    await db.transaction('rw', db.assets, db.holdings, db.transactions, async () => {
-      // Check if asset is used in any holdings
-      const holdingsCount = await db.holdings.where('assetId').equals(id).count();
-      if (holdingsCount > 0) {
-        throw new Error('Cannot delete asset that is used in holdings');
-      }
+    await db.transaction(
+      'rw',
+      db.assets,
+      db.holdings,
+      db.transactions,
+      db.priceHistory,
+      db.priceSnapshots,
+      db.dividendRecords,
+      async () => {
+        // Check if asset is used in any holdings
+        const holdingsCount = await db.holdings.where('assetId').equals(id).count();
+        if (holdingsCount > 0) {
+          throw new Error('Cannot delete asset that is used in holdings');
+        }
 
-      // Delete related data
-      await db.transactions.where('assetId').equals(id).delete();
-      await db.priceHistory.where('assetId').equals(id).delete();
-      await db.priceSnapshots.where('assetId').equals(id).delete();
-      await db.dividendRecords.where('assetId').equals(id).delete();
-      await db.assets.delete(id);
-    });
+        // Delete related data
+        await db.transactions.where('assetId').equals(id).delete();
+        await db.priceHistory.where('assetId').equals(id).delete();
+        await db.priceSnapshots.where('assetId').equals(id).delete();
+        await db.dividendRecords.where('assetId').equals(id).delete();
+        await db.assets.delete(id);
+      }
+    );
   },
 };
 
@@ -158,8 +167,25 @@ export const holdingQueries = {
   },
 
   async update(id: string, updates: Partial<Holding>): Promise<void> {
+    // Convert Decimal values to strings for IndexedDB storage
+    const serializedUpdates: any = { ...updates };
+    if (serializedUpdates.quantity instanceof Decimal) {
+      serializedUpdates.quantity = serializedUpdates.quantity.toString();
+    }
+    if (serializedUpdates.costBasis instanceof Decimal) {
+      serializedUpdates.costBasis = serializedUpdates.costBasis.toString();
+    }
+    if (serializedUpdates.averageCost instanceof Decimal) {
+      serializedUpdates.averageCost = serializedUpdates.averageCost.toString();
+    }
+    if (serializedUpdates.currentValue instanceof Decimal) {
+      serializedUpdates.currentValue = serializedUpdates.currentValue.toString();
+    }
+    if (serializedUpdates.unrealizedGain instanceof Decimal) {
+      serializedUpdates.unrealizedGain = serializedUpdates.unrealizedGain.toString();
+    }
     await db.holdings.update(id, {
-      ...updates,
+      ...serializedUpdates,
       lastUpdated: new Date(),
     });
   },
