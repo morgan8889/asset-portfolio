@@ -9,9 +9,10 @@ export function sanitizeInput(input: string): string {
   // Remove potentially dangerous characters
   return input
     .replace(/[<>\"'&]/g, '') // Remove HTML/XML characters
-    .replace(/[^\w\s\-\.]/g, '') // Allow only alphanumeric, spaces, hyphens, and dots
-    .trim()
-    .slice(0, 20); // Limit length
+    .replace(/[^a-zA-Z0-9\s\-\.]/g, '') // Allow only letters, numbers, spaces, hyphens, and dots (NOT underscore)
+    .trim() // Trim leading/trailing whitespace
+    .slice(0, 20) // Limit length
+    .trim(); // Clean up any trailing space from truncation
 }
 
 // Symbol validation (stocks, ETFs, crypto)
@@ -23,77 +24,73 @@ export function validateSymbol(symbol: string): boolean {
 
 // Portfolio validation schemas
 export const portfolioSchema = z.object({
-  name: z.string()
+  name: z
+    .string()
     .min(1, 'Portfolio name is required')
     .max(100, 'Portfolio name too long')
     .regex(/^[a-zA-Z0-9\s\-_]+$/, 'Portfolio name contains invalid characters'),
   type: z.enum(['taxable', 'ira', '401k', 'roth']),
-  currency: z.string()
+  currency: z
+    .string()
     .length(3, 'Currency must be 3 characters')
     .regex(/^[A-Z]{3}$/, 'Invalid currency format'),
-  description: z.string()
-    .max(500, 'Description too long')
-    .optional(),
+  description: z.string().max(500, 'Description too long').optional(),
 });
 
 // Transaction validation schema
 export const transactionSchema = z.object({
   type: z.enum(['buy', 'sell', 'dividend', 'split', 'transfer']),
-  assetSymbol: z.string()
+  assetSymbol: z
+    .string()
     .min(1, 'Asset symbol is required')
     .max(10, 'Asset symbol too long')
     .regex(/^[A-Z0-9]+$/, 'Invalid asset symbol format'),
-  assetName: z.string()
-    .max(200, 'Asset name too long')
-    .optional(),
-  date: z.string()
+  assetName: z.string().max(200, 'Asset name too long').optional(),
+  date: z
+    .string()
     .datetime('Invalid date format')
     .refine((date) => {
       const d = new Date(date);
       const now = new Date();
       return d <= now && d >= new Date('1900-01-01');
     }, 'Date must be between 1900-01-01 and today'),
-  quantity: z.string()
-    .refine((val) => {
-      const num = parseFloat(val);
-      return !isNaN(num) && num > 0 && num <= 1000000000;
-    }, 'Quantity must be a positive number less than 1 billion'),
-  price: z.string()
-    .refine((val) => {
-      const num = parseFloat(val);
-      return !isNaN(num) && num >= 0 && num <= 1000000;
-    }, 'Price must be a non-negative number less than 1 million'),
-  fees: z.string()
+  quantity: z.string().refine((val) => {
+    const num = parseFloat(val);
+    return !isNaN(num) && num > 0 && num <= 1000000000;
+  }, 'Quantity must be a positive number less than 1 billion'),
+  price: z.string().refine((val) => {
+    const num = parseFloat(val);
+    return !isNaN(num) && num >= 0 && num <= 1000000;
+  }, 'Price must be a non-negative number less than 1 million'),
+  fees: z
+    .string()
     .refine((val) => {
       if (!val || val === '') return true;
       const num = parseFloat(val);
       return !isNaN(num) && num >= 0 && num <= 100000;
     }, 'Fees must be a non-negative number less than 100,000')
     .optional(),
-  notes: z.string()
-    .max(1000, 'Notes too long')
-    .optional(),
+  notes: z.string().max(1000, 'Notes too long').optional(),
 });
 
 // Asset validation schema
 export const assetSchema = z.object({
-  symbol: z.string()
+  symbol: z
+    .string()
     .min(1, 'Symbol is required')
     .max(10, 'Symbol too long')
     .regex(/^[A-Z0-9]+$/, 'Invalid symbol format'),
-  name: z.string()
+  name: z
+    .string()
     .min(1, 'Asset name is required')
     .max(200, 'Asset name too long'),
   type: z.enum(['stock', 'etf', 'crypto', 'bond', 'real_estate', 'commodity']),
-  exchange: z.string()
-    .max(50, 'Exchange name too long')
-    .optional(),
-  currency: z.string()
+  exchange: z.string().max(50, 'Exchange name too long').optional(),
+  currency: z
+    .string()
     .length(3, 'Currency must be 3 characters')
     .regex(/^[A-Z]{3}$/, 'Invalid currency format'),
-  sector: z.string()
-    .max(100, 'Sector name too long')
-    .optional(),
+  sector: z.string().max(100, 'Sector name too long').optional(),
 });
 
 // CSV import validation
@@ -110,32 +107,43 @@ export const csvRowSchema = z.object({
 // User preferences validation
 export const userPreferencesSchema = z.object({
   theme: z.enum(['light', 'dark', 'system']).optional(),
-  currency: z.string()
+  currency: z
+    .string()
     .length(3)
     .regex(/^[A-Z]{3}$/)
     .optional(),
-  locale: z.string()
+  locale: z
+    .string()
     .max(10)
     .regex(/^[a-z]{2}(-[A-Z]{2})?$/)
     .optional(),
-  notifications: z.object({
-    priceAlerts: z.boolean().optional(),
-    portfolioSummary: z.boolean().optional(),
-    marketNews: z.boolean().optional(),
-  }).optional(),
-  privacy: z.object({
-    analytics: z.boolean().optional(),
-    crashReports: z.boolean().optional(),
-  }).optional(),
+  notifications: z
+    .object({
+      priceAlerts: z.boolean().optional(),
+      portfolioSummary: z.boolean().optional(),
+      marketNews: z.boolean().optional(),
+    })
+    .optional(),
+  privacy: z
+    .object({
+      analytics: z.boolean().optional(),
+      crashReports: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 // API response validation helpers
-export function validateApiResponse<T>(schema: z.ZodSchema<T>, data: unknown): T {
+export function validateApiResponse<T>(
+  schema: z.ZodSchema<T>,
+  data: unknown
+): T {
   try {
     return schema.parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new Error(`Validation error: ${error.errors.map(e => e.message).join(', ')}`);
+      throw new Error(
+        `Validation error: ${error.errors.map((e) => e.message).join(', ')}`
+      );
     }
     throw error;
   }
@@ -156,7 +164,9 @@ export function validateFileUpload(file: File): boolean {
 
   // Check file extension
   const allowedExtensions = ['.csv', '.json'];
-  const extension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+  const extension = file.name
+    .toLowerCase()
+    .substring(file.name.lastIndexOf('.'));
   if (!allowedExtensions.includes(extension)) {
     throw new Error('Invalid file extension');
   }
@@ -168,7 +178,7 @@ export function validateFileUpload(file: File): boolean {
 export function sanitizeSqlInput(input: string): string {
   return input
     .replace(/['"\\;]/g, '') // Remove quotes, backslashes, semicolons
-    .replace(/--/g, '') // Remove SQL comments
+    .replace(/\s*--\s*/g, ' ') // Replace SQL line comments with single space
     .replace(/\/\*[\s\S]*?\*\//g, '') // Remove SQL block comments
     .trim();
 }
@@ -235,7 +245,7 @@ export function validatePasswordStrength(password: string): {
 
   return {
     isValid: feedback.length === 0,
-    score: Math.min(score, 5),
+    score: Math.min(score, 6), // Cap at 6: 5 base requirements + 1 length bonus
     feedback,
   };
 }
