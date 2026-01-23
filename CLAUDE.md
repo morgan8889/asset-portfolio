@@ -189,3 +189,10 @@ Tests run against the dev server by default. The Playwright config automatically
 - Check rate limits in `src/lib/utils/rate-limit.ts`
 - Verify API keys in `.env.local`
 - Fallback to manual price entry if APIs fail
+
+## Active Technologies
+- TypeScript 5.3 with Next.js 14.2 (App Router) + React 18, Zustand 4.5, Recharts 2.15, shadcn/ui, Tailwind CSS, dnd-kit (new) (002-portfolio-dashboard)
+- IndexedDB via Dexie.js 3.2 (existing userSettings table) (002-portfolio-dashboard)
+
+## Recent Changes
+- 002-portfolio-dashboard: Added TypeScript 5.3 with Next.js 14.2 (App Router) + React 18, Zustand 4.5, Recharts 2.15, shadcn/ui, Tailwind CSS, dnd-kit (new)
