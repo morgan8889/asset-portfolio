@@ -25,10 +25,10 @@
 
 **Purpose**: Create types and foundational services that all user stories depend on
 
-- [ ] T001 Copy type contracts from `specs/001-csv-transaction-import/contracts/csv-import-types.ts` to `src/types/csv-import.ts`
-- [ ] T002 [P] Add CSV validation schemas from `specs/001-csv-transaction-import/contracts/validation-schemas.ts` to `src/lib/utils/validation.ts`
-- [ ] T003 [P] Create date parsing utility in `src/lib/utils/date-parser.ts` with multi-format support (ISO, US, EU, written)
-- [ ] T004 [P] Create CSV parser service in `src/lib/services/csv-parser.ts` using papaparse with delimiter auto-detection
+- [x] T001 Copy type contracts from `specs/001-csv-transaction-import/contracts/csv-import-types.ts` to `src/types/csv-import.ts`
+- [x] T002 [P] Add CSV validation schemas from `specs/001-csv-transaction-import/contracts/validation-schemas.ts` to `src/lib/utils/validation.ts`
+- [x] T003 [P] Create date parsing utility in `src/lib/utils/date-parser.ts` with multi-format support (ISO, US, EU, written)
+- [x] T004 [P] Create CSV parser service in `src/lib/services/csv-parser.ts` using papaparse with delimiter auto-detection
 
 ---
 
@@ -38,14 +38,14 @@
 
 **⚠️ CRITICAL**: No user story UI work can begin until this phase is complete
 
-- [ ] T005 Create column detector service in `src/lib/services/column-detector.ts` with header keyword matching
-- [ ] T006 Create CSV validator service in `src/lib/services/csv-validator.ts` with row-level validation
-- [ ] T007 Create CSV importer orchestration service in `src/lib/services/csv-importer.ts` (coordinates parsing, detection, validation)
-- [ ] T008 Create Zustand store for import state in `src/lib/stores/csv-import.ts`
-- [ ] T009 [P] Add unit test for date parser in `src/lib/utils/__tests__/date-parser.test.ts`
-- [ ] T010 [P] Add unit test for CSV parser in `src/lib/services/__tests__/csv-parser.test.ts`
-- [ ] T011 [P] Add unit test for column detector in `src/lib/services/__tests__/column-detector.test.ts`
-- [ ] T012 [P] Add unit test for CSV validator in `src/lib/services/__tests__/csv-validator.test.ts`
+- [x] T005 Create column detector service in `src/lib/services/column-detector.ts` with header keyword matching
+- [x] T006 Create CSV validator service in `src/lib/services/csv-validator.ts` with row-level validation
+- [x] T007 Create CSV importer orchestration service in `src/lib/services/csv-importer.ts` (coordinates parsing, detection, validation)
+- [x] T008 Create Zustand store for import state in `src/lib/stores/csv-import.ts`
+- [x] T009 [P] Add unit test for date parser in `src/lib/utils/__tests__/date-parser.test.ts`
+- [x] T010 [P] Add unit test for CSV parser in `src/lib/services/__tests__/csv-parser.test.ts`
+- [x] T011 [P] Add unit test for column detector in `src/lib/services/__tests__/column-detector.test.ts`
+- [x] T012 [P] Add unit test for CSV validator in `src/lib/services/__tests__/csv-validator.test.ts`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin
 
@@ -59,18 +59,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T013 [P] [US1] Add unit test for csv-importer service in `src/lib/services/__tests__/csv-importer.test.ts`
-- [ ] T014 [P] [US1] Add E2E test for basic CSV import flow in `tests/e2e/csv-import.spec.ts`
+- [x] T013 [P] [US1] Add unit test for csv-importer service in `src/lib/services/__tests__/csv-importer.test.ts`
+- [x] T014 [P] [US1] Add E2E test for basic CSV import flow in `tests/e2e/csv-import.spec.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Create file upload component in `src/components/forms/csv-file-upload.tsx` with drag-drop and file input
-- [ ] T016 [P] [US1] Create import preview table component in `src/components/forms/import-preview-table.tsx` showing first 10 rows
-- [ ] T017 [US1] Create main CSV import dialog in `src/components/forms/csv-import-dialog.tsx` orchestrating the import flow
-- [ ] T018 [US1] Create import results summary component in `src/components/forms/import-results.tsx` showing success/failure counts
-- [ ] T019 [US1] Wire up "Import CSV" button on transactions page in `src/app/(dashboard)/transactions/page.tsx`
-- [ ] T020 [US1] Add progress indicator to import dialog for large files
-- [ ] T021 [US1] Export csv-import store from `src/lib/stores/index.ts`
+- [x] T015 [P] [US1] Create file upload component in `src/components/forms/csv-file-upload.tsx` with drag-drop and file input
+- [x] T016 [P] [US1] Create import preview table component in `src/components/forms/import-preview-table.tsx` showing first 10 rows
+- [x] T017 [US1] Create main CSV import dialog in `src/components/forms/csv-import-dialog.tsx` orchestrating the import flow
+- [x] T018 [US1] Create import results summary component in `src/components/forms/import-results.tsx` showing success/failure counts
+- [x] T019 [US1] Wire up "Import CSV" button on transactions page in `src/app/(dashboard)/transactions/page.tsx`
+- [x] T020 [US1] Add progress indicator to import dialog for large files
+- [x] T021 [US1] Export csv-import store from `src/lib/stores/index.ts`
 
 **Checkpoint**: User Story 1 complete - basic CSV import with auto-detection works
 
