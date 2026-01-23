@@ -47,7 +47,7 @@ export class HoldingsCalculator {
   /**
    * Calculate holding for a specific asset based on its transactions
    */
-  private static async calculateAssetHolding(
+  static async calculateAssetHolding(
     portfolioId: string,
     assetId: string,
     transactions: Transaction[]
@@ -105,17 +105,18 @@ export class HoldingsCalculator {
           exchange,
           currency,
           currentPrice: 0,
-          sector: null,
-          industry: null,
-          marketCap: null,
-          description: null,
-          website: null,
-          beta: null,
-          peRatio: null,
-          eps: null,
-          dividend: null,
-          dividendYield: null,
+          sector: undefined,
           priceUpdatedAt: new Date(),
+          metadata: {
+            industry: undefined,
+            marketCap: undefined,
+            description: undefined,
+            website: undefined,
+            beta: undefined,
+            peRatio: undefined,
+            eps: undefined,
+            dividendYield: undefined,
+          },
         });
         asset = await assetQueries.getById(cleanAssetId);
       } catch (err) {
