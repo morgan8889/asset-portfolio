@@ -189,3 +189,10 @@ Tests run against the dev server by default. The Playwright config automatically
 - Check rate limits in `src/lib/utils/rate-limit.ts`
 - Verify API keys in `.env.local`
 - Fallback to manual price entry if APIs fail
+
+## Active Technologies
+- TypeScript 5.3 with Next.js 14 App Router + React 18, papaparse (CSV parsing), Zod (validation), decimal.js (financial precision), Dexie.js (IndexedDB), React Hook Form, shadcn/ui, Zustand (001-csv-transaction-import)
+- Browser IndexedDB via Dexie.js (privacy-first, local-only) (001-csv-transaction-import)
+
+## Recent Changes
+- 001-csv-transaction-import: Added TypeScript 5.3 with Next.js 14 App Router + React 18, papaparse (CSV parsing), Zod (validation), decimal.js (financial precision), Dexie.js (IndexedDB), React Hook Form, shadcn/ui, Zustand
