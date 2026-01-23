@@ -57,6 +57,55 @@ export class PortfolioDatabase extends Dexie {
     this.priceHistory.hook('creating', this.transformPriceHistory);
     this.priceSnapshots.hook('creating', this.transformPriceSnapshot);
     this.dividendRecords.hook('creating', this.transformDividendRecord);
+
+    // Add updating hooks for tables with Decimal fields
+    this.holdings.hook('updating', this.transformHoldingUpdates);
+    this.transactions.hook('updating', this.transformTransactionUpdates);
+  }
+
+  // Transform updates for holdings (different signature than creating hook)
+  private transformHoldingUpdates = (
+    modifications: Partial<Holding>,
+    _primKey: any,
+    _obj: Holding,
+    _trans: any
+  ): Partial<Holding> | void => {
+    if (modifications.quantity instanceof Decimal) {
+      (modifications as any).quantity = modifications.quantity.toString();
+    }
+    if (modifications.costBasis instanceof Decimal) {
+      (modifications as any).costBasis = modifications.costBasis.toString();
+    }
+    if (modifications.averageCost instanceof Decimal) {
+      (modifications as any).averageCost = modifications.averageCost.toString();
+    }
+    if (modifications.currentValue instanceof Decimal) {
+      (modifications as any).currentValue = modifications.currentValue.toString();
+    }
+    if (modifications.unrealizedGain instanceof Decimal) {
+      (modifications as any).unrealizedGain = modifications.unrealizedGain.toString();
+    }
+  };
+
+  // Transform updates for transactions
+  private transformTransactionUpdates = (
+    modifications: Partial<Transaction>,
+    _primKey: any,
+    _obj: Transaction,
+    _trans: any
+  ): Partial<Transaction> | void => {
+    if (modifications.quantity instanceof Decimal) {
+      (modifications as any).quantity = modifications.quantity.toString();
+    }
+    if (modifications.price instanceof Decimal) {
+      (modifications as any).price = modifications.price.toString();
+    }
+    if (modifications.totalAmount instanceof Decimal) {
+      (modifications as any).totalAmount = modifications.totalAmount.toString();
+    }
+    if (modifications.fees instanceof Decimal) {
+      (modifications as any).fees = modifications.fees.toString();
+    }
   }
 
   // Transform functions to handle Decimal.js serialization
