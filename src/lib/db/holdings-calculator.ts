@@ -269,8 +269,9 @@ export class HoldingsCalculator {
    */
   static async updateHoldingsForTransaction(transaction: Transaction): Promise<void> {
     const transactions = await db.transactions
-      .where('[portfolioId+assetId]')
-      .equals([transaction.portfolioId, transaction.assetId])
+      .where('portfolioId')
+      .equals(transaction.portfolioId)
+      .filter(t => t.assetId === transaction.assetId)
       .toArray();
 
     const convertedTransactions = transactions.map(t => (db as any).convertTransactionDecimals(t));
@@ -385,8 +386,9 @@ export const setupHoldingsSync = () => {
         async () => {
           // Recalculate holdings for the affected asset
           const remainingTransactions = await db.transactions
-            .where('[portfolioId+assetId]')
-            .equals([transaction.portfolioId, transaction.assetId])
+            .where('portfolioId')
+            .equals(transaction.portfolioId)
+            .filter(t => t.assetId === transaction.assetId)
             .toArray();
 
           const convertedTransactions = remainingTransactions.map(t => (db as any).convertTransactionDecimals(t));
