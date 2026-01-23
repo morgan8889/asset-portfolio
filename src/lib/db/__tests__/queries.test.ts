@@ -1,403 +1,443 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { Decimal } from 'decimal.js'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { Decimal } from 'decimal.js';
+import { db } from '../schema';
 import {
   portfolioQueries,
   assetQueries,
   holdingQueries,
   transactionQueries,
   priceQueries,
-  settingsQueries
-} from '../queries'
-import { createMockAsset, createMockTransaction, createMockPortfolioSnapshot } from '@/test-utils'
-import { TransactionType } from '@/types'
+  settingsQueries,
+} from '../queries';
+import { PortfolioSettings, TransactionType } from '@/types';
 
-// Mock crypto.randomUUID
-Object.defineProperty(global, 'crypto', {
-  value: {
-    randomUUID: vi.fn(() => `mock-uuid-${Date.now()}`)
-  }
-})
+// Mock crypto.randomUUID for predictable IDs
+let uuidCounter = 0;
+vi.stubGlobal('crypto', {
+  randomUUID: () => `test-uuid-${++uuidCounter}`,
+});
+
+const defaultSettings: PortfolioSettings = {
+  rebalanceThreshold: 5,
+  taxStrategy: 'fifo',
+};
 
 describe('Portfolio Queries', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+  beforeEach(async () => {
+    // Reset UUID counter for predictable IDs
+    uuidCounter = 0;
+    vi.clearAllMocks();
+
+    // Clear all tables before each test
+    await db.portfolios.clear();
+    await db.assets.clear();
+    await db.holdings.clear();
+    await db.transactions.clear();
+    await db.priceHistory.clear();
+    await db.priceSnapshots.clear();
+    await db.dividendRecords.clear();
+    await db.userSettings.clear();
+  });
+
+  afterEach(async () => {
+    // Clean up after each test
+    await db.portfolios.clear();
+    await db.assets.clear();
+    await db.holdings.clear();
+    await db.transactions.clear();
+    await db.userSettings.clear();
+  });
 
   describe('portfolioQueries', () => {
     it('should get all portfolios ordered by name', async () => {
-      const mockPortfolios = [
-        { id: '1', name: 'Portfolio B' },
-        { id: '2', name: 'Portfolio A' }
-      ]
+      // Create portfolios in reverse alphabetical order
+      await db.portfolios.add({
+        id: 'p1',
+        name: 'Portfolio B',
+        type: 'taxable',
+        currency: 'USD',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        settings: defaultSettings,
+      });
+      await db.portfolios.add({
+        id: 'p2',
+        name: 'Portfolio A',
+        type: 'taxable',
+        currency: 'USD',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        settings: defaultSettings,
+      });
 
-      const mockOrderBy = vi.fn().mockReturnValue({
-        toArray: vi.fn().mockResolvedValue(mockPortfolios)
-      })
+      const result = await portfolioQueries.getAll();
 
-      vi.doMock('../schema', () => ({
-        db: {
-          portfolios: {
-            orderBy: mockOrderBy
-          }
-        }
-      }))
-
-      const result = await portfolioQueries.getAll()
-      expect(mockOrderBy).toHaveBeenCalledWith('name')
-      expect(result).toEqual(mockPortfolios)
-    })
+      expect(result).toHaveLength(2);
+      expect(result[0].name).toBe('Portfolio A');
+      expect(result[1].name).toBe('Portfolio B');
+    });
 
     it('should get portfolio by id', async () => {
-      const mockPortfolio = { id: '1', name: 'Test Portfolio' }
-      const mockGet = vi.fn().mockResolvedValue(mockPortfolio)
+      await db.portfolios.add({
+        id: 'p1',
+        name: 'Test Portfolio',
+        type: 'taxable',
+        currency: 'USD',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        settings: defaultSettings,
+      });
 
-      vi.doMock('../schema', () => ({
-        db: {
-          portfolios: {
-            get: mockGet
-          }
-        }
-      }))
+      const result = await portfolioQueries.getById('p1');
 
-      const result = await portfolioQueries.getById('1')
-      expect(mockGet).toHaveBeenCalledWith('1')
-      expect(result).toEqual(mockPortfolio)
-    })
+      expect(result).toBeDefined();
+      expect(result!.name).toBe('Test Portfolio');
+    });
 
     it('should create new portfolio with generated id and timestamps', async () => {
-      const portfolioData = { name: 'Test Portfolio', description: 'Test' }
-      const mockAdd = vi.fn().mockResolvedValue('mock-uuid-123')
+      const portfolioData = {
+        name: 'Test Portfolio',
+        type: 'taxable' as const,
+        currency: 'USD',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        settings: defaultSettings,
+      };
 
-      vi.doMock('../schema', () => ({
-        db: {
-          portfolios: {
-            add: mockAdd
-          }
-        }
-      }))
+      const result = await portfolioQueries.create(portfolioData);
 
-      const result = await portfolioQueries.create(portfolioData)
+      expect(result).toMatch(/test-uuid-/);
 
-      expect(mockAdd).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ...portfolioData,
-          id: expect.stringMatching(/mock-uuid-/),
-          createdAt: expect.any(Date),
-          updatedAt: expect.any(Date)
-        })
-      )
-      expect(result).toBe('mock-uuid-123')
-    })
+      const created = await portfolioQueries.getById(result);
+      expect(created).toBeDefined();
+      expect(created!.name).toBe(portfolioData.name);
+      expect(created!.createdAt).toBeInstanceOf(Date);
+      expect(created!.updatedAt).toBeInstanceOf(Date);
+    });
 
     it('should update portfolio with new timestamp', async () => {
-      const updates = { name: 'Updated Portfolio' }
-      const mockUpdate = vi.fn().mockResolvedValue(undefined)
+      await db.portfolios.add({
+        id: 'p1',
+        name: 'Original Name',
+        type: 'taxable',
+        currency: 'USD',
+        createdAt: new Date(),
+        updatedAt: new Date('2020-01-01'),
+        settings: defaultSettings,
+      });
 
-      vi.doMock('../schema', () => ({
-        db: {
-          portfolios: {
-            update: mockUpdate
-          }
-        }
-      }))
+      await portfolioQueries.update('p1', { name: 'Updated Portfolio' });
 
-      await portfolioQueries.update('1', updates)
-
-      expect(mockUpdate).toHaveBeenCalledWith('1', {
-        ...updates,
-        updatedAt: expect.any(Date)
-      })
-    })
+      const updated = await portfolioQueries.getById('p1');
+      expect(updated!.name).toBe('Updated Portfolio');
+      expect(updated!.updatedAt.getTime()).toBeGreaterThan(
+        new Date('2020-01-01').getTime()
+      );
+    });
 
     it('should delete portfolio and cascade delete related data', async () => {
-      const mockDelete = vi.fn().mockResolvedValue(undefined)
-      const mockWhere = vi.fn().mockReturnValue({
-        equals: vi.fn().mockReturnValue({
-          delete: vi.fn().mockResolvedValue(undefined)
-        })
-      })
-      const mockTransaction = vi.fn().mockImplementation((mode, tables, callback) => {
-        return callback()
-      })
+      // Create portfolio with related holdings and transactions
+      await db.portfolios.add({
+        id: 'p1',
+        name: 'To Delete',
+        type: 'taxable',
+        currency: 'USD',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        settings: defaultSettings,
+      });
+      await db.holdings.add({
+        id: 'h1',
+        portfolioId: 'p1',
+        assetId: 'a1',
+        quantity: '10',
+        costBasis: '1000',
+        averageCost: '100',
+        currentValue: '1100',
+        unrealizedGain: '100',
+        unrealizedGainPercent: 10,
+        lots: [],
+        lastUpdated: new Date(),
+      } as any);
+      await db.transactions.add({
+        id: 't1',
+        portfolioId: 'p1',
+        assetId: 'a1',
+        type: 'buy',
+        date: new Date(),
+        quantity: '10',
+        price: '100',
+        totalAmount: '1000',
+        fees: '5',
+        currency: 'USD',
+      } as any);
 
-      vi.doMock('../schema', () => ({
-        db: {
-          transaction: mockTransaction,
-          portfolios: { delete: mockDelete },
-          holdings: { where: mockWhere },
-          transactions: { where: mockWhere }
-        }
-      }))
+      await portfolioQueries.delete('p1');
 
-      await portfolioQueries.delete('1')
+      const portfolio = await portfolioQueries.getById('p1');
+      const holdings = await db.holdings
+        .where('portfolioId')
+        .equals('p1')
+        .toArray();
+      const transactions = await db.transactions
+        .where('portfolioId')
+        .equals('p1')
+        .toArray();
 
-      expect(mockTransaction).toHaveBeenCalled()
-      expect(mockDelete).toHaveBeenCalledWith('1')
-    })
-  })
+      expect(portfolio).toBeUndefined();
+      expect(holdings).toHaveLength(0);
+      expect(transactions).toHaveLength(0);
+    });
+  });
 
   describe('assetQueries', () => {
     it('should get asset by symbol (case insensitive)', async () => {
-      const mockAsset = createMockAsset({ symbol: 'AAPL' })
-      const mockFirst = vi.fn().mockResolvedValue(mockAsset)
-      const mockEqualsIgnoreCase = vi.fn().mockReturnValue({ first: mockFirst })
-      const mockWhere = vi.fn().mockReturnValue({ equalsIgnoreCase: mockEqualsIgnoreCase })
+      await db.assets.add({
+        id: 'a1',
+        symbol: 'AAPL',
+        name: 'Apple Inc.',
+        type: 'stock',
+        currency: 'USD',
+        metadata: {},
+      });
 
-      vi.doMock('../schema', () => ({
-        db: {
-          assets: {
-            where: mockWhere
-          }
-        }
-      }))
+      const result = await assetQueries.getBySymbol('aapl');
 
-      const result = await assetQueries.getBySymbol('aapl')
-
-      expect(mockWhere).toHaveBeenCalledWith('symbol')
-      expect(mockEqualsIgnoreCase).toHaveBeenCalledWith('aapl')
-      expect(result).toEqual(mockAsset)
-    })
+      expect(result).toBeDefined();
+      expect(result!.symbol).toBe('AAPL');
+    });
 
     it('should search assets by symbol and name', async () => {
-      const mockAssets = [
-        createMockAsset({ symbol: 'AAPL', name: 'Apple Inc.' }),
-        createMockAsset({ symbol: 'MSFT', name: 'Microsoft Corp.' })
-      ]
+      await db.assets.add({
+        id: 'a1',
+        symbol: 'AAPL',
+        name: 'Apple Inc.',
+        type: 'stock',
+        currency: 'USD',
+        metadata: {},
+      });
+      await db.assets.add({
+        id: 'a2',
+        symbol: 'MSFT',
+        name: 'Microsoft Corp.',
+        type: 'stock',
+        currency: 'USD',
+        metadata: {},
+      });
 
-      const mockToArray = vi.fn().mockResolvedValue(mockAssets)
-      const mockLimit = vi.fn().mockReturnValue({ toArray: mockToArray })
-      const mockFilter = vi.fn().mockReturnValue({ limit: mockLimit })
+      const result = await assetQueries.search('app', 10);
 
-      vi.doMock('../schema', () => ({
-        db: {
-          assets: {
-            filter: mockFilter
-          }
-        }
-      }))
-
-      const result = await assetQueries.search('app', 10)
-
-      expect(mockFilter).toHaveBeenCalled()
-      expect(mockLimit).toHaveBeenCalledWith(10)
-      expect(result).toEqual(mockAssets)
-    })
+      expect(result).toHaveLength(1);
+      expect(result[0].symbol).toBe('AAPL');
+    });
 
     it('should throw error when creating asset with existing symbol', async () => {
-      const existingAsset = createMockAsset({ symbol: 'AAPL' })
-      const newAssetData = { symbol: 'AAPL', name: 'Apple Inc.', type: 'stock' as const }
+      await db.assets.add({
+        id: 'a1',
+        symbol: 'AAPL',
+        name: 'Apple Inc.',
+        type: 'stock',
+        currency: 'USD',
+        metadata: {},
+      });
 
-      // Mock getBySymbol to return existing asset
-      vi.spyOn(assetQueries, 'getBySymbol').mockResolvedValue(existingAsset)
+      const newAssetData = {
+        symbol: 'AAPL',
+        name: 'Apple Inc.',
+        type: 'stock' as const,
+        currency: 'USD',
+        metadata: {},
+      };
 
       await expect(assetQueries.create(newAssetData)).rejects.toThrow(
         'Asset with symbol AAPL already exists'
-      )
-    })
+      );
+    });
 
     it('should update asset price with timestamp', async () => {
-      const mockUpdate = vi.fn().mockResolvedValue(undefined)
+      await db.assets.add({
+        id: 'a1',
+        symbol: 'AAPL',
+        name: 'Apple Inc.',
+        type: 'stock',
+        currency: 'USD',
+        currentPrice: 100,
+        metadata: {},
+      });
 
-      vi.doMock('../schema', () => ({
-        db: {
-          assets: {
-            update: mockUpdate
-          }
-        }
-      }))
+      await assetQueries.updatePrice('a1', 150.5);
 
-      await assetQueries.updatePrice('1', 150.50)
-
-      expect(mockUpdate).toHaveBeenCalledWith('1', {
-        currentPrice: 150.50,
-        priceUpdatedAt: expect.any(Date)
-      })
-    })
-  })
+      const updated = await assetQueries.getById('a1');
+      expect(updated!.currentPrice).toBe(150.5);
+      expect(updated!.priceUpdatedAt).toBeInstanceOf(Date);
+    });
+  });
 
   describe('transactionQueries', () => {
     it('should filter transactions by multiple criteria', async () => {
-      const mockTransactions = [
-        createMockTransaction({ type: TransactionType.BUY, portfolioId: 'p1' }),
-        createMockTransaction({ type: TransactionType.SELL, portfolioId: 'p1' })
-      ]
-
-      const mockToArray = vi.fn().mockResolvedValue(mockTransactions)
-      const mockFilter = vi.fn().mockReturnValue({ toArray: mockToArray })
-      const mockToCollection = vi.fn().mockReturnValue({ filter: mockFilter })
-
-      vi.doMock('../schema', () => ({
-        db: {
-          transactions: {
-            toCollection: mockToCollection
-          },
-          convertTransactionDecimals: vi.fn(t => t)
-        }
-      }))
+      await db.transactions.add({
+        id: 't1',
+        portfolioId: 'p1',
+        assetId: 'a1',
+        type: 'buy',
+        date: new Date('2023-06-15'),
+        quantity: '10',
+        price: '100',
+        totalAmount: '1000',
+        fees: '5',
+        currency: 'USD',
+      } as any);
+      await db.transactions.add({
+        id: 't2',
+        portfolioId: 'p1',
+        assetId: 'a1',
+        type: 'sell',
+        date: new Date('2023-07-15'),
+        quantity: '5',
+        price: '110',
+        totalAmount: '550',
+        fees: '5',
+        currency: 'USD',
+      } as any);
+      await db.transactions.add({
+        id: 't3',
+        portfolioId: 'p2',
+        assetId: 'a1',
+        type: 'buy',
+        date: new Date('2023-08-15'),
+        quantity: '20',
+        price: '105',
+        totalAmount: '2100',
+        fees: '10',
+        currency: 'USD',
+      } as any);
 
       const filter = {
         portfolioId: 'p1',
-        type: [TransactionType.BUY],
+        type: ['buy' as TransactionType],
         dateFrom: new Date('2023-01-01'),
-        dateTo: new Date('2023-12-31')
-      }
+        dateTo: new Date('2023-12-31'),
+      };
 
-      const result = await transactionQueries.getFiltered(filter)
+      const result = await transactionQueries.getFiltered(filter);
 
-      expect(mockToCollection).toHaveBeenCalled()
-      expect(mockFilter).toHaveBeenCalled()
-      expect(result).toHaveLength(2)
-    })
+      expect(result).toHaveLength(1);
+      expect(result[0].type).toBe('buy');
+      expect(result[0].portfolioId).toBe('p1');
+    });
 
     it('should create multiple transactions with bulk add', async () => {
       const transactionData = [
-        { type: TransactionType.BUY, quantity: new Decimal(10), price: new Decimal(100) },
-        { type: TransactionType.SELL, quantity: new Decimal(5), price: new Decimal(110) }
-      ]
+        {
+          portfolioId: 'p1',
+          assetId: 'a1',
+          type: 'buy' as TransactionType,
+          date: new Date(),
+          quantity: new Decimal(10),
+          price: new Decimal(100),
+          totalAmount: new Decimal(1000),
+          fees: new Decimal(1),
+          currency: 'USD',
+        },
+        {
+          portfolioId: 'p1',
+          assetId: 'a1',
+          type: 'sell' as TransactionType,
+          date: new Date(),
+          quantity: new Decimal(5),
+          price: new Decimal(110),
+          totalAmount: new Decimal(550),
+          fees: new Decimal(1),
+          currency: 'USD',
+        },
+      ];
 
-      const mockBulkAdd = vi.fn().mockResolvedValue(undefined)
+      const result = await transactionQueries.createMany(transactionData);
 
-      vi.doMock('../schema', () => ({
-        db: {
-          transactions: {
-            bulkAdd: mockBulkAdd
-          }
-        }
-      }))
+      expect(result).toHaveLength(2);
+      expect(result[0]).toMatch(/test-uuid-/);
+      expect(result[1]).toMatch(/test-uuid-/);
 
-      const result = await transactionQueries.createMany(transactionData)
-
-      expect(mockBulkAdd).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ id: expect.stringMatching(/mock-uuid-/) }),
-          expect.objectContaining({ id: expect.stringMatching(/mock-uuid-/) })
-        ])
-      )
-      expect(result).toHaveLength(2)
-    })
+      const all = await db.transactions.toArray();
+      expect(all).toHaveLength(2);
+    });
 
     it('should calculate transaction summary correctly', async () => {
-      const mockTransactions = [
-        {
-          type: 'buy',
-          totalAmount: 1000,
-          fees: 10,
-          date: new Date('2023-01-01')
-        },
-        {
-          type: 'sell',
-          totalAmount: 1100,
-          fees: 15,
-          date: new Date('2023-06-01')
-        },
-        {
-          type: 'dividend',
-          totalAmount: 50,
-          fees: 0,
-          date: new Date('2023-03-01')
-        }
-      ]
+      await db.transactions.add({
+        id: 't1',
+        portfolioId: 'p1',
+        assetId: 'a1',
+        type: 'buy',
+        date: new Date('2023-01-01'),
+        quantity: '10',
+        price: '100',
+        totalAmount: '1000',
+        fees: '10',
+        currency: 'USD',
+      } as any);
+      await db.transactions.add({
+        id: 't2',
+        portfolioId: 'p1',
+        assetId: 'a1',
+        type: 'sell',
+        date: new Date('2023-06-01'),
+        quantity: '5',
+        price: '110',
+        totalAmount: '1100',
+        fees: '15',
+        currency: 'USD',
+      } as any);
+      await db.transactions.add({
+        id: 't3',
+        portfolioId: 'p1',
+        assetId: 'a1',
+        type: 'dividend',
+        date: new Date('2023-03-01'),
+        quantity: '0',
+        price: '0',
+        totalAmount: '50',
+        fees: '0',
+        currency: 'USD',
+      } as any);
 
-      const mockToArray = vi.fn().mockResolvedValue(mockTransactions)
-      const mockFilter = vi.fn().mockReturnValue({ toArray: mockToArray })
-      const mockToCollection = vi.fn().mockReturnValue({ filter: mockFilter })
+      const result = await transactionQueries.getSummary('p1');
 
-      vi.doMock('../schema', () => ({
-        db: {
-          transactions: {
-            toCollection: mockToCollection
-          },
-          convertTransactionDecimals: vi.fn(t => ({
-            ...t,
-            totalAmount: new Decimal(t.totalAmount),
-            fees: new Decimal(t.fees)
-          }))
-        }
-      }))
-
-      const result = await transactionQueries.getSummary('p1')
-
-      expect(result.totalTransactions).toBe(3)
-      expect(result.totalBuys).toBe(1)
-      expect(result.totalSells).toBe(1)
-      expect(result.totalDividends).toBe(1)
-      expect(result.totalInvested.toNumber()).toBe(1000)
-      expect(result.totalDividendIncome.toNumber()).toBe(50)
-      expect(result.totalFees.toNumber()).toBe(25)
-    })
-  })
+      expect(result.totalTransactions).toBe(3);
+      expect(result.totalBuys).toBe(1);
+      expect(result.totalSells).toBe(1);
+      expect(result.totalDividends).toBe(1);
+      expect(result.totalInvested.toNumber()).toBe(1000);
+      expect(result.totalDividendIncome.toNumber()).toBe(50);
+      expect(result.totalFees.toNumber()).toBe(25);
+    });
+  });
 
   describe('settingsQueries', () => {
     it('should set new setting when key does not exist', async () => {
-      const mockFirst = vi.fn().mockResolvedValue(undefined)
-      const mockEquals = vi.fn().mockReturnValue({ first: mockFirst })
-      const mockWhere = vi.fn().mockReturnValue({ equals: mockEquals })
-      const mockAdd = vi.fn().mockResolvedValue(undefined)
+      await settingsQueries.set('theme', 'dark');
 
-      vi.doMock('../schema', () => ({
-        db: {
-          userSettings: {
-            where: mockWhere,
-            add: mockAdd
-          }
-        }
-      }))
-
-      await settingsQueries.set('theme', 'dark')
-
-      expect(mockAdd).toHaveBeenCalledWith({
-        key: 'theme',
-        value: 'dark',
-        updatedAt: expect.any(Date)
-      })
-    })
+      const value = await settingsQueries.get('theme');
+      expect(value).toBe('dark');
+    });
 
     it('should update existing setting', async () => {
-      const existingSetting = { id: '1', key: 'theme', value: 'light' }
-      const mockFirst = vi.fn().mockResolvedValue(existingSetting)
-      const mockEquals = vi.fn().mockReturnValue({ first: mockFirst })
-      const mockWhere = vi.fn().mockReturnValue({ equals: mockEquals })
-      const mockUpdate = vi.fn().mockResolvedValue(undefined)
+      await settingsQueries.set('theme', 'light');
+      await settingsQueries.set('theme', 'dark');
 
-      vi.doMock('../schema', () => ({
-        db: {
-          userSettings: {
-            where: mockWhere,
-            update: mockUpdate
-          }
-        }
-      }))
-
-      await settingsQueries.set('theme', 'dark')
-
-      expect(mockUpdate).toHaveBeenCalledWith('1', {
-        value: 'dark',
-        updatedAt: expect.any(Date)
-      })
-    })
+      const value = await settingsQueries.get('theme');
+      expect(value).toBe('dark');
+    });
 
     it('should get all settings as object', async () => {
-      const mockSettings = [
-        { key: 'theme', value: 'dark' },
-        { key: 'currency', value: 'USD' }
-      ]
+      await settingsQueries.set('theme', 'dark');
+      await settingsQueries.set('currency', 'USD');
 
-      const mockToArray = vi.fn().mockResolvedValue(mockSettings)
-
-      vi.doMock('../schema', () => ({
-        db: {
-          userSettings: {
-            toArray: mockToArray
-          }
-        }
-      }))
-
-      const result = await settingsQueries.getAll()
+      const result = await settingsQueries.getAll();
 
       expect(result).toEqual({
         theme: 'dark',
-        currency: 'USD'
-      })
-    })
-  })
-})
+        currency: 'USD',
+      });
+    });
+  });
+});
