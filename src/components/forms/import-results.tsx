@@ -3,18 +3,28 @@
 /**
  * Import Results Component
  *
- * Displays the results of a CSV import operation with success/failure counts.
+ * Displays the results of a CSV import operation with success/failure counts
+ * and detailed error breakdown with expandable rows.
  */
 
-import { CheckCircle, AlertCircle, FileDown, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle, AlertCircle, FileDown, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import type { ImportError } from '@/types/csv-import';
 
 interface ImportResultsProps {
   success: boolean;
   importedCount: number;
   skippedCount: number;
   errorCount: number;
+  /** Detailed errors for expandable view */
+  errors?: ImportError[];
   onDownloadFailed?: () => void;
   className?: string;
 }
@@ -24,10 +34,21 @@ export function ImportResults({
   importedCount,
   skippedCount,
   errorCount,
+  errors = [],
   onDownloadFailed,
   className,
 }: ImportResultsProps) {
+  const [showErrors, setShowErrors] = useState(false);
   const totalProcessed = importedCount + skippedCount + errorCount;
+
+  // Group errors by row for display
+  const errorsByRow = errors.reduce((acc, error) => {
+    if (!acc[error.rowNumber]) {
+      acc[error.rowNumber] = [];
+    }
+    acc[error.rowNumber].push(error);
+    return acc;
+  }, {} as Record<number, ImportError[]>);
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -65,11 +86,13 @@ export function ImportResults({
           <span className="text-sm text-muted-foreground">Imported</span>
         </div>
 
-        {/* Skipped */}
+        {/* Skipped (Duplicates) */}
         <div className="flex flex-col items-center p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
           <AlertTriangle className="h-6 w-6 text-yellow-500 mb-2" />
           <span className="text-2xl font-bold text-foreground">{skippedCount}</span>
-          <span className="text-sm text-muted-foreground">Skipped</span>
+          <span className="text-sm text-muted-foreground">
+            {skippedCount === 1 ? 'Duplicate Skipped' : 'Duplicates Skipped'}
+          </span>
         </div>
 
         {/* Errors */}
@@ -84,6 +107,61 @@ export function ImportResults({
       <div className="text-center text-sm text-muted-foreground">
         {totalProcessed} total rows processed
       </div>
+
+      {/* Error Details - Expandable */}
+      {errorCount > 0 && errors.length > 0 && (
+        <Collapsible open={showErrors} onOpenChange={setShowErrors}>
+          <CollapsibleTrigger asChild>
+            <Button
+              variant="ghost"
+              className="w-full justify-between py-2"
+            >
+              <span className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-destructive" />
+                View Error Details ({Object.keys(errorsByRow).length} rows)
+              </span>
+              {showErrors ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="mt-2 max-h-[200px] overflow-y-auto rounded-md border bg-muted/30 p-3">
+              {Object.entries(errorsByRow)
+                .sort(([a], [b]) => Number(a) - Number(b))
+                .slice(0, 10)
+                .map(([rowNum, rowErrors]) => (
+                  <div key={rowNum} className="mb-2 last:mb-0">
+                    <div className="text-sm font-medium text-foreground">
+                      Row {rowNum}
+                    </div>
+                    {rowErrors.map((error, idx) => (
+                      <div
+                        key={idx}
+                        className="ml-4 text-sm text-muted-foreground"
+                      >
+                        <span className="font-medium">{error.field}:</span>{' '}
+                        {error.message}
+                        {error.value && (
+                          <span className="ml-1 text-xs text-muted-foreground/70">
+                            (value: &quot;{error.value}&quot;)
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              {Object.keys(errorsByRow).length > 10 && (
+                <div className="mt-2 text-sm text-muted-foreground text-center">
+                  ... and {Object.keys(errorsByRow).length - 10} more rows
+                </div>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
 
       {/* Download Failed Rows */}
       {errorCount > 0 && onDownloadFailed && (
