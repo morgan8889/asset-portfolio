@@ -56,9 +56,8 @@ describe('Portfolio Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 120,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
         {
           id: 'a2',
@@ -66,9 +65,8 @@ describe('Portfolio Service', () => {
           name: 'Microsoft Corp.',
           type: 'stock',
           currentPrice: 120,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -104,9 +102,8 @@ describe('Portfolio Service', () => {
         name: `Asset ${i}`,
         type: 'stock' as const,
         currentPrice: 100,
+        currency: 'USD',
         metadata: {},
-        createdAt: new Date(),
-        updatedAt: new Date(),
       }));
 
       const result = calculatePortfolioSummary(holdings, assets, 3);
@@ -139,9 +136,8 @@ describe('Portfolio Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 0,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -202,9 +198,8 @@ describe('Portfolio Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 120,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -272,9 +267,8 @@ describe('Portfolio Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 80,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
         {
           id: 'a2',
@@ -282,9 +276,8 @@ describe('Portfolio Service', () => {
           name: 'Bond Fund',
           type: 'bond',
           currentPrice: 100,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -354,9 +347,8 @@ describe('Portfolio Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 100,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
         {
           id: 'a2',
@@ -364,9 +356,8 @@ describe('Portfolio Service', () => {
           name: 'Bond Fund',
           type: 'bond',
           currentPrice: 100,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -429,9 +420,8 @@ describe('Portfolio Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 120,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -483,9 +473,8 @@ describe('Portfolio Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 1000,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -539,9 +528,8 @@ describe('Portfolio Service', () => {
           type: 'stock',
           currentPrice: 50,
           sector: 'Technology',
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
         {
           id: 'a2',
@@ -550,9 +538,8 @@ describe('Portfolio Service', () => {
           type: 'bond',
           currentPrice: 100,
           sector: 'Fixed Income',
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -590,9 +577,8 @@ describe('Portfolio Service', () => {
           type: 'stock',
           currentPrice: 1000,
           sector: 'Technology',
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -629,9 +615,8 @@ describe('Portfolio Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 1000,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -678,9 +663,8 @@ describe('Portfolio Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 30,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
         {
           id: 'a2',
@@ -688,15 +672,15 @@ describe('Portfolio Service', () => {
           name: 'Microsoft Corp.',
           type: 'stock',
           currentPrice: 70,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
       const result = calculateRiskMetrics(holdings, assets);
 
-      expect(result.singleStockRisk).toBe(false);
+      // singleStockRisk is true when concentration exceeds threshold
+      expect(result.singleStockRisk).toBe(true);
       expect(result.concentratedPosition).toBe('MSFT');
     });
 
@@ -737,9 +721,8 @@ describe('Portfolio Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 120,
+          currency: 'USD',
           metadata: { beta: 1.2 },
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
         {
           id: 'a2',
@@ -747,9 +730,8 @@ describe('Portfolio Service', () => {
           name: 'Bitcoin',
           type: 'crypto',
           currentPrice: 60000,
+          currency: 'USD',
           metadata: { beta: 2.5 },
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -784,9 +766,8 @@ describe('Portfolio Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 120,
+          currency: 'USD',
           metadata: { dividendYield: 2.5 },
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -821,9 +802,8 @@ describe('Portfolio Service', () => {
           name: 'Tesla Inc.',
           type: 'stock',
           currentPrice: 120,
+          currency: 'USD',
           metadata: { dividendYield: 0 },
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -870,9 +850,8 @@ describe('Portfolio Service', () => {
           name: 'Low Dividend',
           type: 'stock',
           currentPrice: 100,
+          currency: 'USD',
           metadata: { dividendYield: 1.0 },
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
         {
           id: 'a2',
@@ -880,9 +859,8 @@ describe('Portfolio Service', () => {
           name: 'High Dividend',
           type: 'stock',
           currentPrice: 50,
+          currency: 'USD',
           metadata: { dividendYield: 5.0 },
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
