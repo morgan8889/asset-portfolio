@@ -333,19 +333,26 @@ describe('Transaction Store', () => {
       expect(state.loading).toBe(false);
     });
 
-    it('should reload transactions with current filter after creation', async () => {
-      const transaction = createMockTransaction({ portfolioId: 'p1' });
+    it('should optimistically add transaction with current filter', async () => {
+      const transaction = createMockTransaction({ portfolioId: 'p1', type: 'buy' });
       const filter: TransactionFilter = { portfolioId: 'p1', type: ['buy'] };
 
-      useTransactionStore.setState({ currentFilter: filter });
+      useTransactionStore.setState({
+        currentFilter: filter,
+        transactions: [],
+        filteredTransactions: [],
+      });
 
       mockTransactionQueries.create.mockResolvedValue('new-id');
       mockTransactionQueries.getById.mockResolvedValue({ ...transaction, id: 'new-id' });
-      mockTransactionQueries.getFiltered.mockResolvedValue([]);
 
       await useTransactionStore.getState().createTransaction(transaction);
 
-      expect(mockTransactionQueries.getFiltered).toHaveBeenCalledWith(filter);
+      // Transaction should be added optimistically (with ID replaced)
+      const state = useTransactionStore.getState();
+      expect(state.transactions).toHaveLength(1);
+      expect(state.filteredTransactions).toHaveLength(1);
+      expect(state.transactions[0].id).toBe('new-id');
     });
   });
 
@@ -470,23 +477,49 @@ describe('Transaction Store', () => {
       expect(state.loading).toBe(false);
     });
 
-    it('should handle delete failure', async () => {
+    it('should handle delete failure and rollback', async () => {
+      const transaction = createMockTransaction({ id: 't1', portfolioId: 'p1' });
       const errorMessage = 'Delete failed';
-      mockTransactionQueries.getById.mockResolvedValue(createMockTransaction());
+
+      // Pre-populate state with the transaction
+      useTransactionStore.setState({
+        transactions: [transaction],
+        filteredTransactions: [transaction],
+      });
+
       mockTransactionQueries.delete.mockRejectedValue(new Error(errorMessage));
 
       await useTransactionStore.getState().deleteTransaction('t1');
 
       const state = useTransactionStore.getState();
+      // Transaction should be restored on failure (rollback)
+      expect(state.transactions).toHaveLength(1);
+      expect(state.transactions[0].id).toBe('t1');
       expect(state.error).toBe(errorMessage);
+    });
+
+    it('should handle delete for non-existent transaction', async () => {
+      useTransactionStore.setState({
+        transactions: [],
+        filteredTransactions: [],
+      });
+
+      await useTransactionStore.getState().deleteTransaction('non-existent');
+
+      const state = useTransactionStore.getState();
+      expect(state.error).toBe('Transaction not found');
     });
 
     it('should update holdings after deletion', async () => {
       const transaction = createMockTransaction({ id: 't1', portfolioId: 'p1' });
 
-      mockTransactionQueries.getById.mockResolvedValue(transaction);
+      // Pre-populate state with the transaction (optimistic delete finds it in state)
+      useTransactionStore.setState({
+        transactions: [transaction],
+        filteredTransactions: [transaction],
+      });
+
       mockTransactionQueries.delete.mockResolvedValue(undefined);
-      mockTransactionQueries.getByPortfolio.mockResolvedValue([]);
 
       await useTransactionStore.getState().deleteTransaction('t1');
 

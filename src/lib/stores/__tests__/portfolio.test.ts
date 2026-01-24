@@ -339,7 +339,14 @@ describe('Portfolio Store', () => {
         },
       ];
 
+      // Provide mock assets with different types so allocation groups correctly
+      const mockAssets = [
+        { id: 'a1', symbol: 'AAPL', name: 'Apple', type: 'stock', currency: 'USD', metadata: {} },
+        { id: 'a2', symbol: 'BTC', name: 'Bitcoin', type: 'crypto', currency: 'USD', metadata: {} },
+      ];
+
       mockHoldingQueries.getByPortfolio.mockResolvedValue(mockHoldings);
+      mockAssetQueries.getAll.mockResolvedValue(mockAssets);
 
       await usePortfolioStore.getState().calculateMetrics('p1');
 
@@ -349,6 +356,7 @@ describe('Portfolio Store', () => {
       expect(state.metrics!.totalCost.toNumber()).toBe(2000); // 1000 + 1000
       expect(state.metrics!.totalGain.toNumber()).toBe(0); // 200 + (-200)
       expect(state.metrics!.totalGainPercent).toBe(0); // 0 / 2000 * 100
+      // Allocation now groups by asset type (stock and crypto = 2 groups)
       expect(state.metrics!.allocation).toHaveLength(2);
     });
 
