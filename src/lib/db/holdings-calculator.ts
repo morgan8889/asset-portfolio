@@ -1,5 +1,5 @@
 import { Decimal } from 'decimal.js';
-import { Transaction, Holding, Asset } from '@/types';
+import { Transaction, Holding } from '@/types';
 import { db } from './schema';
 import { assetQueries, holdingQueries } from './queries';
 
@@ -310,7 +310,7 @@ export class HoldingsCalculator {
       .toArray();
 
     const convertedTransactions = transactions.map((t) =>
-      (db as any).convertTransactionDecimals(t)
+      db.convertTransactionDecimals(t)
     );
 
     await this.calculateAssetHolding(
@@ -419,7 +419,9 @@ export const setupHoldingsSync = () => {
   );
 
   db.transactions.hook('deleting', async (primKey, obj, trans) => {
-    const transaction = obj as Transaction;
+    // Convert storage type to domain type for processing
+    const storageTransaction = obj as import('@/types').TransactionStorage;
+    const transaction = db.convertTransactionDecimals(storageTransaction);
     trans.on('complete', async () => {
       // Use debouncing for batch operations
       debounceHoldingsUpdate(
@@ -433,7 +435,7 @@ export const setupHoldingsSync = () => {
             .toArray();
 
           const convertedTransactions = remainingTransactions.map((t) =>
-            (db as any).convertTransactionDecimals(t)
+            db.convertTransactionDecimals(t)
           );
 
           await HoldingsCalculator.calculateAssetHolding(
