@@ -35,6 +35,10 @@ import {
   GainLossWidget,
   DayChangeWidget,
   CategoryBreakdownWidget,
+  GrowthChartWidget,
+  TopPerformersWidget,
+  BiggestLosersWidget,
+  RecentActivityWidget,
 } from './widgets';
 
 interface DashboardContainerProps {
@@ -177,19 +181,30 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
           <GainLossWidget
             gain={derivedMetrics.totalGain}
             gainPercent={derivedMetrics.totalGainPercent}
-            period={config?.timePeriod || '1M'}
+            period={config?.timePeriod || 'ALL'}
           />
         );
       case 'day-change':
         return <DayChangeWidget change={derivedMetrics.dayChange} changePercent={derivedMetrics.dayChangePercent} />;
       case 'category-breakdown':
         return <CategoryBreakdownWidget allocations={categoryAllocations} />;
-      default:
+      case 'growth-chart':
+        return <GrowthChartWidget />;
+      case 'top-performers':
+        return <TopPerformersWidget />;
+      case 'biggest-losers':
+        return <BiggestLosersWidget />;
+      case 'recent-activity':
+        return <RecentActivityWidget />;
+      default: {
+        // Exhaustive check - all widget types should be handled above
+        const _exhaustiveCheck: never = widgetId;
         return (
           <div className="flex items-center justify-center h-full text-muted-foreground">
-            {WIDGET_DEFINITIONS[widgetId].displayName} (Coming Soon)
+            Unknown widget
           </div>
         );
+      }
     }
   }, [derivedMetrics, categoryAllocations, config?.timePeriod]);
 
