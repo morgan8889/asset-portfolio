@@ -8,8 +8,12 @@ import {
   TransactionSummary,
   ImportResult,
 } from '@/types';
+import { generateTransactionId } from '@/types/storage';
 import { transactionQueries, HoldingsCalculator } from '@/lib/db';
 import { showSuccessNotification, showErrorNotification } from './ui';
+
+// Optimistic ID prefix to identify temporary IDs
+const OPTIMISTIC_ID_PREFIX = 'optimistic-';
 
 // Validation helper function
 function validateTransactionData(transaction: Partial<Transaction>): string | null {
@@ -153,42 +157,74 @@ export const useTransactionStore = create<TransactionState>()(
       },
 
       createTransaction: async (transactionData) => {
-        set({ loading: true, error: null });
-        try {
-          // Validate transaction data
-          const validationError = validateTransactionData(transactionData);
-          if (validationError) {
-            throw new Error(validationError);
-          }
+        // Validate transaction data first (synchronous)
+        const validationError = validateTransactionData(transactionData);
+        if (validationError) {
+          set({ error: validationError });
+          showErrorNotification('Validation Error', validationError);
+          return;
+        }
 
-          const transactionId = await transactionQueries.create(transactionData);
+        // Generate optimistic ID
+        const optimisticId = `${OPTIMISTIC_ID_PREFIX}${generateTransactionId()}`;
+
+        // Create optimistic transaction
+        const optimisticTransaction: Transaction = {
+          ...transactionData,
+          id: optimisticId,
+        } as Transaction;
+
+        // Optimistically add transaction to state immediately (no loading state)
+        const { transactions, filteredTransactions } = get();
+        set({
+          transactions: [optimisticTransaction, ...transactions],
+          filteredTransactions: [optimisticTransaction, ...filteredTransactions],
+          error: null,
+        });
+
+        try {
+          // Create in database (background operation)
+          const realId = await transactionQueries.create(transactionData);
 
           // Update holdings based on the new transaction
-          const newTransaction = await transactionQueries.getById(transactionId);
+          const newTransaction = await transactionQueries.getById(realId);
           if (newTransaction) {
             await HoldingsCalculator.updateHoldingsForTransaction(newTransaction);
           }
 
-          // Reload transactions to get the updated list
-          const { currentFilter } = get();
-          if (Object.keys(currentFilter).length > 0) {
-            await get().filterTransactions(currentFilter);
-          } else {
-            await get().loadTransactions();
-          }
+          // Replace optimistic ID with real ID
+          const currentTransactions = get().transactions;
+          const currentFiltered = get().filteredTransactions;
+
+          set({
+            transactions: currentTransactions.map((t) =>
+              t.id === optimisticId ? { ...t, id: realId } : t
+            ),
+            filteredTransactions: currentFiltered.map((t) =>
+              t.id === optimisticId ? { ...t, id: realId } : t
+            ),
+          });
 
           // Update summary if portfolio is specified
           if (transactionData.portfolioId) {
             await get().loadSummary(transactionData.portfolioId);
           }
 
-          set({ loading: false });
-          showSuccessNotification('Transaction Added', 'Transaction has been successfully added to your portfolio.');
+          showSuccessNotification(
+            'Transaction Added',
+            'Transaction has been successfully added to your portfolio.'
+          );
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to create transaction';
+          // Rollback: Remove optimistic transaction on failure
+          const currentTransactions = get().transactions;
+          const currentFiltered = get().filteredTransactions;
+
+          const errorMessage =
+            error instanceof Error ? error.message : 'Failed to create transaction';
           set({
+            transactions: currentTransactions.filter((t) => t.id !== optimisticId),
+            filteredTransactions: currentFiltered.filter((t) => t.id !== optimisticId),
             error: errorMessage,
-            loading: false,
           });
           showErrorNotification('Failed to Add Transaction', errorMessage);
         }
@@ -270,34 +306,44 @@ export const useTransactionStore = create<TransactionState>()(
       },
 
       deleteTransaction: async (id) => {
-        set({ loading: true, error: null });
+        // Store original state for potential rollback
+        const { transactions, filteredTransactions } = get();
+        const deletedTransaction = transactions.find((t) => t.id === id);
+
+        if (!deletedTransaction) {
+          set({ error: 'Transaction not found' });
+          return;
+        }
+
+        // Optimistically remove transaction from state immediately (no loading state)
+        set({
+          transactions: transactions.filter((t) => t.id !== id),
+          filteredTransactions: filteredTransactions.filter((t) => t.id !== id),
+          error: null,
+        });
+
         try {
-          const transaction = await transactionQueries.getById(id);
+          // Delete from database (background operation)
           await transactionQueries.delete(id);
 
           // Recalculate holdings for the affected asset after deletion
-          if (transaction) {
-            // Get all remaining transactions for this portfolio/asset combination
-            const remainingTransactions = await transactionQueries.getByPortfolio(transaction.portfolioId);
-            const assetTransactions = remainingTransactions.filter(t => t.assetId === transaction.assetId);
+          await HoldingsCalculator.updateHoldingsForTransaction(deletedTransaction);
 
-            // Recalculate holdings from scratch for this asset
-            await HoldingsCalculator.updateHoldingsForTransaction(transaction);
-          }
-
-          // Remove from current transactions list
-          const { transactions, filteredTransactions } = get();
-          set({
-            transactions: transactions.filter((t) => t.id !== id),
-            filteredTransactions: filteredTransactions.filter((t) => t.id !== id),
-            loading: false,
-          });
-          showSuccessNotification('Transaction Deleted', 'Transaction has been successfully removed.');
+          showSuccessNotification(
+            'Transaction Deleted',
+            'Transaction has been successfully removed.'
+          );
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to delete transaction';
+          // Rollback: Restore the deleted transaction on failure
+          const currentTransactions = get().transactions;
+          const currentFiltered = get().filteredTransactions;
+
+          const errorMessage =
+            error instanceof Error ? error.message : 'Failed to delete transaction';
           set({
+            transactions: [deletedTransaction, ...currentTransactions],
+            filteredTransactions: [deletedTransaction, ...currentFiltered],
             error: errorMessage,
-            loading: false,
           });
           showErrorNotification('Failed to Delete Transaction', errorMessage);
         }
