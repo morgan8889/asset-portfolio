@@ -18,7 +18,21 @@ export interface PriceLookupResult {
 
 export type PriceCache = Map<string, Map<string, PriceLookupResult>>;
 
-/** Threshold in milliseconds for considering a price "interpolated" (3 days) */
+/**
+ * Threshold in milliseconds for considering a price "interpolated" (3 days).
+ *
+ * Rationale for 3-day threshold:
+ * - For stocks/ETFs: Markets are closed on weekends (2 days) plus holidays,
+ *   so 3 days allows for a weekend plus one extra day for holiday periods.
+ * - For crypto: While crypto trades 24/7, exchange downtime or API gaps may
+ *   cause temporary data unavailability. 3 days is conservative but reasonable.
+ * - General principle: If price data is more than 3 days stale, it should be
+ *   flagged as interpolated so users can be alerted (via hasInterpolatedPrices flag).
+ *
+ * Future enhancement: Consider making this configurable per asset type:
+ * - Stocks: 3 days (accounts for weekends + holiday)
+ * - Crypto: 1 day (24/7 trading, data should be more frequent)
+ */
 const INTERPOLATION_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000;
 
 /**
@@ -81,8 +95,16 @@ export async function getPriceAtDate(
     return { price: new Decimal(0), isInterpolated: true };
   }
 
+  let priceValue: Decimal;
+  try {
+    priceValue = new Decimal(closest.price.price.toString());
+  } catch (error) {
+    console.error(`Invalid price value for asset ${assetId} at ${date}:`, error);
+    return { price: new Decimal(0), isInterpolated: true };
+  }
+
   const result: PriceLookupResult = {
-    price: new Decimal(closest.price.price.toString()),
+    price: priceValue,
     isInterpolated: closest.diffMs > INTERPOLATION_THRESHOLD_MS,
   };
 

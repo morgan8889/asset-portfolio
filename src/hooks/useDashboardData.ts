@@ -106,11 +106,20 @@ export function useDashboardData(): DashboardData {
       return;
     }
 
-    // Mark this portfolio as being loaded
-    loadedPortfolioIdRef.current = currentPortfolio.id;
+    // Skip if this portfolio is already loading (race condition guard)
+    const { _loadingHoldingsForId } = usePortfolioStore.getState();
+    if (_loadingHoldingsForId === currentPortfolio.id) {
+      return;
+    }
 
-    loadHoldings(currentPortfolio.id);
-    calculateMetrics(currentPortfolio.id);
+    // Mark this portfolio as loaded AFTER async operations complete
+    const loadData = async () => {
+      await loadHoldings(currentPortfolio.id);
+      await calculateMetrics(currentPortfolio.id);
+      loadedPortfolioIdRef.current = currentPortfolio.id;
+    };
+
+    loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- actions from getState() are stable
   }, [portfolios.length, currentPortfolio?.id]);
 

@@ -78,14 +78,17 @@ interface CategoryRowProps {
 function CategoryRow({ allocation, currency }: CategoryRowProps) {
   const color = allocation.color || CATEGORY_COLORS[allocation.category] || CATEGORY_COLORS.other;
   const holdingLabel = allocation.holdingCount === 1 ? 'holding' : 'holdings';
+  const ariaLabel = `${allocation.label}: ${formatPercentage(allocation.percentage)} allocation, ${formatCurrency(allocation.value.toNumber(), currency)}, ${allocation.holdingCount} ${holdingLabel}`;
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1" role="group" aria-label={ariaLabel}>
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-2">
           <div
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: color }}
+            role="img"
+            aria-label={`${allocation.label} category indicator`}
           />
           <span className="font-medium capitalize">{allocation.label}</span>
         </div>
@@ -97,6 +100,7 @@ function CategoryRow({ allocation, currency }: CategoryRowProps) {
         value={allocation.percentage}
         className="h-2"
         style={{ '--progress-foreground': color } as React.CSSProperties}
+        aria-label={`${allocation.label} allocation: ${formatPercentage(allocation.percentage)}`}
       />
       <div className="flex justify-between text-xs text-muted-foreground">
         <span>{formatCurrency(allocation.value.toNumber(), currency)}</span>

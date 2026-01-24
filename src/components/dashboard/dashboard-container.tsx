@@ -6,7 +6,7 @@
  * Main container for the configurable dashboard with drag-drop reordering.
  */
 
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, memo } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -27,6 +27,7 @@ import { PieChart } from 'lucide-react';
 
 import { useDashboardStore, usePortfolioStore } from '@/lib/stores';
 import { WidgetId, WIDGET_DEFINITIONS, CategoryAllocation } from '@/types/dashboard';
+import { Holding, Asset } from '@/types';
 import { WidgetWrapper } from './widget-wrapper';
 import { StaleDataBanner } from './stale-data-banner';
 import {
@@ -63,28 +64,76 @@ function EmptyDashboard() {
 }
 
 /**
- * Build category allocations from holdings.
- * TODO: In production, look up asset types instead of using placeholder.
+ * Build category allocations from holdings and assets.
  */
-function buildCategoryAllocations(holdings: { currentValue: Decimal }[]): CategoryAllocation[] {
+function buildCategoryAllocations(
+  holdings: Holding[],
+  assets: Asset[]
+): CategoryAllocation[] {
   if (holdings.length === 0) return [];
 
-  const totalValue = holdings.reduce((sum, h) => sum.plus(h.currentValue), new Decimal(0));
-  const category = 'stock'; // Placeholder - would look up real asset types
+  const assetMap = new Map(assets.map((a) => [a.id, a]));
+  const categoryMap = new Map<string, { value: Decimal; count: number; label: string }>();
 
-  return [{
-    category,
-    label: 'Stock',
-    value: totalValue,
-    percentage: 100,
-    holdingCount: holdings.length,
-    color: '',
-  }];
+  // Calculate totals by category
+  let totalValue = new Decimal(0);
+  for (const holding of holdings) {
+    const asset = assetMap.get(holding.assetId);
+    if (!asset) continue;
+
+    const category = asset.type;
+    const current = categoryMap.get(category) || {
+      value: new Decimal(0),
+      count: 0,
+      label: formatCategoryLabel(category)
+    };
+
+    current.value = current.value.plus(holding.currentValue);
+    current.count += 1;
+    categoryMap.set(category, current);
+    totalValue = totalValue.plus(holding.currentValue);
+  }
+
+  // Convert to CategoryAllocation array with percentages
+  const allocations: CategoryAllocation[] = [];
+  for (const [category, data] of categoryMap.entries()) {
+    const percentage = totalValue.isZero()
+      ? 0
+      : data.value.dividedBy(totalValue).mul(100).toNumber();
+
+    allocations.push({
+      category,
+      label: data.label,
+      value: data.value,
+      percentage,
+      holdingCount: data.count,
+      color: '', // Will use default colors in widget
+    });
+  }
+
+  return allocations;
 }
 
-export function DashboardContainer({ disableDragDrop = false }: DashboardContainerProps) {
+/**
+ * Format category labels for display.
+ */
+function formatCategoryLabel(category: string): string {
+  const labels: Record<string, string> = {
+    stock: 'Stocks',
+    etf: 'ETFs',
+    crypto: 'Crypto',
+    bond: 'Bonds',
+    real_estate: 'Real Estate',
+    commodity: 'Commodities',
+    cash: 'Cash',
+    other: 'Other',
+  };
+  return labels[category] || category.charAt(0).toUpperCase() + category.slice(1);
+}
+
+const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardContainerProps) => {
   const { config, loading: configLoading, loadConfig, setWidgetOrder } = useDashboardStore();
-  const { metrics, holdings, loading: portfolioLoading } = usePortfolioStore();
+  const { metrics, holdings, assets, loading: portfolioLoading } = usePortfolioStore();
 
   useEffect(() => {
     loadConfig();
@@ -105,8 +154,8 @@ export function DashboardContainer({ disableDragDrop = false }: DashboardContain
   }, [config, setWidgetOrder]);
 
   const categoryAllocations = useMemo(
-    () => buildCategoryAllocations(holdings || []),
-    [holdings]
+    () => buildCategoryAllocations(holdings || [], assets || []),
+    [holdings, assets]
   );
 
   // Early returns for loading/empty states
@@ -127,7 +176,7 @@ export function DashboardContainer({ disableDragDrop = false }: DashboardContain
   const dayChange = metrics?.dayChange || new Decimal(0);
   const dayChangePercent = metrics?.dayChangePercent || 0;
 
-  const renderWidget = (widgetId: WidgetId) => {
+  const renderWidget = useCallback((widgetId: WidgetId) => {
     switch (widgetId) {
       case 'total-value':
         return <TotalValueWidget value={totalValue} />;
@@ -136,7 +185,7 @@ export function DashboardContainer({ disableDragDrop = false }: DashboardContain
           <GainLossWidget
             gain={totalGain}
             gainPercent={totalGainPercent}
-            period={config.timePeriod}
+            period={config!.timePeriod}
           />
         );
       case 'day-change':
@@ -150,7 +199,7 @@ export function DashboardContainer({ disableDragDrop = false }: DashboardContain
           </div>
         );
     }
-  };
+  }, [totalValue, totalGain, totalGainPercent, dayChange, dayChangePercent, categoryAllocations, config]);
 
   return (
     <div className="space-y-4">
@@ -177,6 +226,7 @@ export function DashboardContainer({ disableDragDrop = false }: DashboardContain
       </DndContext>
     </div>
   );
-}
+};
 
+export const DashboardContainer = memo(DashboardContainerComponent);
 DashboardContainer.displayName = 'DashboardContainer';

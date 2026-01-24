@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, memo } from 'react';
+import { useState, useMemo, memo, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -100,6 +100,13 @@ const HoldingsTableComponent = () => {
     }
   };
 
+  const handleRetry = useCallback(() => {
+    clearError();
+    if (currentPortfolio?.id) {
+      usePortfolioStore.getState().loadHoldings(currentPortfolio.id);
+    }
+  }, [clearError, currentPortfolio?.id]);
+
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'stock':
@@ -143,7 +150,7 @@ const HoldingsTableComponent = () => {
         <CardContent>
           <div className="text-center py-8">
             <div className="text-red-600 mb-2">Error loading holdings: {error}</div>
-            <Button onClick={() => { clearError(); if (currentPortfolio?.id) usePortfolioStore.getState().loadHoldings(currentPortfolio.id); }} variant="outline">
+            <Button onClick={handleRetry} variant="outline">
               Retry
             </Button>
           </div>
