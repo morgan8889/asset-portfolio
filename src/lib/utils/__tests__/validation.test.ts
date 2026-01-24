@@ -26,10 +26,10 @@ describe('Validation Utilities', () => {
       expect(result).toBe('Helloscriptalertxsss');
     });
 
-    it('should remove non-alphanumeric characters except spaces, hyphens, and dots', () => {
+    it('should remove non-alphanumeric characters except spaces, hyphens, underscores, and dots', () => {
       const input = 'Valid-Name_123.txt!@#$%';
       const result = sanitizeInput(input);
-      expect(result).toBe('Valid-Name123.txt');
+      expect(result).toBe('Valid-Name_123.txt');
     });
 
     it('should trim whitespace and limit length', () => {

@@ -1,8 +1,7 @@
 /**
  * Dashboard Zustand Store
  *
- * Manages dashboard configuration state with persistence via dashboard-config service.
- * Follows the same patterns as portfolio.ts for consistency.
+ * Manages dashboard configuration state with persistence.
  *
  * @module stores/dashboard
  */
@@ -19,12 +18,10 @@ import {
 import { dashboardConfigService } from '@/lib/services/dashboard-config';
 
 interface DashboardState {
-  // State
   config: DashboardConfiguration | null;
   loading: boolean;
   error: string | null;
 
-  // Actions
   loadConfig: () => Promise<void>;
   setWidgetVisibility: (widgetId: WidgetId, visible: boolean) => Promise<void>;
   setWidgetOrder: (order: WidgetId[]) => Promise<void>;
@@ -34,15 +31,37 @@ interface DashboardState {
   clearError: () => void;
 }
 
+/**
+ * Helper for optimistic updates with rollback on error.
+ */
+async function optimisticUpdate<T extends keyof DashboardConfiguration>(
+  get: () => DashboardState,
+  set: (partial: Partial<DashboardState>) => void,
+  field: T,
+  value: DashboardConfiguration[T],
+  persistFn: () => Promise<void>,
+  errorMessage: string
+) {
+  const { config } = get();
+  if (!config) return;
+
+  const updatedConfig = { ...config, [field]: value };
+  set({ config: updatedConfig });
+
+  try {
+    await persistFn();
+  } catch {
+    set({ config, error: errorMessage });
+  }
+}
+
 export const useDashboardStore = create<DashboardState>()(
   devtools(
     (set, get) => ({
-      // Initial state
       config: null,
       loading: false,
       error: null,
 
-      // Actions
       loadConfig: async () => {
         set({ loading: true, error: null });
         try {
@@ -52,7 +71,6 @@ export const useDashboardStore = create<DashboardState>()(
           set({
             error: error instanceof Error ? error.message : 'Failed to load dashboard config',
             loading: false,
-            // Fall back to default config on error
             config: { ...DEFAULT_DASHBOARD_CONFIG },
           });
         }
@@ -62,79 +80,47 @@ export const useDashboardStore = create<DashboardState>()(
         const { config } = get();
         if (!config) return;
 
-        // Optimistic update
-        const updatedConfig = {
-          ...config,
-          widgetVisibility: {
-            ...config.widgetVisibility,
-            [widgetId]: visible,
-          },
-        };
-        set({ config: updatedConfig });
-
-        try {
-          await dashboardConfigService.setWidgetVisibility(widgetId, visible);
-        } catch (error) {
-          // Revert on failure
-          set({ config, error: 'Failed to update widget visibility' });
-        }
+        await optimisticUpdate(
+          get,
+          set,
+          'widgetVisibility',
+          { ...config.widgetVisibility, [widgetId]: visible },
+          () => dashboardConfigService.setWidgetVisibility(widgetId, visible),
+          'Failed to update widget visibility'
+        );
       },
 
       setWidgetOrder: async (order) => {
-        const { config } = get();
-        if (!config) return;
-
-        // Optimistic update
-        const updatedConfig = {
-          ...config,
-          widgetOrder: order,
-        };
-        set({ config: updatedConfig });
-
-        try {
-          await dashboardConfigService.setWidgetOrder(order);
-        } catch (error) {
-          // Revert on failure
-          set({ config, error: 'Failed to update widget order' });
-        }
+        await optimisticUpdate(
+          get,
+          set,
+          'widgetOrder',
+          order,
+          () => dashboardConfigService.setWidgetOrder(order),
+          'Failed to update widget order'
+        );
       },
 
       setTimePeriod: async (period) => {
-        const { config } = get();
-        if (!config) return;
-
-        // Optimistic update
-        const updatedConfig = {
-          ...config,
-          timePeriod: period,
-        };
-        set({ config: updatedConfig });
-
-        try {
-          await dashboardConfigService.setTimePeriod(period);
-        } catch (error) {
-          // Revert on failure
-          set({ config, error: 'Failed to update time period' });
-        }
+        await optimisticUpdate(
+          get,
+          set,
+          'timePeriod',
+          period,
+          () => dashboardConfigService.setTimePeriod(period),
+          'Failed to update time period'
+        );
       },
 
       setPerformerCount: async (count) => {
-        const { config } = get();
-        if (!config) return;
-
-        // Optimistic update
-        const updatedConfig = {
-          ...config,
-          performerCount: count,
-        };
-        set({ config: updatedConfig });
-
-        try {
-          await dashboardConfigService.setPerformerCount(count);
-        } catch (error) {
-          // Revert on failure
-          set({ config, error: 'Failed to update performer count' });
-        }
+        await optimisticUpdate(
+          get,
+          set,
+          'performerCount',
+          count,
+          () => dashboardConfigService.setPerformerCount(count),
+          'Failed to update performer count'
+        );
       },
 
       resetToDefault: async () => {
@@ -150,12 +136,8 @@ export const useDashboardStore = create<DashboardState>()(
         }
       },
 
-      clearError: () => {
-        set({ error: null });
-      },
+      clearError: () => set({ error: null }),
     }),
-    {
-      name: 'dashboard-store',
-    }
+    { name: 'dashboard-store' }
   )
 );

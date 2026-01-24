@@ -7,12 +7,19 @@ import { CreatePortfolioDialog } from '@/components/forms/create-portfolio';
 import { Button } from '@/components/ui/button';
 import { db } from '@/lib/db/schema';
 import { Loader2, CheckCircle, Trash2 } from 'lucide-react';
+import {
+  generatePortfolioId,
+  generateTransactionId,
+  generateHoldingId,
+  createAssetId,
+  type PortfolioId,
+} from '@/types/storage';
 
 async function seedMockData() {
   // Create a demo portfolio
-  const portfolioId = crypto.randomUUID();
+  const portfolioId = generatePortfolioId();
   await db.portfolios.add({
-    id: portfolioId,
+    id: portfolioId as string,
     name: 'Demo Portfolio',
     type: 'taxable',
     currency: 'USD',
@@ -73,30 +80,30 @@ async function seedMockData() {
     const unrealizedGain = currentValue.minus(costBasis);
     const unrealizedGainPercent = costBasis.isZero() ? 0 : unrealizedGain.dividedBy(costBasis).mul(100).toNumber();
 
-    // Add transaction
+    // Add transaction (use string values for Decimal fields in storage)
     await db.transactions.add({
-      id: crypto.randomUUID(),
-      portfolioId,
-      assetId: h.assetId,
+      id: generateTransactionId(),
+      portfolioId: portfolioId,
+      assetId: createAssetId(h.assetId),
       type: 'buy',
       date: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000), // Random date in past year
-      quantity,
-      price: avgCost,
-      totalAmount: costBasis,
-      fees: new Decimal(0),
+      quantity: quantity.toString(),
+      price: avgCost.toString(),
+      totalAmount: costBasis.toString(),
+      fees: '0',
       currency: 'USD',
     });
 
-    // Add holding
+    // Add holding (use string values for Decimal fields in storage)
     await db.holdings.add({
-      id: crypto.randomUUID(),
-      portfolioId,
-      assetId: h.assetId,
-      quantity,
-      costBasis,
-      averageCost: avgCost,
-      currentValue,
-      unrealizedGain,
+      id: generateHoldingId(),
+      portfolioId: portfolioId,
+      assetId: createAssetId(h.assetId),
+      quantity: quantity.toString(),
+      costBasis: costBasis.toString(),
+      averageCost: avgCost.toString(),
+      currentValue: currentValue.toString(),
+      unrealizedGain: unrealizedGain.toString(),
       unrealizedGainPercent,
       lots: [],
       lastUpdated: new Date(),
