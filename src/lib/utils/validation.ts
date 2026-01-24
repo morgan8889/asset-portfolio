@@ -9,7 +9,7 @@ export function sanitizeInput(input: string): string {
   // Remove potentially dangerous characters
   return input
     .replace(/[<>\"'&]/g, '') // Remove HTML/XML characters
-    .replace(/[^a-zA-Z0-9\s\-\.]/g, '') // Allow only letters, numbers, spaces, hyphens, and dots (NOT underscore)
+    .replace(/[^a-zA-Z0-9\s\-\._]/g, '') // Allow only letters, numbers, spaces, hyphens, dots, and underscores
     .trim() // Trim leading/trailing whitespace
     .slice(0, 20) // Limit length
     .trim(); // Clean up any trailing space from truncation
