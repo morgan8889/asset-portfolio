@@ -20,14 +20,14 @@ test.describe('Portfolio Dashboard', () => {
   });
 
   test('should have proper page structure and navigation', async ({ page }) => {
-    // Check for main navigation elements
-    await expect(page.locator('nav')).toBeVisible();
+    // Check for main navigation elements (use first() since there are multiple navs)
+    await expect(page.locator('nav').first()).toBeVisible();
 
     // Check for responsive design elements
     const viewport = page.viewportSize();
     if (viewport && viewport.width >= 768) {
-      // Desktop layout checks
-      await expect(page.locator('aside')).toBeVisible(); // Sidebar
+      // Desktop layout checks - sidebar nav contains navigation items
+      await expect(page.locator('nav').filter({ hasText: 'Dashboard' }).first()).toBeVisible();
     }
   });
 
@@ -82,9 +82,10 @@ test.describe('Portfolio Dashboard', () => {
     await page.waitForLoadState('networkidle');
 
     // Eventually should show either welcome message or dashboard content
+    // Use heading role to avoid matching sidebar "Dashboard" button
     await expect(
-      page.getByText('Welcome to Portfolio Tracker')
-      .or(page.getByText('Dashboard'))
+      page.getByRole('heading', { name: 'Welcome to Portfolio Tracker' })
+      .or(page.getByRole('heading', { name: 'Dashboard' }))
     ).toBeVisible();
   });
 
