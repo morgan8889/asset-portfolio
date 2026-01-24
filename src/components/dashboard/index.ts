@@ -1,12 +1,10 @@
-// Dashboard components barrel export
-export { DashboardContainer } from './dashboard-container';
-export { WidgetWrapper } from './widget-wrapper';
-export { StaleDataBanner, StaleDataBadge } from './stale-data-banner';
-
-// Widget components
+export { DashboardProvider, useDashboardContext } from './DashboardProvider';
+export { DashboardHeader } from './DashboardHeader';
+export { MetricsCards } from './MetricsCards';
+export { ChartsRow } from './ChartsRow';
+export { RecentActivity } from './RecentActivity';
 export {
-  TotalValueWidget,
-  GainLossWidget,
-  DayChangeWidget,
-  CategoryBreakdownWidget,
-} from './widgets';
+  DashboardLoadingState,
+  DashboardErrorState,
+  DashboardEmptyState,
+} from './DashboardStates';

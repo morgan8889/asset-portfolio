@@ -9,26 +9,50 @@ import {
   PriceHistory,
   PriceSnapshot,
   DividendRecord,
+  TaxLot,
+  HoldingStorage,
+  TransactionStorage,
+  PriceHistoryStorage,
+  PriceSnapshotStorage,
+  DividendRecordStorage,
+  TaxLotStorage,
+  createHoldingId,
+  createTransactionId,
+  createPriceHistoryId,
+  createPriceSnapshotId,
+  createDividendRecordId,
 } from '@/types';
+
+import {
+  serializeDecimalFields,
+  deserializeDecimalFields,
+  HOLDING_DECIMAL_FIELDS,
+  TAX_LOT_DECIMAL_FIELDS,
+  TRANSACTION_DECIMAL_FIELDS,
+  PRICE_HISTORY_DECIMAL_FIELDS,
+  PRICE_SNAPSHOT_DECIMAL_FIELDS,
+  DIVIDEND_RECORD_DECIMAL_FIELDS,
+  toDecimal,
+} from '@/lib/utils/decimal-serialization';
 
 // User settings interface
 export interface UserSettings {
   id?: number;
   key: string;
-  value: any;
+  value: unknown;
   updatedAt: Date;
 }
 
 // Extend Dexie with type information
 export class PortfolioDatabase extends Dexie {
-  // Declare tables
+  // Declare tables with storage types
   portfolios!: Table<Portfolio>;
   assets!: Table<Asset>;
-  holdings!: Table<Holding>;
-  transactions!: Table<Transaction>;
-  priceHistory!: Table<PriceHistory>;
-  priceSnapshots!: Table<PriceSnapshot>;
-  dividendRecords!: Table<DividendRecord>;
+  holdings!: Table<HoldingStorage>;
+  transactions!: Table<TransactionStorage>;
+  priceHistory!: Table<PriceHistoryStorage>;
+  priceSnapshots!: Table<PriceSnapshotStorage>;
+  dividendRecords!: Table<DividendRecordStorage>;
   userSettings!: Table<UserSettings>;
 
   constructor() {
@@ -41,7 +65,7 @@ export class PortfolioDatabase extends Dexie {
       holdings:
         '++id, portfolioId, assetId, [portfolioId+assetId], lastUpdated',
       transactions:
-        '++id, portfolioId, assetId, date, type, [portfolioId+date], [assetId+date]',
+        '++id, portfolioId, assetId, date, type, [portfolioId+date], [assetId+date], [portfolioId+assetId]',
       priceHistory: '++id, assetId, date, [assetId+date], source',
       priceSnapshots: '++id, assetId, timestamp, [assetId+timestamp], source',
       dividendRecords:
@@ -50,120 +74,37 @@ export class PortfolioDatabase extends Dexie {
     });
 
     // Add hooks for data transformation
-    this.portfolios.hook('creating', this.transformPortfolio);
-    this.assets.hook('creating', this.transformAsset);
     this.holdings.hook('creating', this.transformHolding);
     this.transactions.hook('creating', this.transformTransaction);
     this.priceHistory.hook('creating', this.transformPriceHistory);
     this.priceSnapshots.hook('creating', this.transformPriceSnapshot);
     this.dividendRecords.hook('creating', this.transformDividendRecord);
-
-    // Add updating hooks for tables with Decimal fields
-    this.holdings.hook('updating', this.transformHoldingUpdates);
-    this.transactions.hook('updating', this.transformTransactionUpdates);
+    this.assets.hook('creating', this.transformAsset);
   }
 
-  // Transform updates for holdings (different signature than creating hook)
-  private transformHoldingUpdates = (
-    modifications: Partial<Holding>,
-    _primKey: any,
-    _obj: Holding,
-    _trans: any
-  ): Partial<Holding> | void => {
-    if (modifications.quantity instanceof Decimal) {
-      (modifications as any).quantity = modifications.quantity.toString();
-    }
-    if (modifications.costBasis instanceof Decimal) {
-      (modifications as any).costBasis = modifications.costBasis.toString();
-    }
-    if (modifications.averageCost instanceof Decimal) {
-      (modifications as any).averageCost = modifications.averageCost.toString();
-    }
-    if (modifications.currentValue instanceof Decimal) {
-      (modifications as any).currentValue = modifications.currentValue.toString();
-    }
-    if (modifications.unrealizedGain instanceof Decimal) {
-      (modifications as any).unrealizedGain = modifications.unrealizedGain.toString();
-    }
-  };
+  // Transform functions using generic serialization utility
 
-  // Transform updates for transactions
-  private transformTransactionUpdates = (
-    modifications: Partial<Transaction>,
-    _primKey: any,
-    _obj: Transaction,
-    _trans: any
-  ): Partial<Transaction> | void => {
-    if (modifications.quantity instanceof Decimal) {
-      (modifications as any).quantity = modifications.quantity.toString();
-    }
-    if (modifications.price instanceof Decimal) {
-      (modifications as any).price = modifications.price.toString();
-    }
-    if (modifications.totalAmount instanceof Decimal) {
-      (modifications as any).totalAmount = modifications.totalAmount.toString();
-    }
-    if (modifications.fees instanceof Decimal) {
-      (modifications as any).fees = modifications.fees.toString();
-    }
-  }
-
-  // Transform functions to handle Decimal.js serialization
-  private transformPortfolio = (
-    _primKey: any,
-    obj: Portfolio,
-    _trans: any
-  ): void => {
-    // Convert any Decimal fields to strings for storage
-    // Portfolio doesn't have Decimal fields currently, but we include this for consistency
-  };
-
-  private transformAsset = (_primKey: any, obj: Asset, _trans: any): void => {
+  private transformAsset = (_primKey: unknown, obj: Asset, _trans: unknown): void => {
     // Convert Date objects to ensure proper storage
     if (obj.priceUpdatedAt && !(obj.priceUpdatedAt instanceof Date)) {
       obj.priceUpdatedAt = new Date(obj.priceUpdatedAt);
     }
   };
 
-  private transformHolding = (_primKey: any, obj: Holding, _trans: any): void => {
-    // Convert Decimal fields to strings for storage
-    if (obj.quantity instanceof Decimal) {
-      (obj as any).quantity = obj.quantity.toString();
-    }
-    if (obj.costBasis instanceof Decimal) {
-      (obj as any).costBasis = obj.costBasis.toString();
-    }
-    if (obj.averageCost instanceof Decimal) {
-      (obj as any).averageCost = obj.averageCost.toString();
-    }
-    if (obj.currentValue instanceof Decimal) {
-      (obj as any).currentValue = obj.currentValue.toString();
-    }
-    if (obj.unrealizedGain instanceof Decimal) {
-      (obj as any).unrealizedGain = obj.unrealizedGain.toString();
-    }
+  private transformHolding = (
+    _primKey: unknown,
+    obj: Holding | HoldingStorage,
+    _trans: unknown
+  ): void => {
+    // Serialize main decimal fields
+    const serialized = serializeDecimalFields(obj, [...HOLDING_DECIMAL_FIELDS]);
+    Object.assign(obj, serialized);
 
     // Transform tax lots
-    if (obj.lots) {
-      obj.lots = obj.lots.map((lot) => ({
-        ...lot,
-        quantity:
-          lot.quantity instanceof Decimal
-            ? lot.quantity.toString()
-            : lot.quantity,
-        purchasePrice:
-          lot.purchasePrice instanceof Decimal
-            ? lot.purchasePrice.toString()
-            : lot.purchasePrice,
-        soldQuantity:
-          lot.soldQuantity instanceof Decimal
-            ? lot.soldQuantity.toString()
-            : lot.soldQuantity,
-        remainingQuantity:
-          lot.remainingQuantity instanceof Decimal
-            ? lot.remainingQuantity.toString()
-            : lot.remainingQuantity,
-      })) as any;
+    if ((obj as Holding).lots) {
+      (obj as HoldingStorage).lots = (obj as Holding).lots.map((lot) =>
+        serializeDecimalFields(lot, [...TAX_LOT_DECIMAL_FIELDS]) as unknown as TaxLotStorage
+      );
     }
 
     // Ensure lastUpdated is a Date
@@ -173,23 +114,13 @@ export class PortfolioDatabase extends Dexie {
   };
 
   private transformTransaction = (
-    _primKey: any,
-    obj: Transaction,
-    _trans: any
+    _primKey: unknown,
+    obj: Transaction | TransactionStorage,
+    _trans: unknown
   ): void => {
-    // Convert Decimal fields to strings for storage
-    if (obj.quantity instanceof Decimal) {
-      (obj as any).quantity = obj.quantity.toString();
-    }
-    if (obj.price instanceof Decimal) {
-      (obj as any).price = obj.price.toString();
-    }
-    if (obj.totalAmount instanceof Decimal) {
-      (obj as any).totalAmount = obj.totalAmount.toString();
-    }
-    if (obj.fees instanceof Decimal) {
-      (obj as any).fees = obj.fees.toString();
-    }
+    // Serialize decimal fields
+    const serialized = serializeDecimalFields(obj, [...TRANSACTION_DECIMAL_FIELDS]);
+    Object.assign(obj, serialized);
 
     // Ensure date is a Date object
     if (obj.date && !(obj.date instanceof Date)) {
@@ -198,19 +129,13 @@ export class PortfolioDatabase extends Dexie {
   };
 
   private transformPriceHistory = (
-    _primKey: any,
-    obj: PriceHistory,
-    _trans: any
+    _primKey: unknown,
+    obj: PriceHistory | PriceHistoryStorage,
+    _trans: unknown
   ): void => {
-    // Convert Decimal fields to strings for storage
-    const decimalFields = ['open', 'high', 'low', 'close', 'adjustedClose'];
-    decimalFields.forEach((field) => {
-      if (obj[field as keyof PriceHistory] instanceof Decimal) {
-        (obj as any)[field] = (
-          obj[field as keyof PriceHistory] as Decimal
-        ).toString();
-      }
-    });
+    // Serialize decimal fields
+    const serialized = serializeDecimalFields(obj, [...PRICE_HISTORY_DECIMAL_FIELDS]);
+    Object.assign(obj, serialized);
 
     // Ensure date is a Date object
     if (obj.date && !(obj.date instanceof Date)) {
@@ -219,17 +144,13 @@ export class PortfolioDatabase extends Dexie {
   };
 
   private transformPriceSnapshot = (
-    _primKey: any,
-    obj: PriceSnapshot,
-    _trans: any
+    _primKey: unknown,
+    obj: PriceSnapshot | PriceSnapshotStorage,
+    _trans: unknown
   ): void => {
-    // Convert Decimal fields to strings for storage
-    if (obj.price instanceof Decimal) {
-      (obj as any).price = obj.price.toString();
-    }
-    if (obj.change instanceof Decimal) {
-      (obj as any).change = obj.change.toString();
-    }
+    // Serialize decimal fields
+    const serialized = serializeDecimalFields(obj, [...PRICE_SNAPSHOT_DECIMAL_FIELDS]);
+    Object.assign(obj, serialized);
 
     // Ensure timestamp is a Date object
     if (obj.timestamp && !(obj.timestamp instanceof Date)) {
@@ -238,46 +159,142 @@ export class PortfolioDatabase extends Dexie {
   };
 
   private transformDividendRecord = (
-    _primKey: any,
-    obj: DividendRecord,
-    _trans: any
+    _primKey: unknown,
+    obj: DividendRecord | DividendRecordStorage,
+    _trans: unknown
   ): void => {
-    // Convert Decimal fields to strings for storage
-    if (obj.amount instanceof Decimal) {
-      (obj as any).amount = obj.amount.toString();
-    }
-    if (obj.perShare instanceof Decimal) {
-      (obj as any).perShare = obj.perShare.toString();
-    }
-    if (obj.shares instanceof Decimal) {
-      (obj as any).shares = obj.shares.toString();
-    }
-    if (obj.price instanceof Decimal) {
-      (obj as any).price = obj.price.toString();
+    // Serialize decimal fields (handles undefined values gracefully)
+    const fieldsToSerialize = DIVIDEND_RECORD_DECIMAL_FIELDS.filter(
+      (field) => (obj as DividendRecord)[field] !== undefined
+    );
+    if (fieldsToSerialize.length > 0) {
+      const serialized = serializeDecimalFields(obj, fieldsToSerialize);
+      Object.assign(obj, serialized);
     }
 
     // Ensure dates are Date objects
-    const dateFields = ['paymentDate', 'recordDate', 'exDividendDate'];
-    dateFields.forEach((field) => {
-      if (
-        obj[field as keyof DividendRecord] &&
-        !(obj[field as keyof DividendRecord] instanceof Date)
-      ) {
-        (obj as any)[field] = new Date(obj[field as keyof DividendRecord] as any);
+    const dateFields = ['paymentDate', 'recordDate', 'exDividendDate'] as const;
+    for (const field of dateFields) {
+      const value = obj[field];
+      if (value && !(value instanceof Date)) {
+        (obj as DividendRecordStorage)[field] = new Date(value as unknown as string);
       }
-    });
+    }
   };
 
-  // Helper methods for data retrieval with proper Decimal conversion
+  // ==========================================================================
+  // Conversion Methods (Storage → Domain)
+  // ==========================================================================
+
+  convertHoldingDecimals(holding: HoldingStorage): Holding {
+    const base = deserializeDecimalFields(holding, [...HOLDING_DECIMAL_FIELDS]);
+
+    // Convert tax lots
+    const lots: TaxLot[] = (holding.lots || []).map((lot) => ({
+      ...deserializeDecimalFields(lot, [...TAX_LOT_DECIMAL_FIELDS]),
+      id: lot.id,
+      purchaseDate: lot.purchaseDate instanceof Date ? lot.purchaseDate : new Date(lot.purchaseDate),
+      notes: lot.notes,
+    }));
+
+    return {
+      ...base,
+      id: holding.id,
+      portfolioId: holding.portfolioId,
+      assetId: holding.assetId,
+      unrealizedGainPercent: holding.unrealizedGainPercent,
+      lots,
+      lastUpdated: holding.lastUpdated instanceof Date
+        ? holding.lastUpdated
+        : new Date(holding.lastUpdated),
+    };
+  }
+
+  convertTransactionDecimals(transaction: TransactionStorage): Transaction {
+    const base = deserializeDecimalFields(transaction, [...TRANSACTION_DECIMAL_FIELDS]);
+
+    return {
+      ...base,
+      id: transaction.id,
+      portfolioId: transaction.portfolioId,
+      assetId: transaction.assetId,
+      type: transaction.type,
+      date: transaction.date instanceof Date ? transaction.date : new Date(transaction.date),
+      currency: transaction.currency,
+      taxLotId: transaction.taxLotId,
+      notes: transaction.notes,
+      importSource: transaction.importSource,
+      metadata: transaction.metadata,
+    };
+  }
+
+  convertPriceSnapshotDecimals(snapshot: PriceSnapshotStorage): PriceSnapshot {
+    const base = deserializeDecimalFields(snapshot, [...PRICE_SNAPSHOT_DECIMAL_FIELDS]);
+
+    return {
+      ...base,
+      assetId: snapshot.assetId,
+      changePercent: snapshot.changePercent,
+      timestamp: snapshot.timestamp instanceof Date
+        ? snapshot.timestamp
+        : new Date(snapshot.timestamp),
+      source: snapshot.source,
+      marketState: snapshot.marketState,
+      volume: snapshot.volume,
+      bid: snapshot.bid ? toDecimal(snapshot.bid) : undefined,
+      ask: snapshot.ask ? toDecimal(snapshot.ask) : undefined,
+    };
+  }
+
+  convertPriceHistoryDecimals(history: PriceHistoryStorage): PriceHistory {
+    const base = deserializeDecimalFields(history, [...PRICE_HISTORY_DECIMAL_FIELDS]);
+
+    return {
+      ...base,
+      id: history.id,
+      assetId: history.assetId,
+      date: history.date instanceof Date ? history.date : new Date(history.date),
+      volume: history.volume,
+      source: history.source,
+    };
+  }
+
+  convertDividendRecordDecimals(record: DividendRecordStorage): DividendRecord {
+    return {
+      id: record.id,
+      assetId: record.assetId,
+      portfolioId: record.portfolioId,
+      amount: toDecimal(record.amount),
+      perShare: toDecimal(record.perShare),
+      paymentDate: record.paymentDate instanceof Date
+        ? record.paymentDate
+        : new Date(record.paymentDate),
+      recordDate: record.recordDate instanceof Date
+        ? record.recordDate
+        : new Date(record.recordDate),
+      exDividendDate: record.exDividendDate instanceof Date
+        ? record.exDividendDate
+        : new Date(record.exDividendDate),
+      type: record.type,
+      reinvested: record.reinvested,
+      shares: record.shares ? toDecimal(record.shares) : undefined,
+      price: record.price ? toDecimal(record.price) : undefined,
+    };
+  }
+
+  // ==========================================================================
+  // Helper Methods for Data Retrieval with Proper Decimal Conversion
+  // ==========================================================================
+
   async getHoldingWithDecimals(id: string): Promise<Holding | undefined> {
-    const holding = await this.holdings.get(id);
+    const holding = await this.holdings.get(createHoldingId(id));
     if (!holding) return undefined;
 
     return this.convertHoldingDecimals(holding);
   }
 
   async getTransactionWithDecimals(id: string): Promise<Transaction | undefined> {
-    const transaction = await this.transactions.get(id);
+    const transaction = await this.transactions.get(createTransactionId(id));
     if (!transaction) return undefined;
 
     return this.convertTransactionDecimals(transaction);
@@ -319,62 +336,50 @@ export class PortfolioDatabase extends Dexie {
     return this.convertPriceSnapshotDecimals(latestSnapshot);
   }
 
-  // Conversion helper methods
-  private convertHoldingDecimals(holding: any): Holding {
-    return {
-      ...holding,
-      quantity: new Decimal(holding.quantity || 0),
-      costBasis: new Decimal(holding.costBasis || 0),
-      averageCost: new Decimal(holding.averageCost || 0),
-      currentValue: new Decimal(holding.currentValue || 0),
-      unrealizedGain: new Decimal(holding.unrealizedGain || 0),
-      lots: holding.lots?.map((lot: any) => ({
-        ...lot,
-        quantity: new Decimal(lot.quantity || 0),
-        purchasePrice: new Decimal(lot.purchasePrice || 0),
-        soldQuantity: new Decimal(lot.soldQuantity || 0),
-        remainingQuantity: new Decimal(lot.remainingQuantity || 0),
-      })) || [],
-    };
+  async getPriceHistoryByAsset(
+    assetId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<PriceHistory[]> {
+    let collection = this.priceHistory
+      .where('assetId')
+      .equals(assetId);
+
+    const results = await collection.toArray();
+
+    // Filter by date range if provided
+    let filtered = results;
+    if (startDate) {
+      filtered = filtered.filter((h) => new Date(h.date) >= startDate);
+    }
+    if (endDate) {
+      filtered = filtered.filter((h) => new Date(h.date) <= endDate);
+    }
+
+    // Sort by date
+    filtered.sort((a, b) =>
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    return filtered.map((h) => this.convertPriceHistoryDecimals(h));
   }
 
-  private convertTransactionDecimals(transaction: any): Transaction {
-    return {
-      ...transaction,
-      quantity: new Decimal(transaction.quantity || 0),
-      price: new Decimal(transaction.price || 0),
-      totalAmount: new Decimal(transaction.totalAmount || 0),
-      fees: new Decimal(transaction.fees || 0),
-    };
+  async getDividendRecordsByAsset(assetId: string): Promise<DividendRecord[]> {
+    const records = await this.dividendRecords
+      .where('assetId')
+      .equals(assetId)
+      .toArray();
+
+    return records.map((r) => this.convertDividendRecordDecimals(r));
   }
 
-  private convertPriceSnapshotDecimals(snapshot: any): PriceSnapshot {
-    return {
-      ...snapshot,
-      price: new Decimal(snapshot.price || 0),
-      change: new Decimal(snapshot.change || 0),
-    };
-  }
+  async getDividendRecordsByPortfolio(portfolioId: string): Promise<DividendRecord[]> {
+    const records = await this.dividendRecords
+      .where('portfolioId')
+      .equals(portfolioId)
+      .toArray();
 
-  private convertPriceHistoryDecimals(history: any): PriceHistory {
-    return {
-      ...history,
-      open: new Decimal(history.open || 0),
-      high: new Decimal(history.high || 0),
-      low: new Decimal(history.low || 0),
-      close: new Decimal(history.close || 0),
-      adjustedClose: new Decimal(history.adjustedClose || 0),
-    };
-  }
-
-  private convertDividendRecordDecimals(record: any): DividendRecord {
-    return {
-      ...record,
-      amount: new Decimal(record.amount || 0),
-      perShare: new Decimal(record.perShare || 0),
-      shares: record.shares ? new Decimal(record.shares) : undefined,
-      price: record.price ? new Decimal(record.price) : undefined,
-    };
+    return records.map((r) => this.convertDividendRecordDecimals(r));
   }
 }
 

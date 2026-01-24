@@ -9,7 +9,18 @@ import {
   PriceSnapshot,
   TransactionFilter,
   TransactionSummary,
+  generatePortfolioId,
+  generateAssetId,
+  generateHoldingId,
+  generateTransactionId,
+  generatePriceSnapshotId,
+  HoldingStorage,
+  TransactionStorage,
 } from '@/types';
+import {
+  serializeDecimalFields,
+  HOLDING_DECIMAL_FIELDS,
+} from '@/lib/utils/decimal-serialization';
 
 // Portfolio queries
 export const portfolioQueries = {
@@ -22,13 +33,14 @@ export const portfolioQueries = {
   },
 
   async create(portfolio: Omit<Portfolio, 'id'>): Promise<string> {
-    const id = await db.portfolios.add({
+    const newId = generatePortfolioId();
+    await db.portfolios.add({
       ...portfolio,
-      id: crypto.randomUUID(),
+      id: newId,
       createdAt: new Date(),
       updatedAt: new Date(),
     } as Portfolio);
-    return id as string;
+    return newId;
   },
 
   async update(id: string, updates: Partial<Portfolio>): Promise<void> {
@@ -80,11 +92,12 @@ export const assetQueries = {
       throw new Error(`Asset with symbol ${asset.symbol} already exists`);
     }
 
-    const id = await db.assets.add({
+    const newId = generateAssetId();
+    await db.assets.add({
       ...asset,
-      id: crypto.randomUUID(),
+      id: newId,
     } as Asset);
-    return id as string;
+    return newId;
   },
 
   async update(id: string, updates: Partial<Asset>): Promise<void> {
@@ -99,20 +112,24 @@ export const assetQueries = {
   },
 
   async delete(id: string): Promise<void> {
-    await db.transaction('rw', db.assets, db.holdings, db.transactions, async () => {
-      // Check if asset is used in any holdings
-      const holdingsCount = await db.holdings.where('assetId').equals(id).count();
-      if (holdingsCount > 0) {
-        throw new Error('Cannot delete asset that is used in holdings');
-      }
+    await db.transaction(
+      'rw',
+      [db.assets, db.holdings, db.transactions, db.priceHistory, db.priceSnapshots, db.dividendRecords],
+      async () => {
+        // Check if asset is used in any holdings
+        const holdingsCount = await db.holdings.where('assetId').equals(id).count();
+        if (holdingsCount > 0) {
+          throw new Error('Cannot delete asset that is used in holdings');
+        }
 
-      // Delete related data
-      await db.transactions.where('assetId').equals(id).delete();
-      await db.priceHistory.where('assetId').equals(id).delete();
-      await db.priceSnapshots.where('assetId').equals(id).delete();
-      await db.dividendRecords.where('assetId').equals(id).delete();
-      await db.assets.delete(id);
-    });
+        // Delete related data
+        await db.transactions.where('assetId').equals(id).delete();
+        await db.priceHistory.where('assetId').equals(id).delete();
+        await db.priceSnapshots.where('assetId').equals(id).delete();
+        await db.dividendRecords.where('assetId').equals(id).delete();
+        await db.assets.delete(id);
+      }
+    );
   },
 };
 
@@ -136,7 +153,7 @@ export const holdingQueries = {
       .first();
 
     if (!holding) return undefined;
-    return db.getHoldingWithDecimals(holding.id);
+    return db.getHoldingWithDecimals(holding.id as string);
   },
 
   async create(holding: Omit<Holding, 'id'>): Promise<string> {
@@ -149,17 +166,27 @@ export const holdingQueries = {
       throw new Error('Holding already exists for this portfolio and asset');
     }
 
-    const id = await db.holdings.add({
+    const newId = generateHoldingId();
+    await db.holdings.add({
       ...holding,
-      id: crypto.randomUUID(),
+      id: newId,
       lastUpdated: new Date(),
-    } as Holding);
-    return id as string;
+    } as unknown as HoldingStorage);
+    return newId;
   },
 
   async update(id: string, updates: Partial<Holding>): Promise<void> {
+    // Use the serialization utility to convert Decimal values
+    const decimalFields = HOLDING_DECIMAL_FIELDS.filter(
+      (field) => updates[field as keyof Holding] !== undefined
+    );
+
+    const serializedUpdates = decimalFields.length > 0
+      ? serializeDecimalFields(updates, decimalFields as (keyof Holding)[])
+      : updates;
+
     await db.holdings.update(id, {
-      ...updates,
+      ...serializedUpdates,
       lastUpdated: new Date(),
     });
   },
@@ -206,7 +233,7 @@ export const transactionQueries = {
       .equals(assetId)
       .toArray();
 
-    return transactions.map((t) => (db as any).convertTransactionDecimals(t));
+    return transactions.map((t) => db.convertTransactionDecimals(t));
   },
 
   async getFiltered(filter: TransactionFilter): Promise<Transaction[]> {
@@ -225,11 +252,11 @@ export const transactionQueries = {
     }
 
     if (filter.dateFrom) {
-      query = query.filter((t) => t.date >= filter.dateFrom!);
+      query = query.filter((t) => new Date(t.date) >= filter.dateFrom!);
     }
 
     if (filter.dateTo) {
-      query = query.filter((t) => t.date <= filter.dateTo!);
+      query = query.filter((t) => new Date(t.date) <= filter.dateTo!);
     }
 
     if (filter.search) {
@@ -242,29 +269,30 @@ export const transactionQueries = {
     }
 
     const transactions = await query.toArray();
-    return transactions.map((t) => (db as any).convertTransactionDecimals(t));
+    return transactions.map((t) => db.convertTransactionDecimals(t));
   },
 
   async create(transaction: Omit<Transaction, 'id'>): Promise<string> {
-    const id = await db.transactions.add({
+    const newId = generateTransactionId();
+    await db.transactions.add({
       ...transaction,
-      id: crypto.randomUUID(),
-    } as Transaction);
-    return id as string;
+      id: newId,
+    } as unknown as TransactionStorage);
+    return newId;
   },
 
   async createMany(transactions: Omit<Transaction, 'id'>[]): Promise<string[]> {
     const transactionsWithIds = transactions.map((t) => ({
       ...t,
-      id: crypto.randomUUID(),
+      id: generateTransactionId(),
     }));
 
-    await db.transactions.bulkAdd(transactionsWithIds as Transaction[]);
+    await db.transactions.bulkAdd(transactionsWithIds as unknown as TransactionStorage[]);
     return transactionsWithIds.map((t) => t.id);
   },
 
   async update(id: string, updates: Partial<Transaction>): Promise<void> {
-    await db.transactions.update(id, updates);
+    await db.transactions.update(id, updates as Partial<TransactionStorage>);
   },
 
   async delete(id: string): Promise<void> {
@@ -280,7 +308,7 @@ export const transactionQueries = {
 
     const transactions = await query.toArray();
     const convertedTransactions = transactions.map((t) =>
-      (db as any).convertTransactionDecimals(t)
+      db.convertTransactionDecimals(t)
     );
 
     const totalTransactions = convertedTransactions.length;
@@ -329,19 +357,22 @@ export const priceQueries = {
   },
 
   async saveSnapshot(snapshot: Omit<PriceSnapshot, 'id'>): Promise<void> {
+    const newId = generatePriceSnapshotId();
     await db.priceSnapshots.add({
       ...snapshot,
-      id: crypto.randomUUID(),
-    } as any);
+      id: newId,
+    } as unknown as import('@/types').PriceSnapshotStorage);
   },
 
   async saveBatchSnapshots(snapshots: Omit<PriceSnapshot, 'id'>[]): Promise<void> {
     const snapshotsWithIds = snapshots.map((s) => ({
       ...s,
-      id: crypto.randomUUID(),
+      id: generatePriceSnapshotId(),
     }));
 
-    await db.priceSnapshots.bulkAdd(snapshotsWithIds as any[]);
+    await db.priceSnapshots.bulkAdd(
+      snapshotsWithIds as unknown as import('@/types').PriceSnapshotStorage[]
+    );
   },
 
   async getHistoryForAsset(
@@ -354,7 +385,7 @@ export const priceQueries = {
     const snapshots = await db.priceSnapshots
       .where('assetId')
       .equals(assetId)
-      .filter((snapshot) => snapshot.timestamp >= cutoffDate)
+      .filter((snapshot) => new Date(snapshot.timestamp) >= cutoffDate)
       .toArray();
 
     // Sort manually by timestamp
@@ -362,14 +393,16 @@ export const priceQueries = {
       new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
-    return sortedSnapshots.map((s) => (db as any).convertPriceSnapshotDecimals(s));
+    return sortedSnapshots.map((s) => db.convertPriceSnapshotDecimals(s));
   },
 
   async cleanOldSnapshots(daysToKeep: number = 90): Promise<void> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
 
-    await db.priceSnapshots.where('timestamp').below(cutoffDate).delete();
+    await db.priceSnapshots
+      .filter((s) => new Date(s.timestamp) < cutoffDate)
+      .delete();
   },
 };
 

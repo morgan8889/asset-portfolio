@@ -4,4 +4,4 @@ export * from './transaction';
 export * from './asset';
 export * from './api';
 export * from './ui';
-export * from './dashboard';
+export * from './storage';

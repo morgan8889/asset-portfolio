@@ -1,47 +1,28 @@
-import '@testing-library/jest-dom'
-import { beforeEach, afterEach, vi } from 'vitest'
+// MUST be first import - provides IndexedDB implementation for Dexie in Node.js
+import 'fake-indexeddb/auto';
 
-// Mock Dexie database
-vi.mock('./lib/db', () => ({
-  db: {
-    assets: {
-      add: vi.fn(),
-      get: vi.fn(),
-      toArray: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      where: vi.fn(() => ({
-        equals: vi.fn(() => ({
-          toArray: vi.fn()
-        }))
-      }))
-    },
-    transactions: {
-      add: vi.fn(),
-      get: vi.fn(),
-      toArray: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      where: vi.fn(() => ({
-        equals: vi.fn(() => ({
-          toArray: vi.fn()
-        }))
-      }))
-    },
-    portfolioSnapshots: {
-      add: vi.fn(),
-      get: vi.fn(),
-      toArray: vi.fn(),
-      orderBy: vi.fn(() => ({
-        reverse: vi.fn(() => ({
-          limit: vi.fn(() => ({
-            toArray: vi.fn()
-          }))
-        }))
-      }))
-    }
-  }
-}))
+import '@testing-library/jest-dom';
+import { beforeEach, afterEach, vi } from 'vitest';
+
+// Mock scrollIntoView - used by Radix UI Select component
+HTMLElement.prototype.scrollIntoView = vi.fn();
+
+// Mock ResizeObserver - used by Radix UI Popover, Dialog components
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+// Mock IntersectionObserver - used for visibility detection
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+// NOTE: Database is NOT mocked globally - fake-indexeddb provides a real IndexedDB implementation
+// Individual tests that need specific mocking should use vi.mock() in their test files
 
 // Mock Next.js router
 vi.mock('next/navigation', () => ({
@@ -51,16 +32,16 @@ vi.mock('next/navigation', () => ({
     back: vi.fn(),
     forward: vi.fn(),
     refresh: vi.fn(),
-    prefetch: vi.fn()
+    prefetch: vi.fn(),
   }),
   usePathname: () => '/',
-  useSearchParams: () => new URLSearchParams()
-}))
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -70,16 +51,16 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
-})
+});
 
 // Clean up after each test
 afterEach(() => {
-  vi.clearAllMocks()
-})
+  vi.clearAllMocks();
+});
 
 // Setup common test environment
 beforeEach(() => {
   // Reset any global state
-  localStorage.clear()
-  sessionStorage.clear()
-})
+  localStorage.clear();
+  sessionStorage.clear();
+});
