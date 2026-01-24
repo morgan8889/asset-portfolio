@@ -1,21 +1,22 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo, useCallback } from 'react';
 import {
   Area,
   AreaChart,
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
+  TooltipProps,
   XAxis,
   YAxis,
   ReferenceLine,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { TrendIndicator, getTrendColorClass } from '@/components/ui/trend-indicator';
+import { Activity } from 'lucide-react';
+import { formatCurrency, cn } from '@/lib/utils';
 
 type TimePeriod = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL';
 
@@ -65,7 +66,62 @@ const generateMockData = (days: number): ChartDataPoint[] => {
   return data;
 };
 
-export function PortfolioChart() {
+// Simple X-axis label formatter - no useCallback needed for simple formatting
+const formatXAxisLabel = (tickItem: string, period: TimePeriod): string => {
+  const date = new Date(tickItem);
+
+  switch (period) {
+    case '1D':
+      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    case '1W':
+    case '1M':
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    case '3M':
+    case '1Y':
+      return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    case 'ALL':
+      return date.toLocaleDateString('en-US', { year: 'numeric' });
+    default:
+      return date.toLocaleDateString();
+  }
+};
+
+// Extracted tooltip component using TrendIndicator
+interface ChartTooltipProps extends TooltipProps<number, string> {
+  period: TimePeriod;
+}
+
+const ChartTooltip = memo(function ChartTooltip({ active, payload, period }: ChartTooltipProps) {
+  if (active && payload && payload[0]) {
+    const data = payload[0].payload as ChartDataPoint;
+    const value = payload[0].value ?? 0;
+    const date = new Date(data.date);
+
+    return (
+      <div className="bg-background border rounded-lg shadow-lg p-3 min-w-[200px]">
+        <p className="text-sm text-muted-foreground mb-1">
+          {period === '1D'
+            ? date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            : date.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: period === 'ALL' || period === '1Y' ? 'numeric' : undefined,
+              })}
+        </p>
+        <p className="text-lg font-bold mb-1">{formatCurrency(value)}</p>
+        <p className={cn('text-sm flex items-center gap-1', getTrendColorClass(data.change))}>
+          <TrendIndicator value={data.change} size="xs" iconOnly />
+          {data.change >= 0 ? '+' : ''}
+          {formatCurrency(data.change)} change
+        </p>
+      </div>
+    );
+  }
+  return null;
+});
+
+const PortfolioChartComponent = () => {
   const [period, setPeriod] = useState<TimePeriod>('1M');
 
   const data = useMemo(() => {
@@ -94,61 +150,11 @@ export function PortfolioChart() {
     };
   }, [data]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload[0]) {
-      const data = payload[0].payload;
-      const date = new Date(data.date);
-
-      return (
-        <div className="bg-background border rounded-lg shadow-lg p-3 min-w-[200px]">
-          <p className="text-sm text-muted-foreground mb-1">
-            {period === '1D'
-              ? date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-              : date.toLocaleDateString('en-US', {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric',
-                  year: period === 'ALL' || period === '1Y' ? 'numeric' : undefined
-                })
-            }
-          </p>
-          <p className="text-lg font-bold mb-1">
-            {formatCurrency(payload[0].value)}
-          </p>
-          <p className={`text-sm flex items-center gap-1 ${
-            data.change >= 0 ? 'text-green-600' : 'text-red-600'
-          }`}>
-            {data.change >= 0 ? (
-              <TrendingUp className="h-3 w-3" />
-            ) : (
-              <TrendingDown className="h-3 w-3" />
-            )}
-            {data.change >= 0 ? '+' : ''}{formatCurrency(data.change)} change
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const formatXAxisLabel = (tickItem: string) => {
-    const date = new Date(tickItem);
-
-    switch (period) {
-      case '1D':
-        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      case '1W':
-      case '1M':
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      case '3M':
-      case '1Y':
-        return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-      case 'ALL':
-        return date.toLocaleDateString('en-US', { year: 'numeric' });
-      default:
-        return date.toLocaleDateString();
-    }
-  };
+  // Memoized tooltip with period closure
+  const renderTooltip = useCallback(
+    (props: TooltipProps<number, string>) => <ChartTooltip {...props} period={period} />,
+    [period]
+  );
 
   return (
     <Card>
@@ -165,16 +171,16 @@ export function PortfolioChart() {
                   <span className="text-muted-foreground">Current: </span>
                   <span className="font-medium">{formatCurrency(chartStats.currentValue)}</span>
                 </div>
-                <div className={`flex items-center gap-1 ${
-                  chartStats.isPositive ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {chartStats.isPositive ? (
-                    <TrendingUp className="h-4 w-4" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4" />
+                <div
+                  className={cn(
+                    'flex items-center gap-1',
+                    getTrendColorClass(chartStats.totalChange)
                   )}
+                >
+                  <TrendIndicator value={chartStats.totalChange} iconOnly />
                   <span className="font-medium">
-                    {chartStats.isPositive ? '+' : ''}{formatCurrency(chartStats.totalChange)}
+                    {chartStats.isPositive ? '+' : ''}
+                    {formatCurrency(chartStats.totalChange)}
                   </span>
                   <span>({chartStats.percentChange.toFixed(2)}%)</span>
                 </div>
@@ -223,12 +229,12 @@ export function PortfolioChart() {
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="5%"
-                    stopColor={chartStats?.isPositive ? "#10b981" : "#ef4444"}
+                    stopColor={chartStats?.isPositive ? '#10b981' : '#ef4444'}
                     stopOpacity={0.3}
                   />
                   <stop
                     offset="95%"
-                    stopColor={chartStats?.isPositive ? "#10b981" : "#ef4444"}
+                    stopColor={chartStats?.isPositive ? '#10b981' : '#ef4444'}
                     stopOpacity={0}
                   />
                 </linearGradient>
@@ -241,7 +247,7 @@ export function PortfolioChart() {
                 tick={{ fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={formatXAxisLabel}
+                tickFormatter={(tick) => formatXAxisLabel(tick, period)}
                 interval="preserveStartEnd"
                 minTickGap={50}
               />
@@ -264,20 +270,20 @@ export function PortfolioChart() {
                 />
               )}
 
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={renderTooltip} />
 
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke={chartStats?.isPositive ? "#10b981" : "#ef4444"}
+                stroke={chartStats?.isPositive ? '#10b981' : '#ef4444'}
                 strokeWidth={2}
                 fill="url(#colorValue)"
                 dot={false}
                 activeDot={{
                   r: 4,
-                  stroke: chartStats?.isPositive ? "#10b981" : "#ef4444",
+                  stroke: chartStats?.isPositive ? '#10b981' : '#ef4444',
                   strokeWidth: 2,
-                  fill: "white"
+                  fill: 'white',
                 }}
               />
             </AreaChart>
@@ -290,4 +296,6 @@ export function PortfolioChart() {
       </CardContent>
     </Card>
   );
-}
+};
+
+export const PortfolioChart = memo(PortfolioChartComponent);
