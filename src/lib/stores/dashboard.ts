@@ -50,8 +50,13 @@ async function optimisticUpdate<T extends keyof DashboardConfiguration>(
 
   try {
     await persistFn();
-  } catch {
-    set({ config, error: errorMessage });
+  } catch (error) {
+    // Log the actual error for debugging while showing user-friendly message
+    console.error('Dashboard config update failed:', error);
+    const detailedMessage = error instanceof Error
+      ? `${errorMessage}: ${error.message}`
+      : errorMessage;
+    set({ config, error: detailedMessage });
   }
 }
 

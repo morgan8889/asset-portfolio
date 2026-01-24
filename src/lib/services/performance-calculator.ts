@@ -24,12 +24,17 @@ export function calculatePerformance(
   startValue: Decimal,
   currentValue: Decimal
 ): { absoluteGain: Decimal; percentGain: number } {
-  const absoluteGain = currentValue.minus(startValue);
-  const percentGain = startValue.isZero()
-    ? 0
-    : absoluteGain.dividedBy(startValue).mul(100).toNumber();
+  try {
+    const absoluteGain = currentValue.minus(startValue);
+    const percentGain = startValue.isZero()
+      ? 0
+      : absoluteGain.dividedBy(startValue).mul(100).toNumber();
 
-  return { absoluteGain, percentGain };
+    return { absoluteGain, percentGain };
+  } catch (error) {
+    console.error('Error calculating performance:', error);
+    return { absoluteGain: new Decimal(0), percentGain: 0 };
+  }
 }
 
 /**
@@ -40,17 +45,22 @@ async function getHoldingValueAtDate(
   date: Date,
   priceCache = createPriceCache()
 ): Promise<{ value: Decimal; isInterpolated: boolean }> {
-  const { price, isInterpolated } = await getPriceAtDate(holding.assetId, date, priceCache);
+  try {
+    const { price, isInterpolated } = await getPriceAtDate(holding.assetId, date, priceCache);
 
-  if (price.isZero()) {
-    // No price history, use current value as fallback
-    return { value: holding.currentValue, isInterpolated: true };
+    if (price.isZero()) {
+      // No price history, use current value as fallback
+      return { value: holding.currentValue, isInterpolated: true };
+    }
+
+    return {
+      value: holding.quantity.mul(price),
+      isInterpolated,
+    };
+  } catch (error) {
+    console.error(`Error getting holding value at date for ${holding.assetId}:`, error);
+    return { value: new Decimal(0), isInterpolated: true };
   }
-
-  return {
-    value: holding.quantity.mul(price),
-    isInterpolated,
-  };
 }
 
 /**
@@ -72,32 +82,37 @@ export async function calculateAllPerformance(
   const performances: HoldingPerformance[] = [];
 
   for (const holding of holdings) {
-    const asset = assetMap.get(holding.assetId);
-    if (!asset || holding.quantity.isZero()) continue;
+    try {
+      const asset = assetMap.get(holding.assetId);
+      if (!asset || holding.quantity.isZero()) continue;
 
-    const { value: periodStartValue, isInterpolated } = await getHoldingValueAtDate(
-      holding,
-      startDate,
-      priceCache
-    );
+      const { value: periodStartValue, isInterpolated } = await getHoldingValueAtDate(
+        holding,
+        startDate,
+        priceCache
+      );
 
-    const { absoluteGain, percentGain } = calculatePerformance(
-      periodStartValue,
-      holding.currentValue
-    );
+      const { absoluteGain, percentGain } = calculatePerformance(
+        periodStartValue,
+        holding.currentValue
+      );
 
-    performances.push({
-      holdingId: holding.id,
-      symbol: asset.symbol,
-      name: asset.name,
-      assetType: asset.type,
-      currentValue: holding.currentValue,
-      periodStartValue,
-      absoluteGain,
-      percentGain,
-      period,
-      isInterpolated,
-    });
+      performances.push({
+        holdingId: holding.id,
+        symbol: asset.symbol,
+        name: asset.name,
+        assetType: asset.type,
+        currentValue: holding.currentValue,
+        periodStartValue,
+        absoluteGain,
+        percentGain,
+        period,
+        isInterpolated,
+      });
+    } catch (error) {
+      console.error(`Error calculating performance for holding ${holding.id}:`, error);
+      // Skip this holding and continue
+    }
   }
 
   return performances;

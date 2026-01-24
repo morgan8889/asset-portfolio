@@ -104,9 +104,15 @@ async function calculateValueAtDate(
   let hasInterpolatedPrices = false;
 
   for (const [assetId, quantity] of holdings.entries()) {
-    const { price, isInterpolated } = await getPriceAtDate(assetId, date, priceCache);
-    totalValue = totalValue.plus(quantity.mul(price));
-    if (isInterpolated) hasInterpolatedPrices = true;
+    try {
+      const { price, isInterpolated } = await getPriceAtDate(assetId, date, priceCache);
+      totalValue = totalValue.plus(quantity.mul(price));
+      if (isInterpolated) hasInterpolatedPrices = true;
+    } catch (error) {
+      console.error(`Error calculating value for asset ${assetId} at ${date}:`, error);
+      // Skip this asset and continue with others
+      hasInterpolatedPrices = true;
+    }
   }
 
   return { totalValue, hasInterpolatedPrices };
@@ -135,21 +141,26 @@ export async function getHistoricalValues(
   let previousValue = new Decimal(0);
 
   for (const date of dates) {
-    const holdingsAtDate = calculateHoldingsAtDate(transactions, date);
-    const { totalValue, hasInterpolatedPrices } = await calculateValueAtDate(
-      holdingsAtDate,
-      date,
-      priceCache
-    );
+    try {
+      const holdingsAtDate = calculateHoldingsAtDate(transactions, date);
+      const { totalValue, hasInterpolatedPrices } = await calculateValueAtDate(
+        holdingsAtDate,
+        date,
+        priceCache
+      );
 
-    points.push({
-      date,
-      totalValue,
-      change: totalValue.minus(previousValue),
-      hasInterpolatedPrices,
-    });
+      points.push({
+        date,
+        totalValue,
+        change: totalValue.minus(previousValue),
+        hasInterpolatedPrices,
+      });
 
-    previousValue = totalValue;
+      previousValue = totalValue;
+    } catch (error) {
+      console.error(`Error calculating historical value for ${date}:`, error);
+      // Skip this date point and continue
+    }
   }
 
   return points;
