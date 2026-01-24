@@ -41,17 +41,23 @@ export function parseDate(value: string): Date | null {
     }
   }
 
-  // Try native Date parsing as fallback for ISO strings
-  try {
-    const nativeParsed = new Date(trimmed);
-    if (isValid(nativeParsed)) {
-      const year = nativeParsed.getFullYear();
-      if (year >= 1900 && year <= 2100) {
-        return nativeParsed;
+  // Try native Date parsing as fallback, but only for strings that look like dates
+  // This prevents JavaScript's lenient parsing from accepting garbage like "bad-date-2" as a valid date
+  // Only accept strings that start with numbers and contain date separators
+  const looksLikeDate = /^\d{1,4}[-/]\d{1,2}[-/]\d{1,4}/.test(trimmed);
+
+  if (looksLikeDate) {
+    try {
+      const nativeParsed = new Date(trimmed);
+      if (isValid(nativeParsed)) {
+        const year = nativeParsed.getFullYear();
+        if (year >= 1900 && year <= 2100) {
+          return nativeParsed;
+        }
       }
+    } catch {
+      // Failed to parse
     }
-  } catch {
-    // Failed to parse
   }
 
   return null;

@@ -9,14 +9,51 @@ import Papa from 'papaparse';
 import type { CsvParserResult } from '@/types/csv-import';
 import { csvFileSchema } from '@/lib/utils/validation';
 
+/** Common Papa.parse configuration */
+const PAPA_CONFIG = {
+  header: true,
+  skipEmptyLines: true,
+  transformHeader: (header: string) => header.trim(),
+  dynamicTyping: false, // Keep as strings, we'll convert with decimal.js
+} as const;
+
+/**
+ * Process parsed results and return structured result or throw on error.
+ */
+function processParseResults(
+  results: Papa.ParseResult<Record<string, string>>,
+  source: string
+): CsvParserResult {
+  // Check for critical parsing errors
+  const criticalError = results.errors.find(
+    (e) => e.type === 'Delimiter' || e.type === 'FieldMismatch'
+  );
+  if (criticalError) {
+    throw new Error(`CSV parsing error: ${criticalError.message}`);
+  }
+
+  const headers = results.meta.fields || [];
+  if (headers.length === 0) {
+    throw new Error(`CSV ${source} has no headers`);
+  }
+
+  const rows = results.data;
+  if (rows.length === 0) {
+    throw new Error(`CSV ${source} has no data rows`);
+  }
+
+  return {
+    headers,
+    rows,
+    delimiter: results.meta.delimiter as ',' | ';' | '\t',
+    rowCount: rows.length,
+  };
+}
+
 /**
  * Parse a CSV file and return structured result.
- *
- * @param file - File object to parse
- * @returns Promise resolving to parsed CSV data
  */
 export async function parseCsvFile(file: File): Promise<CsvParserResult> {
-  // Validate file before parsing
   const validation = csvFileSchema.safeParse({
     name: file.name,
     size: file.size,
@@ -28,46 +65,14 @@ export async function parseCsvFile(file: File): Promise<CsvParserResult> {
   }
 
   return new Promise((resolve, reject) => {
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      transformHeader: (header: string) => header.trim(),
-      dynamicTyping: false, // Keep as strings, we'll convert with decimal.js
+    Papa.parse<Record<string, string>>(file, {
+      ...PAPA_CONFIG,
       complete: (results) => {
-        // Check for parsing errors
-        if (results.errors.length > 0) {
-          // Find the first error that would prevent parsing
-          const criticalError = results.errors.find(
-            (e) => e.type === 'Delimiter' || e.type === 'FieldMismatch'
-          );
-          if (criticalError) {
-            reject(new Error(`CSV parsing error: ${criticalError.message}`));
-            return;
-          }
+        try {
+          resolve(processParseResults(results, 'file'));
+        } catch (error) {
+          reject(error);
         }
-
-        // Validate we have headers and data
-        const headers = results.meta.fields || [];
-        if (headers.length === 0) {
-          reject(new Error('CSV file has no headers'));
-          return;
-        }
-
-        const rows = results.data as Record<string, string>[];
-        if (rows.length === 0) {
-          reject(new Error('CSV file has no data rows'));
-          return;
-        }
-
-        // Detect delimiter
-        const delimiter = results.meta.delimiter as ',' | ';' | '\t';
-
-        resolve({
-          headers,
-          rows,
-          delimiter,
-          rowCount: rows.length,
-        });
       },
       error: (error) => {
         reject(new Error(`Failed to parse CSV: ${error.message}`));
@@ -78,40 +83,10 @@ export async function parseCsvFile(file: File): Promise<CsvParserResult> {
 
 /**
  * Parse CSV content from a string (useful for testing).
- *
- * @param content - CSV content as string
- * @returns Parsed CSV data
  */
 export function parseCsvString(content: string): CsvParserResult {
-  const results = Papa.parse(content, {
-    header: true,
-    skipEmptyLines: true,
-    transformHeader: (header: string) => header.trim(),
-    dynamicTyping: false,
-  });
-
-  if (results.errors.length > 0) {
-    const criticalError = results.errors.find(
-      (e) => e.type === 'Delimiter' || e.type === 'FieldMismatch'
-    );
-    if (criticalError) {
-      throw new Error(`CSV parsing error: ${criticalError.message}`);
-    }
-  }
-
-  const headers = results.meta.fields || [];
-  if (headers.length === 0) {
-    throw new Error('CSV content has no headers');
-  }
-
-  const rows = results.data as Record<string, string>[];
-
-  return {
-    headers,
-    rows,
-    delimiter: results.meta.delimiter as ',' | ';' | '\t',
-    rowCount: rows.length,
-  };
+  const results = Papa.parse(content, PAPA_CONFIG) as Papa.ParseResult<Record<string, string>>;
+  return processParseResults(results, 'content');
 }
 
 /**

@@ -2,7 +2,7 @@
  * Column Detector Service
  *
  * Automatically detects column mappings from CSV headers using
- * keyword matching and data pattern validation.
+ * keyword matching, data pattern validation, and brokerage format recognition.
  */
 
 import type {
@@ -13,19 +13,97 @@ import type {
 import { REQUIRED_FIELDS, OPTIONAL_FIELDS } from '@/types/csv-import';
 import { HEADER_KEYWORDS } from '@/lib/utils/validation';
 import { parseDate } from '@/lib/utils/date-parser';
+import {
+  detectBrokerageFormat,
+  getBrokerageColumnMappings,
+  type BrokerageFormat,
+} from './brokerage-formats';
 
 /**
  * Detect column mappings from CSV headers.
  *
- * Uses a two-pass approach:
- * 1. Header name matching (case-insensitive)
- * 2. Data pattern validation for confidence scoring
+ * Uses a three-pass approach:
+ * 1. Brokerage format detection (highest priority)
+ * 2. Header name matching (case-insensitive)
+ * 3. Data pattern validation for confidence scoring
  *
  * @param headers - Array of CSV column headers
  * @param sampleRows - Optional sample rows for data pattern validation
  * @returns Detection result with mappings and any issues
  */
 export function detectColumnMappings(
+  headers: string[],
+  sampleRows?: Record<string, string>[]
+): ColumnDetectionResult {
+  // Pass 0: Try brokerage format detection first
+  const brokerageResult = detectBrokerageFormat(headers);
+
+  if (brokerageResult.format && brokerageResult.confidence >= 0.5) {
+    // Use brokerage-specific mappings for higher accuracy
+    return createBrokerageMappings(headers, brokerageResult.format, brokerageResult.confidence, sampleRows);
+  }
+
+  // Fall back to generic detection
+  return createGenericMappings(headers, sampleRows);
+}
+
+/**
+ * Build the result object from mappings, extracting unmapped columns and missing fields.
+ */
+function buildDetectionResult(
+  mappings: ColumnMapping[],
+  detectedBrokerage?: { id: string; name: string; confidence: number }
+): ColumnDetectionResult {
+  const unmappedColumns = mappings
+    .filter((m) => m.transactionField === null)
+    .map((m) => m.csvColumn);
+
+  const mappedFields = new Set(
+    mappings
+      .filter((m) => m.transactionField !== null)
+      .map((m) => m.transactionField as TransactionField)
+  );
+
+  const missingRequiredFields = REQUIRED_FIELDS.filter(
+    (field) => !mappedFields.has(field)
+  );
+
+  return { mappings, unmappedColumns, missingRequiredFields, detectedBrokerage };
+}
+
+/**
+ * Create column mappings using a detected brokerage format.
+ */
+function createBrokerageMappings(
+  headers: string[],
+  format: BrokerageFormat,
+  confidence: number,
+  _sampleRows?: Record<string, string>[]
+): ColumnDetectionResult {
+  const brokerageColumnMap = getBrokerageColumnMappings(format, headers);
+
+  const mappings: ColumnMapping[] = headers.map((header, index) => {
+    const field = brokerageColumnMap.get(index) ?? null;
+    return {
+      csvColumn: header,
+      csvColumnIndex: index,
+      transactionField: field,
+      confidence: field !== null ? confidence : 0,
+      isUserOverride: false,
+    };
+  });
+
+  return buildDetectionResult(mappings, {
+    id: format.id,
+    name: format.name,
+    confidence,
+  });
+}
+
+/**
+ * Create column mappings using generic keyword matching.
+ */
+function createGenericMappings(
   headers: string[],
   sampleRows?: Record<string, string>[]
 ): ColumnDetectionResult {
@@ -103,24 +181,7 @@ export function detectColumnMappings(
     });
   }
 
-  // Determine unmapped columns and missing required fields
-  const unmappedColumns = mappings
-    .filter((m) => m.transactionField === null)
-    .map((m) => m.csvColumn);
-
-  const mappedFields = mappings
-    .filter((m) => m.transactionField !== null)
-    .map((m) => m.transactionField as TransactionField);
-
-  const missingRequiredFields = REQUIRED_FIELDS.filter(
-    (field) => !mappedFields.includes(field)
-  );
-
-  return {
-    mappings,
-    unmappedColumns,
-    missingRequiredFields,
-  };
+  return buildDetectionResult(mappings);
 }
 
 /**
@@ -222,25 +283,12 @@ export function updateColumnMapping(
   columnIndex: number,
   newField: TransactionField | null
 ): ColumnMapping[] {
-  // If assigning a field, first unmap it from any other column
-  const updatedMappings = mappings.map((mapping, index) => {
-    if (
-      newField !== null &&
-      mapping.transactionField === newField &&
-      index !== columnIndex
-    ) {
-      return {
-        ...mapping,
-        transactionField: null,
-        confidence: 0,
-        isUserOverride: true,
-      };
+  return mappings.map((mapping, index) => {
+    // Unmap the field from any other column first
+    if (newField !== null && mapping.transactionField === newField && index !== columnIndex) {
+      return { ...mapping, transactionField: null, confidence: 0, isUserOverride: true };
     }
-    return mapping;
-  });
-
-  // Update the target column
-  return updatedMappings.map((mapping, index) => {
+    // Update the target column
     if (index === columnIndex) {
       return {
         ...mapping,
@@ -254,27 +302,22 @@ export function updateColumnMapping(
 }
 
 /**
+ * Get the set of mapped fields from column mappings.
+ */
+function getMappedFieldsSet(mappings: ColumnMapping[]): Set<TransactionField | null> {
+  return new Set(mappings.map((m) => m.transactionField));
+}
+
+/**
  * Check if all required fields are mapped.
- *
- * @param mappings - Current column mappings
- * @returns True if all required fields have mappings
  */
 export function hasAllRequiredMappings(mappings: ColumnMapping[]): boolean {
-  const mappedFields = new Set(
-    mappings
-      .filter((m) => m.transactionField !== null)
-      .map((m) => m.transactionField)
-  );
-
+  const mappedFields = getMappedFieldsSet(mappings);
   return REQUIRED_FIELDS.every((field) => mappedFields.has(field));
 }
 
 /**
  * Get the mapping for a specific field.
- *
- * @param mappings - Column mappings
- * @param field - Field to find
- * @returns Column mapping for the field, or undefined
  */
 export function getMappingForField(
   mappings: ColumnMapping[],
@@ -285,18 +328,8 @@ export function getMappingForField(
 
 /**
  * Get all unmapped required fields.
- *
- * @param mappings - Current column mappings
- * @returns Array of required fields that are not mapped
  */
-export function getUnmappedRequiredFields(
-  mappings: ColumnMapping[]
-): TransactionField[] {
-  const mappedFields = new Set(
-    mappings
-      .filter((m) => m.transactionField !== null)
-      .map((m) => m.transactionField)
-  );
-
+export function getUnmappedRequiredFields(mappings: ColumnMapping[]): TransactionField[] {
+  const mappedFields = getMappedFieldsSet(mappings);
   return REQUIRED_FIELDS.filter((field) => !mappedFields.has(field));
 }
