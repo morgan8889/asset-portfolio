@@ -194,9 +194,8 @@ describe('Metrics Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 120,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
         {
           id: 'a2',
@@ -204,9 +203,8 @@ describe('Metrics Service', () => {
           name: 'Bitcoin',
           type: 'crypto',
           currentPrice: 120,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -281,9 +279,8 @@ describe('Metrics Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 0,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -398,9 +395,8 @@ describe('Metrics Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 120,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
@@ -445,9 +441,8 @@ describe('Metrics Service', () => {
           name: 'Apple Inc.',
           type: 'stock',
           currentPrice: 120,
+          currency: 'USD',
           metadata: {},
-          createdAt: new Date(),
-          updatedAt: new Date(),
         },
       ];
 
