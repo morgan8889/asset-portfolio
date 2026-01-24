@@ -53,7 +53,8 @@ export class MigrationManager {
         .where('key')
         .equals(this.MIGRATION_KEY)
         .first();
-      return state?.value?.version || 0;
+      const migrationState = state?.value as MigrationState | undefined;
+      return migrationState?.version || 0;
     } catch (error) {
       console.warn('Could not get current migration version:', error);
       return 0;

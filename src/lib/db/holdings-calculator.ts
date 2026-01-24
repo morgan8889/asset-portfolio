@@ -1,5 +1,5 @@
 import { Decimal } from 'decimal.js';
-import { Transaction, Holding, Asset } from '@/types';
+import { Transaction, Holding } from '@/types';
 import { db } from './schema';
 import { assetQueries, holdingQueries } from './queries';
 
@@ -23,20 +23,27 @@ export class HoldingsCalculator {
   /**
    * Recalculate all holdings for a portfolio based on its transactions
    */
-  static async recalculatePortfolioHoldings(portfolioId: string): Promise<void> {
+  static async recalculatePortfolioHoldings(
+    portfolioId: string
+  ): Promise<void> {
     const transactions = await db.getTransactionsByPortfolio(portfolioId);
 
     // Group transactions by asset
-    const transactionsByAsset = transactions.reduce((acc, transaction) => {
-      if (!acc[transaction.assetId]) {
-        acc[transaction.assetId] = [];
-      }
-      acc[transaction.assetId].push(transaction);
-      return acc;
-    }, {} as Record<string, Transaction[]>);
+    const transactionsByAsset = transactions.reduce(
+      (acc, transaction) => {
+        if (!acc[transaction.assetId]) {
+          acc[transaction.assetId] = [];
+        }
+        acc[transaction.assetId].push(transaction);
+        return acc;
+      },
+      {} as Record<string, Transaction[]>
+    );
 
     // Calculate holdings for each asset
-    for (const [assetId, assetTransactions] of Object.entries(transactionsByAsset)) {
+    for (const [assetId, assetTransactions] of Object.entries(
+      transactionsByAsset
+    )) {
       await this.calculateAssetHolding(portfolioId, assetId, assetTransactions);
     }
 
@@ -47,14 +54,14 @@ export class HoldingsCalculator {
   /**
    * Calculate holding for a specific asset based on its transactions
    */
-  private static async calculateAssetHolding(
+  static async calculateAssetHolding(
     portfolioId: string,
     assetId: string,
     transactions: Transaction[]
   ): Promise<void> {
     // Sort transactions by date to ensure proper order
-    const sortedTransactions = transactions.sort((a, b) =>
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    const sortedTransactions = transactions.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
     const calculation = this.performHoldingCalculation(sortedTransactions);
@@ -62,7 +69,10 @@ export class HoldingsCalculator {
     // Skip if zero quantity
     if (calculation.quantity.isZero()) {
       // Delete existing holding if it exists
-      const existingHolding = await holdingQueries.getByPortfolioAndAsset(portfolioId, assetId);
+      const existingHolding = await holdingQueries.getByPortfolioAndAsset(
+        portfolioId,
+        assetId
+      );
       if (existingHolding) {
         await holdingQueries.delete(existingHolding.id);
       }
@@ -75,23 +85,46 @@ export class HoldingsCalculator {
       // Validate asset ID before creation
       const cleanAssetId = assetId.trim().toUpperCase();
       if (!cleanAssetId || cleanAssetId.length === 0) {
-        console.error(`Invalid asset ID: "${assetId}". Skipping asset creation.`);
+        console.error(
+          `Invalid asset ID: "${assetId}". Skipping asset creation.`
+        );
         return;
       }
 
       // Determine asset type based on common patterns
-      let assetType: 'stock' | 'etf' | 'crypto' | 'bond' | 'real_estate' | 'commodity' | 'cash' | 'other' = 'stock';
+      let assetType:
+        | 'stock'
+        | 'etf'
+        | 'crypto'
+        | 'bond'
+        | 'real_estate'
+        | 'commodity'
+        | 'cash'
+        | 'other' = 'stock';
       let exchange = 'NASDAQ';
       let currency = 'USD';
 
       // Simple heuristics for asset type detection
-      if (cleanAssetId.endsWith('USD') || cleanAssetId.endsWith('USDT') || cleanAssetId.includes('BTC') || cleanAssetId.includes('ETH')) {
+      if (
+        cleanAssetId.endsWith('USD') ||
+        cleanAssetId.endsWith('USDT') ||
+        cleanAssetId.includes('BTC') ||
+        cleanAssetId.includes('ETH')
+      ) {
         assetType = 'crypto';
         exchange = 'CRYPTO';
-      } else if (cleanAssetId.includes('BOND') || cleanAssetId.includes('TLT') || cleanAssetId.includes('AGG')) {
+      } else if (
+        cleanAssetId.includes('BOND') ||
+        cleanAssetId.includes('TLT') ||
+        cleanAssetId.includes('AGG')
+      ) {
         assetType = 'bond';
         exchange = 'NYSE';
-      } else if (cleanAssetId.includes('GLD') || cleanAssetId.includes('SLV') || cleanAssetId.includes('GOLD')) {
+      } else if (
+        cleanAssetId.includes('GLD') ||
+        cleanAssetId.includes('SLV') ||
+        cleanAssetId.includes('GOLD')
+      ) {
         assetType = 'commodity';
         exchange = 'NYSE';
       }
@@ -105,17 +138,8 @@ export class HoldingsCalculator {
           exchange,
           currency,
           currentPrice: 0,
-          sector: null,
-          industry: null,
-          marketCap: null,
-          description: null,
-          website: null,
-          beta: null,
-          peRatio: null,
-          eps: null,
-          dividend: null,
-          dividendYield: null,
           priceUpdatedAt: new Date(),
+          metadata: {},
         });
         asset = await assetQueries.getById(cleanAssetId);
       } catch (err) {
@@ -125,7 +149,10 @@ export class HoldingsCalculator {
     }
 
     // Check if holding already exists
-    const existingHolding = await holdingQueries.getByPortfolioAndAsset(portfolioId, assetId);
+    const existingHolding = await holdingQueries.getByPortfolioAndAsset(
+      portfolioId,
+      assetId
+    );
 
     const holdingData: Omit<Holding, 'id'> = {
       portfolioId,
@@ -150,7 +177,9 @@ export class HoldingsCalculator {
   /**
    * Perform the actual calculation for a set of transactions
    */
-  private static performHoldingCalculation(transactions: Transaction[]): HoldingCalculation {
+  private static performHoldingCalculation(
+    transactions: Transaction[]
+  ): HoldingCalculation {
     let totalQuantity = new Decimal(0);
     let totalCostBasis = new Decimal(0);
     let totalShares = new Decimal(0); // For average cost calculation
@@ -177,14 +206,18 @@ export class HoldingsCalculator {
             );
             // Only sell what we have
             const actualSellQuantity = totalQuantity;
-            const sellRatio = totalQuantity.isZero() ? new Decimal(0) : actualSellQuantity.dividedBy(totalQuantity);
+            const sellRatio = totalQuantity.isZero()
+              ? new Decimal(0)
+              : actualSellQuantity.dividedBy(totalQuantity);
             const costReduction = totalCostBasis.mul(sellRatio);
 
             totalQuantity = new Decimal(0);
             totalCostBasis = totalCostBasis.minus(costReduction);
           } else {
             // Normal sell - we have enough quantity
-            const sellRatio = totalQuantity.isZero() ? new Decimal(0) : sellQuantity.dividedBy(totalQuantity);
+            const sellRatio = totalQuantity.isZero()
+              ? new Decimal(0)
+              : sellQuantity.dividedBy(totalQuantity);
             const costReduction = totalCostBasis.mul(sellRatio);
 
             totalQuantity = totalQuantity.minus(sellQuantity);
@@ -227,7 +260,9 @@ export class HoldingsCalculator {
     }
 
     // Calculate average cost
-    const averageCost = totalQuantity.isZero() ? new Decimal(0) : totalCostBasis.dividedBy(totalQuantity);
+    const averageCost = totalQuantity.isZero()
+      ? new Decimal(0)
+      : totalCostBasis.dividedBy(totalQuantity);
 
     // For current value, we'll use the last known price * quantity
     // In a real app, this would be updated with current market prices
@@ -266,13 +301,17 @@ export class HoldingsCalculator {
   /**
    * Update holdings after a transaction is added/modified/deleted
    */
-  static async updateHoldingsForTransaction(transaction: Transaction): Promise<void> {
+  static async updateHoldingsForTransaction(
+    transaction: Transaction
+  ): Promise<void> {
     const transactions = await db.transactions
       .where('[portfolioId+assetId]')
       .equals([transaction.portfolioId, transaction.assetId])
       .toArray();
 
-    const convertedTransactions = transactions.map(t => (db as any).convertTransactionDecimals(t));
+    const convertedTransactions = transactions.map((t) =>
+      db.convertTransactionDecimals(t)
+    );
 
     await this.calculateAssetHolding(
       transaction.portfolioId,
@@ -360,22 +399,29 @@ export const setupHoldingsSync = () => {
     });
   });
 
-  db.transactions.hook('updating', async (modifications, primKey, obj, trans) => {
-    trans.on('complete', async () => {
-      const transaction = await db.getTransactionWithDecimals(primKey as string);
-      if (transaction) {
-        // Use debouncing for batch operations
-        debounceHoldingsUpdate(
-          transaction.portfolioId,
-          transaction.assetId,
-          () => HoldingsCalculator.updateHoldingsForTransaction(transaction)
+  db.transactions.hook(
+    'updating',
+    async (modifications, primKey, obj, trans) => {
+      trans.on('complete', async () => {
+        const transaction = await db.getTransactionWithDecimals(
+          primKey as string
         );
-      }
-    });
-  });
+        if (transaction) {
+          // Use debouncing for batch operations
+          debounceHoldingsUpdate(
+            transaction.portfolioId,
+            transaction.assetId,
+            () => HoldingsCalculator.updateHoldingsForTransaction(transaction)
+          );
+        }
+      });
+    }
+  );
 
   db.transactions.hook('deleting', async (primKey, obj, trans) => {
-    const transaction = obj as Transaction;
+    // Convert storage type to domain type for processing
+    const storageTransaction = obj as import('@/types').TransactionStorage;
+    const transaction = db.convertTransactionDecimals(storageTransaction);
     trans.on('complete', async () => {
       // Use debouncing for batch operations
       debounceHoldingsUpdate(
@@ -388,7 +434,9 @@ export const setupHoldingsSync = () => {
             .equals([transaction.portfolioId, transaction.assetId])
             .toArray();
 
-          const convertedTransactions = remainingTransactions.map(t => (db as any).convertTransactionDecimals(t));
+          const convertedTransactions = remainingTransactions.map((t) =>
+            db.convertTransactionDecimals(t)
+          );
 
           await HoldingsCalculator.calculateAssetHolding(
             transaction.portfolioId,
