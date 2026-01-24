@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, memo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import {
   Table,
   TableBody,
@@ -42,15 +42,10 @@ const HoldingsTableComponent = () => {
     currentPortfolio,
     loading,
     error,
-    loadHoldings,
     clearError
   } = usePortfolioStore();
 
-  useEffect(() => {
-    if (currentPortfolio?.id) {
-      loadHoldings(currentPortfolio.id);
-    }
-  }, [currentPortfolio?.id, loadHoldings]);
+  // Holdings are loaded by useDashboardData hook - no need to load here
 
   // Transform real holdings data for display
   const displayHoldings = useMemo((): HoldingDisplayData[] => {
@@ -148,7 +143,7 @@ const HoldingsTableComponent = () => {
         <CardContent>
           <div className="text-center py-8">
             <div className="text-red-600 mb-2">Error loading holdings: {error}</div>
-            <Button onClick={() => { clearError(); if (currentPortfolio?.id) loadHoldings(currentPortfolio.id); }} variant="outline">
+            <Button onClick={() => { clearError(); if (currentPortfolio?.id) usePortfolioStore.getState().loadHoldings(currentPortfolio.id); }} variant="outline">
               Retry
             </Button>
           </div>
