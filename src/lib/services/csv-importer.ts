@@ -17,14 +17,11 @@ import type {
   ImportSession,
   ImportResult,
   ParsedRow,
-  ColumnMapping,
   DuplicateMatch,
   DuplicateHandling,
-  CsvParserResult,
-  ColumnDetectionResult,
-  ValidationResult,
 } from '@/types/csv-import';
 import type { Transaction, TransactionType } from '@/types/transaction';
+import type { TransactionStorage } from '@/types/storage';
 import { parseCsvFile, getPreviewData } from './csv-parser';
 import { detectColumnMappings } from './column-detector';
 import { validateRows } from './csv-validator';
@@ -71,6 +68,9 @@ export async function startImportSession(
     detectedHeaders: parseResult.headers,
     columnMappings: detectionResult.mappings,
 
+    // Include detected brokerage if present
+    detectedBrokerage: detectionResult.detectedBrokerage,
+
     previewRows: [],
     validRowCount: 0,
     errorRowCount: 0,
@@ -97,20 +97,6 @@ export async function startImportSession(
 }
 
 /**
- * Re-validate rows after mapping changes.
- *
- * @param parseResult - Original CSV parse result
- * @param mappings - Updated column mappings
- * @returns Validation result with updated rows
- */
-export function revalidateWithMappings(
-  parseResult: CsvParserResult,
-  mappings: ColumnMapping[]
-): ValidationResult {
-  return validateRows(parseResult.rows, mappings);
-}
-
-/**
  * Detect duplicate transactions in the import data.
  *
  * @param validRows - Valid parsed rows
@@ -132,15 +118,15 @@ export async function detectDuplicates(
     .toArray();
 
   // Create hash set of existing transactions
-  const existingHashes = new Map<string, Transaction>();
+  const existingHashes = new Map<string, TransactionStorage>();
   for (const t of existingTransactions) {
     const hash = createTransactionHash(
       new Date(t.date),
       typeof t.assetId === 'string' ? t.assetId : String(t.assetId),
-      new Decimal(t.quantity as any),
-      new Decimal(t.price as any)
+      new Decimal(t.quantity),
+      new Decimal(t.price)
     );
-    existingHashes.set(hash, t as Transaction);
+    existingHashes.set(hash, t);
   }
 
   // Check each valid row for duplicates
@@ -167,8 +153,8 @@ export async function detectDuplicates(
           date: new Date(existingTx.date),
           symbol: existingTx.assetId,
           type: existingTx.type,
-          quantity: new Decimal(existingTx.quantity as any),
-          price: new Decimal(existingTx.price as any),
+          quantity: new Decimal(existingTx.quantity),
+          price: new Decimal(existingTx.price),
         },
         matchConfidence: 'exact',
       });
@@ -212,33 +198,12 @@ export async function executeImport(
 ): Promise<ImportResult> {
   const duplicateRowNumbers = new Set(duplicates.map((d) => d.importRowNumber));
 
-  // Filter rows based on duplicate handling
-  let rowsToImport: ParsedRow[];
-  let skippedDuplicates = 0;
-
-  switch (duplicateHandling) {
-    case 'skip':
-      rowsToImport = validRows.filter(
-        (row) => !duplicateRowNumbers.has(row.rowNumber)
-      );
-      skippedDuplicates = duplicates.length;
-      break;
-    case 'import':
-      rowsToImport = validRows;
-      skippedDuplicates = 0;
-      break;
-    case 'review':
-      // In review mode, only import non-duplicates
-      // User handles duplicates separately
-      rowsToImport = validRows.filter(
-        (row) => !duplicateRowNumbers.has(row.rowNumber)
-      );
-      skippedDuplicates = duplicates.length;
-      break;
-    default:
-      rowsToImport = validRows;
-      skippedDuplicates = 0;
-  }
+  // Filter rows based on duplicate handling ('import' imports all, others skip duplicates)
+  const shouldSkipDuplicates = duplicateHandling !== 'import';
+  const rowsToImport = shouldSkipDuplicates
+    ? validRows.filter((row) => !duplicateRowNumbers.has(row.rowNumber))
+    : validRows;
+  const skippedDuplicates = shouldSkipDuplicates ? duplicates.length : 0;
 
   const transactionIds: string[] = [];
   const failedRows: ParsedRow[] = [];
@@ -354,14 +319,7 @@ async function createTransactionFromRow(
 /**
  * Cancel an import session (no-op for now, just returns).
  */
-export function cancelImport(session: ImportSession): void {
+export function cancelImport(_session: ImportSession): void {
   // Session data is in memory, so cancellation just means
   // not calling executeImport
-}
-
-/**
- * Generate a downloadable CSV of failed rows.
- */
-export function generateFailedRowsCsv(errors: ParsedRow[]): string {
-  return generateCsv(errors.map((e) => e.raw));
 }

@@ -38,6 +38,13 @@ export interface ImportSession {
   detectedHeaders: string[];
   columnMappings: ColumnMapping[];
 
+  /** Detected brokerage format, if any */
+  detectedBrokerage?: {
+    id: string;
+    name: string;
+    confidence: number;
+  };
+
   previewRows: ParsedRow[];
 
   validRowCount: number;
@@ -73,6 +80,21 @@ export const REQUIRED_FIELDS: TransactionField[] = [
 ];
 
 export const OPTIONAL_FIELDS: TransactionField[] = ['type', 'fees', 'notes'];
+
+export const ALL_FIELDS: TransactionField[] = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
+
+/**
+ * Field display labels for UI components.
+ */
+export const FIELD_LABELS: Record<TransactionField, string> = {
+  date: 'Date',
+  symbol: 'Symbol/Ticker',
+  type: 'Transaction Type',
+  quantity: 'Quantity',
+  price: 'Price',
+  fees: 'Fees/Commission',
+  notes: 'Notes',
+};
 
 export interface ColumnMapping {
   csvColumn: string;
@@ -176,6 +198,12 @@ export interface ColumnDetectionResult {
   mappings: ColumnMapping[];
   unmappedColumns: string[];
   missingRequiredFields: TransactionField[];
+  /** Detected brokerage format, if any */
+  detectedBrokerage?: {
+    id: string;
+    name: string;
+    confidence: number;
+  };
 }
 
 export interface ValidationResult {

@@ -25,12 +25,15 @@ import {
   startImportSession,
   detectDuplicates,
   executeImport,
-  revalidateWithMappings,
 } from '@/lib/services/csv-importer';
 import { parseCsvFile } from '@/lib/services/csv-parser';
 import { updateColumnMapping, hasAllRequiredMappings } from '@/lib/services/column-detector';
 import { validateRows } from '@/lib/services/csv-validator';
 import { generateCsv } from '@/lib/services/csv-parser';
+import {
+  getBrokerageFormatById,
+  getBrokerageColumnMappings,
+} from '@/lib/services/brokerage-formats';
 
 export interface CsvImportState {
   // Session state
@@ -45,7 +48,8 @@ export interface CsvImportState {
 
   // Actions
   startImport: (file: File, portfolioId: string) => Promise<void>;
-  updateMapping: (columnIndex: number, field: TransactionField | null) => void;
+  updateColumnMapping: (columnIndex: number, field: TransactionField | null) => void;
+  applyBrokeragePreset: (brokerageId: string) => void;
   setDuplicateHandling: (handling: DuplicateHandling) => void;
   confirmImport: () => Promise<ImportResult>;
   cancelImport: () => void;
@@ -113,45 +117,76 @@ export const useCsvImportStore = create<CsvImportState>((set, get) => ({
     }
   },
 
-  updateMapping: (columnIndex: number, field: TransactionField | null) => {
+  updateColumnMapping: (columnIndex: number, field: TransactionField | null) => {
     const { session, parseResult } = get();
     if (!session || !parseResult) return;
 
-    // Update the mapping
     const updatedMappings = updateColumnMapping(
       session.columnMappings,
       columnIndex,
       field
     );
 
-    // Re-validate if all required fields are now mapped
     const canValidate = hasAllRequiredMappings(updatedMappings);
-
-    let validationResult: ValidationResult | null = null;
-    let updatedSession: ImportSession;
-
-    if (canValidate) {
-      validationResult = validateRows(parseResult.rows, updatedMappings);
-
-      updatedSession = {
-        ...session,
-        columnMappings: updatedMappings,
-        validRowCount: validationResult.validCount,
-        errorRowCount: validationResult.errorCount,
-        errors: validationResult.errors,
-        previewRows: validationResult.valid.slice(0, 10),
-        status: 'preview',
-      };
-    } else {
-      updatedSession = {
-        ...session,
-        columnMappings: updatedMappings,
-        status: 'mapping_review',
-      };
-    }
+    const validationResult = canValidate
+      ? validateRows(parseResult.rows, updatedMappings)
+      : null;
 
     set({
-      session: updatedSession,
+      session: {
+        ...session,
+        columnMappings: updatedMappings,
+        ...(validationResult && {
+          validRowCount: validationResult.validCount,
+          errorRowCount: validationResult.errorCount,
+          errors: validationResult.errors,
+          previewRows: validationResult.valid.slice(0, 10),
+        }),
+        status: canValidate ? 'preview' : 'mapping_review',
+      },
+      validationResult,
+    });
+  },
+
+  applyBrokeragePreset: (brokerageId: string) => {
+    const { session, parseResult } = get();
+    if (!session || !parseResult) return;
+
+    const format = getBrokerageFormatById(brokerageId);
+    if (!format) return;
+
+    const brokerageColumnMap = getBrokerageColumnMappings(format, session.detectedHeaders);
+
+    const updatedMappings: ColumnMapping[] = session.columnMappings.map((mapping, index) => {
+      const field = brokerageColumnMap.get(index) ?? null;
+      return {
+        ...mapping,
+        transactionField: field,
+        confidence: field !== null ? 1.0 : 0,
+        isUserOverride: true,
+      };
+    });
+
+    const canValidate = hasAllRequiredMappings(updatedMappings);
+    const validationResult = canValidate
+      ? validateRows(parseResult.rows, updatedMappings)
+      : null;
+
+    const detectedBrokerage = { id: format.id, name: format.name, confidence: 1.0 };
+
+    set({
+      session: {
+        ...session,
+        columnMappings: updatedMappings,
+        detectedBrokerage,
+        ...(validationResult && {
+          validRowCount: validationResult.validCount,
+          errorRowCount: validationResult.errorCount,
+          errors: validationResult.errors,
+          previewRows: validationResult.valid.slice(0, 10),
+        }),
+        status: canValidate ? 'preview' : 'mapping_review',
+      },
       validationResult,
     });
   },
