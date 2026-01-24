@@ -169,11 +169,34 @@ const taxAmount = total.mul(taxRate);
 
 Playwright tests cover key user workflows:
 - `portfolio-dashboard.spec.ts`: Dashboard functionality
+- `loading-state-regression.spec.ts`: Loading state completion verification
+- `mock-data-flow.spec.ts`: Mock data generation and dashboard display
 - `transaction-management.spec.ts`: Adding/editing transactions
 - `holdings-table.spec.ts`: Holdings display and filtering
 - `charts-visualization.spec.ts`: Chart interactions
 
 Tests run against the dev server by default. The Playwright config automatically starts the dev server before tests.
+
+## Verification Patterns
+
+### Quick Verification (MCP Playwright)
+Use MCP Playwright tools for fast 2-5 second verification during development:
+1. `browser_navigate('/test')` - Go to test page
+2. `browser_click('Generate Mock Data')` - Trigger data generation
+3. `browser_wait_for(text: '/', timeout: 10000)` - Wait for redirect
+4. `browser_snapshot()` - Verify no "Loading" text, widgets visible
+
+### Regression Testing (CLI Playwright)
+Run focused tests before commits:
+```bash
+npx playwright test tests/e2e/loading-state-regression.spec.ts --project=chromium
+```
+
+### Key Testing Principles
+- **Use hard timeouts (5s)**: Fail fast if loading stuck, don't use long 15s+ timeouts
+- **Avoid conditional logic**: `if (loading.isVisible())` masks failures - always assert
+- **Verify real data**: Check for $X.XX format, not $0.00 or empty state
+- **Test page reload**: Exercises persist middleware rehydration path
 
 ## Common Debugging Scenarios
 
@@ -189,3 +212,10 @@ Tests run against the dev server by default. The Playwright config automatically
 - Check rate limits in `src/lib/utils/rate-limit.ts`
 - Verify API keys in `.env.local`
 - Fallback to manual price entry if APIs fail
+
+## Active Technologies
+- TypeScript 5.3 with Next.js 14.2 (App Router) + React 18, Zustand 4.5, Recharts 2.15, shadcn/ui, Tailwind CSS, dnd-kit (new) (002-portfolio-dashboard)
+- IndexedDB via Dexie.js 3.2 (existing userSettings table) (002-portfolio-dashboard)
+
+## Recent Changes
+- 002-portfolio-dashboard: Added TypeScript 5.3 with Next.js 14.2 (App Router) + React 18, Zustand 4.5, Recharts 2.15, shadcn/ui, Tailwind CSS, dnd-kit (new)

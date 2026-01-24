@@ -14,6 +14,8 @@ interface PortfolioState {
   metrics: PortfolioMetrics | null;
   loading: boolean;
   error: string | null;
+  // Internal: track in-flight operations to prevent duplicate calls
+  _loadingHoldingsForId: string | null;
 
   // Actions
   loadPortfolios: () => Promise<void>;
@@ -39,19 +41,27 @@ export const usePortfolioStore = create<PortfolioState>()(
         metrics: null,
         loading: false,
         error: null,
+        _loadingHoldingsForId: null,
 
         // Actions
         loadPortfolios: async () => {
           set({ loading: true, error: null });
           try {
             const portfolios = await portfolioQueries.getAll();
-            set({ portfolios, loading: false });
 
-            // Set current portfolio if none selected and portfolios exist
+            // Get current portfolio (may be restored from localStorage via persist middleware)
             const { currentPortfolio } = get();
-            if (!currentPortfolio && portfolios.length > 0) {
-              set({ currentPortfolio: portfolios[0] });
+
+            // Verify persisted portfolio still exists, clear if not
+            if (currentPortfolio) {
+              const stillExists = portfolios.some((p) => p.id === currentPortfolio.id);
+              if (!stillExists) {
+                // Portfolio was deleted, clear the stale reference
+                set({ currentPortfolio: portfolios[0] || null });
+              }
             }
+
+            set({ portfolios, loading: false });
           } catch (error) {
             set({
               error: error instanceof Error ? error.message : 'Failed to load portfolios',
@@ -62,12 +72,11 @@ export const usePortfolioStore = create<PortfolioState>()(
 
         setCurrentPortfolio: (portfolio) => {
           set({ currentPortfolio: portfolio });
-          if (portfolio) {
-            get().loadHoldings(portfolio.id);
-            get().calculateMetrics(portfolio.id);
-          } else {
+          if (!portfolio) {
             set({ holdings: [], metrics: null });
           }
+          // Note: loadHoldings and calculateMetrics are now triggered by useDashboardData hook
+          // to avoid race conditions with persist middleware rehydration
         },
 
         createPortfolio: async (portfolioData) => {
@@ -128,15 +137,22 @@ export const usePortfolioStore = create<PortfolioState>()(
         },
 
         loadHoldings: async (portfolioId) => {
-          set({ loading: true, error: null });
+          // Prevent duplicate/concurrent calls for the same portfolio
+          const { _loadingHoldingsForId } = get();
+          if (_loadingHoldingsForId === portfolioId) {
+            return;
+          }
+
+          set({ loading: true, error: null, _loadingHoldingsForId: portfolioId });
           try {
             const holdings = await holdingQueries.getByPortfolio(portfolioId);
             const assets = await assetQueries.getAll();
-            set({ holdings, assets, loading: false });
+            set({ holdings, assets, loading: false, _loadingHoldingsForId: null });
           } catch (error) {
             set({
               error: error instanceof Error ? error.message : 'Failed to load holdings',
               loading: false,
+              _loadingHoldingsForId: null,
             });
           }
         },
@@ -173,6 +189,7 @@ export const usePortfolioStore = create<PortfolioState>()(
       }),
       {
         name: 'portfolio-store',
+        // Only persist currentPortfolio; internal flags like _loadingHoldingsForId should NOT be persisted
         partialize: (state) => ({
           currentPortfolio: state.currentPortfolio,
         }),

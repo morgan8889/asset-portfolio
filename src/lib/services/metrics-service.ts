@@ -1,7 +1,7 @@
 /**
  * Metrics Service
  *
- * Provides pure calculation functions for portfolio and holdings metrics.
+ * Pure calculation functions for portfolio and holdings metrics.
  * All functions are stateless and operate on input data.
  */
 
@@ -20,47 +20,48 @@ export interface HoldingWithAsset {
   asset: Asset | undefined;
 }
 
+// =============================================================================
+// Core Calculation Helpers
+// =============================================================================
+
 /**
- * Calculate total portfolio value from holdings
+ * Sum a Decimal field across holdings.
  */
+function sumHoldings(holdings: Holding[], field: keyof Pick<Holding, 'currentValue' | 'costBasis' | 'unrealizedGain'>): Decimal {
+  return holdings.reduce((sum, h) => sum.plus(h[field]), new Decimal(0));
+}
+
+/**
+ * Calculate percentage with division-by-zero safety.
+ */
+function safePercent(numerator: Decimal, denominator: Decimal): number {
+  return denominator.isZero() ? 0 : numerator.dividedBy(denominator).mul(100).toNumber();
+}
+
+// =============================================================================
+// Portfolio Totals
+// =============================================================================
+
 export function calculateTotalValue(holdings: Holding[]): Decimal {
-  return holdings.reduce(
-    (sum, holding) => sum.plus(holding.currentValue),
-    new Decimal(0)
-  );
+  return sumHoldings(holdings, 'currentValue');
 }
 
-/**
- * Calculate total cost basis from holdings
- */
 export function calculateTotalCost(holdings: Holding[]): Decimal {
-  return holdings.reduce(
-    (sum, holding) => sum.plus(holding.costBasis),
-    new Decimal(0)
-  );
+  return sumHoldings(holdings, 'costBasis');
 }
 
-/**
- * Calculate total unrealized gain/loss
- */
 export function calculateTotalGain(holdings: Holding[]): Decimal {
-  return holdings.reduce(
-    (sum, holding) => sum.plus(holding.unrealizedGain),
-    new Decimal(0)
-  );
+  return sumHoldings(holdings, 'unrealizedGain');
 }
 
-/**
- * Calculate gain percentage
- */
 export function calculateGainPercent(totalGain: Decimal, totalCost: Decimal): number {
-  if (totalCost.isZero()) return 0;
-  return totalGain.dividedBy(totalCost).mul(100).toNumber();
+  return safePercent(totalGain, totalCost);
 }
 
-/**
- * Calculate allocation breakdown by asset type
- */
+// =============================================================================
+// Allocation Calculations
+// =============================================================================
+
 export function calculateAllocationByType(
   holdingsWithAssets: HoldingWithAsset[],
   totalValue: Decimal
@@ -69,77 +70,59 @@ export function calculateAllocationByType(
 
   for (const { holding, asset } of holdingsWithAssets) {
     const assetType = asset?.type || 'other';
-    const currentValue = allocationMap.get(assetType) || new Decimal(0);
-    allocationMap.set(assetType, currentValue.plus(holding.currentValue));
+    const current = allocationMap.get(assetType) || new Decimal(0);
+    allocationMap.set(assetType, current.plus(holding.currentValue));
   }
 
-  const allocations: AllocationBreakdown[] = [];
-  for (const [type, value] of allocationMap) {
-    const percent = totalValue.isZero()
-      ? 0
-      : value.dividedBy(totalValue).mul(100).toNumber();
-
-    allocations.push({
+  return Array.from(allocationMap.entries())
+    .map(([type, value]) => ({
       type,
       value,
-      percent,
-    });
-  }
-
-  // Sort by value descending
-  return allocations.sort((a, b) => b.value.minus(a.value).toNumber());
+      percent: safePercent(value, totalValue),
+    }))
+    .sort((a, b) => b.value.minus(a.value).toNumber());
 }
 
-/**
- * Calculate individual holding allocation
- */
 export function calculateHoldingAllocation(
   holdings: Holding[],
   totalValue: Decimal
 ): Array<{ holdingId: string; percent: number }> {
-  return holdings.map((holding) => ({
-    holdingId: holding.id,
-    percent: totalValue.isZero()
-      ? 0
-      : holding.currentValue.dividedBy(totalValue).mul(100).toNumber(),
+  return holdings.map((h) => ({
+    holdingId: h.id,
+    percent: safePercent(h.currentValue, totalValue),
   }));
 }
 
-/**
- * Calculate day change (requires previous day's values)
- */
+// =============================================================================
+// Change Calculations
+// =============================================================================
+
 export function calculateDayChange(
   currentValue: Decimal,
   previousValue: Decimal
 ): { change: Decimal; changePercent: number } {
   const change = currentValue.minus(previousValue);
-  const changePercent = previousValue.isZero()
-    ? 0
-    : change.dividedBy(previousValue).mul(100).toNumber();
-
-  return { change, changePercent };
+  return { change, changePercent: safePercent(change, previousValue) };
 }
 
-/**
- * Calculate basic performance metrics
- * Note: Advanced metrics require historical price data
- */
+// =============================================================================
+// Performance Calculations
+// =============================================================================
+
 export function calculateBasicPerformance(
   totalGainPercent: number,
   _holdings: Holding[]
 ): PerformanceMetrics {
+  // Advanced metrics require historical data
   return {
     roi: totalGainPercent,
-    annualizedReturn: 0, // Requires historical data
-    volatility: 0, // Requires historical data
-    sharpeRatio: 0, // Requires historical data and risk-free rate
-    maxDrawdown: 0, // Requires historical data
+    annualizedReturn: 0,
+    volatility: 0,
+    sharpeRatio: 0,
+    maxDrawdown: 0,
   };
 }
 
-/**
- * Calculate full portfolio metrics
- */
 export function calculatePortfolioMetrics(
   holdingsWithAssets: HoldingWithAsset[],
   previousTotalValue?: Decimal
@@ -154,13 +137,9 @@ export function calculatePortfolioMetrics(
   const allocation = calculateAllocationByType(holdingsWithAssets, totalValue);
   const performance = calculateBasicPerformance(totalGainPercent, holdings);
 
-  let dayChange = new Decimal(0);
-  let dayChangePercent = 0;
-  if (previousTotalValue) {
-    const dayChangeResult = calculateDayChange(totalValue, previousTotalValue);
-    dayChange = dayChangeResult.change;
-    dayChangePercent = dayChangeResult.changePercent;
-  }
+  const { change: dayChange, changePercent: dayChangePercent } = previousTotalValue
+    ? calculateDayChange(totalValue, previousTotalValue)
+    : { change: new Decimal(0), changePercent: 0 };
 
   return {
     totalValue,
@@ -174,9 +153,10 @@ export function calculatePortfolioMetrics(
   };
 }
 
-/**
- * Calculate rebalancing needs
- */
+// =============================================================================
+// Rebalancing
+// =============================================================================
+
 export function calculateRebalancingNeeds(
   allocation: AllocationBreakdown[],
   targetAllocations: Map<AssetType, number>,
@@ -191,8 +171,7 @@ export function calculateRebalancingNeeds(
   return allocation.map((item) => {
     const targetPercent = targetAllocations.get(item.type) || 0;
     const drift = item.percent - targetPercent;
-    const adjustmentPercent = targetPercent - item.percent;
-    const adjustmentValue = totalValue.mul(adjustmentPercent / 100);
+    const adjustmentValue = totalValue.mul((targetPercent - item.percent) / 100);
 
     return {
       type: item.type,
@@ -204,50 +183,26 @@ export function calculateRebalancingNeeds(
   });
 }
 
-/**
- * Calculate weighted average cost
- */
-export function calculateWeightedAverageCost(
-  quantity: Decimal,
-  costBasis: Decimal
-): Decimal {
-  if (quantity.isZero()) return new Decimal(0);
-  return costBasis.dividedBy(quantity);
+// =============================================================================
+// Position-Level Calculations
+// =============================================================================
+
+export function calculateWeightedAverageCost(quantity: Decimal, costBasis: Decimal): Decimal {
+  return quantity.isZero() ? new Decimal(0) : costBasis.dividedBy(quantity);
 }
 
-/**
- * Calculate position weight in portfolio
- */
-export function calculatePositionWeight(
-  positionValue: Decimal,
-  totalPortfolioValue: Decimal
-): number {
-  if (totalPortfolioValue.isZero()) return 0;
-  return positionValue.dividedBy(totalPortfolioValue).mul(100).toNumber();
+export function calculatePositionWeight(positionValue: Decimal, totalPortfolioValue: Decimal): number {
+  return safePercent(positionValue, totalPortfolioValue);
 }
 
-/**
- * Calculate gain/loss for a position
- */
 export function calculatePositionGainLoss(
   currentValue: Decimal,
   costBasis: Decimal
 ): { gain: Decimal; gainPercent: number } {
   const gain = currentValue.minus(costBasis);
-  const gainPercent = costBasis.isZero()
-    ? 0
-    : gain.dividedBy(costBasis).mul(100).toNumber();
-
-  return { gain, gainPercent };
+  return { gain, gainPercent: safePercent(gain, costBasis) };
 }
 
-/**
- * Calculate dividend yield
- */
-export function calculateDividendYield(
-  annualDividend: Decimal,
-  currentPrice: Decimal
-): number {
-  if (currentPrice.isZero()) return 0;
-  return annualDividend.dividedBy(currentPrice).mul(100).toNumber();
+export function calculateDividendYield(annualDividend: Decimal, currentPrice: Decimal): number {
+  return safePercent(annualDividend, currentPrice);
 }

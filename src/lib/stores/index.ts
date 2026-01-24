@@ -9,3 +9,4 @@ export {
   showWarningNotification,
   showInfoNotification,
 } from './ui';
+export { useDashboardStore } from './dashboard';
