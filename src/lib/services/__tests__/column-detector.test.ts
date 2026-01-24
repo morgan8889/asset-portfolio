@@ -261,3 +261,318 @@ describe('getUnmappedRequiredFields', () => {
     expect(getUnmappedRequiredFields(mappings)).toHaveLength(0);
   });
 });
+
+// ============================================================================
+// Brokerage Format Detection Tests (T042)
+// ============================================================================
+
+import {
+  detectBrokerageFormat,
+  getBrokerageColumnMappings,
+  getBrokerageFormatById,
+  getSupportedBrokerages,
+  BROKERAGE_FORMATS,
+} from '../brokerage-formats';
+
+describe('detectBrokerageFormat', () => {
+  describe('Fidelity format detection', () => {
+    it('detects Fidelity export format', () => {
+      const headers = [
+        'Run Date',
+        'Account',
+        'Action',
+        'Symbol',
+        'Security Description',
+        'Quantity',
+        'Price ($)',
+        'Commission ($)',
+        'Fees ($)',
+        'Amount ($)',
+      ];
+
+      const result = detectBrokerageFormat(headers);
+
+      expect(result.format).not.toBeNull();
+      expect(result.format?.id).toBe('fidelity');
+      expect(result.format?.name).toBe('Fidelity Investments');
+      expect(result.confidence).toBeGreaterThan(0.5);
+    });
+
+    it('handles case-insensitive header matching', () => {
+      const headers = [
+        'run date',
+        'account',
+        'action',
+        'symbol',
+        'security description',
+        'quantity',
+        'price ($)',
+        'commission ($)',
+        'fees ($)',
+        'amount ($)',
+      ];
+
+      const result = detectBrokerageFormat(headers);
+
+      expect(result.format?.id).toBe('fidelity');
+    });
+  });
+
+  describe('Schwab format detection', () => {
+    it('detects Charles Schwab export format', () => {
+      const headers = [
+        'Date',
+        'Action',
+        'Symbol',
+        'Description',
+        'Quantity',
+        'Price',
+        'Fees & Comm',
+        'Amount',
+      ];
+
+      const result = detectBrokerageFormat(headers);
+
+      expect(result.format).not.toBeNull();
+      expect(result.format?.id).toBe('schwab');
+      expect(result.format?.name).toBe('Charles Schwab');
+    });
+  });
+
+  describe('Robinhood format detection', () => {
+    it('detects Robinhood export format', () => {
+      const headers = [
+        'Activity Date',
+        'Process Date',
+        'Settle Date',
+        'Instrument',
+        'Description',
+        'Trans Code',
+        'Quantity',
+        'Price',
+        'Amount',
+      ];
+
+      const result = detectBrokerageFormat(headers);
+
+      expect(result.format).not.toBeNull();
+      expect(result.format?.id).toBe('robinhood');
+      expect(result.format?.name).toBe('Robinhood');
+    });
+  });
+
+  describe('TD Ameritrade format detection', () => {
+    it('detects TD Ameritrade export format', () => {
+      const headers = [
+        'Date',
+        'Transaction ID',
+        'Description',
+        'Symbol',
+        'Quantity',
+        'Price',
+        'Commission',
+        'Reg Fee',
+        'Net Amount',
+      ];
+
+      const result = detectBrokerageFormat(headers);
+
+      expect(result.format).not.toBeNull();
+      expect(result.format?.id).toBe('td_ameritrade');
+    });
+  });
+
+  describe('E*TRADE format detection', () => {
+    it('detects E*TRADE export format', () => {
+      const headers = [
+        'Transaction Date',
+        'Transaction Type',
+        'Security Type',
+        'Symbol',
+        'Quantity',
+        'Amount',
+        'Price',
+        'Commission',
+      ];
+
+      const result = detectBrokerageFormat(headers);
+
+      expect(result.format).not.toBeNull();
+      expect(result.format?.id).toBe('etrade');
+    });
+  });
+
+  describe('Vanguard format detection', () => {
+    it('detects Vanguard export format', () => {
+      const headers = [
+        'Trade Date',
+        'Settlement Date',
+        'Transaction Type',
+        'Transaction Description',
+        'Investment Name',
+        'Symbol',
+        'Shares',
+        'Share Price',
+        'Principal Amount',
+      ];
+
+      const result = detectBrokerageFormat(headers);
+
+      expect(result.format).not.toBeNull();
+      expect(result.format?.id).toBe('vanguard');
+    });
+  });
+
+  describe('Interactive Brokers format detection', () => {
+    it('detects Interactive Brokers export format', () => {
+      const headers = [
+        'TradeID',
+        'AccountId',
+        'Symbol',
+        'DateTime',
+        'Exchange',
+        'Quantity',
+        'TradePrice',
+        'IBCommission',
+        'NetCash',
+      ];
+
+      const result = detectBrokerageFormat(headers);
+
+      expect(result.format).not.toBeNull();
+      expect(result.format?.id).toBe('interactive_brokers');
+    });
+  });
+
+  describe('unknown format handling', () => {
+    it('returns null for unknown format', () => {
+      const headers = ['col1', 'col2', 'col3', 'col4'];
+
+      const result = detectBrokerageFormat(headers);
+
+      expect(result.format).toBeNull();
+      expect(result.confidence).toBe(0);
+    });
+
+    it('returns null when not enough signature headers match', () => {
+      // Only 2 headers match Fidelity, but minimum is 6
+      const headers = ['Run Date', 'Symbol', 'Other1', 'Other2'];
+
+      const result = detectBrokerageFormat(headers);
+
+      expect(result.format).toBeNull();
+    });
+
+    it('handles empty headers array', () => {
+      const result = detectBrokerageFormat([]);
+
+      expect(result.format).toBeNull();
+      expect(result.confidence).toBe(0);
+    });
+  });
+
+  describe('confidence scoring', () => {
+    it('returns higher confidence for more matched headers', () => {
+      // Full Fidelity headers
+      const fullHeaders = [
+        'Run Date',
+        'Account',
+        'Action',
+        'Symbol',
+        'Security Description',
+        'Quantity',
+        'Price ($)',
+        'Commission ($)',
+        'Fees ($)',
+        'Amount ($)',
+      ];
+
+      // Partial Fidelity headers (just minimum)
+      const partialHeaders = [
+        'Run Date',
+        'Action',
+        'Symbol',
+        'Quantity',
+        'Price ($)',
+        'Commission ($)',
+      ];
+
+      const fullResult = detectBrokerageFormat(fullHeaders);
+      const partialResult = detectBrokerageFormat(partialHeaders);
+
+      expect(fullResult.confidence).toBeGreaterThan(partialResult.confidence);
+    });
+  });
+});
+
+describe('getBrokerageColumnMappings', () => {
+  it('returns correct column mappings for Fidelity format', () => {
+    const format = getBrokerageFormatById('fidelity')!;
+    const headers = [
+      'Run Date',
+      'Account',
+      'Action',
+      'Symbol',
+      'Security Description',
+      'Quantity',
+      'Price ($)',
+    ];
+
+    const mappings = getBrokerageColumnMappings(format, headers);
+
+    expect(mappings.get(0)).toBe('date'); // Run Date
+    expect(mappings.get(2)).toBe('type'); // Action
+    expect(mappings.get(3)).toBe('symbol'); // Symbol
+    expect(mappings.get(5)).toBe('quantity'); // Quantity
+    expect(mappings.get(6)).toBe('price'); // Price ($)
+  });
+
+  it('handles missing columns gracefully', () => {
+    const format = getBrokerageFormatById('schwab')!;
+    const headers = ['Date', 'Symbol', 'Quantity']; // Missing most columns
+
+    const mappings = getBrokerageColumnMappings(format, headers);
+
+    expect(mappings.get(0)).toBe('date');
+    expect(mappings.get(1)).toBe('symbol');
+    expect(mappings.get(2)).toBe('quantity');
+    expect(mappings.size).toBe(3);
+  });
+});
+
+describe('getBrokerageFormatById', () => {
+  it('returns format for valid ID', () => {
+    const format = getBrokerageFormatById('fidelity');
+
+    expect(format).not.toBeUndefined();
+    expect(format?.name).toBe('Fidelity Investments');
+  });
+
+  it('returns undefined for invalid ID', () => {
+    const format = getBrokerageFormatById('invalid_brokerage');
+
+    expect(format).toBeUndefined();
+  });
+});
+
+describe('getSupportedBrokerages', () => {
+  it('returns list of all supported brokerages', () => {
+    const brokerages = getSupportedBrokerages();
+
+    expect(brokerages.length).toBe(BROKERAGE_FORMATS.length);
+    expect(brokerages.some((b) => b.id === 'fidelity')).toBe(true);
+    expect(brokerages.some((b) => b.id === 'schwab')).toBe(true);
+    expect(brokerages.some((b) => b.id === 'robinhood')).toBe(true);
+  });
+
+  it('returns id and name for each brokerage', () => {
+    const brokerages = getSupportedBrokerages();
+
+    for (const brokerage of brokerages) {
+      expect(brokerage.id).toBeDefined();
+      expect(brokerage.name).toBeDefined();
+      expect(brokerage.id.length).toBeGreaterThan(0);
+      expect(brokerage.name.length).toBeGreaterThan(0);
+    }
+  });
+});

@@ -86,8 +86,7 @@ describe('parseCsvString', () => {
 
   it('throws error for CSV with only headers', () => {
     const csv = 'Date,Symbol,Quantity';
-    const result = parseCsvString(csv);
-    expect(result.rowCount).toBe(0);
+    expect(() => parseCsvString(csv)).toThrow('no data rows');
   });
 });
 
@@ -112,7 +111,7 @@ describe('generateCsv', () => {
 
     const csv = generateCsv(data, ['Date', 'Symbol', 'Quantity']);
 
-    const lines = csv.split('\n');
+    const lines = csv.split(/\r?\n/);
     expect(lines[0]).toBe('Date,Symbol,Quantity');
   });
 
