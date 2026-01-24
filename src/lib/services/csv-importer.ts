@@ -279,13 +279,17 @@ async function createTransactionFromRow(
   if (!asset) {
     // Create a basic asset record
     const assetId = uuidv4();
+    // TODO: Asset type defaulting - Currently defaults all new assets to 'stock'.
+    // This may be incorrect for ETFs, crypto, etc. Consider inferring type from
+    // symbol patterns (e.g., BTC-USD → crypto) or add post-import review step.
+    // See: Type mismatch with Dexie schema requiring 'as any' cast below.
     await db.assets.add({
       id: assetId,
       symbol: parsed.symbol,
       name: parsed.symbol, // Use symbol as name initially
       type: 'stock', // Default to stock
       currency: 'USD', // Default to USD
-    } as any);
+    } as any); // Type cast needed: Dexie schema expects additional fields not in storage interface
     asset = await db.assets.get(assetId);
   }
 
@@ -311,6 +315,9 @@ async function createTransactionFromRow(
     importSource: importSessionId,
   };
 
+  // Type cast needed: Transaction interface includes computed fields (e.g., totalAmount)
+  // that may not exactly match Dexie's storage schema expectations.
+  // Plan: Define explicit TransactionStorage type to remove this cast.
   await db.transactions.add(transaction as any);
 
   return transaction;
