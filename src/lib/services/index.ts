@@ -47,3 +47,26 @@ export {
   compareToBenchmark,
   type PortfolioSummary,
 } from './portfolio-service';
+
+// Price lookup utilities
+export {
+  getPriceAtDate,
+  findClosestPrice,
+  createPriceCache,
+  type PriceLookupResult,
+  type PriceCache,
+} from './price-lookup';
+
+// Performance calculations
+export {
+  calculatePerformance,
+  calculateAllPerformance,
+  getTopPerformers,
+  getBiggestLosers,
+} from './performance-calculator';
+
+// Historical value tracking
+export {
+  getHistoricalValues,
+  getValueAtDate,
+} from './historical-value';
