@@ -23,11 +23,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertCircle, CheckCircle, FileText } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle, FileText, Building2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { CsvFileUpload } from './csv-file-upload';
 import { ImportPreviewTable } from './import-preview-table';
 import { ImportResults } from './import-results';
+import { ColumnMappingEditor, hasAllRequiredMappings } from './column-mapping-editor';
+import { DuplicateReview } from './duplicate-review';
 import { useCsvImportStore } from '@/lib/stores/csv-import';
+import type { DuplicateHandling } from '@/types/csv-import';
+import type { TransactionField } from '@/types/csv-import';
 
 interface CsvImportDialogProps {
   open: boolean;
@@ -35,7 +40,7 @@ interface CsvImportDialogProps {
   portfolioId: string;
 }
 
-type DialogStep = 'upload' | 'preview' | 'importing' | 'results';
+type DialogStep = 'upload' | 'preview' | 'mapping' | 'importing' | 'results';
 
 export function CsvImportDialog({
   open,
@@ -54,6 +59,9 @@ export function CsvImportDialog({
     cancelImport,
     downloadFailedRows,
     reset,
+    updateColumnMapping,
+    setDuplicateHandling,
+    applyBrokeragePreset,
   } = useCsvImportStore();
 
   const [importResult, setImportResult] = useState<{
@@ -63,9 +71,12 @@ export function CsvImportDialog({
     errorCount: number;
   } | null>(null);
 
+  const [showMappingEditor, setShowMappingEditor] = useState(false);
+
   const getCurrentStep = (): DialogStep => {
     if (importResult) return 'results';
     if (session?.status === 'importing') return 'importing';
+    if (showMappingEditor) return 'mapping';
     if (session?.status === 'preview' || session?.status === 'mapping_review') return 'preview';
     return 'upload';
   };
@@ -110,12 +121,43 @@ export function CsvImportDialog({
     onOpenChange(false);
   }, [reset, onOpenChange]);
 
+  const handleMappingChange = useCallback(
+    (index: number, field: TransactionField | null) => {
+      updateColumnMapping(index, field);
+    },
+    [updateColumnMapping]
+  );
+
+  const handleEditMappings = useCallback(() => {
+    setShowMappingEditor(true);
+  }, []);
+
+  const handleCloseMappingEditor = useCallback(() => {
+    setShowMappingEditor(false);
+  }, []);
+
+  const handleDuplicateHandlingChange = useCallback(
+    (handling: DuplicateHandling) => {
+      setDuplicateHandling(handling);
+    },
+    [setDuplicateHandling]
+  );
+
+  const handleApplyBrokeragePreset = useCallback(
+    (brokerageId: string) => {
+      applyBrokeragePreset(brokerageId);
+    },
+    [applyBrokeragePreset]
+  );
+
   const getDialogTitle = () => {
     switch (currentStep) {
       case 'upload':
         return 'Import Transactions from CSV';
       case 'preview':
         return 'Review Import Data';
+      case 'mapping':
+        return 'Edit Column Mappings';
       case 'importing':
         return 'Importing Transactions...';
       case 'results':
@@ -131,6 +173,8 @@ export function CsvImportDialog({
         return 'Upload a CSV file containing your transaction history.';
       case 'preview':
         return 'Review the detected column mappings and data before importing.';
+      case 'mapping':
+        return 'Adjust how CSV columns map to transaction fields.';
       case 'importing':
         return 'Please wait while your transactions are being imported.';
       case 'results':
@@ -176,12 +220,30 @@ export function CsvImportDialog({
           {/* Step: Preview */}
           {currentStep === 'preview' && session && validationResult && (
             <div className="space-y-4">
-              {/* File Info */}
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <FileText className="h-4 w-4" />
-                <span>{session.fileName}</span>
-                <span>•</span>
-                <span>{session.totalRows} rows</span>
+              {/* File Info and Brokerage Detection */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <FileText className="h-4 w-4" />
+                  <span>{session.fileName}</span>
+                  <span>•</span>
+                  <span>{session.totalRows} rows</span>
+                  {session.detectedBrokerage && (
+                    <>
+                      <span>•</span>
+                      <Badge variant="secondary" className="flex items-center gap-1">
+                        <Building2 className="h-3 w-3" />
+                        Detected: {session.detectedBrokerage.name}
+                      </Badge>
+                    </>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleEditMappings}
+                >
+                  Edit Mapping
+                </Button>
               </div>
 
               {/* Validation Summary */}
@@ -215,6 +277,15 @@ export function CsvImportDialog({
                 maxRows={10}
               />
 
+              {/* Duplicate Review */}
+              {session.duplicateCount > 0 && (
+                <DuplicateReview
+                  duplicates={session.duplicates}
+                  handling={session.duplicateHandling}
+                  onHandlingChange={handleDuplicateHandlingChange}
+                />
+              )}
+
               {/* Missing Required Fields Warning */}
               {session.status === 'mapping_review' && (
                 <Alert variant="destructive">
@@ -225,6 +296,19 @@ export function CsvImportDialog({
                   </AlertDescription>
                 </Alert>
               )}
+            </div>
+          )}
+
+          {/* Step: Mapping Editor */}
+          {currentStep === 'mapping' && session && parseResult && (
+            <div className="space-y-4">
+              <ColumnMappingEditor
+                mappings={session.columnMappings}
+                onMappingChange={handleMappingChange}
+                sampleData={parseResult.rows[0]}
+                detectedBrokerage={session.detectedBrokerage}
+                onApplyBrokeragePreset={handleApplyBrokeragePreset}
+              />
             </div>
           )}
 
@@ -272,7 +356,7 @@ export function CsvImportDialog({
                 onClick={handleConfirmImport}
                 disabled={
                   isProcessing ||
-                  session?.status === 'mapping_review' ||
+                  !hasAllRequiredMappings(session?.columnMappings ?? []) ||
                   validationResult?.validCount === 0
                 }
               >
@@ -284,6 +368,20 @@ export function CsvImportDialog({
                 ) : (
                   `Import ${validationResult?.validCount ?? 0} Transactions`
                 )}
+              </Button>
+            </>
+          )}
+
+          {currentStep === 'mapping' && (
+            <>
+              <Button variant="outline" onClick={handleCloseMappingEditor}>
+                Back to Preview
+              </Button>
+              <Button
+                onClick={handleCloseMappingEditor}
+                disabled={!hasAllRequiredMappings(session?.columnMappings ?? [])}
+              >
+                Apply Mappings
               </Button>
             </>
           )}
