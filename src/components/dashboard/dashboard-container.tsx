@@ -158,38 +158,30 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
     [holdings, assets]
   );
 
-  // Early returns for loading/empty states
-  if (configLoading || portfolioLoading || !config) {
-    return <DashboardSkeleton />;
-  }
+  // Extract metrics with defaults - useMemo to avoid object recreation
+  const derivedMetrics = useMemo(() => ({
+    totalValue: metrics?.totalValue || new Decimal(0),
+    totalGain: metrics?.totalGain || new Decimal(0),
+    totalGainPercent: metrics?.totalGainPercent || 0,
+    dayChange: metrics?.dayChange || new Decimal(0),
+    dayChangePercent: metrics?.dayChangePercent || 0,
+  }), [metrics]);
 
-  if (!holdings || holdings.length === 0) {
-    return <EmptyDashboard />;
-  }
-
-  const visibleWidgets = config.widgetOrder.filter((id) => config.widgetVisibility[id]);
-
-  // Extract metrics with defaults
-  const totalValue = metrics?.totalValue || new Decimal(0);
-  const totalGain = metrics?.totalGain || new Decimal(0);
-  const totalGainPercent = metrics?.totalGainPercent || 0;
-  const dayChange = metrics?.dayChange || new Decimal(0);
-  const dayChangePercent = metrics?.dayChangePercent || 0;
-
+  // renderWidget must be defined before early returns (React hooks rules)
   const renderWidget = useCallback((widgetId: WidgetId) => {
     switch (widgetId) {
       case 'total-value':
-        return <TotalValueWidget value={totalValue} />;
+        return <TotalValueWidget value={derivedMetrics.totalValue} />;
       case 'gain-loss':
         return (
           <GainLossWidget
-            gain={totalGain}
-            gainPercent={totalGainPercent}
-            period={config!.timePeriod}
+            gain={derivedMetrics.totalGain}
+            gainPercent={derivedMetrics.totalGainPercent}
+            period={config?.timePeriod || '1M'}
           />
         );
       case 'day-change':
-        return <DayChangeWidget change={dayChange} changePercent={dayChangePercent} />;
+        return <DayChangeWidget change={derivedMetrics.dayChange} changePercent={derivedMetrics.dayChangePercent} />;
       case 'category-breakdown':
         return <CategoryBreakdownWidget allocations={categoryAllocations} />;
       default:
@@ -199,7 +191,18 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
           </div>
         );
     }
-  }, [totalValue, totalGain, totalGainPercent, dayChange, dayChangePercent, categoryAllocations, config]);
+  }, [derivedMetrics, categoryAllocations, config?.timePeriod]);
+
+  // Early returns for loading/empty states (after all hooks)
+  if (configLoading || portfolioLoading || !config) {
+    return <DashboardSkeleton />;
+  }
+
+  if (!holdings || holdings.length === 0) {
+    return <EmptyDashboard />;
+  }
+
+  const visibleWidgets = config.widgetOrder.filter((id) => config.widgetVisibility[id]);
 
   return (
     <div className="space-y-4">
