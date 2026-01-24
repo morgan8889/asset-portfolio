@@ -374,3 +374,98 @@ describe('groupErrorsByField', () => {
     expect(grouped.quantity.length).toBe(0);
   });
 });
+
+describe('Error Reporting', () => {
+  const mappings = createStandardMappings();
+
+  it('includes original row data in errors for debugging', () => {
+    const rows = [
+      { Date: 'bad-date', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'buy', Fees: '', Notes: '' },
+    ];
+
+    const result = validateRows(rows, mappings);
+
+    expect(result.errors.length).toBe(1);
+    expect(result.errors[0].originalData).toEqual(rows[0]);
+    expect(result.errors[0].value).toBe('bad-date');
+  });
+
+  it('provides clear error messages for each validation failure', () => {
+    const rows = [
+      { Date: '', Symbol: '', Quantity: 'invalid', Price: '-100', Type: 'buy', Fees: '', Notes: '' },
+    ];
+
+    const result = validateRows(rows, mappings);
+
+    // Should have multiple errors
+    expect(result.errors.length).toBeGreaterThan(0);
+
+    // Each error should have a meaningful message
+    result.errors.forEach(error => {
+      expect(error.message).toBeTruthy();
+      expect(error.message.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('correctly assigns error severity', () => {
+    const rows = [
+      { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'buy', Fees: 'invalid', Notes: '' },
+    ];
+
+    const result = validateRows(rows, mappings);
+
+    // Fees errors should be warnings, not blocking errors
+    // The row should still be valid because fees errors are non-blocking
+    expect(result.validCount).toBe(1);
+  });
+
+  it('accumulates multiple errors for a single row', () => {
+    const rows = [
+      { Date: 'bad-date', Symbol: '', Quantity: '', Price: '', Type: 'buy', Fees: '', Notes: '' },
+    ];
+
+    const result = validateRows(rows, mappings);
+
+    // Single row with multiple field errors
+    expect(result.errors.length).toBeGreaterThan(1);
+    expect(result.errors.every(e => e.rowNumber === 2)).toBe(true);
+  });
+
+  it('preserves row ordering in error reports', () => {
+    const rows = [
+      { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'buy', Fees: '', Notes: '' },
+      { Date: 'bad-date-2', Symbol: 'GOOGL', Quantity: '5', Price: '175.50', Type: 'buy', Fees: '', Notes: '' },
+      { Date: '2025-01-17', Symbol: 'MSFT', Quantity: '20', Price: '380.25', Type: 'buy', Fees: '', Notes: '' },
+      { Date: 'bad-date-4', Symbol: 'TSLA', Quantity: '15', Price: '250.00', Type: 'buy', Fees: '', Notes: '' },
+    ];
+
+    const result = validateRows(rows, mappings);
+
+    expect(result.validCount).toBe(2);
+    expect(result.errorCount).toBe(2);
+
+    // Errors should be from rows 3 and 5 (1-indexed with header)
+    const errorRows = result.errors.map(e => e.rowNumber);
+    expect(errorRows).toContain(3);
+    expect(errorRows).toContain(5);
+  });
+
+  it('handles large number of errors efficiently', () => {
+    // Generate 100 rows with alternating valid/invalid
+    const rows = Array.from({ length: 100 }, (_, i) => ({
+      Date: i % 2 === 0 ? '2025-01-15' : 'bad-date',
+      Symbol: 'AAPL',
+      Quantity: '10',
+      Price: '150.00',
+      Type: 'buy',
+      Fees: '',
+      Notes: '',
+    }));
+
+    const result = validateRows(rows, mappings);
+
+    expect(result.validCount).toBe(50);
+    expect(result.errorCount).toBe(50);
+    expect(result.errors.length).toBe(50);
+  });
+});

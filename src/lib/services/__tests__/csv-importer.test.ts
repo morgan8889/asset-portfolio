@@ -8,25 +8,41 @@ import {
   startImportSession,
   detectDuplicates,
   executeImport,
-  revalidateWithMappings,
 } from '../csv-importer';
-import type { ParsedRow, DuplicateHandling, ColumnMapping, ImportSession } from '@/types/csv-import';
+import type { ParsedRow, ColumnMapping, ImportSession } from '@/types/csv-import';
 
-// Mock the database module
-vi.mock('@/lib/db', () => ({
-  db: {
-    transactions: {
-      where: vi.fn().mockReturnValue({
-        equals: vi.fn().mockReturnValue({
-          toArray: vi.fn().mockResolvedValue([]),
+// Mock the database module - correct path is @/lib/db/schema
+vi.mock('@/lib/db/schema', () => {
+  const mockAsset = { id: 'asset-1', symbol: 'AAPL', name: 'Apple', type: 'stock' };
+  return {
+    db: {
+      transactions: {
+        where: vi.fn().mockReturnValue({
+          equals: vi.fn().mockReturnValue({
+            filter: vi.fn().mockReturnValue({
+              toArray: vi.fn().mockResolvedValue([]),
+            }),
+            toArray: vi.fn().mockResolvedValue([]),
+            first: vi.fn().mockResolvedValue(null),
+          }),
         }),
-      }),
-      bulkAdd: vi.fn().mockResolvedValue([1, 2, 3]),
+        add: vi.fn().mockResolvedValue('transaction-id'),
+        bulkAdd: vi.fn().mockResolvedValue([1, 2, 3]),
+      },
+      assets: {
+        where: vi.fn().mockReturnValue({
+          equals: vi.fn().mockReturnValue({
+            first: vi.fn().mockResolvedValue(mockAsset),
+          }),
+        }),
+        add: vi.fn().mockResolvedValue('asset-id'),
+        get: vi.fn().mockResolvedValue(mockAsset),
+      },
     },
-  },
-}));
+  };
+});
 
-// Mock parseCsvFile
+// Mock parseCsvFile, generateCsv, and getPreviewData
 vi.mock('../csv-parser', () => ({
   parseCsvFile: vi.fn().mockResolvedValue({
     headers: ['Date', 'Symbol', 'Quantity', 'Price', 'Type'],
@@ -36,6 +52,10 @@ vi.mock('../csv-parser', () => ({
     delimiter: ',',
     rowCount: 1,
   }),
+  generateCsv: vi.fn().mockReturnValue('Date,Symbol,Quantity,Price,Type\n2025-01-15,AAPL,10,150.00,buy'),
+  getPreviewData: vi.fn().mockReturnValue([
+    { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'buy' },
+  ]),
 }));
 
 // Mock column detector
@@ -157,13 +177,13 @@ describe('detectDuplicates', () => {
   });
 
   it('detects duplicates when matching transactions exist', async () => {
-    const { db } = await import('@/lib/db');
+    const { db } = await import('@/lib/db/schema');
     const mockExisting = [
       {
         id: 'existing-1',
         portfolioId: 'portfolio-123',
+        assetId: 'AAPL', // detectDuplicates uses assetId, not symbol
         date: new Date('2025-01-15'),
-        symbol: 'AAPL',
         quantity: 10,
         price: 150,
         type: 'buy',
@@ -172,6 +192,9 @@ describe('detectDuplicates', () => {
 
     vi.mocked(db.transactions.where).mockReturnValue({
       equals: vi.fn().mockReturnValue({
+        filter: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue(mockExisting),
+        }),
         toArray: vi.fn().mockResolvedValue(mockExisting),
       }),
     } as any);
@@ -191,13 +214,20 @@ describe('detectDuplicates', () => {
 });
 
 describe('executeImport', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    // Reset the db mock for each test
+    const { db } = await import('@/lib/db/schema');
+    vi.mocked(db.transactions.add).mockResolvedValue('transaction-id');
+    vi.mocked(db.assets.where).mockReturnValue({
+      equals: vi.fn().mockReturnValue({
+        first: vi.fn().mockResolvedValue({ id: 'asset-1', symbol: 'AAPL', name: 'Apple', type: 'stock' }),
+      }),
+    } as any);
   });
 
   it('imports valid rows successfully', async () => {
-    const { db } = await import('@/lib/db');
-    vi.mocked(db.transactions.bulkAdd).mockResolvedValue([1, 2, 3] as any);
+    const { db } = await import('@/lib/db/schema');
 
     const session = createImportSession({ validRowCount: 3, errorRowCount: 0 });
 
@@ -210,12 +240,12 @@ describe('executeImport', () => {
 
     expect(result.success).toBe(true);
     expect(result.importedCount).toBe(2);
-    expect(db.transactions.bulkAdd).toHaveBeenCalled();
+    // Verify db.transactions.add was called for each row
+    expect(db.transactions.add).toHaveBeenCalledTimes(2);
   });
 
   it('skips duplicates when handling is set to skip', async () => {
-    const { db } = await import('@/lib/db');
-    vi.mocked(db.transactions.bulkAdd).mockResolvedValue([1] as any);
+    const { db } = await import('@/lib/db/schema');
 
     const session = createImportSession();
 
@@ -245,12 +275,11 @@ describe('executeImport', () => {
     expect(result.success).toBe(true);
     expect(result.skippedDuplicates).toBe(1);
     expect(result.importedCount).toBe(1);
+    // Only non-duplicate row should be imported
+    expect(db.transactions.add).toHaveBeenCalledTimes(1);
   });
 
   it('calls progress callback during import', async () => {
-    const { db } = await import('@/lib/db');
-    vi.mocked(db.transactions.bulkAdd).mockResolvedValue([1, 2] as any);
-
     const session = createImportSession();
 
     const validRows: ParsedRow[] = [createParsedRow({})];
@@ -263,30 +292,5 @@ describe('executeImport', () => {
   });
 });
 
-describe('revalidateWithMappings', () => {
-  it('revalidates rows with updated mappings', async () => {
-    const { validateRows } = await import('../csv-validator');
-    vi.mocked(validateRows).mockReturnValue({
-      valid: [],
-      errors: [],
-      validCount: 5,
-      errorCount: 0,
-    });
-
-    const parseResult = {
-      headers: ['Date', 'Symbol'],
-      rows: [{ Date: '2025-01-15', Symbol: 'AAPL' }],
-      delimiter: ',' as const,
-      rowCount: 1,
-    };
-    const mappings: ColumnMapping[] = [
-      { csvColumn: 'Date', csvColumnIndex: 0, transactionField: 'date', confidence: 1, isUserOverride: true },
-      { csvColumn: 'Symbol', csvColumnIndex: 1, transactionField: 'symbol', confidence: 1, isUserOverride: true },
-    ];
-
-    const result = revalidateWithMappings(parseResult, mappings);
-
-    expect(validateRows).toHaveBeenCalledWith(parseResult.rows, mappings);
-    expect(result.validCount).toBe(5);
-  });
-});
+// Note: revalidateWithMappings was removed as it was just a thin wrapper around validateRows.
+// Direct usage of validateRows is preferred for simplicity.
