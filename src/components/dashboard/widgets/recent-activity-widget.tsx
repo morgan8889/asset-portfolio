@@ -121,7 +121,7 @@ function TransactionRow({ transaction, assetMap, currency }: TransactionRowProps
       </div>
       <div className="text-right">
         <div className="font-medium">
-          {formatCurrency(Number(transaction.totalAmount), currency)}
+          {formatCurrency(transaction.totalAmount.toNumber(), currency)}
         </div>
         <div className="text-sm text-muted-foreground">
           {transaction.quantity.toString()} shares
