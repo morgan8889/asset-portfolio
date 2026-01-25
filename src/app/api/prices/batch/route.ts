@@ -5,14 +5,47 @@ import { validateSymbol, sanitizeInput } from '@/lib/utils/validation';
 import { logger } from '@/lib/utils/logger';
 import { convertPenceToPounds } from '@/lib/utils/market-utils';
 
-// In-memory cache for price data (shared with single price endpoint)
-const priceCache = new Map<string, {
+// Cache entry interface
+interface CacheEntry {
   price: number;
   timestamp: number;
   source: string;
-  metadata?: any;
-}>();
+  metadata?: PriceMetadata;
+}
 
+// Price metadata interface
+interface PriceMetadata {
+  currency: string;
+  rawCurrency?: string;
+  marketState?: string;
+  regularMarketTime?: number;
+  previousClose?: number;
+  change?: number;
+  changePercent?: number;
+  exchangeName?: string;
+  fullExchangeName?: string;
+  change24h?: number;
+  lastUpdated?: number;
+}
+
+// Batch result interfaces
+interface BatchPriceSuccess {
+  symbol: string;
+  price: number;
+  source: string;
+  metadata?: PriceMetadata;
+  cached: boolean;
+  timestamp: string;
+}
+
+interface BatchPriceError {
+  symbol: string;
+  error: string;
+}
+
+// In-memory cache for price data with LRU eviction
+const priceCache = new Map<string, CacheEntry>();
+const MAX_CACHE_SIZE = 1000; // Limit cache to 1000 symbols
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const MAX_RETRIES = 3;
 const TIMEOUT_MS = 10000; // 10 seconds
@@ -68,6 +101,10 @@ async function fetchYahooPrice(symbol: string): Promise<{ price: number; metadat
     const changeDecimal = new Decimal(changeRaw);
     const { displayPrice: displayChange } = convertPenceToPounds(changeDecimal, currency);
 
+    // Use utility for consistent previousClose conversion
+    const previousCloseDecimal = new Decimal(previousClose);
+    const { displayPrice: displayPreviousClose } = convertPenceToPounds(previousCloseDecimal, currency);
+
     return {
       price: displayPrice.toNumber(),
       metadata: {
@@ -75,7 +112,7 @@ async function fetchYahooPrice(symbol: string): Promise<{ price: number; metadat
         rawCurrency: currency,
         marketState: result.meta.marketState,
         regularMarketTime: result.meta.regularMarketTime,
-        previousClose: currency === 'GBp' ? previousClose / 100 : previousClose,
+        previousClose: displayPreviousClose.toNumber(),
         change: displayChange.toNumber(),
         changePercent: changePercent,
         exchangeName: result.meta.exchangeName,
@@ -85,6 +122,36 @@ async function fetchYahooPrice(symbol: string): Promise<{ price: number; metadat
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+/**
+ * Add entry to cache with LRU eviction
+ */
+function setCacheEntry(symbol: string, entry: CacheEntry): void {
+  // Evict oldest entry if cache is full
+  if (priceCache.size >= MAX_CACHE_SIZE && !priceCache.has(symbol)) {
+    const firstKey = priceCache.keys().next().value;
+    if (firstKey) {
+      priceCache.delete(firstKey);
+    }
+  }
+
+  // Delete and re-add to move to end (most recently used)
+  priceCache.delete(symbol);
+  priceCache.set(symbol, entry);
+}
+
+/**
+ * Get cache entry and move to end (mark as recently used)
+ */
+function getCacheEntry(symbol: string): CacheEntry | undefined {
+  const entry = priceCache.get(symbol);
+  if (entry) {
+    // Move to end by deleting and re-adding
+    priceCache.delete(symbol);
+    priceCache.set(symbol, entry);
+  }
+  return entry;
 }
 
 // CoinGecko API for cryptocurrency prices
@@ -240,9 +307,9 @@ export async function POST(request: NextRequest) {
 
     // Fetch prices concurrently
     const results = await Promise.allSettled(
-      validSymbols.map(async (symbol) => {
+      validSymbols.map(async (symbol): Promise<BatchPriceSuccess> => {
         // Check cache first
-        const cached = priceCache.get(symbol);
+        const cached = getCacheEntry(symbol);
         if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
           return {
             symbol,
@@ -257,8 +324,8 @@ export async function POST(request: NextRequest) {
         // Fetch fresh data
         const priceData = await fetchPriceWithRetry(symbol);
 
-        // Update cache
-        priceCache.set(symbol, {
+        // Update cache with LRU eviction
+        setCacheEntry(symbol, {
           price: priceData.price,
           timestamp: Date.now(),
           source: priceData.source,
@@ -277,8 +344,8 @@ export async function POST(request: NextRequest) {
     );
 
     // Process results
-    const successful: any[] = [];
-    const failed: any[] = [];
+    const successful: BatchPriceSuccess[] = [];
+    const failed: BatchPriceError[] = [];
 
     results.forEach((result, index) => {
       if (result.status === 'fulfilled') {

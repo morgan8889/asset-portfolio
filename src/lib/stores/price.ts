@@ -23,6 +23,11 @@ import {
 import { calculateStaleness } from '@/lib/utils/staleness';
 import { convertPenceToPounds, getExchange } from '@/lib/utils/market-utils';
 import { getMarketState } from '@/lib/services/market-hours';
+import {
+  priceResponseSchema,
+  batchPriceResponseSchema,
+  type BatchPriceResponse as ValidatedBatchPriceResponse,
+} from '@/lib/schemas/price-schemas';
 
 // Types for the store
 interface PriceData {
@@ -35,6 +40,7 @@ interface PriceData {
   source: string;
   marketState?: MarketState;
 }
+
 
 interface PriceState {
   // State
@@ -65,6 +71,7 @@ interface PriceState {
 
   startPolling: () => void;
   stopPolling: () => void;
+  updateStaleness: () => void;
 
   // Cache persistence
   loadCachedPrices: () => Promise<void>;
@@ -80,6 +87,9 @@ interface PriceState {
 
 // Polling interval reference
 let pollIntervalId: ReturnType<typeof setInterval> | null = null;
+
+// Staleness update interval reference
+let stalenessIntervalId: ReturnType<typeof setInterval> | null = null;
 
 // Visibility change handler reference
 let visibilityHandler: (() => void) | null = null;
@@ -144,9 +154,14 @@ export const usePriceStore = create<PriceState>()(
         ) {
           // Stop polling synchronously to prevent race condition
           get().stopPolling();
-          // Wait for next tick before starting to ensure cleanup completes
+          // Use queueMicrotask to ensure cleanup completes before restart
           if (updated.refreshInterval !== 'manual') {
-            setTimeout(() => get().startPolling(), 0);
+            queueMicrotask(() => {
+              // Double-check state hasn't changed before restarting
+              if (get().preferences.refreshInterval !== 'manual') {
+                get().startPolling();
+              }
+            });
           }
         }
 
@@ -220,22 +235,9 @@ export const usePriceStore = create<PriceState>()(
       },
 
       getPrice: (symbol) => {
-        const price = get().prices.get(symbol.toUpperCase());
-        if (!price) return undefined;
-
-        // Recalculate staleness on access for real-time accuracy
-        const freshStaleness = calculateStaleness(price.timestamp, get().preferences.refreshInterval);
-
-        // Only create new object if staleness changed to avoid unnecessary re-renders
-        if (price.staleness !== freshStaleness) {
-          const updatedPrice = { ...price, staleness: freshStaleness };
-          const prices = new Map(get().prices);
-          prices.set(symbol.toUpperCase(), updatedPrice);
-          set({ prices });
-          return updatedPrice;
-        }
-
-        return price;
+        // Pure getter - no state mutations
+        // Staleness is updated by polling cycle or manual refresh
+        return get().prices.get(symbol.toUpperCase());
       },
 
       // Price fetching
@@ -256,8 +258,16 @@ export const usePriceStore = create<PriceState>()(
             throw new Error(errorData.error || `Failed to fetch price for ${symbol}`);
           }
 
-          const data = await response.json();
+          const rawData = await response.json();
 
+          // Validate response with Zod
+          const parseResult = priceResponseSchema.safeParse(rawData);
+          if (!parseResult.success) {
+            console.error('Invalid price response:', parseResult.error);
+            throw new Error('Invalid price data format received from API');
+          }
+
+          const data = parseResult.data;
           get().updatePrice(symbol, {
             symbol: data.symbol,
             price: String(data.price),
@@ -333,12 +343,20 @@ export const usePriceStore = create<PriceState>()(
             return;
           }
 
-          const result = await response.json();
+          const rawResult = await response.json();
 
-          if (result.successful) {
+          // Validate response with Zod
+          const parseResult = batchPriceResponseSchema.safeParse(rawResult);
+          if (!parseResult.success) {
+            console.error('Invalid batch price response:', parseResult.error);
+            throw new Error('Invalid batch price data format received from API');
+          }
+
+          const result = parseResult.data;
+          if (result.successful.length > 0) {
             const updates: Record<string, PriceData> = {};
 
-            result.successful.forEach((item: any) => {
+            result.successful.forEach((item) => {
               updates[item.symbol] = {
                 symbol: item.symbol,
                 price: String(item.price),
@@ -392,9 +410,12 @@ export const usePriceStore = create<PriceState>()(
         // Load cached prices first for offline resilience
         loadCachedPrices();
 
-        // Clear any existing interval
+        // Clear any existing intervals
         if (pollIntervalId) {
           clearInterval(pollIntervalId);
+        }
+        if (stalenessIntervalId) {
+          clearInterval(stalenessIntervalId);
         }
 
         // Set up polling
@@ -409,6 +430,11 @@ export const usePriceStore = create<PriceState>()(
             refreshAllPrices();
           }
         }, intervalMs);
+
+        // Set up staleness updates (every 5 seconds)
+        stalenessIntervalId = setInterval(() => {
+          get().updateStaleness();
+        }, 5000);
 
         // Set up visibility change handler
         if (typeof document !== 'undefined' && preferences.pauseWhenHidden) {
@@ -459,6 +485,11 @@ export const usePriceStore = create<PriceState>()(
           pollIntervalId = null;
         }
 
+        if (stalenessIntervalId) {
+          clearInterval(stalenessIntervalId);
+          stalenessIntervalId = null;
+        }
+
         if (visibilityHandler && typeof document !== 'undefined') {
           document.removeEventListener('visibilitychange', visibilityHandler);
           visibilityHandler = null;
@@ -477,6 +508,24 @@ export const usePriceStore = create<PriceState>()(
         }
 
         set({ isPolling: false });
+      },
+
+      updateStaleness: () => {
+        const prices = new Map(get().prices);
+        const refreshInterval = get().preferences.refreshInterval;
+        let updated = false;
+
+        prices.forEach((data, symbol) => {
+          const freshStaleness = calculateStaleness(data.timestamp, refreshInterval);
+          if (data.staleness !== freshStaleness) {
+            prices.set(symbol, { ...data, staleness: freshStaleness });
+            updated = true;
+          }
+        });
+
+        if (updated) {
+          set({ prices });
+        }
       },
 
       // Cache persistence for offline resilience
@@ -576,19 +625,16 @@ export const usePriceStore = create<PriceState>()(
   )
 );
 
-// Cleanup function for module unload
-let beforeUnloadHandler: (() => void) | null = null;
-
-if (typeof window !== 'undefined') {
-  // Remove any existing handler to prevent duplicates
-  if (beforeUnloadHandler) {
-    window.removeEventListener('beforeunload', beforeUnloadHandler);
-  }
-
-  beforeUnloadHandler = () => {
-    const { stopPolling } = usePriceStore.getState();
-    stopPolling();
-  };
-
-  window.addEventListener('beforeunload', beforeUnloadHandler);
-}
+/**
+ * Hook to set up cleanup on app unmount (beforeunload).
+ * Use this in your app root component's useEffect.
+ *
+ * @example
+ * ```tsx
+ * useEffect(() => {
+ *   const cleanup = usePriceStore.getState().stopPolling;
+ *   window.addEventListener('beforeunload', cleanup);
+ *   return () => window.removeEventListener('beforeunload', cleanup);
+ * }, []);
+ * ```
+ */
