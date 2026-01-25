@@ -13,6 +13,29 @@ import { Decimal } from 'decimal.js';
 import { subDays, startOfDay } from 'date-fns';
 
 // =============================================================================
+// Layout Types
+// =============================================================================
+
+/**
+ * Layout mode for the dashboard.
+ * - 'grid': Multi-column responsive grid layout
+ * - 'stacking': Single-column stacked layout
+ */
+export type LayoutMode = 'grid' | 'stacking';
+
+/**
+ * Number of columns in grid layout mode.
+ * Only applies when layoutMode is 'grid'.
+ */
+export type GridColumns = 2 | 3 | 4;
+
+/**
+ * Widget column span (1 = normal, 2 = double-width).
+ * Spans are clamped to available columns on smaller screens.
+ */
+export type WidgetSpan = 1 | 2;
+
+// =============================================================================
 // Widget Types
 // =============================================================================
 
@@ -85,11 +108,11 @@ export interface TimePeriodConfig {
 // =============================================================================
 
 /**
- * User's personalized dashboard configuration.
- * Stored in IndexedDB userSettings table with key 'dashboard-config'.
+ * Version 1 dashboard configuration (legacy).
+ * Used for migration from older configurations.
  */
-export interface DashboardConfiguration {
-  /** Schema version for migrations (current: 1) */
+export interface DashboardConfigurationV1 {
+  /** Schema version for migrations */
   readonly version: 1;
 
   /** Ordered array of widget IDs determining display order */
@@ -106,6 +129,39 @@ export interface DashboardConfiguration {
 
   /** ISO 8601 timestamp of last configuration update */
   lastUpdated: string;
+}
+
+/**
+ * User's personalized dashboard configuration (Version 2).
+ * Stored in IndexedDB userSettings table with key 'dashboard-config'.
+ */
+export interface DashboardConfiguration {
+  /** Schema version for migrations (current: 2) */
+  readonly version: 2;
+
+  /** Ordered array of widget IDs determining display order */
+  widgetOrder: WidgetId[];
+
+  /** Visibility state for each widget */
+  widgetVisibility: Record<WidgetId, boolean>;
+
+  /** Default time period for gain/loss calculations */
+  timePeriod: TimePeriod;
+
+  /** Number of holdings to show in top/bottom performers (1-10) */
+  performerCount: number;
+
+  /** ISO 8601 timestamp of last configuration update */
+  lastUpdated: string;
+
+  /** Layout mode: 'grid' for multi-column, 'stacking' for single column */
+  layoutMode: LayoutMode;
+
+  /** Number of columns in grid mode (2, 3, or 4) */
+  gridColumns: GridColumns;
+
+  /** Per-widget column span overrides (1 or 2 columns) */
+  widgetSpans: Partial<Record<WidgetId, WidgetSpan>>;
 }
 
 // =============================================================================
@@ -212,7 +268,18 @@ export const TimePeriodSchema = z.enum([
   'ALL',
 ]);
 
-export const DashboardConfigurationSchema = z.object({
+export const LayoutModeSchema = z.enum(['grid', 'stacking']);
+
+export const GridColumnsSchema = z.union([z.literal(2), z.literal(3), z.literal(4)]);
+
+export const WidgetSpanSchema = z.union([z.literal(1), z.literal(2)]);
+
+export const WidgetSpansSchema = z.record(WidgetIdSchema, WidgetSpanSchema);
+
+/**
+ * Version 1 schema for migration validation.
+ */
+export const DashboardConfigurationSchemaV1 = z.object({
   version: z.literal(1),
   widgetOrder: z
     .array(WidgetIdSchema)
@@ -237,6 +304,39 @@ export const DashboardConfigurationSchema = z.object({
     .min(1, 'Must show at least 1 performer')
     .max(10, 'Cannot show more than 10 performers'),
   lastUpdated: z.string().datetime('Must be a valid ISO 8601 datetime'),
+});
+
+/**
+ * Version 2 schema with layout configuration.
+ */
+export const DashboardConfigurationSchema = z.object({
+  version: z.literal(2),
+  widgetOrder: z
+    .array(WidgetIdSchema)
+    .min(1, 'At least one widget must be in the order')
+    .refine((arr) => new Set(arr).size === arr.length, {
+      message: 'Widget order must not contain duplicates',
+    }),
+  widgetVisibility: z.object({
+    'total-value': z.boolean(),
+    'gain-loss': z.boolean(),
+    'day-change': z.boolean(),
+    'category-breakdown': z.boolean(),
+    'growth-chart': z.boolean(),
+    'top-performers': z.boolean(),
+    'biggest-losers': z.boolean(),
+    'recent-activity': z.boolean(),
+  }),
+  timePeriod: TimePeriodSchema,
+  performerCount: z
+    .number()
+    .int('Performer count must be an integer')
+    .min(1, 'Must show at least 1 performer')
+    .max(10, 'Cannot show more than 10 performers'),
+  lastUpdated: z.string().datetime('Must be a valid ISO 8601 datetime'),
+  layoutMode: LayoutModeSchema,
+  gridColumns: GridColumnsSchema,
+  widgetSpans: z.record(WidgetIdSchema, WidgetSpanSchema).optional().default({}),
 });
 
 // =============================================================================
@@ -357,8 +457,17 @@ export const TIME_PERIOD_CONFIGS: Record<TimePeriod, TimePeriodConfig> = {
 // Default Configuration
 // =============================================================================
 
+/**
+ * Default widget spans based on WIDGET_DEFINITIONS.
+ * Widgets with colSpan: 2 in their definition get span 2.
+ */
+export const DEFAULT_WIDGET_SPANS: Partial<Record<WidgetId, WidgetSpan>> = {
+  'growth-chart': 2,
+  'recent-activity': 2,
+};
+
 export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
-  version: 1,
+  version: 2,
   widgetOrder: [
     'total-value',
     'gain-loss',
@@ -382,4 +491,7 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
   timePeriod: 'ALL',
   performerCount: 5,
   lastUpdated: new Date().toISOString(),
+  layoutMode: 'grid',
+  gridColumns: 4,
+  widgetSpans: { ...DEFAULT_WIDGET_SPANS },
 };

@@ -10,17 +10,38 @@
 import { settingsQueries } from '@/lib/db';
 import {
   DashboardConfiguration,
+  DashboardConfigurationV1,
   DashboardConfigurationSchema,
+  DashboardConfigurationSchemaV1,
   WidgetId,
   TimePeriod,
+  LayoutMode,
+  GridColumns,
+  WidgetSpan,
   DEFAULT_DASHBOARD_CONFIG,
+  DEFAULT_WIDGET_SPANS,
 } from '@/types/dashboard';
 
 const STORAGE_KEY = 'dashboard-config';
 
+/**
+ * Migrate a v1 configuration to v2.
+ * Adds default layout settings while preserving existing config.
+ */
+function migrateV1ToV2(v1Config: DashboardConfigurationV1): DashboardConfiguration {
+  return {
+    ...v1Config,
+    version: 2,
+    layoutMode: 'grid',
+    gridColumns: 4,
+    widgetSpans: { ...DEFAULT_WIDGET_SPANS },
+  };
+}
+
 export const dashboardConfigService = {
   /**
    * Load the current dashboard configuration.
+   * Handles migration from v1 to v2 automatically.
    * Returns default configuration if none exists or validation fails.
    */
   async getConfig(): Promise<DashboardConfiguration> {
@@ -30,14 +51,25 @@ export const dashboardConfigService = {
       return { ...DEFAULT_DASHBOARD_CONFIG };
     }
 
-    const result = DashboardConfigurationSchema.safeParse(stored);
-
-    if (!result.success) {
-      console.warn('Invalid dashboard config, using default:', result.error);
-      return { ...DEFAULT_DASHBOARD_CONFIG };
+    // Check if it's a valid v2 config
+    const v2Result = DashboardConfigurationSchema.safeParse(stored);
+    if (v2Result.success) {
+      return v2Result.data;
     }
 
-    return result.data;
+    // Try to migrate from v1
+    const v1Result = DashboardConfigurationSchemaV1.safeParse(stored);
+    if (v1Result.success) {
+      console.info('Migrating dashboard config from v1 to v2');
+      const migrated = migrateV1ToV2(v1Result.data);
+      // Persist the migrated config
+      await settingsQueries.set(STORAGE_KEY, migrated);
+      return migrated;
+    }
+
+    // Neither v1 nor v2 valid - use defaults
+    console.warn('Invalid dashboard config, using default:', v2Result.error);
+    return { ...DEFAULT_DASHBOARD_CONFIG };
   },
 
   /**
@@ -99,6 +131,34 @@ export const dashboardConfigService = {
   async setPerformerCount(count: number): Promise<void> {
     const config = await this.getConfig();
     config.performerCount = count;
+    await this.saveConfig(config);
+  },
+
+  /**
+   * Update the layout mode (grid or stacking).
+   */
+  async setLayoutMode(mode: LayoutMode): Promise<void> {
+    const config = await this.getConfig();
+    config.layoutMode = mode;
+    await this.saveConfig(config);
+  },
+
+  /**
+   * Update the number of grid columns.
+   * Only affects display when layoutMode is 'grid'.
+   */
+  async setGridColumns(columns: GridColumns): Promise<void> {
+    const config = await this.getConfig();
+    config.gridColumns = columns;
+    await this.saveConfig(config);
+  },
+
+  /**
+   * Update the column span for a specific widget.
+   */
+  async setWidgetSpan(widgetId: WidgetId, span: WidgetSpan): Promise<void> {
+    const config = await this.getConfig();
+    config.widgetSpans = { ...config.widgetSpans, [widgetId]: span };
     await this.saveConfig(config);
   },
 };

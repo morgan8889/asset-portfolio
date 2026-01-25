@@ -35,3 +35,4 @@
 - All checklist items pass - ready for `/speckit.clarify` or `/speckit.plan`
 - This feature extends the dashboard widget configurability from feature 002
 - Privacy-first principle maintained: layout preferences stored locally per constitution
+- The spec builds on existing 002-portfolio-dashboard feature and enhances the layout system

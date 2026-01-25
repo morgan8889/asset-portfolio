@@ -26,8 +26,9 @@ import { Decimal } from 'decimal.js';
 import { PieChart } from 'lucide-react';
 
 import { useDashboardStore, usePortfolioStore } from '@/lib/stores';
-import { WidgetId, WIDGET_DEFINITIONS, CategoryAllocation } from '@/types/dashboard';
+import { WidgetId, WIDGET_DEFINITIONS, CategoryAllocation, LayoutMode, GridColumns } from '@/types/dashboard';
 import { Holding, Asset } from '@/types';
+import { cn } from '@/lib/utils';
 import { WidgetWrapper } from './widget-wrapper';
 import { StaleDataBanner } from './stale-data-banner';
 import {
@@ -136,23 +137,37 @@ function formatCategoryLabel(category: string): string {
 }
 
 const MOBILE_BREAKPOINT = 768; // md breakpoint in Tailwind
+const TABLET_BREAKPOINT = 1024; // lg breakpoint in Tailwind
+
+/**
+ * Grid column classes for each column count.
+ * Responsive: 1 column on mobile, configured on larger screens.
+ */
+const GRID_CLASSES: Record<GridColumns, string> = {
+  2: 'grid-cols-1 md:grid-cols-2',
+  3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+  4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+};
 
 const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardContainerProps) => {
   const { config, loading: configLoading, loadConfig, setWidgetOrder } = useDashboardStore();
   const { metrics, holdings, assets, loading: portfolioLoading } = usePortfolioStore();
 
-  // Detect mobile viewport for responsive drag-drop behavior
+  // Detect viewport size for responsive behavior
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
 
   useEffect(() => {
     // Check initial viewport
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    const checkViewport = () => {
+      const width = window.innerWidth;
+      setIsMobile(width < MOBILE_BREAKPOINT);
+      setIsTablet(width >= MOBILE_BREAKPOINT && width < TABLET_BREAKPOINT);
     };
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    checkViewport();
+    window.addEventListener('resize', checkViewport);
+    return () => window.removeEventListener('resize', checkViewport);
   }, []);
 
   useEffect(() => {
@@ -189,6 +204,28 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
     dayChange: metrics?.dayChange || new Decimal(0),
     dayChangePercent: metrics?.dayChangePercent || 0,
   }), [metrics]);
+
+  // Compute effective layout mode (force stacking on mobile)
+  const effectiveLayoutMode: LayoutMode = isMobile
+    ? 'stacking'
+    : (config?.layoutMode ?? 'grid');
+
+  // Compute effective grid columns (clamp to 2 on tablet)
+  const effectiveGridColumns: GridColumns = useMemo(() => {
+    const configColumns = config?.gridColumns ?? 4;
+    if (isTablet && configColumns > 2) {
+      return 2;
+    }
+    return configColumns;
+  }, [config?.gridColumns, isTablet]);
+
+  // Compute the grid class based on layout mode
+  const gridClass = useMemo(() => {
+    if (effectiveLayoutMode === 'stacking') {
+      return 'grid-cols-1';
+    }
+    return GRID_CLASSES[effectiveGridColumns];
+  }, [effectiveLayoutMode, effectiveGridColumns]);
 
   // renderWidget must be defined before early returns (React hooks rules)
   const renderWidget = useCallback((widgetId: WidgetId) => {
@@ -252,9 +289,15 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
           strategy={rectSortingStrategy}
           disabled={isDragDropDisabled}
         >
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className={cn('grid gap-4 transition-all duration-300', gridClass)}>
             {visibleWidgets.map((widgetId) => (
-              <WidgetWrapper key={widgetId} id={widgetId} disabled={isDragDropDisabled}>
+              <WidgetWrapper
+                key={widgetId}
+                id={widgetId}
+                disabled={isDragDropDisabled}
+                span={config?.widgetSpans?.[widgetId] ?? 1}
+                layoutMode={effectiveLayoutMode}
+              >
                 {renderWidget(widgetId)}
               </WidgetWrapper>
             ))}
