@@ -103,6 +103,7 @@ export const BiggestLosersWidget = memo(function BiggestLosersWidget({
   const effectivePortfolioId = portfolioId || currentPortfolio?.id;
   const effectiveCount = count || config?.performerCount || 5;
   const period: TimePeriod = config?.timePeriod || 'ALL';
+  const currency = currentPortfolio?.currency || 'USD';
 
   const [losers, setLosers] = useState<HoldingPerformance[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,7 +160,7 @@ export const BiggestLosersWidget = memo(function BiggestLosersWidget({
               key={loser.holdingId}
               loser={loser}
               rank={index + 1}
-              currency="USD"
+              currency={currency}
             />
           ))}
         </div>

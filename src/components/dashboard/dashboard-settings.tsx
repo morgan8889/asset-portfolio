@@ -30,6 +30,7 @@ interface DashboardSettingsProps {
 
 export function DashboardSettings({ trigger }: DashboardSettingsProps) {
   const [open, setOpen] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const { config, setWidgetVisibility, setWidgetOrder, resetToDefault } = useDashboardStore();
 
   const handleVisibilityChange = useCallback(
@@ -71,9 +72,18 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     [config, setWidgetOrder]
   );
 
-  const handleReset = useCallback(async () => {
+  const handleResetClick = useCallback(() => {
+    setShowResetConfirm(true);
+  }, []);
+
+  const handleResetConfirm = useCallback(async () => {
     await resetToDefault();
+    setShowResetConfirm(false);
   }, [resetToDefault]);
+
+  const handleResetCancel = useCallback(() => {
+    setShowResetConfirm(false);
+  }, []);
 
   if (!config) {
     return null;
@@ -87,7 +97,10 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
   );
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen);
+      if (!isOpen) setShowResetConfirm(false);
+    }}>
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -161,17 +174,41 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
         </div>
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button
-            variant="outline"
-            onClick={handleReset}
-            className="w-full sm:w-auto"
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Reset to Default
-          </Button>
-          <Button onClick={() => setOpen(false)} className="w-full sm:w-auto">
-            Done
-          </Button>
+          {showResetConfirm ? (
+            <>
+              <p className="text-sm text-muted-foreground w-full sm:w-auto">
+                Reset all settings to default?
+              </p>
+              <Button
+                variant="destructive"
+                onClick={handleResetConfirm}
+                className="w-full sm:w-auto"
+              >
+                Yes, Reset
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleResetCancel}
+                className="w-full sm:w-auto"
+              >
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                onClick={handleResetClick}
+                className="w-full sm:w-auto"
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reset to Default
+              </Button>
+              <Button onClick={() => setOpen(false)} className="w-full sm:w-auto">
+                Done
+              </Button>
+            </>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

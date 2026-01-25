@@ -157,14 +157,19 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
       return;
     }
 
+    const abortController = new AbortController();
     let cancelled = false;
 
     async function fetchData() {
       setLoading(true);
       try {
+        // Check cancelled before starting async work
+        if (cancelled) return;
+
         const historicalData = await getHistoricalValues(effectivePortfolioId!, period);
 
-        if (cancelled) return;
+        // Check cancelled after each await to prevent state updates on unmounted component
+        if (cancelled || abortController.signal.aborted) return;
 
         const chartData: ChartDataPoint[] = historicalData.map((point: HistoricalValuePoint) => ({
           date: point.date.toISOString(),
@@ -173,8 +178,12 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
           timestamp: point.date.getTime(),
         }));
 
-        setData(chartData);
+        if (!cancelled) {
+          setData(chartData);
+        }
       } catch (error) {
+        // Ignore abort errors
+        if (error instanceof Error && error.name === 'AbortError') return;
         console.error('Failed to load historical data:', error);
         if (!cancelled) setData([]);
       } finally {
@@ -186,6 +195,7 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
 
     return () => {
       cancelled = true;
+      abortController.abort();
     };
   }, [effectivePortfolioId, period]);
 
@@ -314,7 +324,14 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
                 tick={{ fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                tickFormatter={(value) => {
+                  if (value >= 1_000_000) {
+                    return `$${(value / 1_000_000).toFixed(1)}M`;
+                  } else if (value >= 1_000) {
+                    return `$${(value / 1_000).toFixed(0)}k`;
+                  }
+                  return `$${value.toFixed(0)}`;
+                }}
                 domain={['dataMin - 1000', 'dataMax + 1000']}
               />
 

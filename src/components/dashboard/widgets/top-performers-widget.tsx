@@ -109,6 +109,7 @@ export const TopPerformersWidget = memo(function TopPerformersWidget({
   const effectivePortfolioId = portfolioId || currentPortfolio?.id;
   const effectiveCount = count || config?.performerCount || 5;
   const period: TimePeriod = config?.timePeriod || 'ALL';
+  const currency = currentPortfolio?.currency || 'USD';
 
   const [performers, setPerformers] = useState<HoldingPerformance[]>([]);
   const [loading, setLoading] = useState(true);
@@ -165,7 +166,7 @@ export const TopPerformersWidget = memo(function TopPerformersWidget({
               key={performer.holdingId}
               performer={performer}
               rank={index + 1}
-              currency="USD"
+              currency={currency}
             />
           ))}
         </div>
