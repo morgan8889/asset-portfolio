@@ -6,7 +6,7 @@
  * Main container for the configurable dashboard with drag-drop reordering.
  */
 
-import { useEffect, useMemo, useCallback, memo } from 'react';
+import { useEffect, useMemo, useCallback, memo, useState } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -35,6 +35,10 @@ import {
   GainLossWidget,
   DayChangeWidget,
   CategoryBreakdownWidget,
+  GrowthChartWidget,
+  TopPerformersWidget,
+  BiggestLosersWidget,
+  RecentActivityWidget,
 } from './widgets';
 
 interface DashboardContainerProps {
@@ -131,13 +135,32 @@ function formatCategoryLabel(category: string): string {
   return labels[category] || category.charAt(0).toUpperCase() + category.slice(1);
 }
 
+const MOBILE_BREAKPOINT = 768; // md breakpoint in Tailwind
+
 const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardContainerProps) => {
   const { config, loading: configLoading, loadConfig, setWidgetOrder } = useDashboardStore();
   const { metrics, holdings, assets, loading: portfolioLoading } = usePortfolioStore();
 
+  // Detect mobile viewport for responsive drag-drop behavior
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Check initial viewport
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   useEffect(() => {
     loadConfig();
   }, [loadConfig]);
+
+  // Disable drag-drop on mobile or when explicitly disabled
+  const isDragDropDisabled = disableDragDrop || isMobile;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -177,19 +200,30 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
           <GainLossWidget
             gain={derivedMetrics.totalGain}
             gainPercent={derivedMetrics.totalGainPercent}
-            period={config?.timePeriod || '1M'}
+            period={config?.timePeriod || 'ALL'}
           />
         );
       case 'day-change':
         return <DayChangeWidget change={derivedMetrics.dayChange} changePercent={derivedMetrics.dayChangePercent} />;
       case 'category-breakdown':
         return <CategoryBreakdownWidget allocations={categoryAllocations} />;
-      default:
+      case 'growth-chart':
+        return <GrowthChartWidget />;
+      case 'top-performers':
+        return <TopPerformersWidget />;
+      case 'biggest-losers':
+        return <BiggestLosersWidget />;
+      case 'recent-activity':
+        return <RecentActivityWidget />;
+      default: {
+        // Exhaustive check - all widget types should be handled above
+        const _exhaustiveCheck: never = widgetId;
         return (
           <div className="flex items-center justify-center h-full text-muted-foreground">
-            {WIDGET_DEFINITIONS[widgetId].displayName} (Coming Soon)
+            Unknown widget
           </div>
         );
+      }
     }
   }, [derivedMetrics, categoryAllocations, config?.timePeriod]);
 
@@ -216,11 +250,11 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
         <SortableContext
           items={visibleWidgets}
           strategy={rectSortingStrategy}
-          disabled={disableDragDrop}
+          disabled={isDragDropDisabled}
         >
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {visibleWidgets.map((widgetId) => (
-              <WidgetWrapper key={widgetId} id={widgetId} disabled={disableDragDrop}>
+              <WidgetWrapper key={widgetId} id={widgetId} disabled={isDragDropDisabled}>
                 {renderWidget(widgetId)}
               </WidgetWrapper>
             ))}

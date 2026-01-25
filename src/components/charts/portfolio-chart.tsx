@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, memo, useCallback } from 'react';
+import { useState, useMemo, memo, useCallback, useEffect } from 'react';
 import {
   Area,
   AreaChart,
@@ -18,13 +18,28 @@ import { TrendIndicator, getTrendColorClass } from '@/components/ui/trend-indica
 import { Activity } from 'lucide-react';
 import { formatCurrency, cn } from '@/lib/utils';
 
-type TimePeriod = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL';
+export type TimePeriod = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL';
 
-interface ChartDataPoint {
+export interface ChartDataPoint {
   date: string;
   value: number;
   change: number;
   timestamp: number;
+}
+
+export interface PortfolioChartProps {
+  /** External data to display (if not provided, uses mock data for demo) */
+  data?: ChartDataPoint[];
+  /** Controlled time period */
+  period?: TimePeriod;
+  /** Callback when period changes */
+  onPeriodChange?: (period: TimePeriod) => void;
+  /** Whether to show period selector buttons */
+  showPeriodSelector?: boolean;
+  /** Custom title */
+  title?: string;
+  /** Loading state */
+  isLoading?: boolean;
 }
 
 const periodConfigs = {
@@ -121,21 +136,43 @@ const ChartTooltip = memo(function ChartTooltip({ active, payload, period }: Cha
   return null;
 });
 
-const PortfolioChartComponent = () => {
-  const [period, setPeriod] = useState<TimePeriod>('1M');
+const PortfolioChartComponent = ({
+  data: externalData,
+  period: controlledPeriod,
+  onPeriodChange,
+  showPeriodSelector = true,
+  title = 'Portfolio Performance',
+  isLoading = false,
+}: PortfolioChartProps) => {
+  const [internalPeriod, setInternalPeriod] = useState<TimePeriod>('1M');
 
+  // Support controlled and uncontrolled period
+  const period = controlledPeriod ?? internalPeriod;
+  const handlePeriodChange = useCallback((newPeriod: TimePeriod) => {
+    if (onPeriodChange) {
+      onPeriodChange(newPeriod);
+    } else {
+      setInternalPeriod(newPeriod);
+    }
+  }, [onPeriodChange]);
+
+  // Use external data if provided, otherwise generate mock data
   const data = useMemo(() => {
+    if (externalData && externalData.length > 0) {
+      return externalData;
+    }
     const config = periodConfigs[period];
     return generateMockData(config.days);
-  }, [period]);
+  }, [externalData, period]);
 
+  // Calculate chart statistics - must be before early return
   const chartStats = useMemo(() => {
     if (data.length === 0) return null;
 
     const firstValue = data[0].value;
     const lastValue = data[data.length - 1].value;
     const totalChange = lastValue - firstValue;
-    const percentChange = (totalChange / firstValue) * 100;
+    const percentChange = firstValue > 0 ? (totalChange / firstValue) * 100 : 0;
 
     const highValue = Math.max(...data.map(d => d.value));
     const lowValue = Math.min(...data.map(d => d.value));
@@ -150,11 +187,27 @@ const PortfolioChartComponent = () => {
     };
   }, [data]);
 
-  // Memoized tooltip with period closure
+  // Memoized tooltip with period closure - must be before early return
   const renderTooltip = useCallback(
     (props: TooltipProps<number, string>) => <ChartTooltip {...props} period={period} />,
     [period]
   );
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            {title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[400px] w-full bg-muted animate-pulse rounded" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -163,7 +216,7 @@ const PortfolioChartComponent = () => {
           <div className="space-y-1">
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
-              Portfolio Performance
+              {title}
             </CardTitle>
             {chartStats && (
               <div className="flex items-center gap-4 text-sm">
@@ -188,19 +241,21 @@ const PortfolioChartComponent = () => {
             )}
           </div>
 
-          <div className="flex gap-1">
-            {(Object.keys(periodConfigs) as TimePeriod[]).map((p) => (
-              <Button
-                key={p}
-                variant={period === p ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setPeriod(p)}
-                className="h-8 px-3"
-              >
-                {p}
-              </Button>
-            ))}
-          </div>
+          {showPeriodSelector && (
+            <div className="flex gap-1">
+              {(Object.keys(periodConfigs) as TimePeriod[]).map((p) => (
+                <Button
+                  key={p}
+                  variant={period === p ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handlePeriodChange(p)}
+                  className="h-8 px-3"
+                >
+                  {p}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
 
         {chartStats && (

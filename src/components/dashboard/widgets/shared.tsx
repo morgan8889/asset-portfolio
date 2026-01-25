@@ -82,6 +82,8 @@ interface MetricValueProps {
   currency?: string;
   /** Additional CSS classes */
   className?: string;
+  /** Accessible label for screen readers */
+  ariaLabel?: string;
 }
 
 /**
@@ -92,13 +94,20 @@ export const MetricValue = memo(function MetricValue({
   showSign = true,
   currency = 'USD',
   className,
+  ariaLabel,
 }: MetricValueProps) {
   const direction = getTrendDirection(value);
   const colorClass = getTrendColorClass(direction);
   const sign = showSign && value >= 0 ? '+' : '';
+  const trendText = direction === 'positive' ? 'gain' : direction === 'negative' ? 'loss' : 'no change';
+  const defaultAriaLabel = `${formatCurrency(Math.abs(value), currency)} ${trendText}`;
 
   return (
-    <div className={cn('text-2xl font-bold', colorClass, className)}>
+    <div
+      className={cn('text-2xl font-bold', colorClass, className)}
+      aria-label={ariaLabel || defaultAriaLabel}
+      role="status"
+    >
       {sign}
       {formatCurrency(value, currency)}
     </div>
@@ -120,6 +129,8 @@ interface WidgetCardProps {
   iconColorClass?: string;
   /** Test ID for e2e testing */
   testId?: string;
+  /** Accessible description for screen readers */
+  ariaDescription?: string;
   /** Children to render in card content */
   children: ReactNode;
 }
@@ -132,13 +143,21 @@ export const WidgetCard = memo(function WidgetCard({
   icon: Icon,
   iconColorClass,
   testId,
+  ariaDescription,
   children,
 }: WidgetCardProps) {
   return (
-    <Card data-testid={testId}>
+    <Card
+      data-testid={testId}
+      role="region"
+      aria-label={ariaDescription ? `${title}: ${ariaDescription}` : title}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className={cn('h-4 w-4', iconColorClass || 'text-muted-foreground')} />
+        <Icon
+          className={cn('h-4 w-4', iconColorClass || 'text-muted-foreground')}
+          aria-hidden="true"
+        />
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>

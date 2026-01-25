@@ -9,7 +9,7 @@
 import { memo } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { Decimal } from 'decimal.js';
-import { formatPercentage } from '@/lib/utils';
+import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { TimePeriod, TIME_PERIOD_CONFIGS } from '@/types/dashboard';
 import {
   WidgetSkeleton,
@@ -43,17 +43,25 @@ export const GainLossWidget = memo(function GainLossWidget({
   const Icon = isPositive ? TrendingUp : TrendingDown;
   const iconColor = isPositive ? 'text-green-600' : 'text-red-600';
 
+  const trendDescription = isPositive ? 'gain' : 'loss';
+  const periodDescription = period !== 'ALL' ? periodLabel.toLowerCase() : 'from cost basis';
+
   return (
     <WidgetCard
       title="Total Gain/Loss"
       icon={Icon}
       iconColorClass={iconColor}
       testId="gain-loss-widget"
+      ariaDescription={`Portfolio ${trendDescription} of ${formatPercentage(gainPercent, 2, true)} ${periodDescription}`}
     >
-      <MetricValue value={numericGain} currency={currency} />
+      <MetricValue
+        value={numericGain}
+        currency={currency}
+        ariaLabel={`Total ${trendDescription}: ${formatCurrency(Math.abs(numericGain), currency)}`}
+      />
       <p className="text-xs text-muted-foreground">
         {formatPercentage(gainPercent, 2, true)}{' '}
-        {period !== 'ALL' ? periodLabel.toLowerCase() : 'from cost basis'}
+        {periodDescription}
       </p>
     </WidgetCard>
   );
