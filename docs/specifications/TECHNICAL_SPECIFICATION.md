@@ -1,25 +1,29 @@
 # Portfolio Tracker - Technical Specification Document
 
 ## Table of Contents
+
 1. [Executive Summary](#executive-summary)
-2. [System Architecture](#system-architecture)
-3. [Data Models](#data-models)
-4. [API Specifications](#api-specifications)
-5. [User Interface Design](#user-interface-design)
-6. [Security & Privacy](#security--privacy)
-7. [Performance Requirements](#performance-requirements)
-8. [Testing Strategy](#testing-strategy)
-9. [Deployment Plan](#deployment-plan)
-10. [Development Timeline](#development-timeline)
+2. [Implementation Status](#implementation-status)
+3. [System Architecture](#system-architecture)
+4. [Data Models](#data-models)
+5. [API Specifications](#api-specifications)
+6. [User Interface Design](#user-interface-design)
+7. [Security & Privacy](#security--privacy)
+8. [Performance Requirements](#performance-requirements)
+9. [Testing Strategy](#testing-strategy)
+10. [Deployment Plan](#deployment-plan)
+11. [Current Implementation Status](#current-implementation-status)
 
 ---
 
 ## Executive Summary
 
 ### Project Overview
+
 A modern, privacy-first financial portfolio tracking application that enables users to monitor, analyze, and plan their investment portfolios across multiple asset classes with real-time data visualization and comprehensive tax tracking capabilities.
 
 ### Key Objectives
+
 - **Multi-Asset Support**: Track stocks, ETFs, cryptocurrencies, bonds, real estate, and commodities
 - **Privacy-First**: All financial data stored locally with no server-side storage
 - **Real-Time Updates**: Live or near-live price feeds with automatic updates
@@ -28,6 +32,7 @@ A modern, privacy-first financial portfolio tracking application that enables us
 - **Cross-Platform**: Web-based responsive design with future mobile support
 
 ### Technology Stack
+
 ```yaml
 Frontend:
   Framework: Next.js 14.2+ (App Router)
@@ -54,11 +59,45 @@ Development:
   Deployment: Vercel/Netlify/Self-hosted
 ```
 
+**Status Legend**: ✅ Complete | 🔄 In Progress | 📋 Planned
+
+---
+
+## Implementation Status
+
+**Last Updated**: 2026-01-24
+**Overall Progress**: 30-40% Complete (Foundational architecture solid, UI-service integration incomplete)
+
+**Quick Status**:
+
+- ✅ **Database Layer**: Complete (Dexie.js with 8 tables, decimal.js serialization)
+- ✅ **Service Layer**: Complete (8 business logic services)
+- ✅ **State Management**: Complete (6 Zustand stores)
+- ✅ **Type System**: Complete (TypeScript strict mode with comprehensive types)
+- 🔄 **API Routes**: Partial (Yahoo Finance implemented, others planned)
+- 🔄 **UI Components**: Partial (Shells exist, data integration incomplete)
+- 🔄 **Charts**: Partial (Components exist, using mock data)
+- 📋 **CSV Import**: Planned (UI button exists, backend missing)
+- 📋 **Tax Reporting**: Planned (Service logic exists, visualization incomplete)
+- 📋 **Advanced Analytics**: Planned (UI placeholders only)
+
+**For detailed implementation status**, see [PROJECT_STATUS.md](../PROJECT_STATUS.md)
+
+**Known Gaps**:
+
+1. Dashboard widgets use mock/placeholder data instead of real calculations
+2. CSV import UI exists but backend parsing logic missing
+3. Tax reporting service exists but no report generation or visualization
+4. Charts display mock data instead of portfolio history
+5. UI-service integration unverified (unclear if components call services)
+6. Most dashboard routes are UI shells without functional data flow
+
 ---
 
 ## System Architecture
 
 ### High-Level Architecture
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                   Client (Browser)                       │
@@ -101,6 +140,7 @@ Development:
 ```
 
 ### Component Architecture
+
 ```
 src/
 ├── app/                    # Next.js App Router
@@ -158,12 +198,13 @@ src/
 ### Core Entities
 
 #### Portfolio
+
 ```typescript
 interface Portfolio {
-  id: string;                    // UUID
-  name: string;                  // "Retirement", "Trading", etc.
-  type: PortfolioType;          // "taxable" | "ira" | "401k" | "roth"
-  currency: string;              // Base currency (USD default)
+  id: string; // UUID
+  name: string; // "Retirement", "Trading", etc.
+  type: PortfolioType; // "taxable" | "ira" | "401k" | "roth"
+  currency: string; // Base currency (USD default)
   createdAt: Date;
   updatedAt: Date;
   settings: PortfolioSettings;
@@ -171,31 +212,32 @@ interface Portfolio {
 }
 
 interface PortfolioSettings {
-  rebalanceThreshold: number;    // Percentage drift trigger
-  taxStrategy: TaxStrategy;      // "fifo" | "lifo" | "hifo" | "specific"
-  benchmarkIndex?: string;       // "SPY", "QQQ", etc.
+  rebalanceThreshold: number; // Percentage drift trigger
+  taxStrategy: TaxStrategy; // "fifo" | "lifo" | "hifo" | "specific"
+  benchmarkIndex?: string; // "SPY", "QQQ", etc.
   targetAllocations?: AllocationTarget[];
 }
 ```
 
 #### Asset
+
 ```typescript
 interface Asset {
-  id: string;                    // UUID
-  symbol: string;                // Ticker or identifier
-  name: string;                  // Full name
-  type: AssetType;              // "stock" | "etf" | "crypto" | "bond" | "real_estate" | "commodity"
-  exchange?: string;             // "NYSE", "NASDAQ", etc.
-  currency: string;              // Trading currency
-  sector?: string;               // GICS sector
-  currentPrice?: number;         // Latest known price
-  priceUpdatedAt?: Date;        // Last price update
+  id: string; // UUID
+  symbol: string; // Ticker or identifier
+  name: string; // Full name
+  type: AssetType; // "stock" | "etf" | "crypto" | "bond" | "real_estate" | "commodity"
+  exchange?: string; // "NYSE", "NASDAQ", etc.
+  currency: string; // Trading currency
+  sector?: string; // GICS sector
+  currentPrice?: number; // Latest known price
+  priceUpdatedAt?: Date; // Last price update
   metadata: AssetMetadata;
 }
 
 interface AssetMetadata {
-  isin?: string;                // International Securities ID
-  cusip?: string;               // CUSIP for US securities
+  isin?: string; // International Securities ID
+  cusip?: string; // CUSIP for US securities
   description?: string;
   website?: string;
   logo?: string;
@@ -207,18 +249,19 @@ interface AssetMetadata {
 ```
 
 #### Holding
+
 ```typescript
 interface Holding {
-  id: string;                    // UUID
-  portfolioId: string;          // Reference to Portfolio
-  assetId: string;              // Reference to Asset
-  quantity: Decimal;            // Current shares/units owned
-  costBasis: Decimal;           // Total cost basis
-  averageCost: Decimal;         // Average cost per share
-  currentValue: Decimal;        // Current market value
-  unrealizedGain: Decimal;      // Current value - cost basis
+  id: string; // UUID
+  portfolioId: string; // Reference to Portfolio
+  assetId: string; // Reference to Asset
+  quantity: Decimal; // Current shares/units owned
+  costBasis: Decimal; // Total cost basis
+  averageCost: Decimal; // Average cost per share
+  currentValue: Decimal; // Current market value
+  unrealizedGain: Decimal; // Current value - cost basis
   unrealizedGainPercent: number;
-  lots: TaxLot[];              // Individual purchase lots
+  lots: TaxLot[]; // Individual purchase lots
   lastUpdated: Date;
 }
 
@@ -227,43 +270,45 @@ interface TaxLot {
   quantity: Decimal;
   purchasePrice: Decimal;
   purchaseDate: Date;
-  soldQuantity: Decimal;        // Partial sales tracking
+  soldQuantity: Decimal; // Partial sales tracking
   notes?: string;
 }
 ```
 
 #### Transaction
+
 ```typescript
 interface Transaction {
-  id: string;                    // UUID
+  id: string; // UUID
   portfolioId: string;
   assetId: string;
-  type: TransactionType;        // "buy" | "sell" | "dividend" | "split" | "transfer"
+  type: TransactionType; // "buy" | "sell" | "dividend" | "split" | "transfer"
   date: Date;
   quantity: Decimal;
-  price: Decimal;               // Price per unit
-  totalAmount: Decimal;         // Total transaction value
-  fees: Decimal;                // Commission and fees
+  price: Decimal; // Price per unit
+  totalAmount: Decimal; // Total transaction value
+  fees: Decimal; // Commission and fees
   currency: string;
-  taxLotId?: string;            // For sells - specific lot
+  taxLotId?: string; // For sells - specific lot
   notes?: string;
-  importSource?: string;        // CSV import tracking
+  importSource?: string; // CSV import tracking
   metadata?: Record<string, any>;
 }
 
 type TransactionType =
-  | "buy"
-  | "sell"
-  | "dividend"
-  | "interest"
-  | "split"
-  | "transfer_in"
-  | "transfer_out"
-  | "fee"
-  | "tax";
+  | 'buy'
+  | 'sell'
+  | 'dividend'
+  | 'interest'
+  | 'split'
+  | 'transfer_in'
+  | 'transfer_out'
+  | 'fee'
+  | 'tax';
 ```
 
 #### Price History
+
 ```typescript
 interface PriceHistory {
   id: string;
@@ -275,7 +320,7 @@ interface PriceHistory {
   close: Decimal;
   adjustedClose: Decimal;
   volume: number;
-  source: string;               // API source
+  source: string; // API source
 }
 
 interface PriceSnapshot {
@@ -311,7 +356,7 @@ class PortfolioDatabase extends Dexie {
       transactions: '++id, portfolioId, assetId, date, type',
       priceHistory: '++id, assetId, date, [assetId+date]',
       priceSnapshots: '++id, assetId, timestamp',
-      userSettings: '++id, key'
+      userSettings: '++id, key',
     });
   }
 }
@@ -324,6 +369,7 @@ class PortfolioDatabase extends Dexie {
 ### Price Data APIs
 
 #### Yahoo Finance Integration
+
 ```typescript
 interface YahooFinanceAPI {
   // Get current quote
@@ -357,10 +403,14 @@ async function fetchYahooQuote(symbol: string) {
 ```
 
 #### CoinGecko Integration (Crypto)
+
 ```typescript
 interface CoinGeckoAPI {
   // Get crypto prices
-  getPrice(coinId: string, currency: string = 'usd'): Promise<{
+  getPrice(
+    coinId: string,
+    currency: string = 'usd'
+  ): Promise<{
     [key: string]: {
       usd: number;
       usd_24h_change: number;
@@ -384,6 +434,7 @@ interface CoinGeckoAPI {
 ### Internal Service APIs
 
 #### Portfolio Service
+
 ```typescript
 class PortfolioService {
   // Calculate portfolio metrics
@@ -410,13 +461,12 @@ class PortfolioService {
   }>;
 
   // Rebalancing suggestions
-  async getRebalancingSuggestions(
-    portfolioId: string
-  ): Promise<RebalancingPlan>;
+  async getRebalancingSuggestions(portfolioId: string): Promise<RebalancingPlan>;
 }
 ```
 
 #### Tax Service
+
 ```typescript
 class TaxService {
   // Calculate realized gains/losses
@@ -433,14 +483,10 @@ class TaxService {
   }>;
 
   // Get tax lot details
-  async getTaxLots(
-    holdingId: string
-  ): Promise<TaxLotDetail[]>;
+  async getTaxLots(holdingId: string): Promise<TaxLotDetail[]>;
 
   // Tax loss harvesting opportunities
-  async findHarvestingOpportunities(
-    portfolioId: string
-  ): Promise<HarvestingOpportunity[]>;
+  async findHarvestingOpportunities(portfolioId: string): Promise<HarvestingOpportunity[]>;
 }
 ```
 
@@ -451,22 +497,23 @@ class TaxService {
 ### Design System
 
 #### Color Palette
+
 ```css
 :root {
   /* Light Mode */
-  --background: 0 0% 100%;          /* white */
-  --foreground: 222.2 84% 4.9%;     /* near black */
+  --background: 0 0% 100%; /* white */
+  --foreground: 222.2 84% 4.9%; /* near black */
 
-  --primary: 217 91% 60%;           /* blue */
+  --primary: 217 91% 60%; /* blue */
   --primary-foreground: 0 0% 98%;
 
-  --secondary: 217 19% 95%;         /* light gray */
+  --secondary: 217 19% 95%; /* light gray */
   --secondary-foreground: 222.2 47% 11%;
 
-  --success: 142 76% 36%;           /* green */
-  --danger: 0 84% 60%;              /* red */
-  --warning: 38 92% 50%;            /* amber */
-  --info: 199 89% 48%;              /* cyan */
+  --success: 142 76% 36%; /* green */
+  --danger: 0 84% 60%; /* red */
+  --warning: 38 92% 50%; /* amber */
+  --info: 199 89% 48%; /* cyan */
 
   --muted: 217 19% 95%;
   --muted-foreground: 215 16% 47%;
@@ -498,19 +545,20 @@ class TaxService {
 ```
 
 #### Typography Scale
+
 ```css
---font-sans: "Inter", system-ui, -apple-system, sans-serif;
---font-mono: "JetBrains Mono", monospace;
+--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+--font-mono: 'JetBrains Mono', monospace;
 
 /* Font Sizes */
---text-xs: 0.75rem;     /* 12px */
---text-sm: 0.875rem;    /* 14px */
---text-base: 1rem;      /* 16px */
---text-lg: 1.125rem;    /* 18px */
---text-xl: 1.25rem;     /* 20px */
---text-2xl: 1.5rem;     /* 24px */
---text-3xl: 1.875rem;   /* 30px */
---text-4xl: 2.25rem;    /* 36px */
+--text-xs: 0.75rem; /* 12px */
+--text-sm: 0.875rem; /* 14px */
+--text-base: 1rem; /* 16px */
+--text-lg: 1.125rem; /* 18px */
+--text-xl: 1.25rem; /* 20px */
+--text-2xl: 1.5rem; /* 24px */
+--text-3xl: 1.875rem; /* 30px */
+--text-4xl: 2.25rem; /* 36px */
 
 /* Font Weights */
 --font-normal: 400;
@@ -522,6 +570,7 @@ class TaxService {
 ### Key Screens
 
 #### Dashboard
+
 ```
 ┌────────────────────────────────────────────────────────────┐
 │ ┌──────────────────────────────────────────────────────┐  │
@@ -557,6 +606,7 @@ class TaxService {
 ```
 
 #### Holdings Table
+
 ```
 ┌────────────────────────────────────────────────────────────┐
 │ Holdings                           [🔍 Search] [⚙️ Filter] │
@@ -573,6 +623,7 @@ class TaxService {
 ### Component Library
 
 #### Button Variants
+
 ```tsx
 // Primary Action
 <Button variant="default" size="default">
@@ -596,6 +647,7 @@ class TaxService {
 ```
 
 #### Form Components
+
 ```tsx
 // Input with Label
 <div className="space-y-2">
@@ -622,20 +674,17 @@ class TaxService {
 ```
 
 #### Data Display Cards
+
 ```tsx
 // Metric Card
 <Card>
   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-    <CardTitle className="text-sm font-medium">
-      Total Value
-    </CardTitle>
+    <CardTitle className="text-sm font-medium">Total Value</CardTitle>
     <DollarSign className="h-4 w-4 text-muted-foreground" />
   </CardHeader>
   <CardContent>
     <div className="text-2xl font-bold">$125,430.22</div>
-    <p className="text-xs text-muted-foreground">
-      +12.3% from last month
-    </p>
+    <p className="text-xs text-muted-foreground">+12.3% from last month</p>
   </CardContent>
 </Card>
 ```
@@ -645,12 +694,14 @@ class TaxService {
 ## Security & Privacy
 
 ### Data Protection
+
 - **Local-First Architecture**: All sensitive data stored in browser IndexedDB
 - **No Cloud Storage**: Financial data never leaves the user's device
 - **Optional Encryption**: AES-256 encryption for stored data (user choice)
 - **Secure Export**: Encrypted JSON exports with password protection
 
 ### Authentication (Future)
+
 ```typescript
 interface SecurityConfig {
   localAuth: {
@@ -668,6 +719,7 @@ interface SecurityConfig {
 ```
 
 ### API Security
+
 - **CORS Proxy**: Server-side proxy for external API calls
 - **Rate Limiting**: Prevent API abuse
 - **API Key Management**: Secure storage of user API keys
@@ -678,26 +730,26 @@ interface SecurityConfig {
 ## Performance Requirements
 
 ### Load Time Targets
+
 - **Initial Load**: < 3 seconds (First Contentful Paint)
 - **Time to Interactive**: < 5 seconds
 - **Subsequent Loads**: < 1 second (with caching)
 
 ### Runtime Performance
+
 - **Chart Rendering**: < 100ms for 1000 data points
 - **Portfolio Calculation**: < 50ms for 100 holdings
 - **Search/Filter**: < 20ms response time
 - **Price Updates**: Batch process 100 symbols in < 10 seconds
 
 ### Optimization Strategies
+
 ```typescript
 // Virtualization for large lists
 import { FixedSizeList } from 'react-window';
 
 // Memoization for expensive calculations
-const portfolioMetrics = useMemo(
-  () => calculateMetrics(holdings, prices),
-  [holdings, prices]
-);
+const portfolioMetrics = useMemo(() => calculateMetrics(holdings, prices), [holdings, prices]);
 
 // Lazy loading for charts
 const PortfolioChart = lazy(() => import('./charts/PortfolioChart'));
@@ -712,19 +764,21 @@ worker.postMessage({ holdings, transactions });
 ## Testing Strategy
 
 ### Test Coverage Requirements
+
 - **Unit Tests**: 80% coverage minimum
 - **Integration Tests**: Critical user flows
 - **E2E Tests**: Key user journeys
 - **Performance Tests**: Load time and runtime metrics
 
 ### Test Implementation
+
 ```typescript
 // Unit Test Example
 describe('Portfolio Calculator', () => {
   it('should calculate correct total value', () => {
     const holdings = [
       { quantity: 100, currentPrice: 150 },
-      { quantity: 50, currentPrice: 200 }
+      { quantity: 50, currentPrice: 200 },
     ];
 
     const result = calculateTotalValue(holdings);
@@ -732,10 +786,7 @@ describe('Portfolio Calculator', () => {
   });
 
   it('should handle decimal precision correctly', () => {
-    const result = calculateGainPercent(
-      new Decimal('100.50'),
-      new Decimal('95.25')
-    );
+    const result = calculateGainPercent(new Decimal('100.50'), new Decimal('95.25'));
     expect(result.toFixed(2)).toBe('5.51');
   });
 });
@@ -759,6 +810,7 @@ test('user can add a new holding', async ({ page }) => {
 ## Deployment Plan
 
 ### Phase 1: Development Environment
+
 ```bash
 # Local development setup
 npm install
@@ -771,18 +823,20 @@ NEXT_PUBLIC_COINGECKO_KEY=xxx
 ```
 
 ### Phase 2: Staging Deployment
+
 ```yaml
 # Vercel deployment config
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": "nextjs"
+  'buildCommand': 'npm run build',
+  'outputDirectory': '.next',
+  'devCommand': 'npm run dev',
+  'installCommand': 'npm install',
+  'framework': 'nextjs',
 }
 ```
 
 ### Phase 3: Production Deployment
+
 - **Option A**: Vercel (Recommended)
   - Automatic deployments from GitHub
   - Edge functions for API routes
@@ -795,48 +849,122 @@ NEXT_PUBLIC_COINGECKO_KEY=xxx
 
 ---
 
-## Development Timeline
+## Current Implementation Status
 
-### Week 1-2: Foundation (MVP Phase 1)
-- [ ] Project setup and configuration
-- [ ] Design system implementation
-- [ ] Basic routing and navigation
-- [ ] Database schema and migrations
-- [ ] Core data models
+**Last Updated**: 2026-01-24
 
-### Week 3-4: Core Features (MVP Phase 2)
-- [ ] Holdings CRUD operations
-- [ ] Transaction management
-- [ ] CSV import functionality
-- [ ] Basic portfolio calculations
-- [ ] Price fetching service
+### ✅ Phase 1: Foundation - **COMPLETE**
 
-### Week 5-6: Visualizations & Polish (MVP Phase 3)
-- [ ] Interactive charts
-- [ ] Dashboard implementation
-- [ ] Real-time price updates
-- [ ] Cost basis calculations
-- [ ] Tax reporting basics
+**Status**: Fully implemented and functional
 
-### Week 7-8: Testing & Deployment
-- [ ] Comprehensive testing
-- [ ] Performance optimization
-- [ ] Documentation
-- [ ] Deployment setup
-- [ ] User acceptance testing
+- [x] Project setup and configuration
+- [x] Design system implementation (shadcn/ui)
+- [x] Basic routing and navigation (Next.js App Router)
+- [x] Database schema and migrations (Dexie.js)
+- [x] Core data models (TypeScript with strict mode)
 
-### Post-MVP Roadmap
-- **Month 2**: Advanced analytics, Monte Carlo simulations
-- **Month 3**: Mobile app, cloud sync options
-- **Month 4**: AI insights, automated rebalancing
-- **Month 5**: Social features, portfolio sharing
-- **Month 6**: Advanced tax optimization, integrations
+**Evidence**: Complete database schema in `src/lib/db/schema.ts` with 8 tables, comprehensive type definitions in `src/types/`, working development environment.
+
+### 🔄 Phase 2: Core Features - **IN PROGRESS**
+
+**Status**: Services complete, UI integration incomplete
+
+- [x] Holdings calculations (service layer complete)
+- [x] Transaction management (form exists, database integration uncertain)
+- [ ] CSV import functionality (UI exists, backend **missing**)
+- [x] Basic portfolio calculations (8 services implemented)
+- [x] Price fetching service (Yahoo Finance API route complete)
+
+**Gaps**:
+
+- CSV import backend not implemented despite UI button present
+- Unclear if transaction forms actually save to database
+- Service calculations not wired to UI components
+
+**Evidence**: 8 services in `src/lib/services/`, transaction form in `src/components/forms/add-transaction.tsx`, API route at `src/app/api/prices/[symbol]/route.ts`.
+
+### 🔄 Phase 3: Visualizations & Polish - **IN PROGRESS**
+
+**Status**: Components exist, data integration missing
+
+- [x] Chart components created (portfolio-chart.tsx, allocation-donut.tsx)
+- [x] Dashboard UI implemented (page.tsx with layout)
+- [ ] Real-time price updates (API exists, UI integration unclear)
+- [x] Cost basis calculations (service logic complete)
+- [ ] Tax reporting basics (service exists, visualization **missing**)
+
+**Gaps**:
+
+- Charts use `generateMockData()` instead of real portfolio history
+- Dashboard widgets may display hardcoded values
+- Tax reporting has no UI despite service logic existing
+
+**Evidence**: Chart components in `src/components/charts/`, dashboard widgets in `src/components/dashboard/widgets/` (4 of 6 complete).
+
+### 📋 Phase 4: Testing & Deployment - **PLANNED**
+
+**Status**: Infrastructure exists, coverage unverified
+
+- [x] Test infrastructure (Vitest + Playwright configured)
+- [ ] Comprehensive testing (coverage target 70%, not verified)
+- [x] Documentation (specs exist, accuracy mixed)
+- [ ] Deployment setup (local dev only, production not configured)
+- [ ] User acceptance testing (not started)
+
+**Gaps**:
+
+- Test coverage percentage unknown
+- No production deployment configuration
+- QA testing not performed
+
+### 📋 Post-MVP Roadmap - **UPDATED FOR 2026**
+
+**Previously Claimed** (2024 timeline - obsolete):
+
+- ~~Month 2: Advanced analytics, Monte Carlo simulations~~
+- ~~Month 3: Mobile app, cloud sync options~~
+- ~~Month 4: AI insights, automated rebalancing~~
+- ~~Month 5: Social features, portfolio sharing~~
+- ~~Month 6: Advanced tax optimization, integrations~~
+
+**Current Priorities** (2026):
+
+**Immediate** (Next 2 Weeks):
+
+- Close 6 dashboard widget gaps (see `specs/dashboard-real-data-widgets/spec.md`)
+- Implement CSV import backend
+- Verify and fix UI-service integration
+- Wire charts to real data
+
+**Short-Term** (Next Month):
+
+- Tax reporting visualization and PDF/CSV export
+- Complete analytics page (risk analysis, correlation matrix)
+- Report generation functionality
+- Allocation management with rebalancing UI
+
+**Medium-Term** (Next Quarter):
+
+- Advanced analytics (Monte Carlo simulations)
+- Multi-currency support
+- Optional authentication and encryption
+- Production deployment configuration
+
+**Long-Term** (Future):
+
+- Mobile app (React Native or PWA)
+- Cloud sync (optional, encrypted)
+- AI-powered insights
+- Social/sharing features
+
+**For detailed gap analysis and next steps**, see [PROJECT_STATUS.md](../PROJECT_STATUS.md)
 
 ---
 
 ## Appendices
 
 ### A. API Response Examples
+
 ```json
 // Yahoo Finance Quote Response
 {
@@ -865,6 +993,7 @@ NEXT_PUBLIC_COINGECKO_KEY=xxx
 ```
 
 ### B. CSV Import Format
+
 ```csv
 Date,Symbol,Type,Quantity,Price,Fees,Notes
 2024-01-01,AAPL,Buy,100,150.00,1.00,Initial purchase
@@ -873,6 +1002,7 @@ Date,Symbol,Type,Quantity,Price,Fees,Notes
 ```
 
 ### C. Error Codes
+
 ```typescript
 enum ErrorCode {
   // Data errors (1xxx)
@@ -891,6 +1021,6 @@ enum ErrorCode {
 
   // Storage errors (4xxx)
   STORAGE_QUOTA_EXCEEDED = 4001,
-  STORAGE_UNAVAILABLE = 4002
+  STORAGE_UNAVAILABLE = 4002,
 }
 ```
