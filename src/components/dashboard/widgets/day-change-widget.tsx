@@ -9,7 +9,7 @@
 import { memo } from 'react';
 import { Activity } from 'lucide-react';
 import { Decimal } from 'decimal.js';
-import { formatPercentage } from '@/lib/utils';
+import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { WidgetSkeleton, WidgetCard, MetricValue } from './shared';
 
 interface DayChangeWidgetProps {
@@ -29,9 +29,21 @@ export const DayChangeWidget = memo(function DayChangeWidget({
     return <WidgetSkeleton title="Day Change" icon={Activity} />;
   }
 
+  const numericChange = change.toNumber();
+  const trendDescription = numericChange >= 0 ? 'up' : 'down';
+
   return (
-    <WidgetCard title="Day Change" icon={Activity} testId="day-change-widget">
-      <MetricValue value={change.toNumber()} currency={currency} />
+    <WidgetCard
+      title="Day Change"
+      icon={Activity}
+      testId="day-change-widget"
+      ariaDescription={`Portfolio is ${trendDescription} ${formatPercentage(Math.abs(changePercent), 2)} from yesterday`}
+    >
+      <MetricValue
+        value={numericChange}
+        currency={currency}
+        ariaLabel={`Today's change: ${trendDescription} ${formatCurrency(Math.abs(numericChange), currency)}`}
+      />
       <p className="text-xs text-muted-foreground">
         {formatPercentage(changePercent, 2, true)} from yesterday
       </p>
