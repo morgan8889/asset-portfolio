@@ -77,6 +77,8 @@ As an investor, I want to compare my portfolio's performance across different ti
 
 2. **Given** comparison data is displayed, **When** viewing the metrics, **Then** I can clearly identify which periods had better/worse performance through visual indicators.
 
+3. **Given** the performance chart is displayed, **When** I enable benchmark comparison, **Then** I see a configurable benchmark index (default: S&P 500) overlaid on my portfolio performance chart.
+
 ---
 
 ### User Story 5 - Export Performance Report (Priority: P3)
@@ -110,7 +112,7 @@ As an investor, I want to export my performance data, so that I can share it wit
 
 - **FR-001**: System MUST calculate portfolio value at any historical point using transaction history and price data.
 - **FR-002**: System MUST display an interactive time-series chart of portfolio value over configurable time periods (1W, 1M, 3M, 1Y, ALL).
-- **FR-003**: System MUST calculate and display total return as both absolute value and percentage.
+- **FR-003**: System MUST calculate and display total return as both absolute value and percentage using Time-Weighted Return (TWR) methodology to eliminate cash flow timing effects.
 - **FR-004**: System MUST provide individual holding performance with cost basis, current value, and gain/loss metrics.
 - **FR-005**: System MUST allow filtering performance data by time period with instant UI updates.
 - **FR-006**: System MUST visually distinguish positive (gains) from negative (losses) performance using color coding.
@@ -120,10 +122,12 @@ As an investor, I want to export my performance data, so that I can share it wit
 - **FR-010**: System MUST calculate performance using high-precision decimal arithmetic to avoid floating-point errors.
 - **FR-011**: System MUST export performance data to CSV format with date, value, and return columns.
 - **FR-012**: System MUST persist all data locally in the browser (IndexedDB) maintaining privacy-first architecture.
+- **FR-013**: System MUST pre-compute and persist daily portfolio value snapshots in IndexedDB for fast chart rendering. Snapshots are computed/updated immediately when transactions are added or modified.
+- **FR-014**: System MUST support overlaying a single configurable benchmark index (default: S&P 500) on the performance chart for comparison. Benchmark data sourced via existing price API infrastructure (e.g., ^GSPC ticker via Yahoo Finance).
 
 ### Key Entities
 
-- **PerformanceSnapshot**: A point-in-time record of portfolio value containing date, total value, and change from previous snapshot.
+- **PerformanceSnapshot**: A point-in-time record of portfolio value containing date, total value, and change from previous snapshot. Pre-computed daily and persisted in IndexedDB for fast retrieval.
 - **HoldingPerformance**: Performance metrics for a single holding including cost basis, current value, absolute and percentage gain/loss.
 - **PerformanceSummary**: Aggregated statistics for a period including total return, high, low, best day, worst day.
 - **TimeSeriesDataPoint**: Individual data point for charting with date, value, and optional annotations for dividends/transactions.
@@ -149,3 +153,13 @@ As an investor, I want to export my performance data, so that I can share it wit
 - The feature will integrate with the existing dashboard widget system and can be added as a new page or enhanced widget.
 - Chart library (Recharts) already in use will be sufficient for the required visualizations.
 - Decimal.js will be used for all financial calculations to maintain precision.
+
+## Clarifications
+
+### Session 2025-01-25
+
+- Q: Should performance history be calculated on-demand or pre-computed and persisted? → A: Pre-compute and persist daily snapshots in IndexedDB (faster reads, uses storage).
+- Q: Should the performance chart support comparison against a benchmark index? → A: Single configurable benchmark (default: S&P 500) overlaid on chart.
+- Q: Which return calculation method should be used? → A: Time-Weighted Return (TWR) - industry standard, ignores cash flow timing.
+- Q: When should performance snapshots be computed? → A: On transaction add/modify (update affected snapshots immediately).
+- Q: How should benchmark index data be sourced? → A: Extend existing price API to fetch index data (e.g., ^GSPC via Yahoo Finance).
