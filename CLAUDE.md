@@ -264,6 +264,8 @@ npx playwright test tests/e2e/loading-state-regression.spec.ts --project=chromiu
 ## Active Technologies
 - TypeScript 5.3 with Next.js 14.2 (App Router) + React 18, Zustand 4.5, Recharts 2.15, shadcn/ui, Tailwind CSS, dnd-kit, papaparse (CSV parsing), Zod (validation), decimal.js (financial precision)
 - Browser IndexedDB via Dexie.js 3.2 (privacy-first, local-only)
+- TypeScript 5.3+ with Next.js 14.2 (App Router) + @dnd-kit/core 6.3+, @dnd-kit/sortable 10.0+, Zustand 4.5+, Zod (003-dashboard-stacking-layout)
+- IndexedDB via Dexie.js (userSettings table) (003-dashboard-stacking-layout)
 
 ## Recent Changes
 - 001-csv-transaction-import: Added papaparse for CSV parsing, date-parser utility, CSV import dialog and workflow
