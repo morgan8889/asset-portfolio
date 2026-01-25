@@ -5,3 +5,4 @@ export * from './asset';
 export * from './api';
 export * from './ui';
 export * from './storage';
+export * from './market';

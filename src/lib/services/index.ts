@@ -70,3 +70,38 @@ export {
   getHistoricalValues,
   getValueAtDate,
 } from './historical-value';
+
+// Market hours service
+export {
+  getMarketState,
+  getMarketStatus,
+  getMarketStatusForSymbol,
+  isMarketOpen,
+  isRegularHours,
+  clearMarketStateCache,
+} from './market-hours';
+
+// Price service
+export {
+  fetchPrice,
+  fetchPrices,
+  getCachedPrice,
+  getLivePrice,
+  getLivePrices,
+  clearPriceCache,
+  getAllCachedPrices,
+  persistPriceCache,
+  loadCachedPrice,
+  loadCachedPrices,
+  transformToLivePriceData,
+} from './price-service';
+
+// Asset search service
+export {
+  searchAssets,
+  createAssetWithExchange,
+  detectUKSymbol,
+  getExchangeDisplayName,
+  getExchangeBadgeColor,
+  type SearchResult,
+} from './asset-search';
