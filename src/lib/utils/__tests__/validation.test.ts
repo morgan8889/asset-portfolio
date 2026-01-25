@@ -52,7 +52,13 @@ describe('Validation Utilities', () => {
       expect(validateSymbol('AAPL')).toBe(true);
       expect(validateSymbol('MSFT')).toBe(true);
       expect(validateSymbol('GOOGL')).toBe(true);
-      expect(validateSymbol('BRK.B')).toBe(false); // dots not allowed
+      expect(validateSymbol('BRK.B')).toBe(true); // share class suffix allowed
+    });
+
+    it('should validate UK market symbols with .L suffix', () => {
+      expect(validateSymbol('VOD.L')).toBe(true); // Vodafone (LSE)
+      expect(validateSymbol('HSBA.L')).toBe(true); // HSBC (LSE)
+      expect(validateSymbol('BP.L')).toBe(true); // BP (LSE)
     });
 
     it('should reject invalid symbols', () => {

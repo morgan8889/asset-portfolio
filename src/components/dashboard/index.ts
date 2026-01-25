@@ -13,3 +13,4 @@ export { DashboardSettings } from './dashboard-settings';
 export { TimePeriodSelector, TimePeriodSelectorCompact } from './time-period-selector';
 export { WidgetWrapper } from './widget-wrapper';
 export { StaleDataBanner } from './stale-data-banner';
+export { PriceDisplay } from './price-display';

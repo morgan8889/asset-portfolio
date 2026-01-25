@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import Decimal from 'decimal.js';
 import { rateLimit } from '@/lib/utils/rate-limit';
 import { validateSymbol, sanitizeInput } from '@/lib/utils/validation';
 import { logger } from '@/lib/utils/logger';
+import { isUKSymbol, convertPenceToPounds } from '@/lib/utils/market-utils';
 
 // In-memory cache for price data (in production, use Redis)
 const priceCache = new Map<string, {
@@ -53,16 +55,33 @@ async function fetchYahooPrice(symbol: string): Promise<{ price: number; metadat
     }
 
     const result = data.chart.result[0];
-    const price = result.meta.regularMarketPrice;
+    const rawPrice = result.meta.regularMarketPrice;
+    const currency = result.meta.currency;
+    const previousClose = result.meta.previousClose;
+
+    // Convert pence to pounds for UK stocks quoted in GBp
+    const priceDecimal = new Decimal(rawPrice);
+    const { displayPrice, displayCurrency } = convertPenceToPounds(priceDecimal, currency);
+
+    // Calculate change (also needs conversion for GBp)
+    const changeRaw = rawPrice - previousClose;
+    const changePercent = previousClose > 0 ? ((changeRaw / previousClose) * 100) : 0;
+
+    const changeDecimal = new Decimal(changeRaw);
+    const { displayPrice: displayChange } = convertPenceToPounds(changeDecimal, currency);
 
     return {
-      price: Number(price),
+      price: displayPrice.toNumber(),
       metadata: {
-        currency: result.meta.currency,
+        currency: displayCurrency,
+        rawCurrency: currency, // Original currency (GBp or GBP)
         marketState: result.meta.marketState,
         regularMarketTime: result.meta.regularMarketTime,
-        previousClose: result.meta.previousClose,
-        change: result.meta.regularMarketPrice - result.meta.previousClose,
+        previousClose: currency === 'GBp' ? previousClose / 100 : previousClose,
+        change: displayChange.toNumber(),
+        changePercent: changePercent,
+        exchangeName: result.meta.exchangeName,
+        fullExchangeName: result.meta.fullExchangeName,
       },
     };
   } finally {
