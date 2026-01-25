@@ -27,14 +27,17 @@ export const TotalValueWidget = memo(function TotalValueWidget({
     return <WidgetSkeleton title="Total Value" icon={DollarSign} />;
   }
 
+  const formattedValue = formatCurrency(value.toNumber(), currency);
+
   return (
     <WidgetCard
       title="Total Portfolio Value"
       icon={DollarSign}
       testId="total-value-widget"
+      ariaDescription={`Your portfolio is currently worth ${formattedValue}`}
     >
-      <div className="text-2xl font-bold">
-        {formatCurrency(value.toNumber(), currency)}
+      <div className="text-2xl font-bold" aria-label={`Total value: ${formattedValue}`}>
+        {formattedValue}
       </div>
       <p className="text-xs text-muted-foreground">Current market value</p>
     </WidgetCard>

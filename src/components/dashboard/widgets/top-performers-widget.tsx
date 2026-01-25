@@ -7,9 +7,10 @@
  */
 
 import { memo, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp, Medal } from 'lucide-react';
-import { formatCurrency, formatPercentage } from '@/lib/utils';
+import { formatCurrency, formatPercentage, cn } from '@/lib/utils';
 import { HoldingPerformance, TimePeriod, TIME_PERIOD_CONFIGS } from '@/types/dashboard';
 import { getTopPerformers } from '@/lib/services/performance-calculator';
 import { useDashboardStore, usePortfolioStore } from '@/lib/stores';
@@ -63,9 +64,10 @@ interface PerformerRowProps {
   performer: HoldingPerformance;
   rank: number;
   currency: string;
+  onClick?: () => void;
 }
 
-function PerformerRow({ performer, rank, currency }: PerformerRowProps) {
+function PerformerRow({ performer, rank, currency, onClick }: PerformerRowProps) {
   const medalColors: Record<number, string> = {
     1: 'text-yellow-500',
     2: 'text-gray-400',
@@ -73,7 +75,16 @@ function PerformerRow({ performer, rank, currency }: PerformerRowProps) {
   };
 
   return (
-    <div className="flex items-center justify-between py-1">
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'flex items-center justify-between py-1 w-full text-left',
+        'rounded px-1 -mx-1 transition-colors',
+        'hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1'
+      )}
+      aria-label={`View details for ${performer.symbol}`}
+    >
       <div className="flex items-center gap-2 min-w-0">
         <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
           {rank <= 3 ? (
@@ -95,7 +106,7 @@ function PerformerRow({ performer, rank, currency }: PerformerRowProps) {
           +{formatCurrency(performer.absoluteGain.toNumber(), currency)}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -104,6 +115,7 @@ export const TopPerformersWidget = memo(function TopPerformersWidget({
   count,
   isLoading: externalLoading = false,
 }: TopPerformersWidgetProps) {
+  const router = useRouter();
   const { config } = useDashboardStore();
   const { currentPortfolio } = usePortfolioStore();
   const effectivePortfolioId = portfolioId || currentPortfolio?.id;
@@ -113,6 +125,12 @@ export const TopPerformersWidget = memo(function TopPerformersWidget({
 
   const [performers, setPerformers] = useState<HoldingPerformance[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handlePerformerClick = (holdingId: string) => {
+    // Navigate to holdings page with the holding ID as query param
+    // A future holdings/[id] route can be created for detailed view
+    router.push(`/holdings?highlight=${holdingId}`);
+  };
 
   useEffect(() => {
     if (!effectivePortfolioId) {
@@ -160,13 +178,14 @@ export const TopPerformersWidget = memo(function TopPerformersWidget({
         <TrendingUp className="h-4 w-4 text-green-600" />
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
+        <div className="space-y-1">
           {performers.map((performer, index) => (
             <PerformerRow
               key={performer.holdingId}
               performer={performer}
               rank={index + 1}
               currency={currency}
+              onClick={() => handlePerformerClick(performer.holdingId)}
             />
           ))}
         </div>

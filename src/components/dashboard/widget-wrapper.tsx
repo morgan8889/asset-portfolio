@@ -68,21 +68,29 @@ export const WidgetWrapper = memo(function WidgetWrapper({
       data-widget={id}
       {...attributes}
     >
-      {/* Drag handle - only visible when hovering and not disabled */}
+      {/* Drag handle - only visible when hovering/focusing and not disabled */}
       {!disabled && (
-        <div
+        <button
+          type="button"
           {...listeners}
           className={cn(
             'absolute left-2 top-2 z-10 cursor-grab p-1',
-            'opacity-0 group-hover:opacity-100 transition-opacity',
-            'rounded hover:bg-muted',
-            isDragging && 'cursor-grabbing'
+            'opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity',
+            'rounded hover:bg-muted focus:bg-muted',
+            'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+            isDragging && 'cursor-grabbing opacity-100'
           )}
-          aria-label={`Drag to reorder ${definition.displayName}`}
+          aria-label={`Reorder ${definition.displayName} widget. Press Space to pick up, arrow keys to move, Space to drop, or Escape to cancel.`}
+          aria-describedby={`widget-${id}-instructions`}
+          tabIndex={0}
         >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
-        </div>
+          <GripVertical className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+        </button>
       )}
+      {/* Screen reader instructions */}
+      <span id={`widget-${id}-instructions`} className="sr-only">
+        Use Space to pick up this widget, arrow keys to move it, Space to place it, or Escape to cancel reordering.
+      </span>
       {children}
     </div>
   );

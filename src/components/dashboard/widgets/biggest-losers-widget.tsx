@@ -7,9 +7,10 @@
  */
 
 import { memo, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingDown, AlertTriangle } from 'lucide-react';
-import { formatCurrency, formatPercentage } from '@/lib/utils';
+import { formatCurrency, formatPercentage, cn } from '@/lib/utils';
 import { HoldingPerformance, TimePeriod, TIME_PERIOD_CONFIGS } from '@/types/dashboard';
 import { getBiggestLosers } from '@/lib/services/performance-calculator';
 import { useDashboardStore, usePortfolioStore } from '@/lib/stores';
@@ -63,11 +64,21 @@ interface LoserRowProps {
   loser: HoldingPerformance;
   rank: number;
   currency: string;
+  onClick?: () => void;
 }
 
-function LoserRow({ loser, rank, currency }: LoserRowProps) {
+function LoserRow({ loser, rank, currency, onClick }: LoserRowProps) {
   return (
-    <div className="flex items-center justify-between py-1">
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'flex items-center justify-between py-1 w-full text-left',
+        'rounded px-1 -mx-1 transition-colors',
+        'hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1'
+      )}
+      aria-label={`View details for ${loser.symbol}`}
+    >
       <div className="flex items-center gap-2 min-w-0">
         <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
           {rank === 1 ? (
@@ -89,7 +100,7 @@ function LoserRow({ loser, rank, currency }: LoserRowProps) {
           {formatCurrency(loser.absoluteGain.toNumber(), currency)}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -98,6 +109,7 @@ export const BiggestLosersWidget = memo(function BiggestLosersWidget({
   count,
   isLoading: externalLoading = false,
 }: BiggestLosersWidgetProps) {
+  const router = useRouter();
   const { config } = useDashboardStore();
   const { currentPortfolio } = usePortfolioStore();
   const effectivePortfolioId = portfolioId || currentPortfolio?.id;
@@ -107,6 +119,12 @@ export const BiggestLosersWidget = memo(function BiggestLosersWidget({
 
   const [losers, setLosers] = useState<HoldingPerformance[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleLoserClick = (holdingId: string) => {
+    // Navigate to holdings page with the holding ID as query param
+    // A future holdings/[id] route can be created for detailed view
+    router.push(`/holdings?highlight=${holdingId}`);
+  };
 
   useEffect(() => {
     if (!effectivePortfolioId) {
@@ -154,13 +172,14 @@ export const BiggestLosersWidget = memo(function BiggestLosersWidget({
         <TrendingDown className="h-4 w-4 text-red-600" />
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
+        <div className="space-y-1">
           {losers.map((loser, index) => (
             <LoserRow
               key={loser.holdingId}
               loser={loser}
               rank={index + 1}
               currency={currency}
+              onClick={() => handleLoserClick(loser.holdingId)}
             />
           ))}
         </div>
