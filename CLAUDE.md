@@ -266,7 +266,58 @@ npx playwright test tests/e2e/loading-state-regression.spec.ts --project=chromiu
 - Browser IndexedDB via Dexie.js 3.2 (privacy-first, local-only)
 - TypeScript 5.3+ with Next.js 14.2 (App Router) + @dnd-kit/core 6.3+, @dnd-kit/sortable 10.0+, Zustand 4.5+, Zod (003-dashboard-stacking-layout)
 - IndexedDB via Dexie.js (userSettings table) (003-dashboard-stacking-layout)
+- TypeScript 5.3+ with Next.js 14.2 App Router + React 18, Zustand 4.5, Dexie.js 3.2, decimal.js, date-fns (005-live-market-data)
+- Browser IndexedDB via Dexie.js (userSettings table for preferences) (005-live-market-data)
 
 ## Recent Changes
 - 001-csv-transaction-import: Added papaparse for CSV parsing, date-parser utility, CSV import dialog and workflow
 - 002-portfolio-dashboard: Added Recharts 2.15, dnd-kit for drag-drop dashboard widgets
+- 005-live-market-data: Added live market data with UK market support, price polling, staleness indicators, and offline resilience
+
+## Live Market Data Feature (005)
+
+### Overview
+The live market data feature provides real-time price updates for US and UK markets with automatic polling, staleness detection, and offline resilience.
+
+### Key Components
+- **Price Store** (`src/lib/stores/price.ts`): Zustand store managing price data, polling infrastructure, and user preferences
+- **Market Hours Service** (`src/lib/services/market-hours.ts`): Calculates market state (PRE/REGULAR/POST/CLOSED) with timezone awareness
+- **Price Display** (`src/components/dashboard/price-display.tsx`): Displays live prices with staleness indicators and timestamps
+- **Price Settings** (`src/components/settings/price-settings.tsx`): UI for configuring update frequency and display options
+
+### UK Market Support
+- Symbols ending in `.L` are recognized as London Stock Exchange (LSE) symbols (e.g., `VOD.L`, `HSBA.L`)
+- Automatic pence-to-pounds conversion for stocks quoted in GBp
+- Exchange badges displayed in holdings table (LSE, AIM)
+
+### Price Update Intervals
+- **Realtime**: 15 seconds (for active traders)
+- **Frequent**: 30 seconds (balanced updates)
+- **Standard**: 60 seconds (recommended for most users)
+- **Manual**: No automatic updates (user triggers refresh)
+
+### Staleness Detection
+Staleness is calculated based on data age relative to the configured refresh interval:
+- **Fresh** (green): Data is current (age < interval)
+- **Aging** (yellow): Data is getting old (interval ≤ age < 2x interval)
+- **Stale** (red): Data needs refresh (age ≥ 2x interval)
+
+### Offline Resilience
+- Price cache persisted to IndexedDB for offline access
+- Offline indicator shown in header when network unavailable
+- Automatic polling resume when connection restored
+- Graceful degradation with cached data fallback on API errors
+
+### Market Hours
+Market state is calculated with timezone awareness:
+- US Markets (NYSE/NASDAQ): ET timezone, 9:30 AM - 4:00 PM
+- UK Markets (LSE/AIM): GMT/BST timezone, 8:00 AM - 4:30 PM
+
+### Testing
+```bash
+# Run market data unit tests
+npm run test -- --run src/lib/utils/__tests__/market-utils.test.ts src/lib/utils/__tests__/staleness.test.ts src/lib/services/__tests__/market-hours.test.ts
+
+# Run E2E price refresh tests
+npx playwright test tests/e2e/price-refresh.spec.ts --project=chromium
+```

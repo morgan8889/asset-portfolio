@@ -1,19 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { Menu, Moon, Sun, Settings, User } from 'lucide-react';
+import { Menu, Moon, Sun, Settings, User, WifiOff, RefreshCw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { useUIStore } from '@/lib/stores';
+import { useUIStore, usePriceStore } from '@/lib/stores';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
   const { toggleSidebar } = useUIStore();
+  const { isOnline, refreshAllPrices, loading: priceLoading } = usePriceStore();
   const [mounted, setMounted] = useState(false);
 
   // useEffect only runs on the client, so now we can safely show the UI
-  React.useEffect(() => {
+  useEffect(() => {
     setMounted(true);
   }, []);
 
@@ -45,6 +46,30 @@ export function Header() {
 
         <div className="flex flex-1 items-center justify-end space-x-4">
           <nav className="flex items-center space-x-1">
+            {/* Offline Indicator */}
+            {mounted && !isOnline && (
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-red-100 dark:bg-red-900/30 rounded-full text-red-700 dark:text-red-400 text-xs font-medium">
+                <WifiOff className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Offline</span>
+              </div>
+            )}
+
+            {/* Manual Refresh Button */}
+            {mounted && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => refreshAllPrices()}
+                disabled={priceLoading || !isOnline}
+                aria-label="Refresh prices"
+                title={isOnline ? 'Refresh prices' : 'Offline'}
+              >
+                <RefreshCw
+                  className={`h-5 w-5 ${priceLoading ? 'animate-spin' : ''}`}
+                />
+              </Button>
+            )}
+
             {mounted && (
               <Button
                 variant="ghost"
@@ -73,6 +98,3 @@ export function Header() {
     </header>
   );
 }
-
-// Fix for React import
-import * as React from 'react';

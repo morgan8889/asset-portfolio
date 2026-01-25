@@ -25,7 +25,8 @@ import {
 import { Decimal } from 'decimal.js';
 import { PieChart } from 'lucide-react';
 
-import { useDashboardStore, usePortfolioStore } from '@/lib/stores';
+import { useDashboardStore, usePortfolioStore, usePriceStore } from '@/lib/stores';
+import { useLivePriceMetrics, LiveHolding } from '@/hooks';
 import { WidgetId, WIDGET_DEFINITIONS, CategoryAllocation, LayoutMode, GridColumns } from '@/types/dashboard';
 import { Holding, Asset } from '@/types';
 import { cn } from '@/lib/utils';
@@ -70,9 +71,10 @@ function EmptyDashboard() {
 
 /**
  * Build category allocations from holdings and assets.
+ * Accepts either regular Holdings or LiveHoldings with live price data.
  */
 function buildCategoryAllocations(
-  holdings: Holding[],
+  holdings: (Holding | LiveHolding)[],
   assets: Asset[]
 ): CategoryAllocation[] {
   if (holdings.length === 0) return [];
@@ -93,10 +95,12 @@ function buildCategoryAllocations(
       label: formatCategoryLabel(category)
     };
 
-    current.value = current.value.plus(holding.currentValue);
+    // Use liveValue if available (LiveHolding), otherwise currentValue
+    const holdingValue = 'liveValue' in holding ? holding.liveValue : holding.currentValue;
+    current.value = current.value.plus(holdingValue);
     current.count += 1;
     categoryMap.set(category, current);
-    totalValue = totalValue.plus(holding.currentValue);
+    totalValue = totalValue.plus(holdingValue);
   }
 
   // Convert to CategoryAllocation array with percentages
@@ -152,6 +156,10 @@ const GRID_CLASSES: Record<GridColumns, string> = {
 const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardContainerProps) => {
   const { config, loading: configLoading, loadConfig, setWidgetOrder } = useDashboardStore();
   const { metrics, holdings, assets, loading: portfolioLoading } = usePortfolioStore();
+  const { loading: priceLoading } = usePriceStore();
+
+  // Get live price metrics - recalculates when prices update
+  const liveMetrics = useLivePriceMetrics(holdings || [], assets || []);
 
   // Detect viewport size for responsive behavior
   const [isMobile, setIsMobile] = useState(false);
@@ -191,19 +199,29 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
     setWidgetOrder(arrayMove(config.widgetOrder, oldIndex, newIndex));
   }, [config, setWidgetOrder]);
 
+  // Use live holdings for category allocations when live prices are available
   const categoryAllocations = useMemo(
-    () => buildCategoryAllocations(holdings || [], assets || []),
-    [holdings, assets]
+    () => buildCategoryAllocations(
+      liveMetrics.hasLivePrices ? liveMetrics.liveHoldings : (holdings || []),
+      assets || []
+    ),
+    [holdings, assets, liveMetrics.hasLivePrices, liveMetrics.liveHoldings]
   );
 
-  // Extract metrics with defaults - useMemo to avoid object recreation
+  // Extract metrics with defaults - prefer live metrics when available
   const derivedMetrics = useMemo(() => ({
-    totalValue: metrics?.totalValue || new Decimal(0),
-    totalGain: metrics?.totalGain || new Decimal(0),
-    totalGainPercent: metrics?.totalGainPercent || 0,
-    dayChange: metrics?.dayChange || new Decimal(0),
-    dayChangePercent: metrics?.dayChangePercent || 0,
-  }), [metrics]);
+    totalValue: liveMetrics.hasLivePrices
+      ? liveMetrics.totalValue
+      : (metrics?.totalValue || new Decimal(0)),
+    totalGain: liveMetrics.hasLivePrices
+      ? liveMetrics.totalGain
+      : (metrics?.totalGain || new Decimal(0)),
+    totalGainPercent: liveMetrics.hasLivePrices
+      ? liveMetrics.totalGainPercent
+      : (metrics?.totalGainPercent || 0),
+    dayChange: liveMetrics.dayChange,
+    dayChangePercent: liveMetrics.dayChangePercent,
+  }), [metrics, liveMetrics]);
 
   // Compute effective layout mode (force stacking on mobile)
   const effectiveLayoutMode: LayoutMode = isMobile
@@ -247,9 +265,17 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
       case 'growth-chart':
         return <GrowthChartWidget />;
       case 'top-performers':
-        return <TopPerformersWidget />;
+        return (
+          <TopPerformersWidget
+            performers={liveMetrics.hasLivePrices ? liveMetrics.topPerformers : undefined}
+          />
+        );
       case 'biggest-losers':
-        return <BiggestLosersWidget />;
+        return (
+          <BiggestLosersWidget
+            losers={liveMetrics.hasLivePrices ? liveMetrics.biggestLosers : undefined}
+          />
+        );
       case 'recent-activity':
         return <RecentActivityWidget />;
       default: {
@@ -262,7 +288,7 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
         );
       }
     }
-  }, [derivedMetrics, categoryAllocations, config?.timePeriod]);
+  }, [derivedMetrics, categoryAllocations, config?.timePeriod, liveMetrics]);
 
   // Early returns for loading/empty states (after all hooks)
   if (configLoading || portfolioLoading || !config) {
@@ -278,6 +304,14 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
   return (
     <div className="space-y-4">
       <StaleDataBanner lastUpdated={null} thresholdMinutes={15} />
+
+      {/* Loading indicator for price updates */}
+      {priceLoading && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-700 dark:text-blue-300">
+          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <span>Updating prices...</span>
+        </div>
+      )}
 
       <DndContext
         sensors={sensors}

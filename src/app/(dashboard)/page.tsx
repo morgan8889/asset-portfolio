@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import {
   DashboardProvider,
   useDashboardContext,
@@ -10,6 +11,7 @@ import {
   DashboardEmptyState,
 } from '@/components/dashboard';
 import { HoldingsTable } from '@/components/tables/holdings-table';
+import { usePriceStore, usePortfolioStore } from '@/lib/stores';
 
 export default function DashboardPage() {
   return (
@@ -21,6 +23,44 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const { currentPortfolio, loading, error, loadPortfolios } = useDashboardContext();
+  const { holdings, assets } = usePortfolioStore();
+  const {
+    loadPreferences,
+    setWatchedSymbols,
+    startPolling,
+    stopPolling,
+    refreshAllPrices,
+  } = usePriceStore();
+
+  // Initialize price polling when dashboard mounts
+  useEffect(() => {
+    // Load user preferences from IndexedDB
+    loadPreferences();
+
+    return () => {
+      // Cleanup polling on unmount
+      stopPolling();
+    };
+  }, [loadPreferences, stopPolling]);
+
+  // Update watched symbols when holdings change
+  useEffect(() => {
+    if (holdings.length > 0 && assets.length > 0) {
+      const symbols = holdings
+        .map((h) => {
+          const asset = assets.find((a) => a.id === h.assetId);
+          return asset?.symbol;
+        })
+        .filter((s): s is string => !!s);
+
+      if (symbols.length > 0) {
+        setWatchedSymbols(symbols);
+        // Fetch prices immediately and start polling
+        refreshAllPrices();
+        startPolling();
+      }
+    }
+  }, [holdings, assets, setWatchedSymbols, refreshAllPrices, startPolling]);
 
   if (loading) {
     return <DashboardLoadingState />;
