@@ -98,9 +98,10 @@ function ActivityEmpty() {
 interface TransactionRowProps {
   transaction: Transaction;
   assetMap: Map<string, Asset>;
+  currency: string;
 }
 
-function TransactionRow({ transaction, assetMap }: TransactionRowProps) {
+function TransactionRow({ transaction, assetMap, currency }: TransactionRowProps) {
   const asset = assetMap.get(transaction.assetId);
   const displaySymbol = asset?.symbol || transaction.assetId;
 
@@ -120,7 +121,7 @@ function TransactionRow({ transaction, assetMap }: TransactionRowProps) {
       </div>
       <div className="text-right">
         <div className="font-medium">
-          {formatCurrency(Number(transaction.totalAmount))}
+          {formatCurrency(Number(transaction.totalAmount), currency)}
         </div>
         <div className="text-sm text-muted-foreground">
           {transaction.quantity.toString()} shares
@@ -137,6 +138,7 @@ export const RecentActivityWidget = memo(function RecentActivityWidget({
 }: RecentActivityWidgetProps) {
   const { currentPortfolio } = usePortfolioStore();
   const effectivePortfolioId = portfolioId || currentPortfolio?.id;
+  const currency = currentPortfolio?.currency || 'USD';
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [assetMap, setAssetMap] = useState<Map<string, Asset>>(new Map());
@@ -212,6 +214,7 @@ export const RecentActivityWidget = memo(function RecentActivityWidget({
               key={transaction.id}
               transaction={transaction}
               assetMap={assetMap}
+              currency={currency}
             />
           ))}
         </div>
