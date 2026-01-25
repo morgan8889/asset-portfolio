@@ -6,7 +6,7 @@
  * Main container for the configurable dashboard with drag-drop reordering.
  */
 
-import { useEffect, useMemo, useCallback, memo } from 'react';
+import { useEffect, useMemo, useCallback, memo, useState } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -135,13 +135,32 @@ function formatCategoryLabel(category: string): string {
   return labels[category] || category.charAt(0).toUpperCase() + category.slice(1);
 }
 
+const MOBILE_BREAKPOINT = 768; // md breakpoint in Tailwind
+
 const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardContainerProps) => {
   const { config, loading: configLoading, loadConfig, setWidgetOrder } = useDashboardStore();
   const { metrics, holdings, assets, loading: portfolioLoading } = usePortfolioStore();
 
+  // Detect mobile viewport for responsive drag-drop behavior
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Check initial viewport
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   useEffect(() => {
     loadConfig();
   }, [loadConfig]);
+
+  // Disable drag-drop on mobile or when explicitly disabled
+  const isDragDropDisabled = disableDragDrop || isMobile;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -231,11 +250,11 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
         <SortableContext
           items={visibleWidgets}
           strategy={rectSortingStrategy}
-          disabled={disableDragDrop}
+          disabled={isDragDropDisabled}
         >
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {visibleWidgets.map((widgetId) => (
-              <WidgetWrapper key={widgetId} id={widgetId} disabled={disableDragDrop}>
+              <WidgetWrapper key={widgetId} id={widgetId} disabled={isDragDropDisabled}>
                 {renderWidget(widgetId)}
               </WidgetWrapper>
             ))}
