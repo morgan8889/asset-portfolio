@@ -25,7 +25,7 @@ import {
 import { Decimal } from 'decimal.js';
 import { PieChart } from 'lucide-react';
 
-import { useDashboardStore, usePortfolioStore } from '@/lib/stores';
+import { useDashboardStore, usePortfolioStore, usePriceStore } from '@/lib/stores';
 import { useLivePriceMetrics, LiveHolding } from '@/hooks';
 import { WidgetId, WIDGET_DEFINITIONS, CategoryAllocation, LayoutMode, GridColumns } from '@/types/dashboard';
 import { Holding, Asset } from '@/types';
@@ -156,6 +156,7 @@ const GRID_CLASSES: Record<GridColumns, string> = {
 const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardContainerProps) => {
   const { config, loading: configLoading, loadConfig, setWidgetOrder } = useDashboardStore();
   const { metrics, holdings, assets, loading: portfolioLoading } = usePortfolioStore();
+  const { loading: priceLoading } = usePriceStore();
 
   // Get live price metrics - recalculates when prices update
   const liveMetrics = useLivePriceMetrics(holdings || [], assets || []);
@@ -303,6 +304,14 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
   return (
     <div className="space-y-4">
       <StaleDataBanner lastUpdated={null} thresholdMinutes={15} />
+
+      {/* Loading indicator for price updates */}
+      {priceLoading && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-700 dark:text-blue-300">
+          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <span>Updating prices...</span>
+        </div>
+      )}
 
       <DndContext
         sensors={sensors}

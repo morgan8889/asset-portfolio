@@ -142,9 +142,11 @@ export const usePriceStore = create<PriceState>()(
           newPreferences.refreshInterval !== current.refreshInterval &&
           get().isPolling
         ) {
+          // Stop polling synchronously to prevent race condition
           get().stopPolling();
+          // Wait for next tick before starting to ensure cleanup completes
           if (updated.refreshInterval !== 'manual') {
-            get().startPolling();
+            setTimeout(() => get().startPolling(), 0);
           }
         }
 
@@ -221,11 +223,19 @@ export const usePriceStore = create<PriceState>()(
         const price = get().prices.get(symbol.toUpperCase());
         if (!price) return undefined;
 
-        // Recalculate staleness on access
-        return {
-          ...price,
-          staleness: calculateStaleness(price.timestamp, get().preferences.refreshInterval),
-        };
+        // Recalculate staleness on access for real-time accuracy
+        const freshStaleness = calculateStaleness(price.timestamp, get().preferences.refreshInterval);
+
+        // Only create new object if staleness changed to avoid unnecessary re-renders
+        if (price.staleness !== freshStaleness) {
+          const updatedPrice = { ...price, staleness: freshStaleness };
+          const prices = new Map(get().prices);
+          prices.set(symbol.toUpperCase(), updatedPrice);
+          set({ prices });
+          return updatedPrice;
+        }
+
+        return price;
       },
 
       // Price fetching
@@ -311,7 +321,7 @@ export const usePriceStore = create<PriceState>()(
 
         try {
           // Use batch endpoint for efficiency
-          const response = await fetch('/api/prices/[symbol]', {
+          const response = await fetch('/api/prices/batch', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ symbols }),
@@ -567,9 +577,18 @@ export const usePriceStore = create<PriceState>()(
 );
 
 // Cleanup function for module unload
+let beforeUnloadHandler: (() => void) | null = null;
+
 if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', () => {
+  // Remove any existing handler to prevent duplicates
+  if (beforeUnloadHandler) {
+    window.removeEventListener('beforeunload', beforeUnloadHandler);
+  }
+
+  beforeUnloadHandler = () => {
     const { stopPolling } = usePriceStore.getState();
     stopPolling();
-  });
+  };
+
+  window.addEventListener('beforeunload', beforeUnloadHandler);
 }

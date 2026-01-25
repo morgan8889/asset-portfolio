@@ -19,9 +19,9 @@ export type StalenessLevel = 'fresh' | 'aging' | 'stale';
 export type Exchange = 'NYSE' | 'NASDAQ' | 'AMEX' | 'LSE' | 'AIM' | 'CRYPTO' | 'UNKNOWN';
 
 export const REFRESH_INTERVALS: Record<RefreshInterval, number> = {
-  realtime: 30_000, // 30 seconds
-  frequent: 60_000, // 1 minute
-  standard: 300_000, // 5 minutes (default)
+  realtime: 15_000, // 15 seconds
+  frequent: 30_000, // 30 seconds
+  standard: 60_000, // 60 seconds (default)
   manual: 0, // No automatic refresh
 };
 

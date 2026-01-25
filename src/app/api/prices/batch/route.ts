@@ -3,9 +3,9 @@ import Decimal from 'decimal.js';
 import { rateLimit } from '@/lib/utils/rate-limit';
 import { validateSymbol, sanitizeInput } from '@/lib/utils/validation';
 import { logger } from '@/lib/utils/logger';
-import { isUKSymbol, convertPenceToPounds } from '@/lib/utils/market-utils';
+import { convertPenceToPounds } from '@/lib/utils/market-utils';
 
-// In-memory cache for price data (in production, use Redis)
+// In-memory cache for price data (shared with single price endpoint)
 const priceCache = new Map<string, {
   price: number;
   timestamp: number;
@@ -26,10 +26,10 @@ interface PriceSource {
 // Rate limiting configuration
 const rateLimiter = rateLimit({
   interval: 60 * 1000, // 1 minute
-  uniqueTokenPerInterval: 500, // Allow 500 unique requests per interval
+  uniqueTokenPerInterval: 500,
 });
 
-// Yahoo Finance API wrapper with error handling
+// Yahoo Finance API wrapper
 async function fetchYahooPrice(symbol: string): Promise<{ price: number; metadata?: any }> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -59,11 +59,9 @@ async function fetchYahooPrice(symbol: string): Promise<{ price: number; metadat
     const currency = result.meta.currency;
     const previousClose = result.meta.previousClose;
 
-    // Convert pence to pounds for UK stocks quoted in GBp
     const priceDecimal = new Decimal(rawPrice);
     const { displayPrice, displayCurrency } = convertPenceToPounds(priceDecimal, currency);
 
-    // Calculate change (also needs conversion for GBp)
     const changeRaw = rawPrice - previousClose;
     const changePercent = previousClose > 0 ? ((changeRaw / previousClose) * 100) : 0;
 
@@ -74,7 +72,7 @@ async function fetchYahooPrice(symbol: string): Promise<{ price: number; metadat
       price: displayPrice.toNumber(),
       metadata: {
         currency: displayCurrency,
-        rawCurrency: currency, // Original currency (GBp or GBP)
+        rawCurrency: currency,
         marketState: result.meta.marketState,
         regularMarketTime: result.meta.regularMarketTime,
         previousClose: currency === 'GBp' ? previousClose / 100 : previousClose,
@@ -186,7 +184,6 @@ async function fetchPriceWithRetry(symbol: string): Promise<{ price: number; sou
         logger.warn(`Failed to fetch price for ${symbol} from ${source.name}, attempt ${attempt}:`, error);
 
         if (attempt < MAX_RETRIES) {
-          // Exponential backoff
           const delay = Math.pow(2, attempt) * 1000;
           await new Promise(resolve => setTimeout(resolve, delay));
         }
@@ -197,110 +194,115 @@ async function fetchPriceWithRetry(symbol: string): Promise<{ price: number; sou
   throw new Error(`All price sources failed for ${symbol}. Last error: ${lastError?.message}`);
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { symbol: string } }
-) {
+export async function POST(request: NextRequest) {
   try {
     // Rate limiting
     const ip = request.ip ?? '127.0.0.1';
-    const { success } = await rateLimiter.check(10, ip); // 10 requests per minute per IP
+    const { success } = await rateLimiter.check(5, ip); // 5 batch requests per minute per IP
 
     if (!success) {
-      logger.warn(`Rate limit exceeded for IP: ${ip}`);
       return NextResponse.json(
-        { error: 'Rate limit exceeded. Please try again later.' },
+        { error: 'Rate limit exceeded for batch requests' },
         { status: 429 }
       );
     }
 
-    // Input validation and sanitization
-    const rawSymbol = params.symbol;
-    if (!rawSymbol) {
+    const body = await request.json();
+    const { symbols } = body;
+
+    if (!Array.isArray(symbols) || symbols.length === 0) {
       return NextResponse.json(
-        { error: 'Symbol parameter is required' },
+        { error: 'Symbols array is required' },
         { status: 400 }
       );
     }
 
-    const symbol = sanitizeInput(rawSymbol).toUpperCase();
-
-    if (!validateSymbol(symbol)) {
+    if (symbols.length > 20) {
       return NextResponse.json(
-        { error: 'Invalid symbol format' },
+        { error: 'Maximum 20 symbols allowed per batch request' },
         { status: 400 }
       );
     }
 
-    logger.info(`Price request for symbol: ${symbol} from IP: ${ip}`);
+    // Validate all symbols
+    const validSymbols = symbols
+      .map(s => sanitizeInput(s).toUpperCase())
+      .filter(s => validateSymbol(s));
 
-    // Check cache first
-    const cached = priceCache.get(symbol);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      logger.info(`Returning cached price for ${symbol}`);
-      return NextResponse.json({
-        symbol,
-        price: cached.price,
-        source: cached.source,
-        metadata: cached.metadata,
-        cached: true,
-        timestamp: new Date(cached.timestamp).toISOString(),
-      });
+    if (validSymbols.length === 0) {
+      return NextResponse.json(
+        { error: 'No valid symbols provided' },
+        { status: 400 }
+      );
     }
 
-    // Fetch fresh price data
-    const priceData = await fetchPriceWithRetry(symbol);
+    logger.info(`Batch price request for ${validSymbols.length} symbols from IP: ${ip}`);
 
-    // Validate price data
-    if (typeof priceData.price !== 'number' || isNaN(priceData.price) || priceData.price <= 0) {
-      throw new Error('Invalid price data received');
-    }
+    // Fetch prices concurrently
+    const results = await Promise.allSettled(
+      validSymbols.map(async (symbol) => {
+        // Check cache first
+        const cached = priceCache.get(symbol);
+        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+          return {
+            symbol,
+            price: cached.price,
+            source: cached.source,
+            metadata: cached.metadata,
+            cached: true,
+            timestamp: new Date(cached.timestamp).toISOString(),
+          };
+        }
 
-    // Update cache
-    priceCache.set(symbol, {
-      price: priceData.price,
-      timestamp: Date.now(),
-      source: priceData.source,
-      metadata: priceData.metadata,
+        // Fetch fresh data
+        const priceData = await fetchPriceWithRetry(symbol);
+
+        // Update cache
+        priceCache.set(symbol, {
+          price: priceData.price,
+          timestamp: Date.now(),
+          source: priceData.source,
+          metadata: priceData.metadata,
+        });
+
+        return {
+          symbol,
+          price: priceData.price,
+          source: priceData.source,
+          metadata: priceData.metadata,
+          cached: false,
+          timestamp: new Date().toISOString(),
+        };
+      })
+    );
+
+    // Process results
+    const successful: any[] = [];
+    const failed: any[] = [];
+
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        successful.push(result.value);
+      } else {
+        failed.push({
+          symbol: validSymbols[index],
+          error: result.reason?.message || 'Unknown error',
+        });
+      }
     });
 
-    // Return response
     return NextResponse.json({
-      symbol,
-      price: priceData.price,
-      source: priceData.source,
-      metadata: priceData.metadata,
-      cached: false,
+      successful,
+      failed,
+      total: validSymbols.length,
       timestamp: new Date().toISOString(),
     });
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    logger.error(`Error fetching price for ${params.symbol}:`, error);
-
-    // Return appropriate error response
-    if (errorMessage.includes('not supported') || errorMessage.includes('Invalid symbol')) {
-      return NextResponse.json(
-        { error: 'Symbol not supported or invalid', symbol: params.symbol },
-        { status: 404 }
-      );
-    }
-
-    if (errorMessage.includes('timeout') || errorMessage.includes('abort')) {
-      return NextResponse.json(
-        { error: 'Request timeout. Please try again.', symbol: params.symbol },
-        { status: 408 }
-      );
-    }
-
+    logger.error('Error in batch price request:', error);
     return NextResponse.json(
-      {
-        error: 'Failed to fetch price data. Please try again later.',
-        symbol: params.symbol,
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
-
