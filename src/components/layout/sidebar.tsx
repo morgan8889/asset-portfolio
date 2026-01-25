@@ -68,6 +68,8 @@ export function Sidebar() {
     <div
       className={cn(
         'fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] bg-background border-r transition-all duration-300 ease-in-out',
+        // Hide on mobile, show on desktop (md breakpoint = 768px)
+        'hidden md:block',
         sidebarOpen ? 'w-64' : 'w-16'
       )}
     >
