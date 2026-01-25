@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AddTransactionDialog } from '@/components/forms/add-transaction';
+import { CsvImportDialog } from '@/components/forms/csv-import-dialog';
 import { Download, FileSpreadsheet, Settings } from 'lucide-react';
 import { useDashboardContext } from './DashboardProvider';
 import { DashboardSettings } from './dashboard-settings';
@@ -10,6 +12,7 @@ import { TimePeriodSelector } from './time-period-selector';
 
 export function DashboardHeader() {
   const { currentPortfolio } = useDashboardContext();
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   if (!currentPortfolio) return null;
 
@@ -37,7 +40,7 @@ export function DashboardHeader() {
           <Download className="h-4 w-4 mr-2" />
           Export
         </Button>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
           <FileSpreadsheet className="h-4 w-4 mr-2" />
           Import CSV
         </Button>
@@ -56,6 +59,12 @@ export function DashboardHeader() {
           }
         />
       </div>
+
+      <CsvImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        portfolioId={currentPortfolio.id}
+      />
     </div>
   );
 }
