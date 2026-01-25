@@ -165,6 +165,53 @@ const taxAmount = total.mul(taxRate);
 - Input validation with Zod schemas
 - XSS protection via React's default escaping
 
+## CSV Transaction Import
+
+The CSV import feature allows bulk importing transactions from CSV files with auto-detection and validation.
+
+### Architecture
+```
+src/lib/services/
+├── csv-parser.ts         # PapaParse wrapper for parsing CSV files
+├── column-detector.ts    # Auto-detect column mappings from headers
+├── csv-validator.ts      # Row-level validation with error reporting
+└── csv-importer.ts       # Orchestrates the full import workflow
+
+src/lib/stores/
+└── csv-import.ts         # Zustand store for import state management
+
+src/components/forms/
+├── csv-import-dialog.tsx      # Main import dialog orchestrating the flow
+├── csv-file-upload.tsx        # Drag-drop file upload with validation
+├── import-preview-table.tsx   # Preview of parsed data
+├── column-mapping-editor.tsx  # Manual column mapping correction
+├── duplicate-review.tsx       # Review and handle duplicate transactions
+└── import-results.tsx         # Success/error summary with download option
+```
+
+### Import Flow
+1. **File Upload**: User selects/drops CSV file (max 10MB)
+2. **Parsing**: PapaParse extracts headers and rows with delimiter auto-detection
+3. **Column Detection**: Headers matched against known patterns (Date, Symbol, Quantity, etc.)
+4. **Validation**: Each row validated with detailed error messages
+5. **Duplicate Detection**: Cross-reference with existing transactions
+6. **Import**: Valid rows added to database with progress tracking
+
+### Supported Date Formats
+- ISO 8601: `yyyy-MM-dd`, `yyyy/MM/dd`
+- US Format: `MM/dd/yyyy`, `M/d/yyyy`
+- EU Format: `dd/MM/yyyy`, `d/M/yyyy`
+- Written: `January 15, 2025`, `Jan 15, 2025`
+
+### Testing CSV Import
+```bash
+# Unit tests (103 tests)
+npm run test -- src/lib/services/__tests__/csv*.test.ts src/lib/utils/__tests__/date-parser.test.ts
+
+# E2E tests
+npm run test:e2e -- tests/e2e/csv-import.spec.ts
+```
+
 ## E2E Testing Notes
 
 Playwright tests cover key user workflows:
@@ -174,6 +221,7 @@ Playwright tests cover key user workflows:
 - `transaction-management.spec.ts`: Adding/editing transactions
 - `holdings-table.spec.ts`: Holdings display and filtering
 - `charts-visualization.spec.ts`: Chart interactions
+- `csv-import.spec.ts`: CSV transaction import workflow
 
 Tests run against the dev server by default. The Playwright config automatically starts the dev server before tests.
 
@@ -214,8 +262,9 @@ npx playwright test tests/e2e/loading-state-regression.spec.ts --project=chromiu
 - Fallback to manual price entry if APIs fail
 
 ## Active Technologies
-- TypeScript 5.3 with Next.js 14.2 (App Router) + React 18, Zustand 4.5, Recharts 2.15, shadcn/ui, Tailwind CSS, dnd-kit (new) (002-portfolio-dashboard)
-- IndexedDB via Dexie.js 3.2 (existing userSettings table) (002-portfolio-dashboard)
+- TypeScript 5.3 with Next.js 14.2 (App Router) + React 18, Zustand 4.5, Recharts 2.15, shadcn/ui, Tailwind CSS, dnd-kit, papaparse (CSV parsing), Zod (validation), decimal.js (financial precision)
+- Browser IndexedDB via Dexie.js 3.2 (privacy-first, local-only)
 
 ## Recent Changes
-- 002-portfolio-dashboard: Added TypeScript 5.3 with Next.js 14.2 (App Router) + React 18, Zustand 4.5, Recharts 2.15, shadcn/ui, Tailwind CSS, dnd-kit (new)
+- 001-csv-transaction-import: Added papaparse for CSV parsing, date-parser utility, CSV import dialog and workflow
+- 002-portfolio-dashboard: Added Recharts 2.15, dnd-kit for drag-drop dashboard widgets
