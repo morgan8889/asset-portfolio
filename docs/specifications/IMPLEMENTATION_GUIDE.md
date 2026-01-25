@@ -3,6 +3,7 @@
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 18+ and npm 9+
 - Git
 - Code editor (VS Code recommended)
@@ -27,11 +28,25 @@ npm run dev
 # Open http://localhost:3000
 ```
 
+**Status Legend**: ✅ Complete | 🔄 In Progress | 📋 Planned
+
+---
+
+## Implementation Status Summary
+
+**Last Updated**: 2026-01-24
+
+This guide was created in September 2025 as a reference implementation. The actual project has progressed through Phase 1 and is currently in Phase 2-3. Status markers below indicate actual implementation state as of January 2026.
+
+**For current implementation details**, see [PROJECT_STATUS.md](../PROJECT_STATUS.md)
+
 ---
 
 ## Step-by-Step Implementation
 
-### Phase 1: Project Foundation (Week 1-2)
+### ✅ Phase 1: Project Foundation - **COMPLETE**
+
+**Original Timeline**: Week 1-2 | **Status**: Fully implemented and functional
 
 #### 1.1 Initialize Next.js Project
 
@@ -91,11 +106,11 @@ npx shadcn-ui@latest add toast
 
 ```typescript
 // src/lib/utils.ts
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 export function formatCurrency(value: number, currency = 'USD'): string {
@@ -104,11 +119,11 @@ export function formatCurrency(value: number, currency = 'USD'): string {
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(value)
+  }).format(value);
 }
 
 export function formatPercentage(value: number): string {
-  return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`
+  return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
 }
 
 export function formatDate(date: Date): string {
@@ -116,7 +131,7 @@ export function formatDate(date: Date): string {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-  }).format(date)
+  }).format(date);
 }
 ```
 
@@ -124,106 +139,106 @@ export function formatDate(date: Date): string {
 
 ```typescript
 // src/lib/db/schema.ts
-import Dexie, { Table } from 'dexie'
-import { Decimal } from 'decimal.js'
+import Dexie, { Table } from 'dexie';
+import { Decimal } from 'decimal.js';
 
 export interface Portfolio {
-  id?: string
-  name: string
-  type: 'taxable' | 'ira' | '401k' | 'roth'
-  currency: string
-  createdAt: Date
-  updatedAt: Date
+  id?: string;
+  name: string;
+  type: 'taxable' | 'ira' | '401k' | 'roth';
+  currency: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Asset {
-  id?: string
-  symbol: string
-  name: string
-  type: 'stock' | 'etf' | 'crypto' | 'bond' | 'real_estate' | 'commodity'
-  exchange?: string
-  currency: string
-  currentPrice?: number
-  priceUpdatedAt?: Date
+  id?: string;
+  symbol: string;
+  name: string;
+  type: 'stock' | 'etf' | 'crypto' | 'bond' | 'real_estate' | 'commodity';
+  exchange?: string;
+  currency: string;
+  currentPrice?: number;
+  priceUpdatedAt?: Date;
 }
 
 export interface Holding {
-  id?: string
-  portfolioId: string
-  assetId: string
-  quantity: string // Store as string for Decimal precision
-  costBasis: string
-  createdAt: Date
-  updatedAt: Date
+  id?: string;
+  portfolioId: string;
+  assetId: string;
+  quantity: string; // Store as string for Decimal precision
+  costBasis: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Transaction {
-  id?: string
-  portfolioId: string
-  assetId: string
-  type: 'buy' | 'sell' | 'dividend' | 'split' | 'transfer'
-  date: Date
-  quantity: string
-  price: string
-  fees: string
-  notes?: string
+  id?: string;
+  portfolioId: string;
+  assetId: string;
+  type: 'buy' | 'sell' | 'dividend' | 'split' | 'transfer';
+  date: Date;
+  quantity: string;
+  price: string;
+  fees: string;
+  notes?: string;
 }
 
 // Database class
 export class PortfolioDatabase extends Dexie {
-  portfolios!: Table<Portfolio>
-  assets!: Table<Asset>
-  holdings!: Table<Holding>
-  transactions!: Table<Transaction>
+  portfolios!: Table<Portfolio>;
+  assets!: Table<Asset>;
+  holdings!: Table<Holding>;
+  transactions!: Table<Transaction>;
 
   constructor() {
-    super('PortfolioTracker')
+    super('PortfolioTracker');
 
     this.version(1).stores({
       portfolios: '++id, name, type, createdAt',
       assets: '++id, symbol, name, type',
       holdings: '++id, portfolioId, assetId, [portfolioId+assetId]',
-      transactions: '++id, portfolioId, assetId, date, type'
-    })
+      transactions: '++id, portfolioId, assetId, date, type',
+    });
   }
 }
 
-export const db = new PortfolioDatabase()
+export const db = new PortfolioDatabase();
 ```
 
 #### 1.5 Create State Management
 
 ```typescript
 // src/lib/stores/portfolio-store.ts
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import { Portfolio, Asset, Holding, Transaction } from '@/lib/db/schema'
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { Portfolio, Asset, Holding, Transaction } from '@/lib/db/schema';
 
 interface PortfolioState {
   // Current selections
-  currentPortfolioId: string | null
-  selectedAssetId: string | null
+  currentPortfolioId: string | null;
+  selectedAssetId: string | null;
 
   // Data
-  portfolios: Portfolio[]
-  assets: Asset[]
-  holdings: Holding[]
-  transactions: Transaction[]
+  portfolios: Portfolio[];
+  assets: Asset[];
+  holdings: Holding[];
+  transactions: Transaction[];
 
   // Price data
-  prices: Map<string, number>
-  lastPriceUpdate: Date | null
+  prices: Map<string, number>;
+  lastPriceUpdate: Date | null;
 
   // Actions
-  setCurrentPortfolio: (id: string | null) => void
-  loadPortfolioData: () => Promise<void>
-  addTransaction: (transaction: Transaction) => Promise<void>
-  updatePrices: () => Promise<void>
+  setCurrentPortfolio: (id: string | null) => void;
+  loadPortfolioData: () => Promise<void>;
+  addTransaction: (transaction: Transaction) => Promise<void>;
+  updatePrices: () => Promise<void>;
 
   // Calculations
-  getTotalValue: () => number
-  getTotalGain: () => number
-  getDayChange: () => number
+  getTotalValue: () => number;
+  getTotalGain: () => number;
+  getDayChange: () => number;
 }
 
 export const usePortfolioStore = create<PortfolioState>()(
@@ -244,192 +259,170 @@ export const usePortfolioStore = create<PortfolioState>()(
 
       loadPortfolioData: async () => {
         // Load data from IndexedDB
-        const { db } = await import('@/lib/db/schema')
-        const portfolios = await db.portfolios.toArray()
-        const assets = await db.assets.toArray()
-        const holdings = await db.holdings.toArray()
-        const transactions = await db.transactions.toArray()
+        const { db } = await import('@/lib/db/schema');
+        const portfolios = await db.portfolios.toArray();
+        const assets = await db.assets.toArray();
+        const holdings = await db.holdings.toArray();
+        const transactions = await db.transactions.toArray();
 
-        set({ portfolios, assets, holdings, transactions })
+        set({ portfolios, assets, holdings, transactions });
       },
 
       addTransaction: async (transaction) => {
-        const { db } = await import('@/lib/db/schema')
-        await db.transactions.add(transaction)
-        await get().loadPortfolioData()
+        const { db } = await import('@/lib/db/schema');
+        await db.transactions.add(transaction);
+        await get().loadPortfolioData();
       },
 
       updatePrices: async () => {
         // Implement price fetching logic
-        const assets = get().assets
-        const prices = new Map<string, number>()
+        const assets = get().assets;
+        const prices = new Map<string, number>();
 
         // Fetch prices from API
         for (const asset of assets) {
           try {
-            const price = await fetchAssetPrice(asset.symbol)
-            prices.set(asset.id!, price)
+            const price = await fetchAssetPrice(asset.symbol);
+            prices.set(asset.id!, price);
           } catch (error) {
-            console.error(`Failed to fetch price for ${asset.symbol}`, error)
+            console.error(`Failed to fetch price for ${asset.symbol}`, error);
           }
         }
 
-        set({ prices, lastPriceUpdate: new Date() })
+        set({ prices, lastPriceUpdate: new Date() });
       },
 
       // Calculations
       getTotalValue: () => {
-        const { holdings, prices } = get()
+        const { holdings, prices } = get();
         return holdings.reduce((total, holding) => {
-          const price = prices.get(holding.assetId) || 0
-          const quantity = parseFloat(holding.quantity)
-          return total + (price * quantity)
-        }, 0)
+          const price = prices.get(holding.assetId) || 0;
+          const quantity = parseFloat(holding.quantity);
+          return total + price * quantity;
+        }, 0);
       },
 
       getTotalGain: () => {
-        const { holdings, prices } = get()
+        const { holdings, prices } = get();
         return holdings.reduce((total, holding) => {
-          const price = prices.get(holding.assetId) || 0
-          const quantity = parseFloat(holding.quantity)
-          const costBasis = parseFloat(holding.costBasis)
-          const currentValue = price * quantity
-          return total + (currentValue - costBasis)
-        }, 0)
+          const price = prices.get(holding.assetId) || 0;
+          const quantity = parseFloat(holding.quantity);
+          const costBasis = parseFloat(holding.costBasis);
+          const currentValue = price * quantity;
+          return total + (currentValue - costBasis);
+        }, 0);
       },
 
       getDayChange: () => {
         // Implement day change calculation
-        return 0 // Placeholder
-      }
+        return 0; // Placeholder
+      },
     }),
     {
       name: 'portfolio-storage',
       partialize: (state) => ({
         currentPortfolioId: state.currentPortfolioId,
         lastPriceUpdate: state.lastPriceUpdate,
-      })
+      }),
     }
   )
-)
+);
 
 // Helper function for price fetching
 async function fetchAssetPrice(symbol: string): Promise<number> {
   // Implement actual API call
-  const response = await fetch(`/api/prices/${symbol}`)
-  const data = await response.json()
-  return data.price
+  const response = await fetch(`/api/prices/${symbol}`);
+  const data = await response.json();
+  return data.price;
 }
 ```
 
-### Phase 2: Core Components (Week 3-4)
+### 🔄 Phase 2: Core Components - **IN PROGRESS**
+
+**Original Timeline**: Week 3-4 | **Status**: UI components exist, data integration incomplete
 
 #### 2.1 Dashboard Component
 
 ```tsx
 // src/app/(dashboard)/page.tsx
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { usePortfolioStore } from '@/lib/stores/portfolio-store'
-import { formatCurrency, formatPercentage } from '@/lib/utils'
-import { PortfolioChart } from '@/components/charts/portfolio-chart'
-import { AllocationDonut } from '@/components/charts/allocation-donut'
-import { HoldingsTable } from '@/components/tables/holdings-table'
-import { Plus, Download, TrendingUp } from 'lucide-react'
+import { useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { usePortfolioStore } from '@/lib/stores/portfolio-store';
+import { formatCurrency, formatPercentage } from '@/lib/utils';
+import { PortfolioChart } from '@/components/charts/portfolio-chart';
+import { AllocationDonut } from '@/components/charts/allocation-donut';
+import { HoldingsTable } from '@/components/tables/holdings-table';
+import { Plus, Download, TrendingUp } from 'lucide-react';
 
 export default function DashboardPage() {
-  const {
-    getTotalValue,
-    getTotalGain,
-    getDayChange,
-    loadPortfolioData,
-    updatePrices
-  } = usePortfolioStore()
+  const { getTotalValue, getTotalGain, getDayChange, loadPortfolioData, updatePrices } = usePortfolioStore();
 
   useEffect(() => {
-    loadPortfolioData()
-    updatePrices()
-  }, [])
+    loadPortfolioData();
+    updatePrices();
+  }, []);
 
-  const totalValue = getTotalValue()
-  const totalGain = getTotalGain()
-  const totalGainPercent = totalValue > 0 ? (totalGain / (totalValue - totalGain)) * 100 : 0
-  const dayChange = getDayChange()
-  const dayChangePercent = totalValue > 0 ? (dayChange / totalValue) * 100 : 0
+  const totalValue = getTotalValue();
+  const totalGain = getTotalGain();
+  const totalGainPercent = totalValue > 0 ? (totalGain / (totalValue - totalGain)) * 100 : 0;
+  const dayChange = getDayChange();
+  const dayChangePercent = totalValue > 0 ? (dayChange / totalValue) * 100 : 0;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto space-y-6 p-6">
       {/* Header Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Value
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Value</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(totalValue)}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Gain/Loss</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(totalValue)}
+              <span className={totalGain >= 0 ? 'text-green-600' : 'text-red-600'}>{formatCurrency(totalGain)}</span>
+              <span className="ml-2 text-sm text-muted-foreground">({formatPercentage(totalGainPercent)})</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Gain/Loss
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Day Change</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              <span className={totalGain >= 0 ? 'text-green-600' : 'text-red-600'}>
-                {formatCurrency(totalGain)}
-              </span>
-              <span className="text-sm text-muted-foreground ml-2">
-                ({formatPercentage(totalGainPercent)})
-              </span>
+              <span className={dayChange >= 0 ? 'text-green-600' : 'text-red-600'}>{formatCurrency(dayChange)}</span>
+              <span className="ml-2 text-sm text-muted-foreground">({formatPercentage(dayChangePercent)})</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Day Change
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              <span className={dayChange >= 0 ? 'text-green-600' : 'text-red-600'}>
-                {formatCurrency(dayChange)}
-              </span>
-              <span className="text-sm text-muted-foreground ml-2">
-                ({formatPercentage(dayChangePercent)})
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Actions
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Actions</CardTitle>
           </CardHeader>
           <CardContent className="flex gap-2">
             <Button size="sm" variant="outline">
-              <Plus className="h-4 w-4 mr-1" />
+              <Plus className="mr-1 h-4 w-4" />
               Add
             </Button>
             <Button size="sm" variant="outline">
-              <Download className="h-4 w-4 mr-1" />
+              <Download className="mr-1 h-4 w-4" />
               Export
             </Button>
             <Button size="sm" variant="outline">
-              <TrendingUp className="h-4 w-4 mr-1" />
+              <TrendingUp className="mr-1 h-4 w-4" />
               Analyze
             </Button>
           </CardContent>
@@ -437,7 +430,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Portfolio Performance</CardTitle>
@@ -467,7 +460,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 ```
 
@@ -475,17 +468,17 @@ export default function DashboardPage() {
 
 ```tsx
 // src/components/forms/add-transaction.tsx
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-import { format } from 'date-fns'
-import { CalendarIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Dialog,
   DialogContent,
@@ -493,30 +486,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
-import { usePortfolioStore } from '@/lib/stores/portfolio-store'
+} from '@/components/ui/dialog';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { usePortfolioStore } from '@/lib/stores/portfolio-store';
 
 const transactionSchema = z.object({
   type: z.enum(['buy', 'sell', 'dividend', 'split', 'transfer']),
@@ -532,13 +507,13 @@ const transactionSchema = z.object({
   }),
   fees: z.string().optional(),
   notes: z.string().optional(),
-})
+});
 
-type TransactionFormValues = z.infer<typeof transactionSchema>
+type TransactionFormValues = z.infer<typeof transactionSchema>;
 
 export function AddTransactionDialog() {
-  const [open, setOpen] = useState(false)
-  const { addTransaction, currentPortfolioId } = usePortfolioStore()
+  const [open, setOpen] = useState(false);
+  const { addTransaction, currentPortfolioId } = usePortfolioStore();
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
@@ -551,18 +526,18 @@ export function AddTransactionDialog() {
       fees: '0',
       notes: '',
     },
-  })
+  });
 
   async function onSubmit(data: TransactionFormValues) {
     if (!currentPortfolioId) {
-      alert('Please select a portfolio first')
-      return
+      alert('Please select a portfolio first');
+      return;
     }
 
     try {
       // Find or create asset
       // This is simplified - in real app, you'd search for existing asset first
-      const assetId = crypto.randomUUID()
+      const assetId = crypto.randomUUID();
 
       await addTransaction({
         portfolioId: currentPortfolioId,
@@ -573,13 +548,13 @@ export function AddTransactionDialog() {
         price: data.price,
         fees: data.fees || '0',
         notes: data.notes,
-      })
+      });
 
-      setOpen(false)
-      form.reset()
+      setOpen(false);
+      form.reset();
     } catch (error) {
-      console.error('Failed to add transaction', error)
-      alert('Failed to add transaction')
+      console.error('Failed to add transaction', error);
+      alert('Failed to add transaction');
     }
   }
 
@@ -591,9 +566,7 @@ export function AddTransactionDialog() {
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add Transaction</DialogTitle>
-          <DialogDescription>
-            Add a new buy, sell, or dividend transaction to your portfolio
-          </DialogDescription>
+          <DialogDescription>Add a new buy, sell, or dividend transaction to your portfolio</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -631,9 +604,7 @@ export function AddTransactionDialog() {
                   <FormControl>
                     <Input placeholder="AAPL" {...field} />
                   </FormControl>
-                  <FormDescription>
-                    Stock ticker, crypto symbol, or asset identifier
-                  </FormDescription>
+                  <FormDescription>Stock ticker, crypto symbol, or asset identifier</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -650,16 +621,9 @@ export function AddTransactionDialog() {
                       <FormControl>
                         <Button
                           variant="outline"
-                          className={cn(
-                            'w-full pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
-                          )}
+                          className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}
                         >
-                          {field.value ? (
-                            format(field.value, 'PPP')
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
+                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
@@ -669,9 +633,7 @@ export function AddTransactionDialog() {
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date('1900-01-01')
-                        }
+                        disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
                         initialFocus
                       />
                     </PopoverContent>
@@ -740,11 +702,7 @@ export function AddTransactionDialog() {
             />
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit">Add Transaction</Button>
@@ -753,7 +711,7 @@ export function AddTransactionDialog() {
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 ```
 
@@ -761,46 +719,38 @@ export function AddTransactionDialog() {
 
 ```tsx
 // src/components/charts/portfolio-chart.tsx
-'use client'
+'use client';
 
-import { useState } from 'react'
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { formatCurrency } from '@/lib/utils'
+import { useState } from 'react';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { formatCurrency } from '@/lib/utils';
 
 // Mock data - replace with real data from store
 const generateMockData = (days: number) => {
-  const data = []
-  const baseValue = 100000
-  const today = new Date()
+  const data = [];
+  const baseValue = 100000;
+  const today = new Date();
 
   for (let i = days; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - i)
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
 
     // Generate random walk
-    const change = (Math.random() - 0.48) * 0.02 // Slight upward bias
-    const value = baseValue * (1 + change) ** (days - i)
+    const change = (Math.random() - 0.48) * 0.02; // Slight upward bias
+    const value = baseValue * (1 + change) ** (days - i);
 
     data.push({
       date: date.toISOString().split('T')[0],
       value: Math.round(value),
-    })
+    });
   }
 
-  return data
-}
+  return data;
+};
 
-type TimePeriod = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL'
+type TimePeriod = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL';
 
 const periodDays: Record<TimePeriod, number> = {
   '1D': 1,
@@ -808,30 +758,28 @@ const periodDays: Record<TimePeriod, number> = {
   '1M': 30,
   '3M': 90,
   '1Y': 365,
-  'ALL': 365 * 5,
-}
+  ALL: 365 * 5,
+};
 
 export function PortfolioChart() {
-  const [period, setPeriod] = useState<TimePeriod>('1M')
-  const data = generateMockData(periodDays[period])
+  const [period, setPeriod] = useState<TimePeriod>('1M');
+  const data = generateMockData(periodDays[period]);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload[0]) {
       return (
-        <div className="bg-background border rounded-lg shadow-lg p-3">
+        <div className="rounded-lg border bg-background p-3 shadow-lg">
           <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="text-sm font-bold">
-            {formatCurrency(payload[0].value)}
-          </p>
+          <p className="text-sm font-bold">{formatCurrency(payload[0].value)}</p>
         </div>
-      )
+      );
     }
-    return null
-  }
+    return null;
+  };
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Performance</h3>
         <Tabs value={period} onValueChange={(v) => setPeriod(v as TimePeriod)}>
           <TabsList>
@@ -858,106 +806,93 @@ export function PortfolioChart() {
             dataKey="date"
             className="text-xs"
             tickFormatter={(value) => {
-              const date = new Date(value)
+              const date = new Date(value);
               if (period === '1D') {
                 return date.toLocaleTimeString('en-US', {
                   hour: '2-digit',
-                  minute: '2-digit'
-                })
+                  minute: '2-digit',
+                });
               }
               return date.toLocaleDateString('en-US', {
                 month: 'short',
-                day: 'numeric'
-              })
+                day: 'numeric',
+              });
             }}
           />
-          <YAxis
-            className="text-xs"
-            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-          />
+          <YAxis className="text-xs" tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
           <Tooltip content={<CustomTooltip />} />
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke="#3b82f6"
-            strokeWidth={2}
-            fill="url(#colorValue)"
-          />
+          <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} fill="url(#colorValue)" />
         </AreaChart>
       </ResponsiveContainer>
     </div>
-  )
+  );
 }
 ```
 
-### Phase 3: Price Integration (Week 5-6)
+### 🔄 Phase 3: Price Integration - **IN PROGRESS**
+
+**Original Timeline**: Week 5-6 | **Status**: API route complete, CSV import missing, charts use mock data
 
 #### 3.1 Price API Routes
 
 ```typescript
 // src/app/api/prices/[symbol]/route.ts
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
 
 // Cache configuration
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
-const priceCache = new Map<string, { price: number; timestamp: number }>()
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const priceCache = new Map<string, { price: number; timestamp: number }>();
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { symbol: string } }
-) {
-  const { symbol } = params
+export async function GET(request: NextRequest, { params }: { params: { symbol: string } }) {
+  const { symbol } = params;
 
   // Check cache first
-  const cached = priceCache.get(symbol)
+  const cached = priceCache.get(symbol);
   if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
     return NextResponse.json({
       symbol,
       price: cached.price,
-      cached: true
-    })
+      cached: true,
+    });
   }
 
   try {
     // Yahoo Finance API via proxy
-    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`
+    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
     const response = await fetch(yahooUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    })
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch price for ${symbol}`)
+      throw new Error(`Failed to fetch price for ${symbol}`);
     }
 
-    const data = await response.json()
-    const price = data.chart.result[0].meta.regularMarketPrice
+    const data = await response.json();
+    const price = data.chart.result[0].meta.regularMarketPrice;
 
     // Update cache
-    priceCache.set(symbol, { price, timestamp: Date.now() })
+    priceCache.set(symbol, { price, timestamp: Date.now() });
 
     return NextResponse.json({
       symbol,
       price,
-      cached: false
-    })
+      cached: false,
+    });
   } catch (error) {
-    console.error(`Error fetching price for ${symbol}:`, error)
+    console.error(`Error fetching price for ${symbol}:`, error);
 
     // Try alternative sources
     try {
-      const alternativePrice = await fetchAlternativePrice(symbol)
+      const alternativePrice = await fetchAlternativePrice(symbol);
       return NextResponse.json({
         symbol,
         price: alternativePrice,
-        source: 'alternative'
-      })
+        source: 'alternative',
+      });
     } catch (altError) {
-      return NextResponse.json(
-        { error: 'Failed to fetch price', symbol },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to fetch price', symbol }, { status: 500 });
     }
   }
 }
@@ -968,32 +903,30 @@ async function fetchAlternativePrice(symbol: string): Promise<number> {
 
   // For crypto, use CoinGecko
   if (isCrypto(symbol)) {
-    const coinId = getCoinGeckoId(symbol)
-    const response = await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`
-    )
-    const data = await response.json()
-    return data[coinId].usd
+    const coinId = getCoinGeckoId(symbol);
+    const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
+    const data = await response.json();
+    return data[coinId].usd;
   }
 
-  throw new Error('No alternative price source available')
+  throw new Error('No alternative price source available');
 }
 
 function isCrypto(symbol: string): boolean {
-  const cryptoSymbols = ['BTC', 'ETH', 'USDT', 'BNB', 'SOL', 'XRP']
-  return cryptoSymbols.includes(symbol.toUpperCase())
+  const cryptoSymbols = ['BTC', 'ETH', 'USDT', 'BNB', 'SOL', 'XRP'];
+  return cryptoSymbols.includes(symbol.toUpperCase());
 }
 
 function getCoinGeckoId(symbol: string): string {
   const mapping: Record<string, string> = {
-    'BTC': 'bitcoin',
-    'ETH': 'ethereum',
-    'USDT': 'tether',
-    'BNB': 'binancecoin',
-    'SOL': 'solana',
-    'XRP': 'ripple',
-  }
-  return mapping[symbol.toUpperCase()] || symbol.toLowerCase()
+    BTC: 'bitcoin',
+    ETH: 'ethereum',
+    USDT: 'tether',
+    BNB: 'binancecoin',
+    SOL: 'solana',
+    XRP: 'ripple',
+  };
+  return mapping[symbol.toUpperCase()] || symbol.toLowerCase();
 }
 ```
 
@@ -1001,9 +934,9 @@ function getCoinGeckoId(symbol: string): string {
 
 ```typescript
 // src/lib/services/csv-import.ts
-import Papa from 'papaparse'
-import { z } from 'zod'
-import { Transaction } from '@/lib/db/schema'
+import Papa from 'papaparse';
+import { z } from 'zod';
+import { Transaction } from '@/lib/db/schema';
 
 // CSV row schema
 const csvRowSchema = z.object({
@@ -1014,24 +947,21 @@ const csvRowSchema = z.object({
   Price: z.string(),
   Fees: z.string().optional(),
   Notes: z.string().optional(),
-})
+});
 
 export interface ImportResult {
-  success: number
-  failed: number
-  errors: Array<{ row: number; message: string }>
+  success: number;
+  failed: number;
+  errors: Array<{ row: number; message: string }>;
 }
 
-export async function importTransactionsFromCSV(
-  file: File,
-  portfolioId: string
-): Promise<ImportResult> {
+export async function importTransactionsFromCSV(file: File, portfolioId: string): Promise<ImportResult> {
   return new Promise((resolve) => {
     const result: ImportResult = {
       success: 0,
       failed: 0,
       errors: [],
-    }
+    };
 
     Papa.parse(file, {
       header: true,
@@ -1039,8 +969,8 @@ export async function importTransactionsFromCSV(
       complete: async (results) => {
         for (let i = 0; i < results.data.length; i++) {
           try {
-            const row = results.data[i]
-            const validated = csvRowSchema.parse(row)
+            const row = results.data[i];
+            const validated = csvRowSchema.parse(row);
 
             // Convert CSV data to transaction format
             const transaction: Transaction = {
@@ -1052,44 +982,44 @@ export async function importTransactionsFromCSV(
               price: validated.Price,
               fees: validated.Fees || '0',
               notes: validated.Notes,
-            }
+            };
 
             // Save to database
-            await saveTransaction(transaction)
-            result.success++
+            await saveTransaction(transaction);
+            result.success++;
           } catch (error) {
-            result.failed++
+            result.failed++;
             result.errors.push({
               row: i + 1,
               message: error instanceof Error ? error.message : 'Unknown error',
-            })
+            });
           }
         }
 
-        resolve(result)
+        resolve(result);
       },
       error: (error) => {
         resolve({
           success: 0,
           failed: 0,
           errors: [{ row: 0, message: error.message }],
-        })
+        });
       },
-    })
-  })
+    });
+  });
 }
 
 async function getOrCreateAssetId(symbol: string): Promise<string> {
   // Check if asset exists in database
   // If not, create it
   // Return asset ID
-  return crypto.randomUUID() // Placeholder
+  return crypto.randomUUID(); // Placeholder
 }
 
 async function saveTransaction(transaction: Transaction): Promise<void> {
   // Save to IndexedDB
-  const { db } = await import('@/lib/db/schema')
-  await db.transactions.add(transaction)
+  const { db } = await import('@/lib/db/schema');
+  await db.transactions.add(transaction);
 }
 ```
 
@@ -1101,14 +1031,9 @@ async function saveTransaction(transaction: Transaction): Promise<void> {
 
 ```typescript
 // src/lib/calculations.test.ts
-import { describe, it, expect } from 'vitest'
-import { Decimal } from 'decimal.js'
-import {
-  calculateTotalValue,
-  calculateGainLoss,
-  calculateAllocation,
-  calculateTaxLiability,
-} from '@/lib/calculations'
+import { describe, it, expect } from 'vitest';
+import { Decimal } from 'decimal.js';
+import { calculateTotalValue, calculateGainLoss, calculateAllocation, calculateTaxLiability } from '@/lib/calculations';
 
 describe('Portfolio Calculations', () => {
   describe('calculateTotalValue', () => {
@@ -1116,97 +1041,97 @@ describe('Portfolio Calculations', () => {
       const holdings = [
         { quantity: new Decimal(100), currentPrice: new Decimal(150) },
         { quantity: new Decimal(50), currentPrice: new Decimal(200) },
-      ]
+      ];
 
-      const result = calculateTotalValue(holdings)
-      expect(result.toString()).toBe('25000')
-    })
+      const result = calculateTotalValue(holdings);
+      expect(result.toString()).toBe('25000');
+    });
 
     it('should handle empty holdings', () => {
-      const result = calculateTotalValue([])
-      expect(result.toString()).toBe('0')
-    })
-  })
+      const result = calculateTotalValue([]);
+      expect(result.toString()).toBe('0');
+    });
+  });
 
   describe('calculateGainLoss', () => {
     it('should calculate gain correctly', () => {
-      const costBasis = new Decimal(10000)
-      const currentValue = new Decimal(12500)
+      const costBasis = new Decimal(10000);
+      const currentValue = new Decimal(12500);
 
-      const result = calculateGainLoss(costBasis, currentValue)
-      expect(result.amount.toString()).toBe('2500')
-      expect(result.percentage.toFixed(2)).toBe('25.00')
-    })
+      const result = calculateGainLoss(costBasis, currentValue);
+      expect(result.amount.toString()).toBe('2500');
+      expect(result.percentage.toFixed(2)).toBe('25.00');
+    });
 
     it('should calculate loss correctly', () => {
-      const costBasis = new Decimal(10000)
-      const currentValue = new Decimal(8500)
+      const costBasis = new Decimal(10000);
+      const currentValue = new Decimal(8500);
 
-      const result = calculateGainLoss(costBasis, currentValue)
-      expect(result.amount.toString()).toBe('-1500')
-      expect(result.percentage.toFixed(2)).toBe('-15.00')
-    })
-  })
-})
+      const result = calculateGainLoss(costBasis, currentValue);
+      expect(result.amount.toString()).toBe('-1500');
+      expect(result.percentage.toFixed(2)).toBe('-15.00');
+    });
+  });
+});
 ```
 
 ### E2E Tests
 
 ```typescript
 // tests/e2e/portfolio.spec.ts
-import { test, expect } from '@playwright/test'
+import { test, expect } from '@playwright/test';
 
 test.describe('Portfolio Management', () => {
   test('should add a new transaction', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/');
 
     // Open add transaction dialog
-    await page.click('button:has-text("Add Transaction")')
+    await page.click('button:has-text("Add Transaction")');
 
     // Fill in transaction details
-    await page.fill('input[name="assetSymbol"]', 'AAPL')
-    await page.fill('input[name="quantity"]', '100')
-    await page.fill('input[name="price"]', '150.00')
+    await page.fill('input[name="assetSymbol"]', 'AAPL');
+    await page.fill('input[name="quantity"]', '100');
+    await page.fill('input[name="price"]', '150.00');
 
     // Submit form
-    await page.click('button:has-text("Add Transaction")')
+    await page.click('button:has-text("Add Transaction")');
 
     // Verify transaction appears in table
-    await expect(page.locator('text=AAPL')).toBeVisible()
-    await expect(page.locator('text=100 shares')).toBeVisible()
-  })
+    await expect(page.locator('text=AAPL')).toBeVisible();
+    await expect(page.locator('text=100 shares')).toBeVisible();
+  });
 
   test('should import CSV file', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/');
 
     // Open import dialog
-    await page.click('button:has-text("Import CSV")')
+    await page.click('button:has-text("Import CSV")');
 
     // Upload file
-    const fileInput = page.locator('input[type="file"]')
-    await fileInput.setInputFiles('tests/fixtures/transactions.csv')
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles('tests/fixtures/transactions.csv');
 
     // Confirm import
-    await page.click('button:has-text("Import")')
+    await page.click('button:has-text("Import")');
 
     // Wait for success message
-    await expect(page.locator('text=Import successful')).toBeVisible()
-  })
+    await expect(page.locator('text=Import successful')).toBeVisible();
+  });
 
   test('should update prices in real-time', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/');
 
     // Initial value
-    const initialValue = await page.locator('[data-testid="total-value"]').textContent()
+    const initialValue = await page.locator('[data-testid="total-value"]').textContent();
 
     // Wait for price update (5 seconds)
-    await page.waitForTimeout(5000)
+    await page.waitForTimeout(5000);
 
     // Check if value changed
-    const updatedValue = await page.locator('[data-testid="total-value"]').textContent()
-    expect(updatedValue).not.toBe(initialValue)
-  })
-})
+    const updatedValue = await page.locator('[data-testid="total-value"]').textContent();
+    expect(updatedValue).not.toBe(initialValue);
+  });
+});
 ```
 
 ---
@@ -1323,65 +1248,58 @@ jobs:
 ## Common Issues & Solutions
 
 ### Issue: CORS errors when fetching prices
+
 ```typescript
 // Solution: Use Next.js API routes as proxy
 // src/app/api/proxy/route.ts
 export async function GET(request: NextRequest) {
-  const url = new URL(request.url)
-  const targetUrl = url.searchParams.get('url')
+  const url = new URL(request.url);
+  const targetUrl = url.searchParams.get('url');
 
   if (!targetUrl) {
-    return new Response('Missing URL parameter', { status: 400 })
+    return new Response('Missing URL parameter', { status: 400 });
   }
 
-  const response = await fetch(targetUrl)
-  const data = await response.text()
+  const response = await fetch(targetUrl);
+  const data = await response.text();
 
   return new Response(data, {
     headers: {
       'Content-Type': response.headers.get('Content-Type') || 'text/plain',
       'Access-Control-Allow-Origin': '*',
     },
-  })
+  });
 }
 ```
 
 ### Issue: IndexedDB storage quota exceeded
+
 ```typescript
 // Solution: Implement data cleanup and archiving
 async function cleanupOldData() {
-  const sixMonthsAgo = new Date()
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
   // Delete old price history
-  await db.priceHistory
-    .where('date')
-    .below(sixMonthsAgo)
-    .delete()
+  await db.priceHistory.where('date').below(sixMonthsAgo).delete();
 
   // Archive old transactions
-  const oldTransactions = await db.transactions
-    .where('date')
-    .below(sixMonthsAgo)
-    .toArray()
+  const oldTransactions = await db.transactions.where('date').below(sixMonthsAgo).toArray();
 
   // Export to JSON and save to file
   const blob = new Blob([JSON.stringify(oldTransactions)], {
     type: 'application/json',
-  })
+  });
 
   // Trigger download
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `archive-${sixMonthsAgo.toISOString()}.json`
-  a.click()
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `archive-${sixMonthsAgo.toISOString()}.json`;
+  a.click();
 
   // Delete from database
-  await db.transactions
-    .where('date')
-    .below(sixMonthsAgo)
-    .delete()
+  await db.transactions.where('date').below(sixMonthsAgo).delete();
 }
 ```
 
@@ -1390,6 +1308,7 @@ async function cleanupOldData() {
 ## Next Steps & Enhancements
 
 ### Immediate Next Steps (Post-MVP)
+
 1. **Enhanced Analytics**: Monte Carlo simulations, correlation analysis
 2. **Tax Optimization**: Tax loss harvesting suggestions
 3. **Mobile App**: React Native or PWA enhancement
@@ -1397,6 +1316,7 @@ async function cleanupOldData() {
 5. **AI Insights**: GPT-powered portfolio analysis
 
 ### Performance Optimizations
+
 1. **Virtual Scrolling**: For large transaction lists
 2. **Web Workers**: For heavy calculations
 3. **Service Worker**: For offline functionality
@@ -1404,6 +1324,7 @@ async function cleanupOldData() {
 5. **Code Splitting**: Dynamic imports for routes
 
 ### Security Enhancements
+
 1. **Local Encryption**: AES-256 for stored data
 2. **Biometric Auth**: For mobile devices
 3. **2FA**: For cloud sync features

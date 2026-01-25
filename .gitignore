@@ -58,4 +58,7 @@ logs
 
 # Temporary files
 .tmp/
-temp/.serena/
+temp/
+
+# MCP server state
+.serena/

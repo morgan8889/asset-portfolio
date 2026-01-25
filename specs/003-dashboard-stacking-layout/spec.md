@@ -3,145 +3,182 @@
 **Feature Branch**: `003-dashboard-stacking-layout`
 **Created**: 2026-01-24
 **Status**: Draft
-**Input**: User description: "Complete the dashboard. Ensure components can be stacked to fill gaps and remove empty space between components"
+**Input**: User description: "Dashboard stacking layout - allow users to configure how dashboard widgets are arranged in a grid or stacking layout, with drag-and-drop reordering and responsive column sizing"
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Widgets Fill Available Space Without Gaps (Priority: P1)
+### User Story 1 - Drag and Drop Widget Reordering (Priority: P1)
 
-A user views their portfolio dashboard and sees all visible widgets arranged in a compact layout with no empty gaps or wasted space. When widgets of different sizes are displayed, they stack intelligently to maximize screen real estate. The layout feels polished and professional.
+A user wants to reorganize their dashboard by moving widgets to different positions. They click and hold on a widget, drag it to a new location, and drop it. The other widgets smoothly reflow to accommodate the change, and the new arrangement is saved automatically.
 
-**Why this priority**: Eliminating empty space is the core user request. A compact, gap-free layout is essential for the dashboard to feel complete and production-ready.
+**Why this priority**: This is the core interaction model. Without drag-and-drop, users cannot customize their layout at all. This delivers the fundamental value of personalized dashboards.
 
-**Independent Test**: Can be fully tested by viewing the dashboard with various widget combinations and verifying no empty gaps appear between widgets.
+**Independent Test**: Can be fully tested by creating a dashboard with 3+ widgets and verifying that dragging any widget to a new position updates the layout and persists after page refresh.
 
 **Acceptance Scenarios**:
 
-1. **Given** a user has 3 small widgets and 1 large widget visible, **When** the dashboard renders, **Then** the widgets arrange to fill the grid with no empty cells between them.
+1. **Given** a user is viewing their dashboard with multiple widgets, **When** they click and hold on a widget header, **Then** the widget becomes draggable with visual feedback indicating it can be moved.
 
-2. **Given** a user hides a widget in the middle of their layout, **When** the dashboard updates, **Then** the remaining widgets reflow to close the gap left by the hidden widget.
+2. **Given** a user is dragging a widget, **When** they hover over a new position, **Then** they see a visual indicator (drop zone highlight) showing where the widget will be placed.
 
-3. **Given** a user is on a narrow viewport (mobile), **When** they view the dashboard, **Then** widgets stack vertically with no horizontal gaps or overflow.
+3. **Given** a user drops a widget in a new position, **When** the drop completes, **Then** all widgets reflow smoothly to their new positions and the layout is saved automatically.
+
+4. **Given** a user has rearranged widgets, **When** they refresh the page, **Then** their custom layout is preserved exactly as they left it.
 
 ---
 
-### User Story 2 - Configure Widget Sizes (Priority: P2)
+### User Story 2 - Switch Between Grid and Stacking Layouts (Priority: P2)
 
-A user wants certain widgets to be more prominent (larger) while keeping others compact. They can configure individual widget sizes (e.g., small/medium/large or 1x1/2x1/2x2 grid units) so that important information like the growth chart takes up more space while metrics cards remain compact.
+A user wants to choose how their widgets are arranged on screen. They can select between a multi-column grid layout (widgets side-by-side) or a single-column stacking layout (widgets vertically stacked). This allows them to optimize their view based on screen size, content preferences, or reading style.
 
-**Why this priority**: Different widgets have different content density - charts need more space than simple metrics. Size configuration enables users to optimize their information hierarchy.
+**Why this priority**: Layout mode switching provides significant UX value and accommodates different user preferences and devices, but requires the basic drag-and-drop (P1) to work first.
 
-**Independent Test**: Can be tested by changing a widget's size in settings and verifying it renders at the new size while other widgets reflow around it.
+**Independent Test**: Can be tested by toggling between grid and stacking modes and verifying widgets rearrange accordingly while preserving relative order.
 
 **Acceptance Scenarios**:
 
-1. **Given** a user opens dashboard settings, **When** they view widget options, **Then** they see size options for each widget (e.g., standard, wide, large).
+1. **Given** a user is on the dashboard, **When** they open layout settings, **Then** they see options to choose between "Grid Layout" and "Stacking Layout".
 
-2. **Given** a user sets the growth chart widget to "large", **When** they return to the dashboard, **Then** the growth chart spans more columns/rows than standard widgets.
+2. **Given** a user selects "Stacking Layout", **When** the layout updates, **Then** all widgets display in a single column, stacked vertically in their configured order.
 
-3. **Given** a user changes a widget from "large" to "standard", **When** the dashboard updates, **Then** other widgets expand or shift to fill the vacated space.
+3. **Given** a user selects "Grid Layout", **When** the layout updates, **Then** widgets display in a multi-column arrangement based on screen width and widget sizes.
 
-4. **Given** a user's size configuration, **When** they refresh the page, **Then** their size preferences are preserved.
+4. **Given** a user switches layout modes, **When** they switch back to the original mode, **Then** their widget positions within that mode are preserved.
 
 ---
 
-### User Story 3 - Widgets Stack to Fill Vertical Gaps (Priority: P3)
+### User Story 3 - Configure Column Count for Grid Layout (Priority: P3)
 
-When the dashboard layout has widgets of varying heights, smaller widgets should stack vertically to fill the space beside larger widgets. This masonry-style arrangement ensures that tall widgets (like charts or activity feeds) don't create large empty areas next to them.
+A user with a large monitor wants to display more widgets side-by-side. They configure the grid layout to use 2, 3, or 4 columns depending on their screen size and content density preferences. The widgets automatically resize to fill the available columns.
 
-**Why this priority**: Vertical stacking completes the gap-filling behavior, but horizontal gap elimination (P1) provides the primary value.
+**Why this priority**: Column configuration enhances grid layout usability on various screen sizes, but requires grid layout (P2) to exist first.
 
-**Independent Test**: Can be tested by placing a tall widget next to short widgets and verifying the short widgets stack to fill the vertical space.
+**Independent Test**: Can be tested by changing column count and verifying widgets redistribute appropriately across the selected number of columns.
 
 **Acceptance Scenarios**:
 
-1. **Given** a tall growth chart widget and multiple short metric widgets, **When** the dashboard renders, **Then** short widgets stack vertically alongside the chart with no large empty areas.
+1. **Given** a user is in grid layout mode, **When** they access column settings, **Then** they can select from 2, 3, or 4 columns.
 
-2. **Given** a user rearranges widgets via drag-and-drop, **When** they place a short widget next to a tall widget, **Then** it positions to minimize vertical gaps.
+2. **Given** a user selects 3 columns on a wide screen, **When** the layout updates, **Then** widgets fill up to 3 columns with equal width.
+
+3. **Given** a user has set 4 columns but views on a narrower screen, **When** the screen width cannot accommodate 4 columns, **Then** the layout responsively reduces to fewer columns while maintaining widget order.
+
+4. **Given** a user changes column count, **When** they refresh the page, **Then** their column preference is preserved.
 
 ---
 
-### User Story 4 - Responsive Stacking on Different Screen Sizes (Priority: P4)
+### User Story 4 - Responsive Layout Adaptation (Priority: P4)
 
-The dashboard layout adapts intelligently to different screen sizes. On large screens, it uses a multi-column masonry layout. On medium screens, it reduces columns while maintaining the stacking behavior. On mobile, it stacks all widgets vertically in a single column.
+A user accesses their dashboard on different devices (desktop, tablet, phone). The dashboard automatically adapts the layout to the available screen width, collapsing columns on smaller screens and expanding on larger screens, while maintaining the user's relative widget ordering preferences.
 
-**Why this priority**: Responsive behavior ensures the gap-free layout works across all devices, but core functionality (P1-P3) must work first.
+**Why this priority**: Responsive behavior ensures usability across devices but builds on the configurable layouts from P2 and P3.
 
-**Independent Test**: Can be tested by resizing the browser window and verifying the layout adapts without gaps at each breakpoint.
+**Independent Test**: Can be tested by resizing the browser window from wide (desktop) to narrow (mobile) and verifying the layout adapts appropriately at each breakpoint.
 
 **Acceptance Scenarios**:
 
-1. **Given** a user is on a large desktop screen (1920px+), **When** they view the dashboard, **Then** widgets arrange in a 4-column masonry layout.
+1. **Given** a user has a grid layout on desktop, **When** they resize to tablet width (768px-1024px), **Then** the layout reduces columns appropriately while preserving widget order.
 
-2. **Given** a user is on a tablet (768px-1024px), **When** they view the dashboard, **Then** widgets arrange in a 2-column layout with stacking.
+2. **Given** a user views the dashboard on mobile width (<768px), **When** the page loads, **Then** the dashboard displays in single-column stacking layout regardless of their saved grid preferences.
 
-3. **Given** a user is on mobile (<768px), **When** they view the dashboard, **Then** widgets stack in a single column with no horizontal overflow.
+3. **Given** a user has reordered widgets, **When** they view on any screen size, **Then** the relative ordering of widgets is maintained even as column count changes.
 
-4. **Given** a user rotates their tablet from portrait to landscape, **When** the orientation changes, **Then** the layout smoothly transitions to use more columns.
+4. **Given** a user resizes from mobile to desktop, **When** the screen exceeds mobile breakpoint, **Then** the layout returns to their saved grid/stacking preference.
+
+---
+
+### User Story 5 - Widget Size Configuration (Priority: P5)
+
+A user wants certain widgets to take up more space than others. In grid layout, they can configure a widget to span 1 or 2 columns (where the grid supports it). This allows important widgets like the portfolio growth chart to have more visual prominence.
+
+**Why this priority**: Widget sizing adds polish and customization depth but requires all basic layout mechanics (P1-P4) to work first.
+
+**Independent Test**: Can be tested by setting a widget to span 2 columns and verifying it occupies double the horizontal space in a 3+ column grid.
+
+**Acceptance Scenarios**:
+
+1. **Given** a user is in grid layout with 2+ columns, **When** they access widget settings, **Then** they can configure the widget to span 1 column or 2 columns.
+
+2. **Given** a widget is set to span 2 columns in a 3-column grid, **When** the layout renders, **Then** the widget occupies 2 columns and other widgets flow around it.
+
+3. **Given** a widget is set to span 2 columns but only 1 column is available (narrow screen), **When** the responsive layout applies, **Then** the widget takes full available width.
+
+4. **Given** a user in stacking layout configures widget span, **When** they switch to grid layout, **Then** the span configuration takes effect.
 
 ---
 
 ### Edge Cases
 
-- What happens when all visible widgets have the same size?
-  - Widgets arrange in a standard grid without stacking; no gaps appear because sizes are uniform
-- What happens when only one widget is visible?
-  - The single widget displays at its configured size; on desktop it doesn't stretch to fill the entire width (maintains readable proportions)
-- What happens when the user's screen is extremely wide (4K+)?
-  - Layout caps at a maximum of 4 columns to maintain readability; content centers with appropriate margins
-- What happens when a widget's content is taller than its configured size?
-  - The widget expands to fit its content; surrounding widgets reflow accordingly
-- What happens during drag-and-drop of widgets?
-  - Preview shows where the widget will land; stacking behavior updates in real-time as user drags
-- What happens when widget configuration fails to load?
-  - System uses default sizes (all standard) and displays gap-free layout; user sees notification about settings reset
+- What happens when a user drags a widget but drops it in an invalid location (outside the grid)?
+  - Widget returns to its original position with a subtle animation; no layout change occurs
+
+- What happens when the user has only one widget on the dashboard?
+  - Widget displays at full width in both grid and stacking modes; drag indicator shows but reordering has no effect
+
+- What happens when a 2-column-span widget is in a 2-column grid and user reduces to 2 columns?
+  - Widget takes full width of the row; other widgets flow below it
+
+- What happens when layout configuration data is corrupted or missing?
+  - System falls back to default layout (stacking mode, widgets in default order) and notifies user their preferences were reset
+
+- What happens during a drag operation if the user navigates away or the page loses focus?
+  - Drag operation is cancelled; widget returns to original position; no partial state is saved
+
+- What happens when widgets have different content heights in grid layout?
+  - Grid rows size to the tallest widget in that row; shorter widgets align to the top of their cells
+
+- What happens when screen width is exactly at a breakpoint boundary (e.g., exactly 768px)?
+  - System uses the smaller screen layout (mobile) at the exact breakpoint value to avoid layout flickering
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST render all visible widgets without empty gaps between them
-- **FR-002**: System MUST automatically reflow widgets when any widget is hidden or shown
-- **FR-003**: System MUST support at least 3 widget size options: standard (1 column), wide (2 columns), large (2 columns x 2 rows equivalent height)
-- **FR-004**: System MUST allow users to configure individual widget sizes through dashboard settings
-- **FR-005**: System MUST persist widget size configurations across sessions
-- **FR-006**: System MUST use a masonry-style layout that stacks widgets vertically to fill gaps beside taller widgets
-- **FR-007**: System MUST adapt the number of columns based on viewport width (1 column on mobile, 2 on tablet, 4 on desktop)
-- **FR-008**: System MUST maintain drag-and-drop reordering functionality within the new layout system
-- **FR-009**: System MUST show real-time preview of widget placement during drag operations
-- **FR-010**: System MUST cap layout width at a readable maximum on very large screens
-- **FR-011**: System MUST handle dynamic widget content height changes without breaking the layout
-- **FR-012**: System MUST transition smoothly when viewport size changes (no jarring reflows)
+- **FR-001**: System MUST allow users to drag and drop widgets to reorder them on the dashboard
+- **FR-002**: System MUST provide visual feedback during drag operations (dragged widget appearance, drop zone indicators)
+- **FR-003**: System MUST smoothly animate widget transitions when layout changes
+- **FR-004**: System MUST persist widget positions across browser sessions
+- **FR-005**: System MUST offer a choice between grid layout and stacking (single-column) layout
+- **FR-006**: System MUST allow users to configure column count (2, 3, or 4) in grid layout mode
+- **FR-007**: System MUST responsively adapt layout based on screen width with defined breakpoints
+- **FR-008**: System MUST collapse to single-column stacking layout on screens narrower than 768px
+- **FR-009**: System MUST maintain relative widget ordering when switching between layout modes
+- **FR-010**: System MUST allow widgets to be configured to span 1 or 2 columns in grid layout
+- **FR-011**: System MUST provide keyboard accessibility for widget reordering (arrow keys to move, space/enter to confirm)
+- **FR-012**: System MUST provide a "Reset to Default Layout" option to restore original widget positions and settings
+- **FR-013**: System MUST handle edge cases gracefully (invalid drops, corrupted config, single widget)
 
 ### Key Entities
 
-- **Widget Size Configuration**: User's preferred size for each widget; includes size option (standard/wide/large) and persists with dashboard configuration
-- **Layout Grid**: The underlying grid system that positions widgets; defines column count, gap size, and responsive breakpoints
-- **Masonry Position**: Calculated position for each widget based on size and available space; includes column span, row position, and offset
+- **Layout Configuration**: User's overall dashboard layout preferences including layout mode (grid/stacking), column count preference, and responsive behavior settings
+
+- **Widget Position**: A widget's placement within the layout including order index, column span, and any position-specific settings; associated with a specific layout mode
+
+- **Layout Mode**: Enumeration of available layout types (grid, stacking) with mode-specific configuration options
+
+- **Responsive Breakpoint**: Screen width thresholds that trigger layout adaptations; defines column count behavior at each breakpoint
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: Dashboard displays with zero visible gaps between widgets across all screen sizes
-- **SC-002**: Users can configure widget sizes and see changes reflected within 1 second
-- **SC-003**: Layout responds to viewport changes within 200ms without content jumping
-- **SC-004**: 100% of existing widget types support size configuration
-- **SC-005**: Dashboard maintains drag-and-drop reordering with the same usability as before
-- **SC-006**: Users report the dashboard feels "more complete" and "polished" compared to the previous fixed-grid layout
+- **SC-001**: Users can complete a widget reorder operation (drag, drop, see result) in under 3 seconds
+- **SC-002**: Layout transitions (mode switch, column change, responsive adaptation) complete in under 500ms
+- **SC-003**: 95% of users' layout configurations are successfully preserved after page refresh
+- **SC-004**: Dashboard remains usable and readable on screen widths from 320px to 2560px
+- **SC-005**: Users can customize their layout (reorder + set preferences) in under 2 minutes on first use
+- **SC-006**: Drag-and-drop operations work consistently across modern browsers (Chrome, Firefox, Safari, Edge)
+- **SC-007**: Keyboard-only users can reorder widgets without requiring a mouse
+- **SC-008**: Layout changes do not cause content to be clipped, overlapped, or inaccessible
 
 ## Assumptions
 
-- The existing dashboard widget system (visibility toggle, ordering) remains functional
-- Widget content is designed to be responsive within its container bounds
-- The growth chart and category breakdown widgets are natural candidates for "large" sizing
-- Simple metric widgets (total value, gain/loss, day change) work best at "standard" size
-- The privacy-first local storage approach for configuration is maintained
-- Performance remains acceptable with the more complex layout calculations
-- CSS Grid or a lightweight masonry library provides the layout engine (implementation detail, but informs feasibility)
-
-## Dependencies
-
-- Existing dashboard configuration store for persisting size preferences
-- Current widget wrapper component that will need enhancement for size awareness
-- Existing drag-and-drop system (dnd-kit) for integration with new layout
+- The portfolio dashboard from feature 002 exists and provides the widget infrastructure
+- Widgets have a defined header area that serves as the drag handle
+- The application already stores user preferences locally (consistent with privacy-first architecture)
+- Default layout is stacking mode with widgets in a predefined order (Total Value, Gain/Loss, Category Breakdown, Growth Chart, Top Performers, Biggest Losers)
+- Layout preferences are stored per-portfolio (users with multiple portfolios may have different layouts for each)
+- Touch devices support touch-based drag-and-drop (tap-hold to initiate)
+- The minimum supported screen width is 320px (standard mobile viewport)
+- Column count options (2, 3, 4) are sufficient for most use cases; users needing more customization can use stacking mode
+- Widget minimum width in grid mode prevents content from becoming unreadable (minimum ~300px per widget)

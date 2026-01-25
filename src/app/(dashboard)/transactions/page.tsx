@@ -1,12 +1,21 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Import } from 'lucide-react';
 import { AddTransactionDialog } from '@/components/forms/add-transaction';
+import { CsvImportDialog } from '@/components/forms/csv-import-dialog';
 import { TransactionTable } from '@/components/tables/transaction-table';
+import { usePortfolioStore } from '@/lib/stores/portfolio';
 
 export default function TransactionsPage() {
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const { currentPortfolio } = usePortfolioStore();
+
+  // Default portfolio ID if none selected
+  const portfolioId = currentPortfolio?.id ?? 'default';
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -17,7 +26,7 @@ export default function TransactionsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
             <Import className="mr-2 h-4 w-4" />
             Import CSV
           </Button>
@@ -26,6 +35,12 @@ export default function TransactionsPage() {
       </div>
 
       <TransactionTable />
+
+      <CsvImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        portfolioId={portfolioId}
+      />
     </div>
   );
 }
