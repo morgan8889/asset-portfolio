@@ -13,6 +13,9 @@ import {
   DashboardConfiguration,
   WidgetId,
   TimePeriod,
+  LayoutMode,
+  GridColumns,
+  WidgetSpan,
   DEFAULT_DASHBOARD_CONFIG,
 } from '@/types/dashboard';
 import { dashboardConfigService } from '@/lib/services/dashboard-config';
@@ -27,6 +30,9 @@ interface DashboardState {
   setWidgetOrder: (order: WidgetId[]) => Promise<void>;
   setTimePeriod: (period: TimePeriod) => Promise<void>;
   setPerformerCount: (count: number) => Promise<void>;
+  setLayoutMode: (mode: LayoutMode) => Promise<void>;
+  setGridColumns: (columns: GridColumns) => Promise<void>;
+  setWidgetSpan: (widgetId: WidgetId, span: WidgetSpan) => Promise<void>;
   resetToDefault: () => Promise<void>;
   clearError: () => void;
 }
@@ -125,6 +131,43 @@ export const useDashboardStore = create<DashboardState>()(
           count,
           () => dashboardConfigService.setPerformerCount(count),
           'Failed to update performer count'
+        );
+      },
+
+      setLayoutMode: async (mode) => {
+        await optimisticUpdate(
+          get,
+          set,
+          'layoutMode',
+          mode,
+          () => dashboardConfigService.setLayoutMode(mode),
+          'Failed to update layout mode'
+        );
+      },
+
+      setGridColumns: async (columns) => {
+        await optimisticUpdate(
+          get,
+          set,
+          'gridColumns',
+          columns,
+          () => dashboardConfigService.setGridColumns(columns),
+          'Failed to update grid columns'
+        );
+      },
+
+      setWidgetSpan: async (widgetId, span) => {
+        const { config } = get();
+        if (!config) return;
+
+        const updatedSpans = { ...config.widgetSpans, [widgetId]: span };
+        await optimisticUpdate(
+          get,
+          set,
+          'widgetSpans',
+          updatedSpans,
+          () => dashboardConfigService.setWidgetSpan(widgetId, span),
+          'Failed to update widget span'
         );
       },
 
