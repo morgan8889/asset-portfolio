@@ -21,8 +21,16 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Settings, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
 import { useDashboardStore } from '@/lib/stores';
-import { WidgetId, WIDGET_DEFINITIONS } from '@/types/dashboard';
+import { WidgetId, WIDGET_DEFINITIONS, GridColumns, WidgetSpan } from '@/types/dashboard';
 import { cn } from '@/lib/utils';
+import { LayoutModeSelector } from './layout-mode-selector';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface DashboardSettingsProps {
   trigger?: React.ReactNode;
@@ -31,7 +39,15 @@ interface DashboardSettingsProps {
 export function DashboardSettings({ trigger }: DashboardSettingsProps) {
   const [open, setOpen] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const { config, setWidgetVisibility, setWidgetOrder, resetToDefault } = useDashboardStore();
+  const {
+    config,
+    setWidgetVisibility,
+    setWidgetOrder,
+    setLayoutMode,
+    setGridColumns,
+    setWidgetSpan,
+    resetToDefault,
+  } = useDashboardStore();
 
   const handleVisibilityChange = useCallback(
     async (widgetId: WidgetId, visible: boolean) => {
@@ -85,6 +101,27 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     setShowResetConfirm(false);
   }, []);
 
+  const handleLayoutModeChange = useCallback(
+    async (mode: 'grid' | 'stacking') => {
+      await setLayoutMode(mode);
+    },
+    [setLayoutMode]
+  );
+
+  const handleGridColumnsChange = useCallback(
+    async (columns: string) => {
+      await setGridColumns(Number(columns) as GridColumns);
+    },
+    [setGridColumns]
+  );
+
+  const handleWidgetSpanChange = useCallback(
+    async (widgetId: WidgetId, span: string) => {
+      await setWidgetSpan(widgetId, Number(span) as WidgetSpan);
+    },
+    [setWidgetSpan]
+  );
+
   if (!config) {
     return null;
   }
@@ -110,7 +147,40 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4 max-h-[400px] overflow-y-auto">
+        {/* Layout Settings Section */}
+        <div className="space-y-4 py-4 border-b">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Layout Mode</Label>
+            <LayoutModeSelector
+              value={config.layoutMode}
+              onValueChange={handleLayoutModeChange}
+            />
+          </div>
+
+          {config.layoutMode === 'grid' && (
+            <div className="space-y-2">
+              <Label htmlFor="grid-columns" className="text-sm font-medium">
+                Grid Columns
+              </Label>
+              <Select
+                value={String(config.gridColumns)}
+                onValueChange={handleGridColumnsChange}
+              >
+                <SelectTrigger id="grid-columns" className="w-32">
+                  <SelectValue placeholder="Columns" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2">2 Columns</SelectItem>
+                  <SelectItem value="3">3 Columns</SelectItem>
+                  <SelectItem value="4">4 Columns</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+
+        {/* Widget Settings Section */}
+        <div className="space-y-4 py-4 max-h-[300px] overflow-y-auto">
           {config.widgetOrder.map((widgetId, index) => {
             const definition = WIDGET_DEFINITIONS[widgetId];
             const isVisible = config.widgetVisibility[widgetId];
@@ -147,6 +217,25 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
                 </div>
 
                 <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                  {/* Widget span selector - only shown in grid mode */}
+                  {config.layoutMode === 'grid' && (
+                    <Select
+                      value={String(config.widgetSpans?.[widgetId] ?? 1)}
+                      onValueChange={(value) => handleWidgetSpanChange(widgetId, value)}
+                      disabled={!isVisible}
+                    >
+                      <SelectTrigger
+                        className="w-16 h-8"
+                        aria-label={`Column span for ${definition.displayName}`}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1x</SelectItem>
+                        <SelectItem value="2">2x</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
