@@ -32,7 +32,10 @@ export default function DashboardLayout({
           <main
             className={cn(
               'flex-1 transition-all duration-300 ease-in-out',
-              sidebarOpen ? 'ml-64' : 'ml-16'
+              // On mobile (< 768px), no margin; sidebar is hidden or overlay
+              // On desktop, use sidebar-dependent margin
+              'ml-0 md:ml-16',
+              sidebarOpen && 'md:ml-64'
             )}
           >
             <div className="container mx-auto p-6">
