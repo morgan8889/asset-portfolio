@@ -126,12 +126,21 @@ export async function getHistoricalValues(
   period: TimePeriod,
   resolution?: Resolution
 ): Promise<HistoricalValuePoint[]> {
-  const periodConfig = TIME_PERIOD_CONFIGS[period];
-  const startDate = periodConfig.getStartDate();
-  const endDate = new Date();
-
   const transactions = await transactionQueries.getByPortfolio(portfolioId);
   if (transactions.length === 0) return [];
+
+  const periodConfig = TIME_PERIOD_CONFIGS[period];
+  let startDate = periodConfig.getStartDate();
+  const endDate = new Date();
+
+  // For ALL period, use earliest transaction date instead of Unix epoch
+  if (period === 'ALL' && transactions.length > 0) {
+    const earliestDate = transactions.reduce((min, tx) => {
+      const txDate = new Date(tx.date);
+      return txDate < min ? txDate : min;
+    }, new Date());
+    startDate = earliestDate;
+  }
 
   const effectiveResolution = resolution || getDefaultResolution(period);
   const dates = getDateIntervals(startDate, endDate, effectiveResolution);
