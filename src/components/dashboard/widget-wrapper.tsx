@@ -14,7 +14,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { WidgetId, WidgetDefinition, WIDGET_DEFINITIONS } from '@/types/dashboard';
+import { WidgetId, WIDGET_DEFINITIONS, WidgetSpan, LayoutMode } from '@/types/dashboard';
 
 interface WidgetWrapperProps {
   /** Unique widget identifier */
@@ -23,6 +23,10 @@ interface WidgetWrapperProps {
   children: ReactNode;
   /** Whether drag-drop is disabled (e.g., on mobile) */
   disabled?: boolean;
+  /** Column span for this widget (1 or 2) */
+  span?: WidgetSpan;
+  /** Current layout mode */
+  layoutMode?: LayoutMode;
   /** Additional CSS classes */
   className?: string;
 }
@@ -31,6 +35,8 @@ export const WidgetWrapper = memo(function WidgetWrapper({
   id,
   children,
   disabled = false,
+  span = 1,
+  layoutMode = 'grid',
   className,
 }: WidgetWrapperProps) {
   const definition = WIDGET_DEFINITIONS[id];
@@ -53,13 +59,22 @@ export const WidgetWrapper = memo(function WidgetWrapper({
     minHeight: definition.minHeight,
   };
 
+  // Compute column span class
+  // In stacking mode, all widgets are full width (span is ignored)
+  // In grid mode, span 2 widgets stretch across 2 columns on md+ screens
+  const spanClass = layoutMode === 'stacking'
+    ? 'col-span-1'
+    : span === 2
+      ? 'md:col-span-2'
+      : 'col-span-1';
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        // Grid column span based on widget definition
-        definition.colSpan === 2 ? 'md:col-span-2' : 'col-span-1',
+        // Grid column span based on config span
+        spanClass,
         // Drag state styling
         isDragging && 'z-50 opacity-90 shadow-xl',
         'relative group',
