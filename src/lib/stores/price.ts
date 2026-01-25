@@ -41,6 +41,12 @@ interface PriceData {
   marketState?: MarketState;
 }
 
+// Event handler cleanup references stored in state
+interface EventHandlers {
+  visibilityHandler: (() => void) | null;
+  onlineHandler: (() => void) | null;
+  offlineHandler: (() => void) | null;
+}
 
 interface PriceState {
   // State
@@ -52,6 +58,8 @@ interface PriceState {
   isPolling: boolean;
   watchedSymbols: Set<string>;
   isOnline: boolean;
+  pollingLock: boolean; // Prevents race conditions in polling restart
+  eventHandlers: EventHandlers; // Store event handlers for proper cleanup
 
   // Actions
   setPreferences: (preferences: Partial<PriceUpdatePreferences>) => void;
@@ -90,13 +98,6 @@ let pollIntervalId: ReturnType<typeof setInterval> | null = null;
 
 // Staleness update interval reference
 let stalenessIntervalId: ReturnType<typeof setInterval> | null = null;
-
-// Visibility change handler reference
-let visibilityHandler: (() => void) | null = null;
-
-// Online/offline handler references
-let onlineHandler: (() => void) | null = null;
-let offlineHandler: (() => void) | null = null;
 
 /**
  * Transforms raw price data into LivePriceData with staleness and currency conversion.
@@ -139,6 +140,12 @@ export const usePriceStore = create<PriceState>()(
       isPolling: false,
       watchedSymbols: new Set(),
       isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+      pollingLock: false,
+      eventHandlers: {
+        visibilityHandler: null,
+        onlineHandler: null,
+        offlineHandler: null,
+      },
 
       // Preference management
       setPreferences: (newPreferences) => {
@@ -152,16 +159,33 @@ export const usePriceStore = create<PriceState>()(
           newPreferences.refreshInterval !== current.refreshInterval &&
           get().isPolling
         ) {
-          // Stop polling synchronously to prevent race condition
+          // Use polling lock to prevent race conditions
+          if (get().pollingLock) {
+            console.warn('Polling restart already in progress, skipping');
+            return;
+          }
+
+          set({ pollingLock: true });
+
+          // Stop polling synchronously
           get().stopPolling();
+
           // Use queueMicrotask to ensure cleanup completes before restart
           if (updated.refreshInterval !== 'manual') {
             queueMicrotask(() => {
-              // Double-check state hasn't changed before restarting
-              if (get().preferences.refreshInterval !== 'manual') {
+              // Double-check state hasn't changed and lock is still held
+              if (
+                get().preferences.refreshInterval !== 'manual' &&
+                get().pollingLock
+              ) {
                 get().startPolling();
               }
+              // Release lock after restart completes
+              set({ pollingLock: false });
             });
+          } else {
+            // Release lock immediately if not restarting
+            set({ pollingLock: false });
           }
         }
 
@@ -397,7 +421,7 @@ export const usePriceStore = create<PriceState>()(
 
       // Polling management
       startPolling: () => {
-        const { preferences, isPolling, refreshAllPrices, setOnline, loadCachedPrices } = get();
+        const { preferences, isPolling, refreshAllPrices, setOnline, loadCachedPrices, eventHandlers } = get();
 
         // Don't start if already polling or in manual mode
         if (isPolling || preferences.refreshInterval === 'manual') {
@@ -410,7 +434,7 @@ export const usePriceStore = create<PriceState>()(
         // Load cached prices first for offline resilience
         loadCachedPrices();
 
-        // Clear any existing intervals
+        // Clear any existing intervals and event listeners
         if (pollIntervalId) {
           clearInterval(pollIntervalId);
         }
@@ -418,7 +442,18 @@ export const usePriceStore = create<PriceState>()(
           clearInterval(stalenessIntervalId);
         }
 
-        // Set up polling
+        // Clean up any existing event handlers
+        if (eventHandlers.visibilityHandler && typeof document !== 'undefined') {
+          document.removeEventListener('visibilitychange', eventHandlers.visibilityHandler);
+        }
+        if (eventHandlers.onlineHandler && typeof window !== 'undefined') {
+          window.removeEventListener('online', eventHandlers.onlineHandler);
+        }
+        if (eventHandlers.offlineHandler && typeof window !== 'undefined') {
+          window.removeEventListener('offline', eventHandlers.offlineHandler);
+        }
+
+        // Set up polling with error handling for unhandled promise rejections
         pollIntervalId = setInterval(() => {
           // Only poll if tab is visible (if pauseWhenHidden is true) and online
           if (
@@ -427,47 +462,58 @@ export const usePriceStore = create<PriceState>()(
               typeof document === 'undefined' ||
               document.visibilityState === 'visible')
           ) {
-            refreshAllPrices();
+            // Add error handling to prevent unhandled promise rejections
+            refreshAllPrices().catch((error) => {
+              console.error('Polling error:', error);
+              // Don't clear cache - error is already handled in refreshAllPrices
+            });
           }
         }, intervalMs);
 
         // Set up staleness updates (every 5 seconds)
+        const STALENESS_UPDATE_INTERVAL_MS = 5000;
         stalenessIntervalId = setInterval(() => {
           get().updateStaleness();
-        }, 5000);
+        }, STALENESS_UPDATE_INTERVAL_MS);
 
         // Set up visibility change handler
         if (typeof document !== 'undefined' && preferences.pauseWhenHidden) {
-          // Remove any existing handler
-          if (visibilityHandler) {
-            document.removeEventListener('visibilitychange', visibilityHandler);
-          }
-
-          visibilityHandler = () => {
-            if (document.visibilityState === 'visible' && get().isOnline) {
-              // Resume polling and fetch fresh data
-              refreshAllPrices();
+          const newVisibilityHandler = () => {
+            if (document.visibilityState === 'visible' && get().isOnline && !get().loading) {
+              // Resume polling and fetch fresh data (with error handling)
+              refreshAllPrices().catch((error) => {
+                console.error('Visibility resume error:', error);
+              });
             }
           };
 
-          document.addEventListener('visibilitychange', visibilityHandler);
+          document.addEventListener('visibilitychange', newVisibilityHandler);
+
+          // Store handler reference in state for proper cleanup
+          set({
+            eventHandlers: {
+              ...get().eventHandlers,
+              visibilityHandler: newVisibilityHandler,
+            },
+          });
         }
 
         // Set up online/offline handlers
         if (typeof window !== 'undefined') {
-          // Remove any existing handlers
-          if (onlineHandler) {
-            window.removeEventListener('online', onlineHandler);
-          }
-          if (offlineHandler) {
-            window.removeEventListener('offline', offlineHandler);
-          }
+          const newOnlineHandler = () => setOnline(true);
+          const newOfflineHandler = () => setOnline(false);
 
-          onlineHandler = () => setOnline(true);
-          offlineHandler = () => setOnline(false);
+          window.addEventListener('online', newOnlineHandler);
+          window.addEventListener('offline', newOfflineHandler);
 
-          window.addEventListener('online', onlineHandler);
-          window.addEventListener('offline', offlineHandler);
+          // Store handler references in state for proper cleanup
+          set({
+            eventHandlers: {
+              ...get().eventHandlers,
+              onlineHandler: newOnlineHandler,
+              offlineHandler: newOfflineHandler,
+            },
+          });
 
           // Set initial online state
           setOnline(navigator.onLine);
@@ -477,6 +523,8 @@ export const usePriceStore = create<PriceState>()(
       },
 
       stopPolling: () => {
+        const { eventHandlers } = get();
+
         // Persist cache before stopping
         get().persistPriceCache();
 
@@ -490,24 +538,29 @@ export const usePriceStore = create<PriceState>()(
           stalenessIntervalId = null;
         }
 
-        if (visibilityHandler && typeof document !== 'undefined') {
-          document.removeEventListener('visibilitychange', visibilityHandler);
-          visibilityHandler = null;
+        // Clean up event handlers from state
+        if (eventHandlers.visibilityHandler && typeof document !== 'undefined') {
+          document.removeEventListener('visibilitychange', eventHandlers.visibilityHandler);
         }
 
-        // Clean up online/offline handlers
         if (typeof window !== 'undefined') {
-          if (onlineHandler) {
-            window.removeEventListener('online', onlineHandler);
-            onlineHandler = null;
+          if (eventHandlers.onlineHandler) {
+            window.removeEventListener('online', eventHandlers.onlineHandler);
           }
-          if (offlineHandler) {
-            window.removeEventListener('offline', offlineHandler);
-            offlineHandler = null;
+          if (eventHandlers.offlineHandler) {
+            window.removeEventListener('offline', eventHandlers.offlineHandler);
           }
         }
 
-        set({ isPolling: false });
+        // Reset event handler references in state
+        set({
+          isPolling: false,
+          eventHandlers: {
+            visibilityHandler: null,
+            onlineHandler: null,
+            offlineHandler: null,
+          },
+        });
       },
 
       updateStaleness: () => {
