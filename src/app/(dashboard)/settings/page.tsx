@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Settings, Save, RefreshCw, Download, Upload } from 'lucide-react';
+import { PriceSettings } from '@/components/settings/price-settings';
 
 export default function SettingsPage() {
   return (
@@ -19,6 +20,9 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
+        {/* Price Update Settings */}
+        <PriceSettings />
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -42,21 +46,6 @@ export default function SettingsPage() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="refresh-interval">Price Refresh Interval</Label>
-              <Select defaultValue="15">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select interval" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5 minutes</SelectItem>
-                  <SelectItem value="15">15 minutes</SelectItem>
-                  <SelectItem value="30">30 minutes</SelectItem>
-                  <SelectItem value="60">1 hour</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>Dark Mode</Label>
@@ -65,16 +54,6 @@ export default function SettingsPage() {
                 </p>
               </div>
               <Switch />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label>Auto-sync</Label>
-                <p className="text-sm text-muted-foreground">
-                  Automatically refresh prices
-                </p>
-              </div>
-              <Switch defaultChecked />
             </div>
           </CardContent>
         </Card>
