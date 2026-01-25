@@ -20,12 +20,12 @@
 
 **Purpose**: Install dependencies and create foundational types/services
 
-- [ ] T001 Install dnd-kit dependencies: `npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`
-- [ ] T002 [P] Create dashboard types in src/types/dashboard.ts (copy from contracts/dashboard-config.ts)
-- [ ] T003 [P] Add dashboard types export to src/types/index.ts
-- [ ] T004 Create dashboard config service in src/lib/services/dashboard-config.ts
-- [ ] T005 Create dashboard Zustand store in src/lib/stores/dashboard.ts
-- [ ] T006 Add dashboard store export to src/lib/stores/index.ts
+- [x] T001 Install dnd-kit dependencies: `npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities`
+- [x] T002 [P] Create dashboard types in src/types/dashboard.ts (copy from contracts/dashboard-config.ts)
+- [x] T003 [P] Add dashboard types export to src/types/index.ts
+- [x] T004 Create dashboard config service in src/lib/services/dashboard-config.ts
+- [x] T005 Create dashboard Zustand store in src/lib/stores/dashboard.ts
+- [x] T006 Add dashboard store export to src/lib/stores/index.ts
 
 ---
 
@@ -35,16 +35,16 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Implement performance calculator service in src/lib/services/performance-calculator.ts
-- [ ] T008 Implement historical value service in src/lib/services/historical-value.ts
-- [ ] T009 [P] Add dashboard config queries to src/lib/db/queries.ts (getDashboardConfig, saveDashboardConfig)
-- [ ] T010 [P] Create widget-wrapper component in src/components/dashboard/widget-wrapper.tsx
-- [ ] T011 [P] Create stale-data-banner component in src/components/dashboard/stale-data-banner.tsx
+- [x] T007 Implement performance calculator service in src/lib/services/performance-calculator.ts
+- [x] T008 Implement historical value service in src/lib/services/historical-value.ts
+- [x] T009 [P] Add dashboard config queries to src/lib/db/queries.ts (getDashboardConfig, saveDashboardConfig)
+- [x] T010 [P] Create widget-wrapper component in src/components/dashboard/widget-wrapper.tsx
+- [x] T011 [P] Create stale-data-banner component in src/components/dashboard/stale-data-banner.tsx
 
 ### Unit Tests (Foundational Services)
 
-- [ ] T012 [P] Unit test for performance-calculator in src/lib/services/__tests__/performance-calculator.test.ts
-- [ ] T013 [P] Unit test for historical-value in src/lib/services/__tests__/historical-value.test.ts
+- [x] T012 [P] Unit test for performance-calculator in src/lib/services/__tests__/performance-calculator.test.ts
+- [x] T013 [P] Unit test for historical-value in src/lib/services/__tests__/historical-value.test.ts
 
 **Checkpoint**: Foundation ready - dashboard config, performance calculations, and historical value reconstruction available
 
@@ -58,18 +58,18 @@
 
 ### Implementation for User Story 1
 
-- [ ] T014 [P] [US1] Create total-value-widget in src/components/dashboard/widgets/total-value-widget.tsx
-- [ ] T015 [P] [US1] Create gain-loss-widget in src/components/dashboard/widgets/gain-loss-widget.tsx
-- [ ] T016 [P] [US1] Create day-change-widget in src/components/dashboard/widgets/day-change-widget.tsx
-- [ ] T017 [P] [US1] Create category-breakdown-widget in src/components/dashboard/widgets/category-breakdown-widget.tsx
-- [ ] T018 [US1] Create dashboard-container component in src/components/dashboard/dashboard-container.tsx (integrates widgets)
-- [ ] T019 [US1] Update main dashboard page to use DashboardContainer in src/app/(dashboard)/page.tsx
-- [ ] T020 [US1] Add empty state display when portfolio has no holdings in dashboard-container.tsx
-- [ ] T021 [US1] Add loading states to all US1 widgets
+- [x] T014 [P] [US1] Create total-value-widget in src/components/dashboard/widgets/total-value-widget.tsx
+- [x] T015 [P] [US1] Create gain-loss-widget in src/components/dashboard/widgets/gain-loss-widget.tsx
+- [x] T016 [P] [US1] Create day-change-widget in src/components/dashboard/widgets/day-change-widget.tsx
+- [x] T017 [P] [US1] Create category-breakdown-widget in src/components/dashboard/widgets/category-breakdown-widget.tsx
+- [x] T018 [US1] Create dashboard-container component in src/components/dashboard/dashboard-container.tsx (integrates widgets)
+- [x] T019 [US1] Update main dashboard page to use DashboardContainer in src/app/(dashboard)/page.tsx
+- [x] T020 [US1] Add empty state display when portfolio has no holdings in dashboard-container.tsx
+- [x] T021 [US1] Add loading states to all US1 widgets
 
 ### E2E Test for User Story 1
 
-- [ ] T022 [US1] E2E test for dashboard display in tests/e2e/dashboard-display.spec.ts
+- [x] T022 [US1] E2E test for dashboard display in tests/e2e/dashboard-display.spec.ts
 
 **Checkpoint**: US1 complete - users see total value, gain/loss, and category breakdown on dashboard
 
@@ -83,17 +83,17 @@
 
 ### Implementation for User Story 2
 
-- [ ] T023 [P] [US2] Create growth-chart-widget in src/components/dashboard/widgets/growth-chart-widget.tsx
-- [ ] T024 [US2] Refactor portfolio-chart.tsx to accept real data props in src/components/charts/portfolio-chart.tsx
-- [ ] T025 [US2] Connect growth-chart-widget to historical-value service for real data
-- [ ] T026 [US2] Add time range selector (1W, 1M, 3M, 6M, 1Y, All) to growth-chart-widget
-- [ ] T027 [US2] Add hover tooltip showing date and value to chart
-- [ ] T028 [US2] Handle edge case: limited history with appropriate messaging
-- [ ] T029 [US2] Add loading state to growth-chart-widget
+- [x] T023 [P] [US2] Create growth-chart-widget in src/components/dashboard/widgets/growth-chart-widget.tsx
+- [x] T024 [US2] Refactor portfolio-chart.tsx to accept real data props in src/components/charts/portfolio-chart.tsx
+- [x] T025 [US2] Connect growth-chart-widget to historical-value service for real data
+- [x] T026 [US2] Add time range selector (1W, 1M, 3M, 6M, 1Y, All) to growth-chart-widget
+- [x] T027 [US2] Add hover tooltip showing date and value to chart
+- [x] T028 [US2] Handle edge case: limited history with appropriate messaging
+- [x] T029 [US2] Add loading state to growth-chart-widget
 
 ### E2E Test for User Story 2
 
-- [ ] T030 [US2] E2E test for chart time range in tests/e2e/dashboard-chart.spec.ts
+- [x] T030 [US2] E2E test for chart time range in tests/e2e/dashboard-chart.spec.ts
 
 **Checkpoint**: US2 complete - users see interactive historical chart with time range selection
 
@@ -107,18 +107,18 @@
 
 ### Implementation for User Story 3
 
-- [ ] T031 [P] [US3] Create dashboard-settings modal in src/components/dashboard/dashboard-settings.tsx
-- [ ] T032 [US3] Integrate dnd-kit sortable into dashboard-container.tsx for drag-drop reordering
-- [ ] T033 [US3] Add widget visibility toggles to dashboard-settings.tsx
-- [ ] T034 [US3] Add widget order controls (up/down buttons) for mobile in dashboard-settings.tsx
-- [ ] T035 [US3] Implement "Reset to Default Layout" button in dashboard-settings.tsx
-- [ ] T036 [US3] Connect dashboard-settings to dashboard store for persistence
-- [ ] T037 [US3] Add settings gear button to dashboard header for opening settings modal
-- [ ] T038 [US3] Implement responsive behavior: drag-drop on desktop, settings modal on mobile
+- [x] T031 [P] [US3] Create dashboard-settings modal in src/components/dashboard/dashboard-settings.tsx
+- [x] T032 [US3] Integrate dnd-kit sortable into dashboard-container.tsx for drag-drop reordering
+- [x] T033 [US3] Add widget visibility toggles to dashboard-settings.tsx
+- [x] T034 [US3] Add widget order controls (up/down buttons) for mobile in dashboard-settings.tsx
+- [x] T035 [US3] Implement "Reset to Default Layout" button in dashboard-settings.tsx
+- [x] T036 [US3] Connect dashboard-settings to dashboard store for persistence
+- [x] T037 [US3] Add settings gear button to dashboard header for opening settings modal
+- [x] T038 [US3] Implement responsive behavior: drag-drop on desktop, settings modal on mobile
 
 ### E2E Test for User Story 3
 
-- [ ] T039 [US3] E2E test for widget configuration in tests/e2e/dashboard-configuration.spec.ts
+- [x] T039 [US3] E2E test for widget configuration in tests/e2e/dashboard-configuration.spec.ts
 
 **Checkpoint**: US3 complete - users can customize and persist their dashboard layout
 
@@ -132,16 +132,16 @@
 
 ### Implementation for User Story 4
 
-- [ ] T040 [P] [US4] Create top-performers-widget in src/components/dashboard/widgets/top-performers-widget.tsx
-- [ ] T041 [P] [US4] Create biggest-losers-widget in src/components/dashboard/widgets/biggest-losers-widget.tsx
-- [ ] T042 [US4] Connect widgets to performance-calculator service
-- [ ] T043 [US4] Add navigation to holding detail on performer click
-- [ ] T044 [US4] Handle empty states (no gains, no losses)
-- [ ] T045 [US4] Add loading states to performer widgets
+- [x] T040 [P] [US4] Create top-performers-widget in src/components/dashboard/widgets/top-performers-widget.tsx
+- [x] T041 [P] [US4] Create biggest-losers-widget in src/components/dashboard/widgets/biggest-losers-widget.tsx
+- [x] T042 [US4] Connect widgets to performance-calculator service
+- [x] T043 [US4] Add navigation to holding detail on performer click
+- [x] T044 [US4] Handle empty states (no gains, no losses)
+- [x] T045 [US4] Add loading states to performer widgets
 
 ### E2E Test for User Story 4
 
-- [ ] T046 [US4] E2E test for performers display in tests/e2e/dashboard-performers.spec.ts
+- [x] T046 [US4] E2E test for performers display in tests/e2e/dashboard-performers.spec.ts
 
 **Checkpoint**: US4 complete - users see top 5 performers and losers ranked by percentage
 
@@ -155,17 +155,17 @@
 
 ### Implementation for User Story 5
 
-- [ ] T047 [P] [US5] Add time period selector component in src/components/dashboard/time-period-selector.tsx
-- [ ] T048 [US5] Integrate time period selector into dashboard header
-- [ ] T049 [US5] Update gain-loss-widget to use selected time period
-- [ ] T050 [US5] Update top-performers-widget to use selected time period
-- [ ] T051 [US5] Update biggest-losers-widget to use selected time period
-- [ ] T052 [US5] Persist time period preference in dashboard config
-- [ ] T053 [US5] Add period label to widgets showing calculation context
+- [x] T047 [P] [US5] Add time period selector component in src/components/dashboard/time-period-selector.tsx
+- [x] T048 [US5] Integrate time period selector into dashboard header
+- [x] T049 [US5] Update gain-loss-widget to use selected time period
+- [x] T050 [US5] Update top-performers-widget to use selected time period
+- [x] T051 [US5] Update biggest-losers-widget to use selected time period
+- [x] T052 [US5] Persist time period preference in dashboard config
+- [x] T053 [US5] Add period label to widgets showing calculation context
 
 ### E2E Test for User Story 5
 
-- [ ] T054 [US5] E2E test for time period selection in tests/e2e/dashboard-time-period.spec.ts
+- [x] T054 [US5] E2E test for time period selection in tests/e2e/dashboard-time-period.spec.ts
 
 **Checkpoint**: US5 complete - users can configure time window for all performance metrics
 
@@ -175,15 +175,15 @@
 
 **Purpose**: Improvements affecting multiple user stories
 
-- [ ] T055 [P] Implement stale data indicators on all price-dependent widgets
-- [ ] T056 [P] Add React.memo to all widget components for performance
-- [ ] T057 [P] Ensure all financial calculations use decimal.js (audit)
-- [ ] T058 Add keyboard navigation support for widget reordering (accessibility)
-- [ ] T059 Add ARIA labels and screen reader support to all widgets
-- [ ] T060 Responsive layout testing and fixes (320px - 2560px per SC-006)
-- [ ] T061 Performance optimization: verify dashboard load < 2s (SC-001)
-- [ ] T062 Performance optimization: verify chart range change < 1s (SC-004)
-- [ ] T063 Run quickstart.md validation checklist
+- [x] T055 [P] Implement stale data indicators on all price-dependent widgets
+- [x] T056 [P] Add React.memo to all widget components for performance
+- [x] T057 [P] Ensure all financial calculations use decimal.js (audit)
+- [x] T058 Add keyboard navigation support for widget reordering (accessibility)
+- [x] T059 Add ARIA labels and screen reader support to all widgets
+- [x] T060 Responsive layout testing and fixes (320px - 2560px per SC-006)
+- [x] T061 Performance optimization: verify dashboard load < 2s (SC-001)
+- [x] T062 Performance optimization: verify chart range change < 1s (SC-004)
+- [x] T063 Run quickstart.md validation checklist
 
 ---
 

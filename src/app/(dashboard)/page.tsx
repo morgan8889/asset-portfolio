@@ -4,9 +4,7 @@ import {
   DashboardProvider,
   useDashboardContext,
   DashboardHeader,
-  MetricsCards,
-  ChartsRow,
-  RecentActivity,
+  DashboardContainer,
   DashboardLoadingState,
   DashboardErrorState,
   DashboardEmptyState,
@@ -39,10 +37,8 @@ function DashboardContent() {
   return (
     <div className="space-y-6">
       <DashboardHeader />
-      <MetricsCards />
-      <ChartsRow />
+      <DashboardContainer />
       <HoldingsTable />
-      <RecentActivity />
     </div>
   );
 }
