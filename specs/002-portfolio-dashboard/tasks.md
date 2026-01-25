@@ -69,7 +69,7 @@
 
 ### E2E Test for User Story 1
 
-- [ ] T022 [US1] E2E test for dashboard display in tests/e2e/dashboard-display.spec.ts
+- [x] T022 [US1] E2E test for dashboard display in tests/e2e/dashboard-display.spec.ts
 
 **Checkpoint**: US1 complete - users see total value, gain/loss, and category breakdown on dashboard
 
@@ -84,7 +84,7 @@
 ### Implementation for User Story 2
 
 - [x] T023 [P] [US2] Create growth-chart-widget in src/components/dashboard/widgets/growth-chart-widget.tsx
-- [ ] T024 [US2] Refactor portfolio-chart.tsx to accept real data props in src/components/charts/portfolio-chart.tsx
+- [x] T024 [US2] Refactor portfolio-chart.tsx to accept real data props in src/components/charts/portfolio-chart.tsx
 - [x] T025 [US2] Connect growth-chart-widget to historical-value service for real data
 - [x] T026 [US2] Add time range selector (1W, 1M, 3M, 6M, 1Y, All) to growth-chart-widget
 - [x] T027 [US2] Add hover tooltip showing date and value to chart
@@ -93,7 +93,7 @@
 
 ### E2E Test for User Story 2
 
-- [ ] T030 [US2] E2E test for chart time range in tests/e2e/dashboard-chart.spec.ts
+- [x] T030 [US2] E2E test for chart time range in tests/e2e/dashboard-chart.spec.ts
 
 **Checkpoint**: US2 complete - users see interactive historical chart with time range selection
 
@@ -114,11 +114,11 @@
 - [x] T035 [US3] Implement "Reset to Default Layout" button in dashboard-settings.tsx
 - [x] T036 [US3] Connect dashboard-settings to dashboard store for persistence
 - [x] T037 [US3] Add settings gear button to dashboard header for opening settings modal
-- [ ] T038 [US3] Implement responsive behavior: drag-drop on desktop, settings modal on mobile
+- [x] T038 [US3] Implement responsive behavior: drag-drop on desktop, settings modal on mobile
 
 ### E2E Test for User Story 3
 
-- [ ] T039 [US3] E2E test for widget configuration in tests/e2e/dashboard-configuration.spec.ts
+- [x] T039 [US3] E2E test for widget configuration in tests/e2e/dashboard-configuration.spec.ts
 
 **Checkpoint**: US3 complete - users can customize and persist their dashboard layout
 
@@ -135,13 +135,13 @@
 - [x] T040 [P] [US4] Create top-performers-widget in src/components/dashboard/widgets/top-performers-widget.tsx
 - [x] T041 [P] [US4] Create biggest-losers-widget in src/components/dashboard/widgets/biggest-losers-widget.tsx
 - [x] T042 [US4] Connect widgets to performance-calculator service
-- [ ] T043 [US4] Add navigation to holding detail on performer click
+- [x] T043 [US4] Add navigation to holding detail on performer click
 - [x] T044 [US4] Handle empty states (no gains, no losses)
 - [x] T045 [US4] Add loading states to performer widgets
 
 ### E2E Test for User Story 4
 
-- [ ] T046 [US4] E2E test for performers display in tests/e2e/dashboard-performers.spec.ts
+- [x] T046 [US4] E2E test for performers display in tests/e2e/dashboard-performers.spec.ts
 
 **Checkpoint**: US4 complete - users see top 5 performers and losers ranked by percentage
 
@@ -165,7 +165,7 @@
 
 ### E2E Test for User Story 5
 
-- [ ] T054 [US5] E2E test for time period selection in tests/e2e/dashboard-time-period.spec.ts
+- [x] T054 [US5] E2E test for time period selection in tests/e2e/dashboard-time-period.spec.ts
 
 **Checkpoint**: US5 complete - users can configure time window for all performance metrics
 
@@ -175,15 +175,15 @@
 
 **Purpose**: Improvements affecting multiple user stories
 
-- [ ] T055 [P] Implement stale data indicators on all price-dependent widgets
-- [ ] T056 [P] Add React.memo to all widget components for performance
-- [ ] T057 [P] Ensure all financial calculations use decimal.js (audit)
-- [ ] T058 Add keyboard navigation support for widget reordering (accessibility)
-- [ ] T059 Add ARIA labels and screen reader support to all widgets
-- [ ] T060 Responsive layout testing and fixes (320px - 2560px per SC-006)
-- [ ] T061 Performance optimization: verify dashboard load < 2s (SC-001)
-- [ ] T062 Performance optimization: verify chart range change < 1s (SC-004)
-- [ ] T063 Run quickstart.md validation checklist
+- [x] T055 [P] Implement stale data indicators on all price-dependent widgets
+- [x] T056 [P] Add React.memo to all widget components for performance
+- [x] T057 [P] Ensure all financial calculations use decimal.js (audit)
+- [x] T058 Add keyboard navigation support for widget reordering (accessibility)
+- [x] T059 Add ARIA labels and screen reader support to all widgets
+- [x] T060 Responsive layout testing and fixes (320px - 2560px per SC-006)
+- [x] T061 Performance optimization: verify dashboard load < 2s (SC-001)
+- [x] T062 Performance optimization: verify chart range change < 1s (SC-004)
+- [x] T063 Run quickstart.md validation checklist
 
 ---
 
