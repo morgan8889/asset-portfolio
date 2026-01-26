@@ -60,7 +60,7 @@ describe('Staleness Utilities', () => {
       const now = new Date('2026-01-25T12:00:00Z');
       vi.setSystemTime(now);
 
-      // Data 10 seconds old - should be fresh (< 15s)
+      // Data 10 seconds old - should be fresh
       const freshUpdate = new Date(now.getTime() - 10 * 1000);
       expect(calculateStaleness(freshUpdate, 'realtime')).toBe('fresh');
 
@@ -171,8 +171,8 @@ describe('Staleness Utilities', () => {
       const now = new Date('2026-01-25T12:00:00Z');
       vi.setSystemTime(now);
 
-      const lastUpdate = new Date(now.getTime() - 6 * 60 * 1000); // 6 minutes ago
-      expect(shouldRefresh(lastUpdate, 'standard')).toBe(true); // standard is 5 min
+      const lastUpdate = new Date(now.getTime() - 90 * 1000); // 90 seconds ago
+      expect(shouldRefresh(lastUpdate, 'standard')).toBe(true); // standard is 60s
     });
 
     it('should return false when age is less than interval', () => {
