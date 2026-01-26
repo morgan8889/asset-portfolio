@@ -15,6 +15,10 @@ import {
   calculatePositionWeight,
   calculatePositionGainLoss,
   calculateDividendYield,
+  calculateAnnualizedReturn,
+  calculateMaxDrawdown,
+  calculateSharpeRatio,
+  calculateDailyReturns,
   HoldingWithAsset,
 } from '../metrics-service';
 import { Holding, Asset } from '@/types';
@@ -208,10 +212,12 @@ describe('Metrics Service', () => {
         },
       ];
 
-      const holdingsWithAssets: HoldingWithAsset[] = holdings.map((holding) => ({
-        holding,
-        asset: assets.find((a) => a.id === holding.assetId),
-      }));
+      const holdingsWithAssets: HoldingWithAsset[] = holdings.map(
+        (holding) => ({
+          holding,
+          asset: assets.find((a) => a.id === holding.assetId),
+        })
+      );
 
       const result = calculateAllocationByType(
         holdingsWithAssets,
@@ -284,12 +290,17 @@ describe('Metrics Service', () => {
         },
       ];
 
-      const holdingsWithAssets: HoldingWithAsset[] = holdings.map((holding) => ({
-        holding,
-        asset: assets.find((a) => a.id === holding.assetId),
-      }));
+      const holdingsWithAssets: HoldingWithAsset[] = holdings.map(
+        (holding) => ({
+          holding,
+          asset: assets.find((a) => a.id === holding.assetId),
+        })
+      );
 
-      const result = calculateAllocationByType(holdingsWithAssets, new Decimal(0));
+      const result = calculateAllocationByType(
+        holdingsWithAssets,
+        new Decimal(0)
+      );
 
       expect(result[0].percent).toBe(0);
     });
@@ -400,10 +411,12 @@ describe('Metrics Service', () => {
         },
       ];
 
-      const holdingsWithAssets: HoldingWithAsset[] = holdings.map((holding) => ({
-        holding,
-        asset: assets.find((a) => a.id === holding.assetId),
-      }));
+      const holdingsWithAssets: HoldingWithAsset[] = holdings.map(
+        (holding) => ({
+          holding,
+          asset: assets.find((a) => a.id === holding.assetId),
+        })
+      );
 
       const result = calculatePortfolioMetrics(holdingsWithAssets);
 
@@ -446,10 +459,12 @@ describe('Metrics Service', () => {
         },
       ];
 
-      const holdingsWithAssets: HoldingWithAsset[] = holdings.map((holding) => ({
-        holding,
-        asset: assets.find((a) => a.id === holding.assetId),
-      }));
+      const holdingsWithAssets: HoldingWithAsset[] = holdings.map(
+        (holding) => ({
+          holding,
+          asset: assets.find((a) => a.id === holding.assetId),
+        })
+      );
 
       const result = calculatePortfolioMetrics(
         holdingsWithAssets,
@@ -577,7 +592,10 @@ describe('Metrics Service', () => {
     });
 
     it('should handle zero cost basis', () => {
-      const result = calculatePositionGainLoss(new Decimal(1000), new Decimal(0));
+      const result = calculatePositionGainLoss(
+        new Decimal(1000),
+        new Decimal(0)
+      );
 
       expect(result.gain.toString()).toBe('1000');
       expect(result.gainPercent).toBe(0);
@@ -601,6 +619,299 @@ describe('Metrics Service', () => {
       const result = calculateDividendYield(new Decimal(2.5), new Decimal(80));
 
       expect(result).toBe(3.125);
+    });
+  });
+
+  // =========================================================================
+  // Advanced Performance Calculations (User Story 6)
+  // =========================================================================
+
+  describe('calculateAnnualizedReturn (CAGR)', () => {
+    it('should calculate CAGR correctly for positive growth', () => {
+      // $1000 → $1100 over 365 days = 10% annual return
+      const result = calculateAnnualizedReturn(
+        new Decimal(1000),
+        new Decimal(1100),
+        365
+      );
+      expect(result).toBeCloseTo(10, 1);
+    });
+
+    it('should calculate CAGR for multi-year periods', () => {
+      // $1000 → $1210 over 730 days (2 years) = 10% annual return
+      // (1210/1000)^(1/2) - 1 = 0.1
+      const result = calculateAnnualizedReturn(
+        new Decimal(1000),
+        new Decimal(1210),
+        730
+      );
+      expect(result).toBeCloseTo(10, 1);
+    });
+
+    it('should calculate negative CAGR for losses', () => {
+      // $1000 → $900 over 365 days = -10% annual return
+      const result = calculateAnnualizedReturn(
+        new Decimal(1000),
+        new Decimal(900),
+        365
+      );
+      expect(result).toBeCloseTo(-10, 1);
+    });
+
+    it('should return 0 for zero days held', () => {
+      const result = calculateAnnualizedReturn(
+        new Decimal(1000),
+        new Decimal(1100),
+        0
+      );
+      expect(result).toBe(0);
+    });
+
+    it('should return 0 for negative days held', () => {
+      const result = calculateAnnualizedReturn(
+        new Decimal(1000),
+        new Decimal(1100),
+        -10
+      );
+      expect(result).toBe(0);
+    });
+
+    it('should return 0 for zero start value', () => {
+      const result = calculateAnnualizedReturn(
+        new Decimal(0),
+        new Decimal(1100),
+        365
+      );
+      expect(result).toBe(0);
+    });
+
+    it('should return 0 for negative start value', () => {
+      const result = calculateAnnualizedReturn(
+        new Decimal(-1000),
+        new Decimal(1100),
+        365
+      );
+      expect(result).toBe(0);
+    });
+
+    it('should return -100 for complete loss', () => {
+      const result = calculateAnnualizedReturn(
+        new Decimal(1000),
+        new Decimal(0),
+        365
+      );
+      expect(result).toBe(-100);
+    });
+
+    it('should handle large gains correctly', () => {
+      // $1000 → $2000 over 365 days = 100% annual return
+      const result = calculateAnnualizedReturn(
+        new Decimal(1000),
+        new Decimal(2000),
+        365
+      );
+      expect(result).toBeCloseTo(100, 1);
+    });
+
+    it('should handle short periods correctly', () => {
+      // $1000 → $1100 over 30 days ≈ 1217% annualized
+      const result = calculateAnnualizedReturn(
+        new Decimal(1000),
+        new Decimal(1100),
+        30
+      );
+      expect(result).toBeGreaterThan(100); // High annualized rate for short period gains
+    });
+  });
+
+  describe('calculateMaxDrawdown', () => {
+    it('should calculate max drawdown correctly', () => {
+      // Peak at 100, drops to 80 = 20% drawdown
+      const historicalValues = [
+        { date: new Date('2024-01-01'), value: new Decimal(100) },
+        { date: new Date('2024-01-02'), value: new Decimal(110) },
+        { date: new Date('2024-01-03'), value: new Decimal(88) }, // 20% drop from 110
+        { date: new Date('2024-01-04'), value: new Decimal(95) },
+      ];
+
+      const result = calculateMaxDrawdown(historicalValues);
+      expect(result).toBeCloseTo(20, 1); // 20% drawdown
+    });
+
+    it('should return 0 for monotonically increasing values', () => {
+      const historicalValues = [
+        { date: new Date('2024-01-01'), value: new Decimal(100) },
+        { date: new Date('2024-01-02'), value: new Decimal(110) },
+        { date: new Date('2024-01-03'), value: new Decimal(120) },
+        { date: new Date('2024-01-04'), value: new Decimal(130) },
+      ];
+
+      const result = calculateMaxDrawdown(historicalValues);
+      expect(result).toBe(0);
+    });
+
+    it('should return 0 for single value', () => {
+      const historicalValues = [
+        { date: new Date('2024-01-01'), value: new Decimal(100) },
+      ];
+
+      const result = calculateMaxDrawdown(historicalValues);
+      expect(result).toBe(0);
+    });
+
+    it('should return 0 for empty array', () => {
+      const result = calculateMaxDrawdown([]);
+      expect(result).toBe(0);
+    });
+
+    it('should find the largest drawdown among multiple drops', () => {
+      // Two drawdowns: 10% and 30%
+      const historicalValues = [
+        { date: new Date('2024-01-01'), value: new Decimal(100) },
+        { date: new Date('2024-01-02'), value: new Decimal(90) }, // 10% drop
+        { date: new Date('2024-01-03'), value: new Decimal(110) }, // new peak
+        { date: new Date('2024-01-04'), value: new Decimal(77) }, // 30% drop from 110
+        { date: new Date('2024-01-05'), value: new Decimal(100) },
+      ];
+
+      const result = calculateMaxDrawdown(historicalValues);
+      expect(result).toBeCloseTo(30, 1);
+    });
+
+    it('should skip zero values', () => {
+      const historicalValues = [
+        { date: new Date('2024-01-01'), value: new Decimal(100) },
+        { date: new Date('2024-01-02'), value: new Decimal(0) }, // Should be skipped
+        { date: new Date('2024-01-03'), value: new Decimal(90) },
+      ];
+
+      const result = calculateMaxDrawdown(historicalValues);
+      expect(result).toBeCloseTo(10, 1); // 10% from 100 to 90
+    });
+
+    it('should handle complete loss scenario', () => {
+      const historicalValues = [
+        { date: new Date('2024-01-01'), value: new Decimal(100) },
+        { date: new Date('2024-01-02'), value: new Decimal(50) },
+        { date: new Date('2024-01-03'), value: new Decimal(1) }, // 99% loss
+      ];
+
+      const result = calculateMaxDrawdown(historicalValues);
+      expect(result).toBeCloseTo(99, 0);
+    });
+  });
+
+  describe('calculateSharpeRatio', () => {
+    it('should return 0 for fewer than 30 data points', () => {
+      const returns = Array(29).fill(0.001); // 29 daily returns
+      const result = calculateSharpeRatio(returns);
+      expect(result).toBe(0);
+    });
+
+    it('should return 0 for zero volatility', () => {
+      const returns = Array(50).fill(0.001); // All same return
+      const result = calculateSharpeRatio(returns);
+      expect(result).toBe(0);
+    });
+
+    it('should calculate positive Sharpe ratio for good returns', () => {
+      // Generate returns with positive average and some volatility
+      const returns: number[] = [];
+      for (let i = 0; i < 100; i++) {
+        returns.push(0.002 + Math.sin(i) * 0.001); // ~0.2% daily average
+      }
+      const result = calculateSharpeRatio(returns);
+      expect(result).toBeGreaterThan(0);
+    });
+
+    it('should calculate negative Sharpe ratio for poor returns', () => {
+      // Generate returns with negative average
+      const returns: number[] = [];
+      for (let i = 0; i < 100; i++) {
+        returns.push(-0.003 + Math.sin(i) * 0.001); // ~-0.3% daily average
+      }
+      const result = calculateSharpeRatio(returns);
+      expect(result).toBeLessThan(0);
+    });
+
+    it('should use custom risk-free rate', () => {
+      const returns: number[] = [];
+      for (let i = 0; i < 100; i++) {
+        returns.push(0.001 + Math.sin(i) * 0.001);
+      }
+      const result1 = calculateSharpeRatio(returns, 0.02); // 2% risk-free
+      const result2 = calculateSharpeRatio(returns, 0.08); // 8% risk-free
+
+      // Higher risk-free rate = lower Sharpe ratio
+      expect(result1).toBeGreaterThan(result2);
+    });
+
+    it('should handle exactly 30 data points', () => {
+      const returns: number[] = [];
+      for (let i = 0; i < 30; i++) {
+        returns.push(0.002 + Math.sin(i) * 0.001);
+      }
+      const result = calculateSharpeRatio(returns);
+      expect(typeof result).toBe('number');
+      expect(isNaN(result)).toBe(false);
+    });
+  });
+
+  describe('calculateDailyReturns', () => {
+    it('should calculate daily returns correctly', () => {
+      const historicalValues = [
+        { date: new Date('2024-01-01'), value: new Decimal(100) },
+        { date: new Date('2024-01-02'), value: new Decimal(110) }, // 10% return
+        { date: new Date('2024-01-03'), value: new Decimal(99) }, // -10% return
+        { date: new Date('2024-01-04'), value: new Decimal(99) }, // 0% return
+      ];
+
+      const result = calculateDailyReturns(historicalValues);
+      expect(result).toHaveLength(3);
+      expect(result[0]).toBeCloseTo(0.1, 5); // 10%
+      expect(result[1]).toBeCloseTo(-0.1, 5); // -10%
+      expect(result[2]).toBeCloseTo(0, 5); // 0%
+    });
+
+    it('should return empty array for single value', () => {
+      const historicalValues = [
+        { date: new Date('2024-01-01'), value: new Decimal(100) },
+      ];
+
+      const result = calculateDailyReturns(historicalValues);
+      expect(result).toHaveLength(0);
+    });
+
+    it('should return empty array for empty input', () => {
+      const result = calculateDailyReturns([]);
+      expect(result).toHaveLength(0);
+    });
+
+    it('should skip zero values', () => {
+      const historicalValues = [
+        { date: new Date('2024-01-01'), value: new Decimal(100) },
+        { date: new Date('2024-01-02'), value: new Decimal(0) }, // Should be skipped
+        { date: new Date('2024-01-03'), value: new Decimal(110) },
+      ];
+
+      const result = calculateDailyReturns(historicalValues);
+      // Only one valid return: from 100 to 110 (skipping 0)
+      expect(result).toHaveLength(1);
+      expect(result[0]).toBeCloseTo(0.1, 5);
+    });
+
+    it('should handle large portfolios', () => {
+      const historicalValues: { date: Date; value: Decimal }[] = [];
+      for (let i = 0; i < 365; i++) {
+        historicalValues.push({
+          date: new Date(2024, 0, i + 1),
+          value: new Decimal(1000 + i * 2), // Steady growth
+        });
+      }
+
+      const result = calculateDailyReturns(historicalValues);
+      expect(result).toHaveLength(364);
+      result.forEach((r) => expect(r).toBeGreaterThan(0));
     });
   });
 });

@@ -41,9 +41,10 @@ describe('Staleness Utilities', () => {
       const now = new Date('2026-01-25T12:00:00Z');
       vi.setSystemTime(now);
 
-      // Data updated 3 minutes ago, standard interval is 60 seconds
-      // 180s > 120s (2x)
-      const lastUpdate = new Date(now.getTime() - 180 * 1000);
+      // Data updated 150 seconds ago, standard interval is 60 seconds
+      // 150s > 120s (2x)
+      const lastUpdate = new Date(now.getTime() - 150 * 1000);
+
       expect(calculateStaleness(lastUpdate, 'standard')).toBe('stale');
     });
 
@@ -60,7 +61,8 @@ describe('Staleness Utilities', () => {
       const now = new Date('2026-01-25T12:00:00Z');
       vi.setSystemTime(now);
 
-      // Data 10 seconds old - should be fresh
+      // Data 10 seconds old - should be fresh (< 15s)
+
       const freshUpdate = new Date(now.getTime() - 10 * 1000);
       expect(calculateStaleness(freshUpdate, 'realtime')).toBe('fresh');
 
@@ -171,15 +173,19 @@ describe('Staleness Utilities', () => {
       const now = new Date('2026-01-25T12:00:00Z');
       vi.setSystemTime(now);
 
-      const lastUpdate = new Date(now.getTime() - 90 * 1000); // 90 seconds ago
-      expect(shouldRefresh(lastUpdate, 'standard')).toBe(true); // standard is 60s
+      // 90 seconds ago, standard interval is 60 seconds
+      const lastUpdate = new Date(now.getTime() - 90 * 1000);
+      expect(shouldRefresh(lastUpdate, 'standard')).toBe(true);
+
     });
 
     it('should return false when age is less than interval', () => {
       const now = new Date('2026-01-25T12:00:00Z');
       vi.setSystemTime(now);
 
-      const lastUpdate = new Date(now.getTime() - 30 * 1000); // 30 seconds ago (< 60s standard)
+      // 30 seconds ago, standard interval is 60 seconds
+      const lastUpdate = new Date(now.getTime() - 30 * 1000);
+
       expect(shouldRefresh(lastUpdate, 'standard')).toBe(false);
     });
 
@@ -202,9 +208,13 @@ describe('Staleness Utilities', () => {
 
   describe('getStaleThreshold', () => {
     it('should return 2x the refresh interval', () => {
-      expect(getStaleThreshold('realtime')).toBe(30_000); // 2 * 15s = 30s
-      expect(getStaleThreshold('frequent')).toBe(60_000); // 2 * 30s = 60s
-      expect(getStaleThreshold('standard')).toBe(120_000); // 2 * 60s = 120s
+      // realtime: 15s * 2 = 30s
+      expect(getStaleThreshold('realtime')).toBe(30_000);
+      // frequent: 30s * 2 = 60s
+      expect(getStaleThreshold('frequent')).toBe(60_000);
+      // standard: 60s * 2 = 120s
+      expect(getStaleThreshold('standard')).toBe(120_000);
+
     });
 
     it('should return Infinity for manual mode', () => {

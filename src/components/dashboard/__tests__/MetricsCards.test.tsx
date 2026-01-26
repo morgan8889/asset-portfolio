@@ -1,77 +1,110 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { Decimal } from 'decimal.js';
+
+// Use vi.hoisted to create mocks that are available when vi.mock factory runs
+// Note: Can't use Decimal inside vi.hoisted, so we set metrics: null initially
+// and update it in beforeEach
+const {
+  mockPortfolioStore,
+  mockTransactionStore,
+  mockAssetStore,
+  mockPriceStore,
+} = vi.hoisted(() => {
+  const portfolioStore = {
+    currentPortfolio: {
+      id: 'p1',
+      name: 'Test Portfolio',
+      type: 'taxable' as const,
+      currency: 'USD',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      settings: { rebalanceThreshold: 5, taxStrategy: 'fifo' as const },
+    },
+    portfolios: [] as unknown[],
+    metrics: null as unknown,
+    holdings: [] as unknown[],
+    assets: [] as unknown[],
+    loading: false,
+    error: null as string | null,
+    loadPortfolios: vi.fn().mockResolvedValue(undefined),
+    loadHoldings: vi.fn().mockResolvedValue(undefined),
+    calculateMetrics: vi.fn().mockResolvedValue(undefined),
+    refreshData: vi.fn().mockResolvedValue(undefined),
+    setCurrentPortfolio: vi.fn(),
+  };
+
+  const transactionStore = {
+    transactions: [] as unknown[],
+    loading: false,
+    loadTransactions: vi.fn().mockResolvedValue(undefined),
+  };
+
+  const assetStore = {
+    assets: [] as unknown[],
+    loading: false,
+    loadAssets: vi.fn().mockResolvedValue(undefined),
+  };
+
+  const priceStore = {
+    prices: new Map(),
+    loading: false,
+    error: null as string | null,
+    lastUpdated: null as Date | null,
+    setWatchedSymbols: vi.fn(),
+  };
+
+  return {
+    mockPortfolioStore: portfolioStore,
+    mockTransactionStore: transactionStore,
+    mockAssetStore: assetStore,
+    mockPriceStore: priceStore,
+  };
+});
+
+// Create mock hooks with getState support
+vi.mock('@/lib/stores', () => {
+  const usePortfolioStoreMock = Object.assign(() => mockPortfolioStore, {
+    getState: () => mockPortfolioStore,
+  });
+  const useTransactionStoreMock = Object.assign(() => mockTransactionStore, {
+    getState: () => mockTransactionStore,
+  });
+  const useAssetStoreMock = Object.assign(() => mockAssetStore, {
+    getState: () => mockAssetStore,
+  });
+  const usePriceStoreMock = Object.assign(() => mockPriceStore, {
+    getState: () => mockPriceStore,
+  });
+
+  return {
+    usePortfolioStore: usePortfolioStoreMock,
+    useTransactionStore: useTransactionStoreMock,
+    useAssetStore: useAssetStoreMock,
+    usePriceStore: usePriceStoreMock,
+  };
+});
+
 import { MetricsCards } from '../MetricsCards';
 import { DashboardProvider } from '../DashboardProvider';
 
-// Mock the stores
-const mockPortfolioStoreStateState = {
-  currentPortfolio: {
-    id: 'p1',
-    name: 'Test Portfolio',
-    type: 'taxable' as const,
-    currency: 'USD',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    settings: { rebalanceThreshold: 5, taxStrategy: 'fifo' as const },
-  },
-  portfolios: [],
-  metrics: {
-    totalValue: new Decimal(100000),
-    totalCost: new Decimal(80000),
-    totalGain: new Decimal(20000),
-    totalGainPercent: 0.25, // 25% as decimal
-    dayChange: new Decimal(1500),
-    dayChangePercent: 0.015, // 1.5% as decimal
-    allocation: [],
-  },
-  holdings: [],
-  loading: false,
-  error: null,
-  loadPortfolios: vi.fn().mockResolvedValue(undefined),
-  loadHoldings: vi.fn().mockResolvedValue(undefined),
-  calculateMetrics: vi.fn(),
-  refreshData: vi.fn().mockResolvedValue(undefined),
-  setCurrentPortfolio: vi.fn(),
+// Default metrics with Decimal values (set outside vi.hoisted)
+const defaultMetrics = {
+  totalValue: new Decimal(100000),
+  totalCost: new Decimal(80000),
+  totalGain: new Decimal(20000),
+  totalGainPercent: 0.25, // 25% as decimal
+  dayChange: new Decimal(1500),
+  dayChangePercent: 0.015, // 1.5% as decimal
+  allocation: [],
 };
 
-// Create a hook that also has getState
-const mockUsePortfolioStore = Object.assign(
-  () => mockPortfolioStoreStateState,
-  { getState: () => mockPortfolioStoreStateState }
-);
-
-const mockTransactionStoreState = {
-  transactions: [],
-  loading: false,
-  loadTransactions: vi.fn().mockResolvedValue(undefined),
-};
-
-const mockUseTransactionStore = Object.assign(
-  () => mockTransactionStoreState,
-  { getState: () => mockTransactionStoreState }
-);
-
-const mockAssetStoreState = {
-  assets: [],
-  loading: false,
-  loadAssets: vi.fn().mockResolvedValue(undefined),
-};
-
-const mockUseAssetStore = Object.assign(
-  () => mockAssetStoreState,
-  { getState: () => mockAssetStoreState }
-);
-
-vi.mock('@/lib/stores', () => ({
-  usePortfolioStore: mockUsePortfolioStore,
-  useTransactionStore: mockUseTransactionStore,
-  useAssetStore: mockUseAssetStore,
-}));
 
 describe('MetricsCards', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Set default metrics with Decimal values
+    mockPortfolioStore.metrics = defaultMetrics;
   });
 
   it('should render all metric cards', () => {
@@ -137,11 +170,11 @@ describe('MetricsCards with negative values', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Override metrics for negative test (percentages as decimals)
-    mockPortfolioStoreState.metrics = {
+    mockPortfolioStore.metrics = {
       totalValue: new Decimal(80000),
       totalCost: new Decimal(100000),
       totalGain: new Decimal(-20000),
-      totalGainPercent: -0.20, // -20% as decimal
+      totalGainPercent: -0.2, // -20% as decimal
       dayChange: new Decimal(-500),
       dayChangePercent: -0.0062, // -0.62% as decimal
       allocation: [],
@@ -165,7 +198,9 @@ describe('MetricsCards with no metrics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Override metrics to null (cast needed for test scenario)
-    mockPortfolioStoreState.metrics = null as unknown as typeof mockPortfolioStoreState.metrics;
+    mockPortfolioStore.metrics =
+      null as unknown as typeof mockPortfolioStore.metrics;
+
   });
 
   it('should handle missing metrics gracefully', () => {
