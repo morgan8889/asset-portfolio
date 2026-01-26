@@ -23,12 +23,21 @@ import {
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertCircle, CheckCircle, FileText, Building2 } from 'lucide-react';
+import {
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  FileText,
+  Building2,
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { CsvFileUpload } from './csv-file-upload';
 import { ImportPreviewTable } from './import-preview-table';
 import { ImportResults } from './import-results';
-import { ColumnMappingEditor, hasAllRequiredMappings } from './column-mapping-editor';
+import {
+  ColumnMappingEditor,
+  hasAllRequiredMappings,
+} from './column-mapping-editor';
 import { DuplicateReview } from './duplicate-review';
 import { useCsvImportStore } from '@/lib/stores/csv-import';
 import type { DuplicateHandling } from '@/types/csv-import';
@@ -77,7 +86,8 @@ export function CsvImportDialog({
     if (importResult) return 'results';
     if (session?.status === 'importing') return 'importing';
     if (showMappingEditor) return 'mapping';
-    if (session?.status === 'preview' || session?.status === 'mapping_review') return 'preview';
+    if (session?.status === 'preview' || session?.status === 'mapping_review')
+      return 'preview';
     return 'upload';
   };
 
@@ -186,7 +196,7 @@ export function CsvImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{getDialogTitle()}</DialogTitle>
           <DialogDescription>{getDialogDescription()}</DialogDescription>
@@ -211,9 +221,11 @@ export function CsvImportDialog({
 
           {/* Processing Indicator */}
           {isProcessing && currentStep === 'upload' && (
-            <div className="flex items-center justify-center gap-2 mt-4">
+            <div className="mt-4 flex items-center justify-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm text-muted-foreground">Processing file...</span>
+              <span className="text-sm text-muted-foreground">
+                Processing file...
+              </span>
             </div>
           )}
 
@@ -230,7 +242,10 @@ export function CsvImportDialog({
                   {session.detectedBrokerage && (
                     <>
                       <span>•</span>
-                      <Badge variant="secondary" className="flex items-center gap-1">
+                      <Badge
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
                         <Building2 className="h-3 w-3" />
                         Detected: {session.detectedBrokerage.name}
                       </Badge>
@@ -250,7 +265,9 @@ export function CsvImportDialog({
               <div className="flex gap-4">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">{validationResult.validCount} valid</span>
+                  <span className="text-sm">
+                    {validationResult.validCount} valid
+                  </span>
                 </div>
                 {validationResult.errorCount > 0 && (
                   <div className="flex items-center gap-2">
@@ -320,7 +337,7 @@ export function CsvImportDialog({
                 <span>Importing transactions...</span>
               </div>
               <Progress value={progress} className="w-full" />
-              <p className="text-sm text-center text-muted-foreground">
+              <p className="text-center text-sm text-muted-foreground">
                 {Math.round(progress)}% complete
               </p>
             </div>
@@ -362,7 +379,7 @@ export function CsvImportDialog({
               >
                 {isProcessing ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processing...
                   </>
                 ) : (
@@ -379,7 +396,9 @@ export function CsvImportDialog({
               </Button>
               <Button
                 onClick={handleCloseMappingEditor}
-                disabled={!hasAllRequiredMappings(session?.columnMappings ?? [])}
+                disabled={
+                  !hasAllRequiredMappings(session?.columnMappings ?? [])
+                }
               >
                 Apply Mappings
               </Button>

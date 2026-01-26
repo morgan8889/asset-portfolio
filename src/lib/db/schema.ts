@@ -108,7 +108,11 @@ export class PortfolioDatabase extends Dexie {
 
   // Transform functions using generic serialization utility
 
-  private transformAsset = (_primKey: unknown, obj: Asset, _trans: unknown): void => {
+  private transformAsset = (
+    _primKey: unknown,
+    obj: Asset,
+    _trans: unknown
+  ): void => {
     // Convert Date objects to ensure proper storage
     if (obj.priceUpdatedAt && !(obj.priceUpdatedAt instanceof Date)) {
       obj.priceUpdatedAt = new Date(obj.priceUpdatedAt);
@@ -126,8 +130,11 @@ export class PortfolioDatabase extends Dexie {
 
     // Transform tax lots
     if ((obj as Holding).lots) {
-      (obj as HoldingStorage).lots = (obj as Holding).lots.map((lot) =>
-        serializeDecimalFields(lot, [...TAX_LOT_DECIMAL_FIELDS]) as unknown as TaxLotStorage
+      (obj as HoldingStorage).lots = (obj as Holding).lots.map(
+        (lot) =>
+          serializeDecimalFields(lot, [
+            ...TAX_LOT_DECIMAL_FIELDS,
+          ]) as unknown as TaxLotStorage
       );
     }
 
@@ -143,7 +150,9 @@ export class PortfolioDatabase extends Dexie {
     _trans: unknown
   ): void => {
     // Serialize decimal fields
-    const serialized = serializeDecimalFields(obj, [...TRANSACTION_DECIMAL_FIELDS]);
+    const serialized = serializeDecimalFields(obj, [
+      ...TRANSACTION_DECIMAL_FIELDS,
+    ]);
     Object.assign(obj, serialized);
 
     // Ensure date is a Date object
@@ -158,7 +167,9 @@ export class PortfolioDatabase extends Dexie {
     _trans: unknown
   ): void => {
     // Serialize decimal fields
-    const serialized = serializeDecimalFields(obj, [...PRICE_HISTORY_DECIMAL_FIELDS]);
+    const serialized = serializeDecimalFields(obj, [
+      ...PRICE_HISTORY_DECIMAL_FIELDS,
+    ]);
     Object.assign(obj, serialized);
 
     // Ensure date is a Date object
@@ -173,7 +184,9 @@ export class PortfolioDatabase extends Dexie {
     _trans: unknown
   ): void => {
     // Serialize decimal fields
-    const serialized = serializeDecimalFields(obj, [...PRICE_SNAPSHOT_DECIMAL_FIELDS]);
+    const serialized = serializeDecimalFields(obj, [
+      ...PRICE_SNAPSHOT_DECIMAL_FIELDS,
+    ]);
     Object.assign(obj, serialized);
 
     // Ensure timestamp is a Date object
@@ -201,7 +214,9 @@ export class PortfolioDatabase extends Dexie {
     for (const field of dateFields) {
       const value = obj[field];
       if (value && !(value instanceof Date)) {
-        (obj as DividendRecordStorage)[field] = new Date(value as unknown as string);
+        (obj as DividendRecordStorage)[field] = new Date(
+          value as unknown as string
+        );
       }
     }
   };
@@ -236,7 +251,10 @@ export class PortfolioDatabase extends Dexie {
     const lots: TaxLot[] = (holding.lots || []).map((lot) => ({
       ...deserializeDecimalFields(lot, [...TAX_LOT_DECIMAL_FIELDS]),
       id: lot.id,
-      purchaseDate: lot.purchaseDate instanceof Date ? lot.purchaseDate : new Date(lot.purchaseDate),
+      purchaseDate:
+        lot.purchaseDate instanceof Date
+          ? lot.purchaseDate
+          : new Date(lot.purchaseDate),
       notes: lot.notes,
     }));
 
@@ -247,14 +265,17 @@ export class PortfolioDatabase extends Dexie {
       assetId: holding.assetId,
       unrealizedGainPercent: holding.unrealizedGainPercent,
       lots,
-      lastUpdated: holding.lastUpdated instanceof Date
-        ? holding.lastUpdated
-        : new Date(holding.lastUpdated),
+      lastUpdated:
+        holding.lastUpdated instanceof Date
+          ? holding.lastUpdated
+          : new Date(holding.lastUpdated),
     };
   }
 
   convertTransactionDecimals(transaction: TransactionStorage): Transaction {
-    const base = deserializeDecimalFields(transaction, [...TRANSACTION_DECIMAL_FIELDS]);
+    const base = deserializeDecimalFields(transaction, [
+      ...TRANSACTION_DECIMAL_FIELDS,
+    ]);
 
     return {
       ...base,
@@ -262,7 +283,10 @@ export class PortfolioDatabase extends Dexie {
       portfolioId: transaction.portfolioId,
       assetId: transaction.assetId,
       type: transaction.type,
-      date: transaction.date instanceof Date ? transaction.date : new Date(transaction.date),
+      date:
+        transaction.date instanceof Date
+          ? transaction.date
+          : new Date(transaction.date),
       currency: transaction.currency,
       taxLotId: transaction.taxLotId,
       notes: transaction.notes,
@@ -272,15 +296,18 @@ export class PortfolioDatabase extends Dexie {
   }
 
   convertPriceSnapshotDecimals(snapshot: PriceSnapshotStorage): PriceSnapshot {
-    const base = deserializeDecimalFields(snapshot, [...PRICE_SNAPSHOT_DECIMAL_FIELDS]);
+    const base = deserializeDecimalFields(snapshot, [
+      ...PRICE_SNAPSHOT_DECIMAL_FIELDS,
+    ]);
 
     return {
       ...base,
       assetId: snapshot.assetId,
       changePercent: snapshot.changePercent,
-      timestamp: snapshot.timestamp instanceof Date
-        ? snapshot.timestamp
-        : new Date(snapshot.timestamp),
+      timestamp:
+        snapshot.timestamp instanceof Date
+          ? snapshot.timestamp
+          : new Date(snapshot.timestamp),
       source: snapshot.source,
       marketState: snapshot.marketState,
       volume: snapshot.volume,
@@ -290,13 +317,16 @@ export class PortfolioDatabase extends Dexie {
   }
 
   convertPriceHistoryDecimals(history: PriceHistoryStorage): PriceHistory {
-    const base = deserializeDecimalFields(history, [...PRICE_HISTORY_DECIMAL_FIELDS]);
+    const base = deserializeDecimalFields(history, [
+      ...PRICE_HISTORY_DECIMAL_FIELDS,
+    ]);
 
     return {
       ...base,
       id: history.id,
       assetId: history.assetId,
-      date: history.date instanceof Date ? history.date : new Date(history.date),
+      date:
+        history.date instanceof Date ? history.date : new Date(history.date),
       volume: history.volume,
       source: history.source,
     };
@@ -309,15 +339,18 @@ export class PortfolioDatabase extends Dexie {
       portfolioId: record.portfolioId,
       amount: toDecimal(record.amount),
       perShare: toDecimal(record.perShare),
-      paymentDate: record.paymentDate instanceof Date
-        ? record.paymentDate
-        : new Date(record.paymentDate),
-      recordDate: record.recordDate instanceof Date
-        ? record.recordDate
-        : new Date(record.recordDate),
-      exDividendDate: record.exDividendDate instanceof Date
-        ? record.exDividendDate
-        : new Date(record.exDividendDate),
+      paymentDate:
+        record.paymentDate instanceof Date
+          ? record.paymentDate
+          : new Date(record.paymentDate),
+      recordDate:
+        record.recordDate instanceof Date
+          ? record.recordDate
+          : new Date(record.recordDate),
+      exDividendDate:
+        record.exDividendDate instanceof Date
+          ? record.exDividendDate
+          : new Date(record.exDividendDate),
       type: record.type,
       reinvested: record.reinvested,
       shares: record.shares ? toDecimal(record.shares) : undefined,
@@ -356,7 +389,9 @@ export class PortfolioDatabase extends Dexie {
     return this.convertHoldingDecimals(holding);
   }
 
-  async getTransactionWithDecimals(id: string): Promise<Transaction | undefined> {
+  async getTransactionWithDecimals(
+    id: string
+  ): Promise<Transaction | undefined> {
     const transaction = await this.transactions.get(createTransactionId(id));
     if (!transaction) return undefined;
 
@@ -372,7 +407,9 @@ export class PortfolioDatabase extends Dexie {
     return holdings.map((holding) => this.convertHoldingDecimals(holding));
   }
 
-  async getTransactionsByPortfolio(portfolioId: string): Promise<Transaction[]> {
+  async getTransactionsByPortfolio(
+    portfolioId: string
+  ): Promise<Transaction[]> {
     const transactions = await this.transactions
       .where('portfolioId')
       .equals(portfolioId)
@@ -383,7 +420,9 @@ export class PortfolioDatabase extends Dexie {
     );
   }
 
-  async getLatestPriceSnapshot(assetId: string): Promise<PriceSnapshot | undefined> {
+  async getLatestPriceSnapshot(
+    assetId: string
+  ): Promise<PriceSnapshot | undefined> {
     const snapshots = await this.priceSnapshots
       .where('assetId')
       .equals(assetId)
@@ -392,8 +431,9 @@ export class PortfolioDatabase extends Dexie {
     if (snapshots.length === 0) return undefined;
 
     // Sort by timestamp manually since orderBy doesn't work on filtered collections
-    const latestSnapshot = snapshots.sort((a, b) =>
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    const latestSnapshot = snapshots.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     )[0];
 
     return this.convertPriceSnapshotDecimals(latestSnapshot);
@@ -404,9 +444,7 @@ export class PortfolioDatabase extends Dexie {
     startDate?: Date,
     endDate?: Date
   ): Promise<PriceHistory[]> {
-    let collection = this.priceHistory
-      .where('assetId')
-      .equals(assetId);
+    let collection = this.priceHistory.where('assetId').equals(assetId);
 
     const results = await collection.toArray();
 
@@ -420,8 +458,8 @@ export class PortfolioDatabase extends Dexie {
     }
 
     // Sort by date
-    filtered.sort((a, b) =>
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    filtered.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
     return filtered.map((h) => this.convertPriceHistoryDecimals(h));
@@ -436,7 +474,9 @@ export class PortfolioDatabase extends Dexie {
     return records.map((r) => this.convertDividendRecordDecimals(r));
   }
 
-  async getDividendRecordsByPortfolio(portfolioId: string): Promise<DividendRecord[]> {
+  async getDividendRecordsByPortfolio(
+    portfolioId: string
+  ): Promise<DividendRecord[]> {
     const records = await this.dividendRecords
       .where('portfolioId')
       .equals(portfolioId)

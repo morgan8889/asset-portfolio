@@ -45,7 +45,7 @@ export function AppInitializer({ children }: AppInitializerProps) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="flex items-center gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
           <div className="text-lg">Initializing portfolio tracker...</div>
         </div>
       </div>

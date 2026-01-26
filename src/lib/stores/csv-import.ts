@@ -27,7 +27,10 @@ import {
   executeImport,
 } from '@/lib/services/csv-importer';
 import { parseCsvFile } from '@/lib/services/csv-parser';
-import { updateColumnMapping, hasAllRequiredMappings } from '@/lib/services/column-detector';
+import {
+  updateColumnMapping,
+  hasAllRequiredMappings,
+} from '@/lib/services/column-detector';
 import { validateRows } from '@/lib/services/csv-validator';
 import { generateCsv } from '@/lib/services/csv-parser';
 import {
@@ -48,7 +51,10 @@ export interface CsvImportState {
 
   // Actions
   startImport: (file: File, portfolioId: string) => Promise<void>;
-  updateColumnMapping: (columnIndex: number, field: TransactionField | null) => void;
+  updateColumnMapping: (
+    columnIndex: number,
+    field: TransactionField | null
+  ) => void;
   applyBrokeragePreset: (brokerageId: string) => void;
   setDuplicateHandling: (handling: DuplicateHandling) => void;
   confirmImport: () => Promise<ImportResult>;
@@ -80,10 +86,16 @@ export const useCsvImportStore = create<CsvImportState>((set, get) => ({
       const session = await startImportSession(file, portfolioId);
 
       // Full validation
-      const validationResult = validateRows(parseResult.rows, session.columnMappings);
+      const validationResult = validateRows(
+        parseResult.rows,
+        session.columnMappings
+      );
 
       // Check for duplicates
-      const duplicates = await detectDuplicates(validationResult.valid, portfolioId);
+      const duplicates = await detectDuplicates(
+        validationResult.valid,
+        portfolioId
+      );
 
       // Update session with validation results
       const updatedSession: ImportSession = {
@@ -98,8 +110,8 @@ export const useCsvImportStore = create<CsvImportState>((set, get) => ({
           session.status === 'mapping_review'
             ? 'mapping_review'
             : duplicates.length > 0
-            ? 'preview'
-            : 'preview',
+              ? 'preview'
+              : 'preview',
       };
 
       set({
@@ -111,13 +123,17 @@ export const useCsvImportStore = create<CsvImportState>((set, get) => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to parse CSV file',
+        error:
+          error instanceof Error ? error.message : 'Failed to parse CSV file',
         isProcessing: false,
       });
     }
   },
 
-  updateColumnMapping: (columnIndex: number, field: TransactionField | null) => {
+  updateColumnMapping: (
+    columnIndex: number,
+    field: TransactionField | null
+  ) => {
     const { session, parseResult } = get();
     if (!session || !parseResult) return;
 
@@ -155,24 +171,33 @@ export const useCsvImportStore = create<CsvImportState>((set, get) => ({
     const format = getBrokerageFormatById(brokerageId);
     if (!format) return;
 
-    const brokerageColumnMap = getBrokerageColumnMappings(format, session.detectedHeaders);
+    const brokerageColumnMap = getBrokerageColumnMappings(
+      format,
+      session.detectedHeaders
+    );
 
-    const updatedMappings: ColumnMapping[] = session.columnMappings.map((mapping, index) => {
-      const field = brokerageColumnMap.get(index) ?? null;
-      return {
-        ...mapping,
-        transactionField: field,
-        confidence: field !== null ? 1.0 : 0,
-        isUserOverride: true,
-      };
-    });
+    const updatedMappings: ColumnMapping[] = session.columnMappings.map(
+      (mapping, index) => {
+        const field = brokerageColumnMap.get(index) ?? null;
+        return {
+          ...mapping,
+          transactionField: field,
+          confidence: field !== null ? 1.0 : 0,
+          isUserOverride: true,
+        };
+      }
+    );
 
     const canValidate = hasAllRequiredMappings(updatedMappings);
     const validationResult = canValidate
       ? validateRows(parseResult.rows, updatedMappings)
       : null;
 
-    const detectedBrokerage = { id: format.id, name: format.name, confidence: 1.0 };
+    const detectedBrokerage = {
+      id: format.id,
+      name: format.name,
+      confidence: 1.0,
+    };
 
     set({
       session: {

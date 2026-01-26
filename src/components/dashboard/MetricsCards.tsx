@@ -2,7 +2,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendIndicator, getTrendColorClass } from '@/components/ui/trend-indicator';
+import {
+  TrendIndicator,
+  getTrendColorClass,
+} from '@/components/ui/trend-indicator';
 import { formatCurrency, formatPercentage, cn } from '@/lib/utils';
 import { DollarSign, Activity, PieChart, BarChart3 } from 'lucide-react';
 import { useDashboardContext } from './DashboardProvider';
@@ -38,7 +41,9 @@ export function MetricsCards() {
           <TrendIndicator value={totalGain} iconOnly />
         </CardHeader>
         <CardContent>
-          <div className={cn('text-2xl font-bold', getTrendColorClass(totalGain))}>
+          <div
+            className={cn('text-2xl font-bold', getTrendColorClass(totalGain))}
+          >
             {totalGain >= 0 ? '+' : ''}
             {formatCurrency(totalGain)}
           </div>
@@ -55,7 +60,9 @@ export function MetricsCards() {
           <Activity className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className={cn('text-2xl font-bold', getTrendColorClass(dayChange))}>
+          <div
+            className={cn('text-2xl font-bold', getTrendColorClass(dayChange))}
+          >
             {dayChange >= 0 ? '+' : ''}
             {formatCurrency(dayChange)}
           </div>
@@ -73,11 +80,16 @@ export function MetricsCards() {
         </CardHeader>
         <CardContent className="space-y-2">
           <Button size="sm" variant="outline" className="w-full justify-start">
-            <TrendIndicator value={1} size="sm" iconOnly className="mr-2 text-muted-foreground" />
+            <TrendIndicator
+              value={1}
+              size="sm"
+              iconOnly
+              className="mr-2 text-muted-foreground"
+            />
             View Analytics
           </Button>
           <Button size="sm" variant="outline" className="w-full justify-start">
-            <PieChart className="h-4 w-4 mr-2" />
+            <PieChart className="mr-2 h-4 w-4" />
             Rebalance
           </Button>
         </CardContent>

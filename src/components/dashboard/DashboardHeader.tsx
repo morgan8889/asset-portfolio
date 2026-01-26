@@ -37,11 +37,15 @@ export function DashboardHeader() {
           className="hidden sm:flex"
         />
         <Button variant="outline" size="sm">
-          <Download className="h-4 w-4 mr-2" />
+          <Download className="mr-2 h-4 w-4" />
           Export
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
-          <FileSpreadsheet className="h-4 w-4 mr-2" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setImportDialogOpen(true)}
+        >
+          <FileSpreadsheet className="mr-2 h-4 w-4" />
           Import CSV
         </Button>
         <AddTransactionDialog />

@@ -130,7 +130,9 @@ function allocateSaleToLots(
   }
 
   if (remaining.greaterThan(0)) {
-    console.warn(`Sale quantity exceeds available quantity by ${remaining.toString()}`);
+    console.warn(
+      `Sale quantity exceeds available quantity by ${remaining.toString()}`
+    );
   }
 }
 
@@ -138,25 +140,31 @@ function allocateSaleToLots(
  * Sort lots based on tax strategy
  */
 function sortLotsForStrategy(lots: TaxLot[], strategy: TaxStrategy): TaxLot[] {
-  const lotsWithRemaining = lots.filter((lot) => lot.remainingQuantity.greaterThan(0));
+  const lotsWithRemaining = lots.filter((lot) =>
+    lot.remainingQuantity.greaterThan(0)
+  );
 
   switch (strategy) {
     case 'fifo':
       // First In, First Out - oldest lots first
       return lotsWithRemaining.sort(
-        (a, b) => new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime()
+        (a, b) =>
+          new Date(a.purchaseDate).getTime() -
+          new Date(b.purchaseDate).getTime()
       );
 
     case 'lifo':
       // Last In, First Out - newest lots first
       return lotsWithRemaining.sort(
-        (a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime()
+        (a, b) =>
+          new Date(b.purchaseDate).getTime() -
+          new Date(a.purchaseDate).getTime()
       );
 
     case 'hifo':
       // Highest In, First Out - highest cost basis first (minimizes gains)
-      return lotsWithRemaining.sort(
-        (a, b) => b.purchasePrice.minus(a.purchasePrice).toNumber()
+      return lotsWithRemaining.sort((a, b) =>
+        b.purchasePrice.minus(a.purchasePrice).toNumber()
       );
 
     case 'specific':
@@ -196,7 +204,8 @@ export function calculateSaleAllocations(
       (saleDate.getTime() - new Date(lot.purchaseDate).getTime()) /
         (1000 * 60 * 60 * 24)
     );
-    const holdingPeriod: 'short' | 'long' = holdingDays >= 365 ? 'long' : 'short';
+    const holdingPeriod: 'short' | 'long' =
+      holdingDays >= 365 ? 'long' : 'short';
 
     allocations.push({
       lotId: lot.id,
@@ -244,7 +253,8 @@ export function calculateUnrealizedGainsByLot(
         (currentDate.getTime() - new Date(lot.purchaseDate).getTime()) /
           (1000 * 60 * 60 * 24)
       );
-      const holdingPeriod: 'short' | 'long' = holdingDays >= 365 ? 'long' : 'short';
+      const holdingPeriod: 'short' | 'long' =
+        holdingDays >= 365 ? 'long' : 'short';
 
       return {
         lotId: lot.id,
@@ -286,7 +296,11 @@ export function findTaxLossHarvestingOpportunities(
     const currentPrice = currentPrices.get(holding.assetId);
     if (!currentPrice) continue;
 
-    const lotAnalysis = calculateUnrealizedGainsByLot(holding.lots, currentPrice, currentDate);
+    const lotAnalysis = calculateUnrealizedGainsByLot(
+      holding.lots,
+      currentPrice,
+      currentDate
+    );
 
     let shortTermLoss = new Decimal(0);
     let longTermLoss = new Decimal(0);
@@ -314,8 +328,8 @@ export function findTaxLossHarvestingOpportunities(
   }
 
   // Sort by total loss (most loss first)
-  return opportunities.sort(
-    (a, b) => a.unrealizedLoss.minus(b.unrealizedLoss).toNumber()
+  return opportunities.sort((a, b) =>
+    a.unrealizedLoss.minus(b.unrealizedLoss).toNumber()
   );
 }
 

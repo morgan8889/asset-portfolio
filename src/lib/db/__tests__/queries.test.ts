@@ -496,7 +496,10 @@ describe('Portfolio Queries', () => {
     });
 
     it('should return undefined for non-existent portfolio/asset combination', async () => {
-      const result = await holdingQueries.getByPortfolioAndAsset('p1', 'nonexistent');
+      const result = await holdingQueries.getByPortfolioAndAsset(
+        'p1',
+        'nonexistent'
+      );
 
       expect(result).toBeUndefined();
     });
@@ -617,7 +620,11 @@ describe('Portfolio Queries', () => {
         lastUpdated: new Date(),
       } as any);
 
-      await holdingQueries.updateQuantityAndValue('h1', new Decimal(15), new Decimal(1500));
+      await holdingQueries.updateQuantityAndValue(
+        'h1',
+        new Decimal(15),
+        new Decimal(1500)
+      );
 
       const updated = await holdingQueries.getById('h1');
       expect(updated!.quantity.toNumber()).toBe(15);
@@ -641,7 +648,11 @@ describe('Portfolio Queries', () => {
         lastUpdated: new Date(),
       } as any);
 
-      await holdingQueries.updateQuantityAndValue('h1', new Decimal(10), new Decimal(100));
+      await holdingQueries.updateQuantityAndValue(
+        'h1',
+        new Decimal(10),
+        new Decimal(100)
+      );
 
       const updated = await holdingQueries.getById('h1');
       expect(updated!.unrealizedGainPercent).toBe(0);
@@ -680,7 +691,10 @@ describe('Portfolio Queries', () => {
 
       await priceQueries.saveSnapshot(snapshot);
 
-      const saved = await db.priceSnapshots.where('assetId').equals('a1').first();
+      const saved = await db.priceSnapshots
+        .where('assetId')
+        .equals('a1')
+        .first();
       expect(saved).toBeDefined();
     });
 
@@ -891,8 +905,14 @@ describe('Portfolio Queries', () => {
       await assetQueries.delete('a1');
 
       const asset = await assetQueries.getById('a1');
-      const transactions = await db.transactions.where('assetId').equals('a1').toArray();
-      const priceSnapshots = await db.priceSnapshots.where('assetId').equals('a1').toArray();
+      const transactions = await db.transactions
+        .where('assetId')
+        .equals('a1')
+        .toArray();
+      const priceSnapshots = await db.priceSnapshots
+        .where('assetId')
+        .equals('a1')
+        .toArray();
 
       expect(asset).toBeUndefined();
       expect(transactions).toHaveLength(0);

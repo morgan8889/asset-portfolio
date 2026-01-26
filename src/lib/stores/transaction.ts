@@ -17,7 +17,9 @@ import { handleSnapshotTrigger } from '@/lib/services/snapshot-service';
 const OPTIMISTIC_ID_PREFIX = 'optimistic-';
 
 // Validation helper function
-function validateTransactionData(transaction: Partial<Transaction>): string | null {
+function validateTransactionData(
+  transaction: Partial<Transaction>
+): string | null {
   // Validate date
   if (transaction.date) {
     const transactionDate = new Date(transaction.date);
@@ -43,7 +45,11 @@ function validateTransactionData(transaction: Partial<Transaction>): string | nu
   // Validate amounts
   if (transaction.quantity !== undefined) {
     const qty = new Decimal(transaction.quantity);
-    if (qty.lessThanOrEqualTo(0) && transaction.type !== 'fee' && transaction.type !== 'tax') {
+    if (
+      qty.lessThanOrEqualTo(0) &&
+      transaction.type !== 'fee' &&
+      transaction.type !== 'tax'
+    ) {
       return 'Quantity must be greater than 0';
     }
   }
@@ -57,7 +63,11 @@ function validateTransactionData(transaction: Partial<Transaction>): string | nu
 
   if (transaction.totalAmount !== undefined) {
     const total = new Decimal(transaction.totalAmount);
-    if (total.lessThan(0) && transaction.type !== 'fee' && transaction.type !== 'tax') {
+    if (
+      total.lessThan(0) &&
+      transaction.type !== 'fee' &&
+      transaction.type !== 'tax'
+    ) {
       return 'Total amount cannot be negative';
     }
   }
@@ -97,8 +107,13 @@ interface TransactionState {
   loadTransactions: (portfolioId?: string) => Promise<void>;
   filterTransactions: (filter: TransactionFilter) => Promise<void>;
   createTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
-  createTransactions: (transactions: Omit<Transaction, 'id'>[]) => Promise<void>;
-  updateTransaction: (id: string, updates: Partial<Transaction>) => Promise<void>;
+  createTransactions: (
+    transactions: Omit<Transaction, 'id'>[]
+  ) => Promise<void>;
+  updateTransaction: (
+    id: string,
+    updates: Partial<Transaction>
+  ) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   loadSummary: (portfolioId?: string) => Promise<void>;
   importTransactions: (
@@ -137,7 +152,9 @@ export const useTransactionStore = create<TransactionState>()(
         } catch (error) {
           set({
             error:
-              error instanceof Error ? error.message : 'Failed to load transactions',
+              error instanceof Error
+                ? error.message
+                : 'Failed to load transactions',
             loading: false,
           });
         }
@@ -146,12 +163,15 @@ export const useTransactionStore = create<TransactionState>()(
       filterTransactions: async (filter) => {
         set({ loading: true, error: null, currentFilter: filter });
         try {
-          const filteredTransactions = await transactionQueries.getFiltered(filter);
+          const filteredTransactions =
+            await transactionQueries.getFiltered(filter);
           set({ filteredTransactions, loading: false });
         } catch (error) {
           set({
             error:
-              error instanceof Error ? error.message : 'Failed to filter transactions',
+              error instanceof Error
+                ? error.message
+                : 'Failed to filter transactions',
             loading: false,
           });
         }
@@ -179,7 +199,10 @@ export const useTransactionStore = create<TransactionState>()(
         const { transactions, filteredTransactions } = get();
         set({
           transactions: [optimisticTransaction, ...transactions],
-          filteredTransactions: [optimisticTransaction, ...filteredTransactions],
+          filteredTransactions: [
+            optimisticTransaction,
+            ...filteredTransactions,
+          ],
           error: null,
         });
 
@@ -190,7 +213,9 @@ export const useTransactionStore = create<TransactionState>()(
           // Update holdings based on the new transaction
           const newTransaction = await transactionQueries.getById(realId);
           if (newTransaction) {
-            await HoldingsCalculator.updateHoldingsForTransaction(newTransaction);
+            await HoldingsCalculator.updateHoldingsForTransaction(
+              newTransaction
+            );
           }
 
           // Replace optimistic ID with real ID
@@ -228,10 +253,16 @@ export const useTransactionStore = create<TransactionState>()(
           const currentFiltered = get().filteredTransactions;
 
           const errorMessage =
-            error instanceof Error ? error.message : 'Failed to create transaction';
+            error instanceof Error
+              ? error.message
+              : 'Failed to create transaction';
           set({
-            transactions: currentTransactions.filter((t) => t.id !== optimisticId),
-            filteredTransactions: currentFiltered.filter((t) => t.id !== optimisticId),
+            transactions: currentTransactions.filter(
+              (t) => t.id !== optimisticId
+            ),
+            filteredTransactions: currentFiltered.filter(
+              (t) => t.id !== optimisticId
+            ),
             error: errorMessage,
           });
           showErrorNotification('Failed to Add Transaction', errorMessage);
@@ -243,7 +274,9 @@ export const useTransactionStore = create<TransactionState>()(
         try {
           // Validate all transactions first
           for (let i = 0; i < transactionDataList.length; i++) {
-            const validationError = validateTransactionData(transactionDataList[i]);
+            const validationError = validateTransactionData(
+              transactionDataList[i]
+            );
             if (validationError) {
               throw new Error(`Transaction ${i + 1}: ${validationError}`);
             }
@@ -252,7 +285,9 @@ export const useTransactionStore = create<TransactionState>()(
           await transactionQueries.createMany(transactionDataList);
 
           // Recalculate holdings for affected portfolios
-          const portfolioIds = [...new Set(transactionDataList.map(t => t.portfolioId))];
+          const portfolioIds = [
+            ...new Set(transactionDataList.map((t) => t.portfolioId)),
+          ];
           for (const portfolioId of portfolioIds) {
             await HoldingsCalculator.recalculatePortfolioHoldings(portfolioId);
           }
@@ -275,7 +310,9 @@ export const useTransactionStore = create<TransactionState>()(
         } catch (error) {
           set({
             error:
-              error instanceof Error ? error.message : 'Failed to create transactions',
+              error instanceof Error
+                ? error.message
+                : 'Failed to create transactions',
             loading: false,
           });
         }
@@ -290,7 +327,9 @@ export const useTransactionStore = create<TransactionState>()(
           // Update holdings based on the modified transaction
           const updatedTransaction = await transactionQueries.getById(id);
           if (updatedTransaction) {
-            await HoldingsCalculator.updateHoldingsForTransaction(updatedTransaction);
+            await HoldingsCalculator.updateHoldingsForTransaction(
+              updatedTransaction
+            );
           }
 
           // Reload transactions
@@ -312,9 +351,15 @@ export const useTransactionStore = create<TransactionState>()(
           }
 
           set({ loading: false });
-          showSuccessNotification('Transaction Updated', 'Transaction has been successfully updated.');
+          showSuccessNotification(
+            'Transaction Updated',
+            'Transaction has been successfully updated.'
+          );
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to update transaction';
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : 'Failed to update transaction';
           set({
             error: errorMessage,
             loading: false,
@@ -345,7 +390,9 @@ export const useTransactionStore = create<TransactionState>()(
           await transactionQueries.delete(id);
 
           // Recalculate holdings for the affected asset after deletion
-          await HoldingsCalculator.updateHoldingsForTransaction(deletedTransaction);
+          await HoldingsCalculator.updateHoldingsForTransaction(
+            deletedTransaction
+          );
 
           // Trigger snapshot recomputation (non-blocking)
           handleSnapshotTrigger({
@@ -364,7 +411,9 @@ export const useTransactionStore = create<TransactionState>()(
           const currentFiltered = get().filteredTransactions;
 
           const errorMessage =
-            error instanceof Error ? error.message : 'Failed to delete transaction';
+            error instanceof Error
+              ? error.message
+              : 'Failed to delete transaction';
           set({
             transactions: [deletedTransaction, ...currentTransactions],
             filteredTransactions: [deletedTransaction, ...currentFiltered],
@@ -397,11 +446,15 @@ export const useTransactionStore = create<TransactionState>()(
                 portfolioId, // Ensure portfolio ID is set
               };
               const id = await transactionQueries.create(transactionData);
-              successfulTransactions.push({ ...transactionData, id } as Transaction);
+              successfulTransactions.push({
+                ...transactionData,
+                id,
+              } as Transaction);
             } catch (error) {
               errors.push({
                 row: i + 1,
-                message: error instanceof Error ? error.message : 'Unknown error',
+                message:
+                  error instanceof Error ? error.message : 'Unknown error',
                 data: transactionDataList[i],
               });
             }
@@ -430,7 +483,9 @@ export const useTransactionStore = create<TransactionState>()(
               {
                 row: 0,
                 message:
-                  error instanceof Error ? error.message : 'Import failed completely',
+                  error instanceof Error
+                    ? error.message
+                    : 'Import failed completely',
                 data: {},
               },
             ],
@@ -439,7 +494,9 @@ export const useTransactionStore = create<TransactionState>()(
 
           set({
             error:
-              error instanceof Error ? error.message : 'Failed to import transactions',
+              error instanceof Error
+                ? error.message
+                : 'Failed to import transactions',
             importing: false,
           });
           return result;

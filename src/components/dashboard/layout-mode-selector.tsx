@@ -39,11 +39,7 @@ export const LayoutModeSelector = memo(function LayoutModeSelector({
       className="justify-start"
       aria-label="Layout mode"
     >
-      <ToggleGroupItem
-        value="grid"
-        aria-label="Grid layout"
-        className="gap-2"
-      >
+      <ToggleGroupItem value="grid" aria-label="Grid layout" className="gap-2">
         <LayoutGrid className="h-4 w-4" />
         Grid
       </ToggleGroupItem>

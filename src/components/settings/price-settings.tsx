@@ -12,7 +12,13 @@
  */
 
 import { useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -25,7 +31,11 @@ import {
 import { usePriceStore } from '@/lib/stores';
 import { RefreshInterval, REFRESH_INTERVALS } from '@/types/market';
 
-const INTERVAL_OPTIONS: { value: RefreshInterval; label: string; description: string }[] = [
+const INTERVAL_OPTIONS: {
+  value: RefreshInterval;
+  label: string;
+  description: string;
+}[] = [
   {
     value: 'realtime',
     label: 'Real-time',
@@ -141,8 +151,8 @@ export function PriceSettings() {
         </div>
 
         {/* Status Info */}
-        <div className="pt-4 border-t">
-          <h4 className="text-sm font-medium mb-2">Current Settings</h4>
+        <div className="border-t pt-4">
+          <h4 className="mb-2 text-sm font-medium">Current Settings</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <span className="text-muted-foreground">Interval:</span>
             <span>

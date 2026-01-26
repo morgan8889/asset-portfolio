@@ -67,7 +67,7 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        'fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] bg-background border-r transition-all duration-300 ease-in-out',
+        'fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] border-r bg-background transition-all duration-300 ease-in-out',
         // Hide on mobile, show on desktop (md breakpoint = 768px)
         'hidden md:block',
         sidebarOpen ? 'w-64' : 'w-16'
@@ -88,10 +88,7 @@ export function Sidebar() {
                     )}
                   >
                     <item.icon
-                      className={cn(
-                        'h-4 w-4',
-                        sidebarOpen && 'mr-2'
-                      )}
+                      className={cn('h-4 w-4', sidebarOpen && 'mr-2')}
                     />
                     {sidebarOpen && (
                       <span className="truncate">{item.name}</span>

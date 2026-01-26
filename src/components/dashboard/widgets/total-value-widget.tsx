@@ -36,7 +36,10 @@ export const TotalValueWidget = memo(function TotalValueWidget({
       testId="total-value-widget"
       ariaDescription={`Your portfolio is currently worth ${formattedValue}`}
     >
-      <div className="text-2xl font-bold" aria-label={`Total value: ${formattedValue}`}>
+      <div
+        className="text-2xl font-bold"
+        aria-label={`Total value: ${formattedValue}`}
+      >
         {formattedValue}
       </div>
       <p className="text-xs text-muted-foreground">Current market value</p>

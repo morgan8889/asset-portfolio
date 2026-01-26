@@ -69,7 +69,9 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: 'rlig' 1, 'calt' 1;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
   }
 }
 
@@ -93,11 +95,21 @@
   }
 
   /* Chart colors */
-  .chart-1 { color: hsl(var(--chart-1)); }
-  .chart-2 { color: hsl(var(--chart-2)); }
-  .chart-3 { color: hsl(var(--chart-3)); }
-  .chart-4 { color: hsl(var(--chart-4)); }
-  .chart-5 { color: hsl(var(--chart-5)); }
+  .chart-1 {
+    color: hsl(var(--chart-1));
+  }
+  .chart-2 {
+    color: hsl(var(--chart-2));
+  }
+  .chart-3 {
+    color: hsl(var(--chart-3));
+  }
+  .chart-4 {
+    color: hsl(var(--chart-4));
+  }
+  .chart-5 {
+    color: hsl(var(--chart-5));
+  }
 
   /* Loading states */
   .animate-pulse-subtle {

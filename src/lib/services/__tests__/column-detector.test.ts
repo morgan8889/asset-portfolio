@@ -15,7 +15,15 @@ import type { ColumnMapping } from '@/types/csv-import';
 describe('detectColumnMappings', () => {
   describe('exact header matching', () => {
     it('detects standard headers with high confidence', () => {
-      const headers = ['date', 'symbol', 'quantity', 'price', 'type', 'fees', 'notes'];
+      const headers = [
+        'date',
+        'symbol',
+        'quantity',
+        'price',
+        'type',
+        'fees',
+        'notes',
+      ];
       const result = detectColumnMappings(headers);
 
       expect(result.missingRequiredFields).toHaveLength(0);
@@ -43,7 +51,9 @@ describe('detectColumnMappings', () => {
       const headers = ['date', 'ticker', 'quantity', 'price'];
       const result = detectColumnMappings(headers);
 
-      const symbolMapping = result.mappings.find(m => m.transactionField === 'symbol');
+      const symbolMapping = result.mappings.find(
+        (m) => m.transactionField === 'symbol'
+      );
       expect(symbolMapping?.csvColumn).toBe('ticker');
     });
 
@@ -51,7 +61,9 @@ describe('detectColumnMappings', () => {
       const headers = ['date', 'symbol', 'shares', 'price'];
       const result = detectColumnMappings(headers);
 
-      const quantityMapping = result.mappings.find(m => m.transactionField === 'quantity');
+      const quantityMapping = result.mappings.find(
+        (m) => m.transactionField === 'quantity'
+      );
       expect(quantityMapping?.csvColumn).toBe('shares');
     });
 
@@ -59,7 +71,9 @@ describe('detectColumnMappings', () => {
       const headers = ['date', 'symbol', 'quantity', 'price', 'commission'];
       const result = detectColumnMappings(headers);
 
-      const feesMapping = result.mappings.find(m => m.transactionField === 'fees');
+      const feesMapping = result.mappings.find(
+        (m) => m.transactionField === 'fees'
+      );
       expect(feesMapping?.csvColumn).toBe('commission');
     });
 
@@ -67,7 +81,9 @@ describe('detectColumnMappings', () => {
       const headers = ['trade_date', 'symbol', 'quantity', 'price'];
       const result = detectColumnMappings(headers);
 
-      const dateMapping = result.mappings.find(m => m.transactionField === 'date');
+      const dateMapping = result.mappings.find(
+        (m) => m.transactionField === 'date'
+      );
       expect(dateMapping?.csvColumn).toBe('trade_date');
     });
 
@@ -75,7 +91,9 @@ describe('detectColumnMappings', () => {
       const headers = ['date', 'symbol', 'quantity', 'price', 'action'];
       const result = detectColumnMappings(headers);
 
-      const typeMapping = result.mappings.find(m => m.transactionField === 'type');
+      const typeMapping = result.mappings.find(
+        (m) => m.transactionField === 'type'
+      );
       expect(typeMapping?.csvColumn).toBe('action');
     });
   });
@@ -92,7 +110,9 @@ describe('detectColumnMappings', () => {
       const headers = ['custom_date_field', 'symbol', 'quantity', 'price'];
       const result = detectColumnMappings(headers);
 
-      const dateMapping = result.mappings.find(m => m.transactionField === 'date');
+      const dateMapping = result.mappings.find(
+        (m) => m.transactionField === 'date'
+      );
       expect(dateMapping?.confidence).toBeLessThan(1.0);
     });
   });
@@ -115,7 +135,14 @@ describe('detectColumnMappings', () => {
 
   describe('unmapped columns', () => {
     it('identifies columns that could not be mapped', () => {
-      const headers = ['date', 'symbol', 'quantity', 'price', 'custom_field', 'unknown'];
+      const headers = [
+        'date',
+        'symbol',
+        'quantity',
+        'price',
+        'custom_field',
+        'unknown',
+      ];
       const result = detectColumnMappings(headers);
 
       expect(result.unmappedColumns).toContain('custom_field');
@@ -143,8 +170,20 @@ describe('detectColumnMappings', () => {
 describe('updateColumnMapping', () => {
   it('updates a specific column mapping', () => {
     const mappings: ColumnMapping[] = [
-      { csvColumn: 'col1', csvColumnIndex: 0, transactionField: null, confidence: 0, isUserOverride: false },
-      { csvColumn: 'col2', csvColumnIndex: 1, transactionField: null, confidence: 0, isUserOverride: false },
+      {
+        csvColumn: 'col1',
+        csvColumnIndex: 0,
+        transactionField: null,
+        confidence: 0,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col2',
+        csvColumnIndex: 1,
+        transactionField: null,
+        confidence: 0,
+        isUserOverride: false,
+      },
     ];
 
     const updated = updateColumnMapping(mappings, 0, 'date');
@@ -156,8 +195,20 @@ describe('updateColumnMapping', () => {
 
   it('unmaps field from other columns when reassigning', () => {
     const mappings: ColumnMapping[] = [
-      { csvColumn: 'col1', csvColumnIndex: 0, transactionField: 'date', confidence: 1, isUserOverride: false },
-      { csvColumn: 'col2', csvColumnIndex: 1, transactionField: null, confidence: 0, isUserOverride: false },
+      {
+        csvColumn: 'col1',
+        csvColumnIndex: 0,
+        transactionField: 'date',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col2',
+        csvColumnIndex: 1,
+        transactionField: null,
+        confidence: 0,
+        isUserOverride: false,
+      },
     ];
 
     const updated = updateColumnMapping(mappings, 1, 'date');
@@ -168,7 +219,13 @@ describe('updateColumnMapping', () => {
 
   it('clears a mapping when setting to null', () => {
     const mappings: ColumnMapping[] = [
-      { csvColumn: 'col1', csvColumnIndex: 0, transactionField: 'date', confidence: 1, isUserOverride: false },
+      {
+        csvColumn: 'col1',
+        csvColumnIndex: 0,
+        transactionField: 'date',
+        confidence: 1,
+        isUserOverride: false,
+      },
     ];
 
     const updated = updateColumnMapping(mappings, 0, null);
@@ -181,10 +238,34 @@ describe('updateColumnMapping', () => {
 describe('hasAllRequiredMappings', () => {
   it('returns true when all required fields are mapped', () => {
     const mappings: ColumnMapping[] = [
-      { csvColumn: 'col1', csvColumnIndex: 0, transactionField: 'date', confidence: 1, isUserOverride: false },
-      { csvColumn: 'col2', csvColumnIndex: 1, transactionField: 'symbol', confidence: 1, isUserOverride: false },
-      { csvColumn: 'col3', csvColumnIndex: 2, transactionField: 'quantity', confidence: 1, isUserOverride: false },
-      { csvColumn: 'col4', csvColumnIndex: 3, transactionField: 'price', confidence: 1, isUserOverride: false },
+      {
+        csvColumn: 'col1',
+        csvColumnIndex: 0,
+        transactionField: 'date',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col2',
+        csvColumnIndex: 1,
+        transactionField: 'symbol',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col3',
+        csvColumnIndex: 2,
+        transactionField: 'quantity',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col4',
+        csvColumnIndex: 3,
+        transactionField: 'price',
+        confidence: 1,
+        isUserOverride: false,
+      },
     ];
 
     expect(hasAllRequiredMappings(mappings)).toBe(true);
@@ -192,9 +273,27 @@ describe('hasAllRequiredMappings', () => {
 
   it('returns false when a required field is missing', () => {
     const mappings: ColumnMapping[] = [
-      { csvColumn: 'col1', csvColumnIndex: 0, transactionField: 'date', confidence: 1, isUserOverride: false },
-      { csvColumn: 'col2', csvColumnIndex: 1, transactionField: 'symbol', confidence: 1, isUserOverride: false },
-      { csvColumn: 'col3', csvColumnIndex: 2, transactionField: 'quantity', confidence: 1, isUserOverride: false },
+      {
+        csvColumn: 'col1',
+        csvColumnIndex: 0,
+        transactionField: 'date',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col2',
+        csvColumnIndex: 1,
+        transactionField: 'symbol',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col3',
+        csvColumnIndex: 2,
+        transactionField: 'quantity',
+        confidence: 1,
+        isUserOverride: false,
+      },
       // Missing price
     ];
 
@@ -203,10 +302,34 @@ describe('hasAllRequiredMappings', () => {
 
   it('ignores optional fields', () => {
     const mappings: ColumnMapping[] = [
-      { csvColumn: 'col1', csvColumnIndex: 0, transactionField: 'date', confidence: 1, isUserOverride: false },
-      { csvColumn: 'col2', csvColumnIndex: 1, transactionField: 'symbol', confidence: 1, isUserOverride: false },
-      { csvColumn: 'col3', csvColumnIndex: 2, transactionField: 'quantity', confidence: 1, isUserOverride: false },
-      { csvColumn: 'col4', csvColumnIndex: 3, transactionField: 'price', confidence: 1, isUserOverride: false },
+      {
+        csvColumn: 'col1',
+        csvColumnIndex: 0,
+        transactionField: 'date',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col2',
+        csvColumnIndex: 1,
+        transactionField: 'symbol',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col3',
+        csvColumnIndex: 2,
+        transactionField: 'quantity',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col4',
+        csvColumnIndex: 3,
+        transactionField: 'price',
+        confidence: 1,
+        isUserOverride: false,
+      },
       // No type, fees, or notes - that's fine
     ];
 
@@ -217,8 +340,20 @@ describe('hasAllRequiredMappings', () => {
 describe('getMappingForField', () => {
   it('returns the mapping for a specific field', () => {
     const mappings: ColumnMapping[] = [
-      { csvColumn: 'Date', csvColumnIndex: 0, transactionField: 'date', confidence: 1, isUserOverride: false },
-      { csvColumn: 'Symbol', csvColumnIndex: 1, transactionField: 'symbol', confidence: 1, isUserOverride: false },
+      {
+        csvColumn: 'Date',
+        csvColumnIndex: 0,
+        transactionField: 'date',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'Symbol',
+        csvColumnIndex: 1,
+        transactionField: 'symbol',
+        confidence: 1,
+        isUserOverride: false,
+      },
     ];
 
     const dateMapping = getMappingForField(mappings, 'date');
@@ -229,7 +364,13 @@ describe('getMappingForField', () => {
 
   it('returns undefined if field is not mapped', () => {
     const mappings: ColumnMapping[] = [
-      { csvColumn: 'Date', csvColumnIndex: 0, transactionField: 'date', confidence: 1, isUserOverride: false },
+      {
+        csvColumn: 'Date',
+        csvColumnIndex: 0,
+        transactionField: 'date',
+        confidence: 1,
+        isUserOverride: false,
+      },
     ];
 
     expect(getMappingForField(mappings, 'symbol')).toBeUndefined();
@@ -239,7 +380,13 @@ describe('getMappingForField', () => {
 describe('getUnmappedRequiredFields', () => {
   it('returns all unmapped required fields', () => {
     const mappings: ColumnMapping[] = [
-      { csvColumn: 'Date', csvColumnIndex: 0, transactionField: 'date', confidence: 1, isUserOverride: false },
+      {
+        csvColumn: 'Date',
+        csvColumnIndex: 0,
+        transactionField: 'date',
+        confidence: 1,
+        isUserOverride: false,
+      },
     ];
 
     const unmapped = getUnmappedRequiredFields(mappings);
@@ -252,10 +399,34 @@ describe('getUnmappedRequiredFields', () => {
 
   it('returns empty array when all required fields are mapped', () => {
     const mappings: ColumnMapping[] = [
-      { csvColumn: 'col1', csvColumnIndex: 0, transactionField: 'date', confidence: 1, isUserOverride: false },
-      { csvColumn: 'col2', csvColumnIndex: 1, transactionField: 'symbol', confidence: 1, isUserOverride: false },
-      { csvColumn: 'col3', csvColumnIndex: 2, transactionField: 'quantity', confidence: 1, isUserOverride: false },
-      { csvColumn: 'col4', csvColumnIndex: 3, transactionField: 'price', confidence: 1, isUserOverride: false },
+      {
+        csvColumn: 'col1',
+        csvColumnIndex: 0,
+        transactionField: 'date',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col2',
+        csvColumnIndex: 1,
+        transactionField: 'symbol',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col3',
+        csvColumnIndex: 2,
+        transactionField: 'quantity',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'col4',
+        csvColumnIndex: 3,
+        transactionField: 'price',
+        confidence: 1,
+        isUserOverride: false,
+      },
     ];
 
     expect(getUnmappedRequiredFields(mappings)).toHaveLength(0);

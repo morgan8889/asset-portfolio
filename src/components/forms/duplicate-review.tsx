@@ -82,7 +82,9 @@ function DuplicateRow({ match }: { match: DuplicateMatch }) {
           <TableCell>${fmt(match.importData.parsed.price!)}</TableCell>
           <TableCell>
             <Badge
-              variant={match.matchConfidence === 'exact' ? 'destructive' : 'secondary'}
+              variant={
+                match.matchConfidence === 'exact' ? 'destructive' : 'secondary'
+              }
               className="text-xs"
             >
               {match.matchConfidence === 'exact' ? 'Exact Match' : 'Similar'}
@@ -95,11 +97,11 @@ function DuplicateRow({ match }: { match: DuplicateMatch }) {
           <TableCell colSpan={6} className="py-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="space-y-2">
-                <div className="font-medium text-muted-foreground flex items-center gap-2">
+                <div className="flex items-center gap-2 font-medium text-muted-foreground">
                   <Copy className="h-4 w-4" />
                   Importing (CSV Row {match.importRowNumber})
                 </div>
-                <div className="pl-6 space-y-1">
+                <div className="space-y-1 pl-6">
                   <div>Date: {fmtDate(match.importData.parsed.date!)}</div>
                   <div>Symbol: {match.importData.parsed.symbol}</div>
                   <div>Quantity: {fmt(match.importData.parsed.quantity!)}</div>
@@ -108,11 +110,11 @@ function DuplicateRow({ match }: { match: DuplicateMatch }) {
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="font-medium text-muted-foreground flex items-center gap-2">
+                <div className="flex items-center gap-2 font-medium text-muted-foreground">
                   <Check className="h-4 w-4" />
                   Existing Transaction
                 </div>
-                <div className="pl-6 space-y-1">
+                <div className="space-y-1 pl-6">
                   <div>Date: {fmtDate(match.existingTransaction.date)}</div>
                   <div>Symbol: {match.existingTransaction.symbol}</div>
                   <div>Quantity: {fmt(match.existingTransaction.quantity)}</div>
@@ -146,26 +148,28 @@ export function DuplicateReview({
   return (
     <Card className={cn('w-full', className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-lg">
           <AlertTriangle className="h-5 w-5 text-yellow-500" />
           Potential Duplicates Detected
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          {duplicates.length} transaction{duplicates.length !== 1 ? 's' : ''} may
-          already exist in your portfolio. Choose how to handle them.
+          {duplicates.length} transaction{duplicates.length !== 1 ? 's' : ''}{' '}
+          may already exist in your portfolio. Choose how to handle them.
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Handling Options */}
         <RadioGroup
           value={handling}
-          onValueChange={(value: string) => onHandlingChange(value as DuplicateHandling)}
+          onValueChange={(value: string) =>
+            onHandlingChange(value as DuplicateHandling)
+          }
           className="space-y-3"
         >
           <div className="flex items-start space-x-3">
             <RadioGroupItem value="skip" id="skip" className="mt-1" />
             <div>
-              <Label htmlFor="skip" className="font-medium cursor-pointer">
+              <Label htmlFor="skip" className="cursor-pointer font-medium">
                 Skip duplicates
               </Label>
               <p className="text-sm text-muted-foreground">
@@ -177,7 +181,7 @@ export function DuplicateReview({
           <div className="flex items-start space-x-3">
             <RadioGroupItem value="import" id="import" className="mt-1" />
             <div>
-              <Label htmlFor="import" className="font-medium cursor-pointer">
+              <Label htmlFor="import" className="cursor-pointer font-medium">
                 Import anyway
               </Label>
               <p className="text-sm text-muted-foreground">
@@ -189,7 +193,7 @@ export function DuplicateReview({
           <div className="flex items-start space-x-3">
             <RadioGroupItem value="review" id="review" className="mt-1" />
             <div>
-              <Label htmlFor="review" className="font-medium cursor-pointer">
+              <Label htmlFor="review" className="cursor-pointer font-medium">
                 Review each one
               </Label>
               <p className="text-sm text-muted-foreground">
@@ -236,25 +240,26 @@ export function DuplicateReview({
         )}
 
         {/* Summary */}
-        <div className="text-sm text-muted-foreground border-t pt-3">
+        <div className="border-t pt-3 text-sm text-muted-foreground">
           {handling === 'skip' && (
             <p>
-              <X className="h-4 w-4 inline mr-1 text-yellow-500" />
-              {duplicates.length} transaction{duplicates.length !== 1 ? 's' : ''}{' '}
-              will be skipped
+              <X className="mr-1 inline h-4 w-4 text-yellow-500" />
+              {duplicates.length} transaction
+              {duplicates.length !== 1 ? 's' : ''} will be skipped
             </p>
           )}
           {handling === 'import' && (
             <p>
-              <Check className="h-4 w-4 inline mr-1 text-green-500" />
+              <Check className="mr-1 inline h-4 w-4 text-green-500" />
               All transactions will be imported, including potential duplicates
             </p>
           )}
           {handling === 'review' && (
             <p>
-              <AlertTriangle className="h-4 w-4 inline mr-1 text-yellow-500" />
-              {duplicates.length} potential duplicate{duplicates.length !== 1 ? 's' : ''}{' '}
-              will be skipped for later review
+              <AlertTriangle className="mr-1 inline h-4 w-4 text-yellow-500" />
+              {duplicates.length} potential duplicate
+              {duplicates.length !== 1 ? 's' : ''} will be skipped for later
+              review
             </p>
           )}
         </div>
