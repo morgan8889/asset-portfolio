@@ -93,9 +93,9 @@ const defaultMetrics = {
   totalValue: new Decimal(100000),
   totalCost: new Decimal(80000),
   totalGain: new Decimal(20000),
-  totalGainPercent: 0.25, // 25% as decimal
+  totalGainPercent: 25.0, // 25% (already multiplied by 100)
   dayChange: new Decimal(1500),
-  dayChangePercent: 0.015, // 1.5% as decimal
+  dayChangePercent: 1.5, // 1.5% (already multiplied by 100)
   allocation: [],
 };
 
@@ -169,14 +169,14 @@ describe('MetricsCards', () => {
 describe('MetricsCards with negative values', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Override metrics for negative test (percentages as decimals)
+    // Override metrics for negative test (percentages already multiplied by 100)
     mockPortfolioStore.metrics = {
       totalValue: new Decimal(80000),
       totalCost: new Decimal(100000),
       totalGain: new Decimal(-20000),
-      totalGainPercent: -0.2, // -20% as decimal
+      totalGainPercent: -20.0, // -20% (already multiplied by 100)
       dayChange: new Decimal(-500),
-      dayChangePercent: -0.0062, // -0.62% as decimal
+      dayChangePercent: -0.62, // -0.62% (already multiplied by 100)
       allocation: [],
     };
   });
