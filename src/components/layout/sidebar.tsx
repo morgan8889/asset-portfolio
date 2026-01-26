@@ -11,9 +11,12 @@ import {
   TrendingUp,
   Wallet,
   FileText,
+  FlaskConical,
+  Clock,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useUIStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 
@@ -27,6 +30,7 @@ const navigation = [
     name: 'Holdings',
     href: '/holdings',
     icon: Briefcase,
+    badge: 'coming-soon' as const,
   },
   {
     name: 'Transactions',
@@ -37,6 +41,7 @@ const navigation = [
     name: 'Analysis',
     href: '/analysis',
     icon: BarChart3,
+    badge: 'coming-soon' as const,
   },
   {
     name: 'Performance',
@@ -47,11 +52,13 @@ const navigation = [
     name: 'Allocation',
     href: '/allocation',
     icon: PieChart,
+    badge: 'beta' as const,
   },
   {
     name: 'Reports',
     href: '/reports',
     icon: FileText,
+    badge: 'coming-soon' as const,
   },
   {
     name: 'Settings',
@@ -91,7 +98,21 @@ export function Sidebar() {
                       className={cn('h-4 w-4', sidebarOpen && 'mr-2')}
                     />
                     {sidebarOpen && (
-                      <span className="truncate">{item.name}</span>
+                      <>
+                        <span className="truncate">{item.name}</span>
+                        {item.badge === 'beta' && (
+                          <Badge variant="beta" className="ml-auto">
+                            <FlaskConical className="mr-1 h-3 w-3 text-amber-700 dark:text-amber-400" />
+                            Beta
+                          </Badge>
+                        )}
+                        {item.badge === 'coming-soon' && (
+                          <Badge variant="comingSoon" className="ml-auto">
+                            <Clock className="mr-1 h-3 w-3 text-gray-500 dark:text-gray-400" />
+                            Coming Soon
+                          </Badge>
+                        )}
+                      </>
                     )}
                   </Button>
                 </Link>
