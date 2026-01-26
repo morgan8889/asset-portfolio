@@ -288,19 +288,32 @@ describe('executeImport', () => {
     vi.clearAllMocks();
     // Reset the db mock for each test
     const { db } = await import('@/lib/db/schema');
+    const createdAssets = new Map<string, any>();
+
     vi.mocked(db.transactions.add).mockResolvedValue('transaction-id');
-    vi.mocked(db.assets.where).mockReturnValue({
-      equals: vi.fn().mockReturnValue({
-        first: vi
-          .fn()
-          .mockResolvedValue({
-            id: 'asset-1',
-            symbol: 'AAPL',
-            name: 'Apple',
-            type: 'stock',
-          }),
-      }),
-    } as any);
+
+    vi.mocked(db.assets.where).mockImplementation(() => ({
+      equals: vi.fn().mockImplementation((symbol: string) => ({
+        first: vi.fn().mockImplementation(async () => {
+          if (symbol === 'AAPL') {
+            return { id: 'asset-1', symbol: 'AAPL', name: 'Apple', type: 'stock' };
+          }
+          return createdAssets.get(symbol) || null;
+        }),
+      })),
+    } as any));
+
+    vi.mocked(db.assets.add).mockImplementation(async (asset: any) => {
+      createdAssets.set(asset.symbol, asset);
+      return asset.id;
+    });
+
+    vi.mocked(db.assets.get).mockImplementation(async (id: string) => {
+      for (const asset of createdAssets.values()) {
+        if (asset.id === id) return asset;
+      }
+      return id === 'asset-1' ? { id: 'asset-1', symbol: 'AAPL', name: 'Apple', type: 'stock' } : null;
+    });
   });
 
   it('imports valid rows successfully', async () => {
