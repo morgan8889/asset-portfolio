@@ -163,11 +163,17 @@ export const usePriceStore = create<PriceState>()(
 
           set({ pollingLock: true });
 
+          // Set isPolling synchronously when changing to manual for immediate UI update
+          if (updated.refreshInterval === 'manual') {
+            set({ isPolling: false });
+          }
+
           try {
             // Use the PricePollingService restart method which handles stop-then-start properly
             const service = get().pollingService;
             if (service) {
               await service.restart(updated);
+              set({ isPolling: service.isPolling });
             } else {
               // Fallback to manual stop/start if service doesn't exist
               get().stopPolling();
