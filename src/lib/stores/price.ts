@@ -16,7 +16,6 @@ import {
   MarketState,
   PriceUpdatePreferences,
   RefreshInterval,
-  StalenessLevel,
   DEFAULT_PRICE_PREFERENCES,
   REFRESH_INTERVALS,
 } from '@/types/market';
@@ -26,8 +25,12 @@ import { getMarketState } from '@/lib/services/market-hours';
 import {
   priceResponseSchema,
   batchPriceResponseSchema,
-  type BatchPriceResponse as ValidatedBatchPriceResponse,
 } from '@/lib/schemas/price-schemas';
+import {
+  PricePollingService,
+  createPricePollingService,
+  type PollingCallbacks,
+} from '@/lib/services/price-polling';
 
 // Types for the store
 interface PriceData {
@@ -41,13 +44,6 @@ interface PriceData {
   marketState?: MarketState;
 }
 
-// Event handler cleanup references stored in state
-interface EventHandlers {
-  visibilityHandler: (() => void) | null;
-  onlineHandler: (() => void) | null;
-  offlineHandler: (() => void) | null;
-}
-
 interface PriceState {
   // State
   prices: Map<string, LivePriceData>;
@@ -59,7 +55,7 @@ interface PriceState {
   watchedSymbols: Set<string>;
   isOnline: boolean;
   pollingLock: boolean; // Prevents race conditions in polling restart
-  eventHandlers: EventHandlers; // Store event handlers for proper cleanup
+  pollingService: PricePollingService | null; // Encapsulated polling infrastructure
   symbolToAssetId: Map<string, string>; // Maps symbol -> assetId for snapshot persistence
 
   // Actions
@@ -98,12 +94,6 @@ interface PriceState {
   setError: (error: string | null) => void;
   clearError: () => void;
 }
-
-// Polling interval reference
-let pollIntervalId: ReturnType<typeof setInterval> | null = null;
-
-// Staleness update interval reference
-let stalenessIntervalId: ReturnType<typeof setInterval> | null = null;
 
 /**
  * Transforms raw price data into LivePriceData with staleness and currency conversion.
@@ -150,11 +140,7 @@ export const usePriceStore = create<PriceState>()(
       watchedSymbols: new Set(),
       isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
       pollingLock: false,
-      eventHandlers: {
-        visibilityHandler: null,
-        onlineHandler: null,
-        offlineHandler: null,
-      },
+      pollingService: null,
       symbolToAssetId: new Map(),
 
       // Preference management
@@ -469,16 +455,9 @@ export const usePriceStore = create<PriceState>()(
         }
       },
 
-      // Polling management
+      // Polling management (delegated to PricePollingService)
       startPolling: () => {
-        const {
-          preferences,
-          isPolling,
-          refreshAllPrices,
-          setOnline,
-          loadCachedPrices,
-          eventHandlers,
-        } = get();
+        const { preferences, isPolling } = get();
 
         // Don't start if already polling or in manual mode
         if (isPolling || preferences.refreshInterval === 'manual') {
@@ -488,152 +467,66 @@ export const usePriceStore = create<PriceState>()(
         const intervalMs = REFRESH_INTERVALS[preferences.refreshInterval];
         if (intervalMs <= 0) return;
 
-        // Load cached prices first for offline resilience
-        loadCachedPrices();
+        // Create polling service with callbacks if not exists
+        let service = get().pollingService;
+        if (!service) {
+          const callbacks: PollingCallbacks = {
+            onRefresh: () => get().refreshAllPrices(),
+            onUpdateStaleness: () => get().updateStaleness(),
+            onNetworkChange: (online) => {
+              const wasOffline = !get().isOnline;
+              set({ isOnline: online, error: online ? null : get().error });
 
-        // Clear any existing intervals and event listeners
-        if (pollIntervalId) {
-          clearInterval(pollIntervalId);
-        }
-        if (stalenessIntervalId) {
-          clearInterval(stalenessIntervalId);
-        }
-
-        // Clean up any existing event handlers
-        if (
-          eventHandlers.visibilityHandler &&
-          typeof document !== 'undefined'
-        ) {
-          document.removeEventListener(
-            'visibilitychange',
-            eventHandlers.visibilityHandler
-          );
-        }
-        if (eventHandlers.onlineHandler && typeof window !== 'undefined') {
-          window.removeEventListener('online', eventHandlers.onlineHandler);
-        }
-        if (eventHandlers.offlineHandler && typeof window !== 'undefined') {
-          window.removeEventListener('offline', eventHandlers.offlineHandler);
-        }
-
-        // Set up polling with error handling for unhandled promise rejections
-        pollIntervalId = setInterval(() => {
-          // Only poll if tab is visible (if pauseWhenHidden is true) and online
-          if (
-            get().isOnline &&
-            (!preferences.pauseWhenHidden ||
-              typeof document === 'undefined' ||
-              document.visibilityState === 'visible')
-          ) {
-            // Add error handling to prevent unhandled promise rejections
-            refreshAllPrices().catch((error) => {
-              console.error('Polling error:', error);
-              // Don't clear cache - error is already handled in refreshAllPrices
-            });
-          }
-        }, intervalMs);
-
-        // Set up staleness updates (every 5 seconds)
-        const STALENESS_UPDATE_INTERVAL_MS = 5000;
-        stalenessIntervalId = setInterval(() => {
-          get().updateStaleness();
-        }, STALENESS_UPDATE_INTERVAL_MS);
-
-        // Set up visibility change handler
-        if (typeof document !== 'undefined' && preferences.pauseWhenHidden) {
-          const newVisibilityHandler = () => {
-            if (
-              document.visibilityState === 'visible' &&
-              get().isOnline &&
-              !get().loading
-            ) {
-              // Resume polling and fetch fresh data (with error handling)
-              refreshAllPrices().catch((error) => {
-                console.error('Visibility resume error:', error);
-              });
-            }
+              if (online && wasOffline) {
+                // Connection restored - refresh prices
+                console.log(
+                  'Network connection restored, refreshing prices...'
+                );
+                const { watchedSymbols, preferences: prefs } = get();
+                if (
+                  watchedSymbols.size > 0 &&
+                  prefs.refreshInterval !== 'manual'
+                ) {
+                  get().refreshAllPrices();
+                }
+              } else if (!online) {
+                console.log('Network connection lost, using cached prices');
+              }
+            },
+            onLoadCache: () => get().loadCachedPrices(),
+            onPersistCache: () => get().persistPriceCache(),
           };
-
-          document.addEventListener('visibilitychange', newVisibilityHandler);
-
-          // Store handler reference in state for proper cleanup
-          set({
-            eventHandlers: {
-              ...get().eventHandlers,
-              visibilityHandler: newVisibilityHandler,
-            },
-          });
+          service = createPricePollingService(callbacks);
+          set({ pollingService: service });
         }
 
-        // Set up online/offline handlers
-        if (typeof window !== 'undefined') {
-          const newOnlineHandler = () => setOnline(true);
-          const newOfflineHandler = () => setOnline(false);
-
-          window.addEventListener('online', newOnlineHandler);
-          window.addEventListener('offline', newOfflineHandler);
-
-          // Store handler references in state for proper cleanup
-          set({
-            eventHandlers: {
-              ...get().eventHandlers,
-              onlineHandler: newOnlineHandler,
-              offlineHandler: newOfflineHandler,
-            },
-          });
-
-          // Set initial online state
-          setOnline(navigator.onLine);
-        }
-
+        // Set polling state synchronously for API compatibility
         set({ isPolling: true });
+
+        // Start polling asynchronously (fire and forget)
+        service
+          .start(preferences)
+          .then(() => {
+            set({ isOnline: service!.isOnline });
+          })
+          .catch((error) => {
+            console.error('Failed to start polling:', error);
+            set({ isPolling: false });
+          });
       },
 
       stopPolling: () => {
-        const { eventHandlers } = get();
+        const service = get().pollingService;
 
-        // Persist cache before stopping
-        get().persistPriceCache();
+        // Set state synchronously for API compatibility
+        set({ isPolling: false });
 
-        if (pollIntervalId) {
-          clearInterval(pollIntervalId);
-          pollIntervalId = null;
+        if (service) {
+          // Stop polling asynchronously (fire and forget)
+          service.stop().catch((error) => {
+            console.error('Failed to stop polling:', error);
+          });
         }
-
-        if (stalenessIntervalId) {
-          clearInterval(stalenessIntervalId);
-          stalenessIntervalId = null;
-        }
-
-        // Clean up event handlers from state
-        if (
-          eventHandlers.visibilityHandler &&
-          typeof document !== 'undefined'
-        ) {
-          document.removeEventListener(
-            'visibilitychange',
-            eventHandlers.visibilityHandler
-          );
-        }
-
-        if (typeof window !== 'undefined') {
-          if (eventHandlers.onlineHandler) {
-            window.removeEventListener('online', eventHandlers.onlineHandler);
-          }
-          if (eventHandlers.offlineHandler) {
-            window.removeEventListener('offline', eventHandlers.offlineHandler);
-          }
-        }
-
-        // Reset event handler references in state
-        set({
-          isPolling: false,
-          eventHandlers: {
-            visibilityHandler: null,
-            onlineHandler: null,
-            offlineHandler: null,
-          },
-        });
       },
 
       updateStaleness: () => {
@@ -761,33 +654,26 @@ export const usePriceStore = create<PriceState>()(
       },
 
       // Network state management
+      // Note: When polling service is active, it manages network state via its callbacks
       setOnline: (online) => {
         const wasOffline = !get().isOnline;
         set({ isOnline: online });
 
-        if (online && wasOffline) {
-          // Connection restored - clear error and refresh prices
-          set({ error: null });
-          console.log('Network connection restored, refreshing prices...');
-
-          // Resume polling if it was active and not in manual mode
-          const { preferences, watchedSymbols, isPolling } = get();
-          if (
-            watchedSymbols.size > 0 &&
-            preferences.refreshInterval !== 'manual'
-          ) {
-            // Fetch fresh data immediately
-            get().refreshAllPrices();
-
-            // Restart polling if not already active
-            if (!isPolling) {
-              get().startPolling();
+        // If no polling service (manual mode), handle network changes here
+        if (!get().pollingService) {
+          if (online && wasOffline) {
+            set({ error: null });
+            console.log('Network connection restored, refreshing prices...');
+            // Trigger a refresh when coming back online
+            const { watchedSymbols } = get();
+            if (watchedSymbols.size > 0) {
+              get().refreshAllPrices();
             }
+          } else if (!online) {
+            console.log('Network connection lost, using cached prices');
           }
-        } else if (!online) {
-          // Going offline - notify user but keep cached data
-          console.log('Network connection lost, using cached prices');
         }
+        // When polling service is active, it handles network changes via onNetworkChange callback
       },
 
       // Error handling
