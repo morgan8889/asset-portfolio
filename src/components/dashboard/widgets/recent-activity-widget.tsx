@@ -121,7 +121,7 @@ interface TransactionRowProps {
   currency: string;
 }
 
-function TransactionRow({
+const TransactionRow = memo(function TransactionRow({
   transaction,
   assetMap,
   currency,
@@ -153,7 +153,7 @@ function TransactionRow({
       </div>
     </div>
   );
-}
+});
 
 export const RecentActivityWidget = memo(function RecentActivityWidget({
   portfolioId,
