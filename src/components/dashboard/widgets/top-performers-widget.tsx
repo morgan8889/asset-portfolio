@@ -19,6 +19,8 @@ interface TopPerformersWidgetProps {
   portfolioId?: string;
   count?: number;
   isLoading?: boolean;
+  /** Pre-calculated performer data. When provided, skips async fetch. */
+  performers?: HoldingPerformance[];
 }
 
 function PerformersSkeleton() {
@@ -114,6 +116,7 @@ export const TopPerformersWidget = memo(function TopPerformersWidget({
   portfolioId,
   count,
   isLoading: externalLoading = false,
+  performers: externalPerformers,
 }: TopPerformersWidgetProps) {
   const router = useRouter();
   const { config } = useDashboardStore();
@@ -123,8 +126,11 @@ export const TopPerformersWidget = memo(function TopPerformersWidget({
   const period: TimePeriod = config?.timePeriod || 'ALL';
   const currency = currentPortfolio?.currency || 'USD';
 
-  const [performers, setPerformers] = useState<HoldingPerformance[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Use external performers if provided (live price data)
+  const useExternalData = externalPerformers !== undefined;
+
+  const [fetchedPerformers, setFetchedPerformers] = useState<HoldingPerformance[]>([]);
+  const [loading, setLoading] = useState(!useExternalData);
 
   const handlePerformerClick = (holdingId: string) => {
     // Navigate to holdings page with the holding ID as query param
@@ -133,8 +139,14 @@ export const TopPerformersWidget = memo(function TopPerformersWidget({
   };
 
   useEffect(() => {
+    // Skip fetch if using external data
+    if (useExternalData) {
+      setLoading(false);
+      return;
+    }
+
     if (!effectivePortfolioId) {
-      setPerformers([]);
+      setFetchedPerformers([]);
       setLoading(false);
       return;
     }
@@ -145,10 +157,10 @@ export const TopPerformersWidget = memo(function TopPerformersWidget({
       setLoading(true);
       try {
         const data = await getTopPerformers(effectivePortfolioId!, period, effectiveCount);
-        if (!cancelled) setPerformers(data);
+        if (!cancelled) setFetchedPerformers(data);
       } catch (error) {
         console.error('Failed to load top performers:', error);
-        if (!cancelled) setPerformers([]);
+        if (!cancelled) setFetchedPerformers([]);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -159,7 +171,10 @@ export const TopPerformersWidget = memo(function TopPerformersWidget({
     return () => {
       cancelled = true;
     };
-  }, [effectivePortfolioId, period, effectiveCount]);
+  }, [effectivePortfolioId, period, effectiveCount, useExternalData]);
+
+  // Use external performers if provided, otherwise use fetched data
+  const performers = useExternalData ? externalPerformers : fetchedPerformers;
 
   if (externalLoading || loading) {
     return <PerformersSkeleton />;

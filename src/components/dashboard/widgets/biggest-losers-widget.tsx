@@ -19,6 +19,8 @@ interface BiggestLosersWidgetProps {
   portfolioId?: string;
   count?: number;
   isLoading?: boolean;
+  /** Pre-calculated loser data. When provided, skips async fetch. */
+  losers?: HoldingPerformance[];
 }
 
 function LosersSkeleton() {
@@ -108,6 +110,7 @@ export const BiggestLosersWidget = memo(function BiggestLosersWidget({
   portfolioId,
   count,
   isLoading: externalLoading = false,
+  losers: externalLosers,
 }: BiggestLosersWidgetProps) {
   const router = useRouter();
   const { config } = useDashboardStore();
@@ -117,8 +120,11 @@ export const BiggestLosersWidget = memo(function BiggestLosersWidget({
   const period: TimePeriod = config?.timePeriod || 'ALL';
   const currency = currentPortfolio?.currency || 'USD';
 
-  const [losers, setLosers] = useState<HoldingPerformance[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Use external losers if provided (live price data)
+  const useExternalData = externalLosers !== undefined;
+
+  const [fetchedLosers, setFetchedLosers] = useState<HoldingPerformance[]>([]);
+  const [loading, setLoading] = useState(!useExternalData);
 
   const handleLoserClick = (holdingId: string) => {
     // Navigate to holdings page with the holding ID as query param
@@ -127,8 +133,14 @@ export const BiggestLosersWidget = memo(function BiggestLosersWidget({
   };
 
   useEffect(() => {
+    // Skip fetch if using external data
+    if (useExternalData) {
+      setLoading(false);
+      return;
+    }
+
     if (!effectivePortfolioId) {
-      setLosers([]);
+      setFetchedLosers([]);
       setLoading(false);
       return;
     }
@@ -139,10 +151,10 @@ export const BiggestLosersWidget = memo(function BiggestLosersWidget({
       setLoading(true);
       try {
         const data = await getBiggestLosers(effectivePortfolioId!, period, effectiveCount);
-        if (!cancelled) setLosers(data);
+        if (!cancelled) setFetchedLosers(data);
       } catch (error) {
         console.error('Failed to load biggest losers:', error);
-        if (!cancelled) setLosers([]);
+        if (!cancelled) setFetchedLosers([]);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -153,7 +165,10 @@ export const BiggestLosersWidget = memo(function BiggestLosersWidget({
     return () => {
       cancelled = true;
     };
-  }, [effectivePortfolioId, period, effectiveCount]);
+  }, [effectivePortfolioId, period, effectiveCount, useExternalData]);
+
+  // Use external losers if provided, otherwise use fetched data
+  const losers = useExternalData ? externalLosers : fetchedLosers;
 
   if (externalLoading || loading) {
     return <LosersSkeleton />;
