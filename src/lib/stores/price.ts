@@ -59,7 +59,7 @@ interface PriceState {
   symbolToAssetId: Map<string, string>; // Maps symbol -> assetId for snapshot persistence
 
   // Actions
-  setPreferences: (preferences: Partial<PriceUpdatePreferences>) => void;
+  setPreferences: (preferences: Partial<PriceUpdatePreferences>) => Promise<void>;
   loadPreferences: () => Promise<void>;
   savePreferences: () => Promise<void>;
 
@@ -144,17 +144,17 @@ export const usePriceStore = create<PriceState>()(
       symbolToAssetId: new Map(),
 
       // Preference management
-      setPreferences: (newPreferences) => {
+      setPreferences: async (newPreferences) => {
         const current = get().preferences;
         const updated = { ...current, ...newPreferences };
         set({ preferences: updated });
 
         // If interval changed and we're polling, restart with new interval
-        if (
+        const intervalChanged =
           newPreferences.refreshInterval !== undefined &&
-          newPreferences.refreshInterval !== current.refreshInterval &&
-          get().isPolling
-        ) {
+          newPreferences.refreshInterval !== current.refreshInterval;
+
+        if (intervalChanged && get().isPolling) {
           // Use polling lock to prevent race conditions
           if (get().pollingLock) {
             console.warn('Polling restart already in progress, skipping');
@@ -163,24 +163,21 @@ export const usePriceStore = create<PriceState>()(
 
           set({ pollingLock: true });
 
-          // Stop polling synchronously
-          get().stopPolling();
-
-          // Use queueMicrotask to ensure cleanup completes before restart
-          if (updated.refreshInterval !== 'manual') {
-            queueMicrotask(() => {
-              // Double-check state hasn't changed and lock is still held
-              if (
-                get().preferences.refreshInterval !== 'manual' &&
-                get().pollingLock
-              ) {
+          try {
+            // Use the PricePollingService restart method which handles stop-then-start properly
+            const service = get().pollingService;
+            if (service) {
+              await service.restart(updated);
+            } else {
+              // Fallback to manual stop/start if service doesn't exist
+              get().stopPolling();
+              if (updated.refreshInterval !== 'manual') {
                 get().startPolling();
               }
-              // Release lock after restart completes
-              set({ pollingLock: false });
-            });
-          } else {
-            // Release lock immediately if not restarting
+            }
+          } catch (error) {
+            console.error('Error restarting polling:', error);
+          } finally {
             set({ pollingLock: false });
           }
         }

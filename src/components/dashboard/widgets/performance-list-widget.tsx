@@ -354,6 +354,10 @@ PerformanceListWidget.displayName = 'PerformanceListWidget';
 // Convenience Exports (for backward compatibility)
 // =============================================================================
 
+/**
+ * @deprecated Use PerformanceListWidget with variant="gainers" instead.
+ * This wrapper will be removed in v2.0.0
+ */
 export interface TopPerformersWidgetProps {
   portfolioId?: string;
   count?: number;
@@ -361,6 +365,16 @@ export interface TopPerformersWidgetProps {
   performers?: HoldingPerformance[];
 }
 
+/**
+ * @deprecated Use PerformanceListWidget with variant="gainers" instead.
+ * This wrapper will be removed in v2.0.0
+ *
+ * @example
+ * // Instead of:
+ * // <TopPerformersWidget portfolioId={id} />
+ * // Use:
+ * // <PerformanceListWidget variant="gainers" portfolioId={id} />
+ */
 export const TopPerformersWidget = memo(function TopPerformersWidget({
   portfolioId,
   count,
@@ -380,6 +394,10 @@ export const TopPerformersWidget = memo(function TopPerformersWidget({
 
 TopPerformersWidget.displayName = 'TopPerformersWidget';
 
+/**
+ * @deprecated Use PerformanceListWidget with variant="losers" instead.
+ * This wrapper will be removed in v2.0.0
+ */
 export interface BiggestLosersWidgetProps {
   portfolioId?: string;
   count?: number;
@@ -387,6 +405,16 @@ export interface BiggestLosersWidgetProps {
   losers?: HoldingPerformance[];
 }
 
+/**
+ * @deprecated Use PerformanceListWidget with variant="losers" instead.
+ * This wrapper will be removed in v2.0.0
+ *
+ * @example
+ * // Instead of:
+ * // <BiggestLosersWidget portfolioId={id} />
+ * // Use:
+ * // <PerformanceListWidget variant="losers" portfolioId={id} />
+ */
 export const BiggestLosersWidget = memo(function BiggestLosersWidget({
   portfolioId,
   count,

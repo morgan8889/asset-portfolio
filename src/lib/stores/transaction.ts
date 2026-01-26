@@ -7,12 +7,12 @@ import {
   TransactionFilter,
   TransactionSummary,
   ImportResult,
+  TransactionImportError,
 } from '@/types';
 import { generateTransactionId } from '@/types/storage';
 import { transactionQueries, HoldingsCalculator } from '@/lib/db';
 import { showSuccessNotification, showErrorNotification } from './ui';
 import { handleSnapshotTrigger } from '@/lib/services/snapshot-service';
-import type { TransactionImportError } from '@/lib/db/converters';
 
 // Optimistic ID prefix to identify temporary IDs
 const OPTIMISTIC_ID_PREFIX = 'optimistic-';

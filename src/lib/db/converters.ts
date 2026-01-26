@@ -32,7 +32,10 @@ import type {
   PriceSnapshotId,
   DividendRecordId,
 } from '@/types/storage';
-import type { TransactionType } from '@/types/transaction';
+import type {
+  TransactionType,
+  TransactionImportError,
+} from '@/types/transaction';
 import type { AssetType } from '@/types/portfolio';
 import {
   serializeDecimalFields,
@@ -65,9 +68,37 @@ export interface CreateAssetInput {
 }
 
 /**
+ * Validate asset input fields
+ */
+function validateAssetInput(input: CreateAssetInput): void {
+  if (!input.id || typeof input.id !== 'string') {
+    throw new TypeError('id must be a non-empty string');
+  }
+  if (!input.symbol || typeof input.symbol !== 'string') {
+    throw new TypeError('symbol must be a non-empty string');
+  }
+  if (!input.name || typeof input.name !== 'string') {
+    throw new TypeError('name must be a non-empty string');
+  }
+  if (!input.currency || typeof input.currency !== 'string') {
+    throw new TypeError('currency must be a non-empty string');
+  }
+  // Validate optional numeric fields
+  if (input.currentPrice !== undefined && (typeof input.currentPrice !== 'number' || input.currentPrice < 0)) {
+    throw new RangeError('currentPrice must be a non-negative number');
+  }
+  if (input.priceUpdatedAt !== undefined && !(input.priceUpdatedAt instanceof Date)) {
+    throw new TypeError('priceUpdatedAt must be a Date instance');
+  }
+}
+
+/**
  * Convert asset input to storage format
  */
 export function toAssetStorage(input: CreateAssetInput): AssetStorage {
+  // Validate inputs
+  validateAssetInput(input);
+
   return {
     id: input.id as AssetId,
     symbol: input.symbol,
@@ -107,11 +138,59 @@ export interface CreateTransactionInput {
 }
 
 /**
+ * Validate that a value is a Decimal instance
+ */
+function validateDecimal(value: unknown, fieldName: string): asserts value is Decimal {
+  if (!(value instanceof Decimal)) {
+    throw new TypeError(`${fieldName} must be a Decimal instance`);
+  }
+}
+
+/**
+ * Validate transaction input fields
+ */
+function validateTransactionInput(input: CreateTransactionInput): void {
+  // Validate required fields
+  if (!input.id || typeof input.id !== 'string') {
+    throw new TypeError('id must be a non-empty string');
+  }
+  if (!input.portfolioId || typeof input.portfolioId !== 'string') {
+    throw new TypeError('portfolioId must be a non-empty string');
+  }
+  if (!input.assetId || typeof input.assetId !== 'string') {
+    throw new TypeError('assetId must be a non-empty string');
+  }
+  if (!(input.date instanceof Date)) {
+    throw new TypeError('date must be a Date instance');
+  }
+
+  // Validate Decimal fields
+  validateDecimal(input.quantity, 'quantity');
+  validateDecimal(input.price, 'price');
+  validateDecimal(input.totalAmount, 'totalAmount');
+  validateDecimal(input.fees, 'fees');
+
+  // Validate bounds
+  if (input.quantity.isNegative()) {
+    throw new RangeError('quantity cannot be negative');
+  }
+  if (input.price.isNegative()) {
+    throw new RangeError('price cannot be negative');
+  }
+  if (input.fees.isNegative()) {
+    throw new RangeError('fees cannot be negative');
+  }
+}
+
+/**
  * Convert transaction domain type to storage format
  */
 export function toTransactionStorage(
   input: CreateTransactionInput
 ): TransactionStorage {
+  // Validate inputs
+  validateTransactionInput(input);
+
   // Create a partial object with only the decimal fields for serialization
   const decimalData = {
     quantity: input.quantity,
@@ -327,17 +406,8 @@ export interface SettingsTypeMap {
 export type SettingsValue<K extends keyof SettingsTypeMap> = SettingsTypeMap[K];
 
 // =============================================================================
-// Import Error Types
+// Import Error Types (Re-exported from types for convenience)
 // =============================================================================
-
-/**
- * Error that occurs during transaction import
- */
-export interface TransactionImportError {
-  row: number;
-  message: string;
-  data: Record<string, unknown>;
-}
 
 /**
  * Result of a transaction import operation
