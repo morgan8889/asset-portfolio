@@ -119,12 +119,15 @@ export const usePortfolioStore = create<PortfolioState>()(
         deletePortfolio: async (id) => {
           set({ loading: true, error: null });
           try {
+            // Check if deleting current portfolio BEFORE loadPortfolios clears it
+            const { currentPortfolio } = get();
+            const wasCurrentDeleted = currentPortfolio?.id === id;
+
             await portfolioQueries.delete(id);
             await get().loadPortfolios();
 
-            // Clear current portfolio if it was deleted
-            const { currentPortfolio } = get();
-            if (currentPortfolio && currentPortfolio.id === id) {
+            // Clear holdings/metrics if we deleted the current portfolio
+            if (wasCurrentDeleted) {
               set({ currentPortfolio: null, holdings: [], metrics: null });
             }
             set({ loading: false });

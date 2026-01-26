@@ -49,7 +49,8 @@ describe('benchmark-service', () => {
   });
 
   afterEach(() => {
-    vi.resetAllMocks();
+    // Only clear call history, don't reset implementations
+    vi.clearAllMocks();
   });
 
   describe('getSupportedBenchmarks', () => {
@@ -136,23 +137,16 @@ describe('benchmark-service', () => {
       const startDate = new Date('2024-01-01');
       const endDate = new Date('2024-01-31');
 
+      // Mock response in the format returned by the /api/benchmark route
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () =>
           Promise.resolve({
-            chart: {
-              result: [
-                {
-                  timestamp: [
-                    Math.floor(startDate.getTime() / 1000),
-                    Math.floor(endDate.getTime() / 1000),
-                  ],
-                  indicators: {
-                    quote: [{ close: [100, 110] }],
-                  },
-                },
-              ],
-            },
+            timestamps: [
+              Math.floor(startDate.getTime() / 1000),
+              Math.floor(endDate.getTime() / 1000),
+            ],
+            closes: [100, 110],
           }),
       });
 
@@ -165,23 +159,16 @@ describe('benchmark-service', () => {
       const startDate = new Date('2024-01-01');
       const endDate = new Date('2024-01-31');
 
+      // Mock response in the format returned by the /api/benchmark route
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () =>
           Promise.resolve({
-            chart: {
-              result: [
-                {
-                  timestamp: [
-                    Math.floor(startDate.getTime() / 1000),
-                    Math.floor(endDate.getTime() / 1000),
-                  ],
-                  indicators: {
-                    quote: [{ close: [100, 90] }],
-                  },
-                },
-              ],
-            },
+            timestamps: [
+              Math.floor(startDate.getTime() / 1000),
+              Math.floor(endDate.getTime() / 1000),
+            ],
+            closes: [100, 90],
           }),
       });
 
