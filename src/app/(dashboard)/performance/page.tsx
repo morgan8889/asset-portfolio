@@ -385,13 +385,19 @@ export default function PerformancePage() {
     [selectedPeriod]
   );
 
+  // Memoized Y-axis formatter
+  const yAxisFormatter = useCallback(
+    (value: number) => `$${(value / 1000).toFixed(0)}k`,
+    []
+  );
+
   // Handle error state
   if (error) {
     return <ErrorState error={error} />;
   }
 
   // Handle empty portfolio
-  const hasData = !totalValue.isZero() || historicalData.length > 0;
+  const hasData = historicalData.length > 0 || !totalValue.isZero();
   if (!loading && !hasData) {
     return <EmptyState />;
   }
@@ -505,6 +511,7 @@ export default function PerformancePage() {
                     size="sm"
                     onClick={() => setSelectedPeriod(period)}
                     className="h-8 px-3"
+                    aria-pressed={selectedPeriod === period}
                   >
                     {periodConfigs[period].label}
                   </Button>
@@ -544,7 +551,7 @@ export default function PerformancePage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
                     data={chartData}
-                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                    margin={{ top: 10, right: 30, left: 10, bottom: 0 }}
                   >
                     <defs>
                       <linearGradient
@@ -592,9 +599,7 @@ export default function PerformancePage() {
                       tick={{ fontSize: 12 }}
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value) =>
-                        `$${(value / 1000).toFixed(0)}k`
-                      }
+                      tickFormatter={yAxisFormatter}
                       domain={['dataMin - 1000', 'dataMax + 1000']}
                     />
 

@@ -231,6 +231,11 @@ export function calculateDividendYield(
 // Advanced Performance Calculations (User Story 6)
 // =============================================================================
 
+// Constants for risk calculations
+const MIN_SHARPE_RATIO_DATA_POINTS = 30;
+const DEFAULT_RISK_FREE_RATE = 0.04; // 4% annual risk-free rate
+const TRADING_DAYS_PER_YEAR = 252;
+
 /**
  * Calculate Compound Annual Growth Rate (CAGR).
  *
@@ -315,10 +320,10 @@ export function calculateMaxDrawdown(
  */
 export function calculateSharpeRatio(
   returns: number[],
-  riskFreeRate: number = 0.04
+  riskFreeRate: number = DEFAULT_RISK_FREE_RATE
 ): number {
-  // Require minimum 30 data points for meaningful calculation
-  if (returns.length < 30) {
+  // Require minimum data points for meaningful calculation
+  if (returns.length < MIN_SHARPE_RATIO_DATA_POINTS) {
     return 0;
   }
 
@@ -339,11 +344,11 @@ export function calculateSharpeRatio(
     return 0;
   }
 
-  // Daily risk-free rate (assuming 252 trading days)
-  const dailyRiskFreeRate = riskFreeRate / 252;
+  // Daily risk-free rate
+  const dailyRiskFreeRate = riskFreeRate / TRADING_DAYS_PER_YEAR;
 
   // Annualized Sharpe ratio
-  return ((avgReturn - dailyRiskFreeRate) / stdDev) * Math.sqrt(252);
+  return ((avgReturn - dailyRiskFreeRate) / stdDev) * Math.sqrt(TRADING_DAYS_PER_YEAR);
 }
 
 /**

@@ -79,7 +79,7 @@ export function usePerformanceData(): PerformancePageData {
    * Calculate advanced metrics from historical data.
    */
   const calculateMetrics = useCallback(
-    async (portfolioId: string) => {
+    async (portfolioId: string, signal?: AbortSignal) => {
       try {
         setLoading(true);
         setError(null);
@@ -87,6 +87,11 @@ export function usePerformanceData(): PerformancePageData {
         // Get historical values for the selected period
         const timePeriod = mapToTimePeriod(selectedPeriod);
         const history = await getHistoricalValues(portfolioId, timePeriod);
+
+        // Check if operation was aborted
+        if (signal?.aborted) {
+          return;
+        }
 
         if (history.length === 0) {
           setHistoricalData([]);
@@ -163,10 +168,12 @@ export function usePerformanceData(): PerformancePageData {
     [selectedPeriod]
   );
 
-  // Recalculate when portfolio or period changes
+  // Recalculate when portfolio, period, or live prices change
   useEffect(() => {
+    const abortController = new AbortController();
+
     if (currentPortfolio?.id) {
-      calculateMetrics(currentPortfolio.id);
+      calculateMetrics(currentPortfolio.id, abortController.signal);
     } else {
       setLoading(false);
       setHistoricalData([]);
@@ -178,17 +185,11 @@ export function usePerformanceData(): PerformancePageData {
         maxDrawdown: 0,
       });
     }
-  }, [currentPortfolio?.id, selectedPeriod, calculateMetrics]);
 
-  // Also recalculate when live prices update significantly (total value changes)
-  useEffect(() => {
-    if (currentPortfolio?.id && liveMetrics.hasLivePrices) {
-      // Only recalculate if there's a meaningful price update
-      // This updates the "current" endpoint of the historical chart
-      calculateMetrics(currentPortfolio.id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [liveMetrics.totalValue.toString()]);
+    return () => {
+      abortController.abort();
+    };
+  }, [currentPortfolio?.id, selectedPeriod, liveMetrics.totalValue.toString(), calculateMetrics]);
 
   // Combine live metrics with calculated metrics
   const result = useMemo(
