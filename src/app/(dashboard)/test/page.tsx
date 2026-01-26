@@ -5,8 +5,18 @@ import { Decimal } from 'decimal.js';
 import { AddTransactionDialog } from '@/components/forms/add-transaction';
 import { CreatePortfolioDialog } from '@/components/forms/create-portfolio';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { db } from '@/lib/db/schema';
-import { Loader2, CheckCircle, Trash2 } from 'lucide-react';
+import { Loader2, CheckCircle, Trash2, TrendingUp } from 'lucide-react';
 import {
   generatePortfolioId,
   generateTransactionId,
@@ -14,6 +24,10 @@ import {
   createAssetId,
   type PortfolioId,
 } from '@/types/storage';
+import {
+  generateHistoricalPortfolio,
+  type HistoricalPortfolioOptions,
+} from '@/lib/test-utils/historical-data-generator';
 
 async function seedMockData() {
   // Create a demo portfolio
@@ -164,6 +178,18 @@ export default function TestPage() {
   const [seeded, setSeeded] = useState(false);
   const [clearing, setClearing] = useState(false);
 
+  // Historical data generation state
+  const [generating, setGenerating] = useState(false);
+  const [generated, setGenerated] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressMessage, setProgressMessage] = useState('');
+  const [scenario, setScenario] = useState<
+    'balanced' | 'aggressive' | 'conservative'
+  >('balanced');
+  const [years, setYears] = useState('5');
+  const [includeInternational, setIncludeInternational] = useState(true);
+  const [includeDividends, setIncludeDividends] = useState(true);
+
   const handleSeed = async () => {
     setSeeding(true);
     try {
@@ -197,6 +223,51 @@ export default function TestPage() {
       alert('Failed to clear data: ' + (error as Error).message);
     } finally {
       setClearing(false);
+    }
+  };
+
+  const handleGenerateHistorical = async () => {
+    if (
+      !confirm(
+        `Generate ${years}-year historical portfolio with ${scenario} strategy? This will take 30-60 seconds.`
+      )
+    )
+      return;
+
+    setGenerating(true);
+    setProgress(0);
+    setProgressMessage('Starting...');
+
+    try {
+      // Clear existing data first
+      localStorage.removeItem('portfolio-store');
+      localStorage.removeItem('dashboard-store');
+      await clearAllData();
+
+      const options: HistoricalPortfolioOptions = {
+        name: `Historical ${scenario.charAt(0).toUpperCase() + scenario.slice(1)} Portfolio`,
+        yearsBack: parseInt(years),
+        scenario,
+        includeInternational,
+        includeDividends,
+        totalInitialInvestment: 100000,
+        onProgress: (prog, msg) => {
+          setProgress(prog);
+          setProgressMessage(msg);
+        },
+      };
+
+      await generateHistoricalPortfolio(options);
+
+      setGenerated(true);
+      setTimeout(() => {
+        window.location.replace('/');
+      }, 1000);
+    } catch (error) {
+      console.error('Failed to generate historical data:', error);
+      alert('Failed to generate historical data: ' + (error as Error).message);
+      setGenerating(false);
+      setProgress(0);
     }
   };
 
@@ -240,6 +311,149 @@ export default function TestPage() {
               )}
               Clear All Data
             </Button>
+          </div>
+        </div>
+
+        {/* Historical Data Generator */}
+        <div className="rounded-lg border border-primary/50 bg-primary/5 p-4">
+          <div className="mb-2 flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">Historical Data Generator</h2>
+          </div>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Generate realistic multi-year portfolio data with daily snapshots
+            for testing performance calculations. This will produce proper
+            annual returns, drawdowns, and Sharpe ratios.
+          </p>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="scenario">Investment Strategy</Label>
+                <Select
+                  value={scenario}
+                  onValueChange={(v) =>
+                    setScenario(v as 'balanced' | 'aggressive' | 'conservative')
+                  }
+                  disabled={generating}
+                >
+                  <SelectTrigger id="scenario">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="balanced">
+                      Balanced (40% Stocks / 30% Bonds / 20% Intl / 10% REIT)
+                    </SelectItem>
+                    <SelectItem value="aggressive">
+                      Aggressive (Tech-heavy with 10% Crypto)
+                    </SelectItem>
+                    <SelectItem value="conservative">
+                      Conservative (50% Bonds / 30% Stocks / 20% Other)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="years">Time Range</Label>
+                <Select
+                  value={years}
+                  onValueChange={setYears}
+                  disabled={generating}
+                >
+                  <SelectTrigger id="years">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3">3 Years</SelectItem>
+                    <SelectItem value="5">5 Years (Recommended)</SelectItem>
+                    <SelectItem value="10">10 Years</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Options</Label>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="international"
+                    checked={includeInternational}
+                    onCheckedChange={(checked) =>
+                      setIncludeInternational(checked as boolean)
+                    }
+                    disabled={generating}
+                  />
+                  <label
+                    htmlFor="international"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Include International Assets
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="dividends"
+                    checked={includeDividends}
+                    onCheckedChange={(checked) =>
+                      setIncludeDividends(checked as boolean)
+                    }
+                    disabled={generating}
+                  />
+                  <label
+                    htmlFor="dividends"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Include Dividend Payments
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {generating && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {progressMessage}
+                  </span>
+                  <span className="font-medium">{Math.round(progress)}%</span>
+                </div>
+                <Progress value={progress} className="h-2" />
+              </div>
+            )}
+
+            <Button
+              onClick={handleGenerateHistorical}
+              disabled={generating || generated}
+              className="w-full"
+              size="lg"
+            >
+              {generating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {progressMessage || 'Generating...'}
+                </>
+              ) : generated ? (
+                <>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Done! Redirecting...
+                </>
+              ) : (
+                <>
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  Generate Historical Portfolio
+                </>
+              )}
+            </Button>
+
+            {!generating && (
+              <p className="text-xs text-muted-foreground">
+                This will generate {years} years of daily data (~
+                {parseInt(years) * 365} snapshots) with realistic market
+                movements. Generation takes approximately 30-60 seconds.
+              </p>
+            )}
           </div>
         </div>
 
