@@ -25,7 +25,11 @@ describe('PricePollingService', () => {
     service = createPricePollingService(mockCallbacks);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    if (service.isPolling) {
+      await service.stop();
+    }
+    vi.clearAllTimers();
     vi.useRealTimers();
   });
 
@@ -97,12 +101,10 @@ describe('PricePollingService', () => {
 
       // After 60 seconds
       vi.advanceTimersByTime(60000);
-      await vi.runAllTimersAsync();
       expect(mockCallbacks.onRefresh).toHaveBeenCalledTimes(1);
 
       // After another 60 seconds
       vi.advanceTimersByTime(60000);
-      await vi.runAllTimersAsync();
       expect(mockCallbacks.onRefresh).toHaveBeenCalledTimes(2);
     });
 
@@ -128,7 +130,6 @@ describe('PricePollingService', () => {
       });
 
       vi.advanceTimersByTime(15000);
-      await vi.runAllTimersAsync();
       expect(mockCallbacks.onRefresh).toHaveBeenCalledTimes(1);
 
       await service.stop();
@@ -141,7 +142,6 @@ describe('PricePollingService', () => {
       });
 
       vi.advanceTimersByTime(30000);
-      await vi.runAllTimersAsync();
       expect(mockCallbacks.onRefresh).toHaveBeenCalledTimes(1);
     });
   });
@@ -174,7 +174,6 @@ describe('PricePollingService', () => {
 
       // Verify polling is working
       vi.advanceTimersByTime(60000);
-      await vi.runAllTimersAsync();
       expect(mockCallbacks.onRefresh).toHaveBeenCalled();
 
       vi.clearAllMocks();
@@ -182,7 +181,6 @@ describe('PricePollingService', () => {
       // Stop and verify polling stops
       await service.stop();
       vi.advanceTimersByTime(60000);
-      await vi.runAllTimersAsync();
       expect(mockCallbacks.onRefresh).not.toHaveBeenCalled();
     });
 
@@ -219,7 +217,6 @@ describe('PricePollingService', () => {
 
       // Restore connection
       service.setOnline(true);
-      await vi.runAllTimersAsync();
 
       expect(mockCallbacks.onRefresh).toHaveBeenCalledTimes(1);
     });
@@ -229,7 +226,6 @@ describe('PricePollingService', () => {
       vi.clearAllMocks();
 
       service.setOnline(false);
-      await vi.runAllTimersAsync();
 
       expect(mockCallbacks.onRefresh).not.toHaveBeenCalled();
     });
@@ -240,7 +236,7 @@ describe('PricePollingService', () => {
 
       service.setOnline(false);
       service.setOnline(true);
-      await vi.runAllTimersAsync();
+      await vi.runOnlyPendingTimersAsync();
 
       expect(consoleSpy).toHaveBeenCalled();
       consoleSpy.mockRestore();
@@ -291,7 +287,6 @@ describe('PricePollingService', () => {
 
       // Verify standard interval
       vi.advanceTimersByTime(60000);
-      await vi.runAllTimersAsync();
       expect(mockCallbacks.onRefresh).toHaveBeenCalledTimes(1);
 
       vi.clearAllMocks();
@@ -303,7 +298,6 @@ describe('PricePollingService', () => {
       });
 
       vi.advanceTimersByTime(30000);
-      await vi.runAllTimersAsync();
       expect(mockCallbacks.onRefresh).toHaveBeenCalledTimes(1);
     });
   });
@@ -324,7 +318,6 @@ describe('PricePollingService', () => {
       });
 
       vi.advanceTimersByTime(60000);
-      await vi.runAllTimersAsync();
 
       // Should not refresh when hidden
       expect(mockCallbacks.onRefresh).not.toHaveBeenCalled();
@@ -344,7 +337,6 @@ describe('PricePollingService', () => {
       });
 
       vi.advanceTimersByTime(60000);
-      await vi.runAllTimersAsync();
 
       expect(mockCallbacks.onRefresh).toHaveBeenCalled();
     });
@@ -363,7 +355,6 @@ describe('PricePollingService', () => {
       });
 
       vi.advanceTimersByTime(60000);
-      await vi.runAllTimersAsync();
 
       expect(mockCallbacks.onRefresh).toHaveBeenCalled();
     });
@@ -378,12 +369,15 @@ describe('PricePollingService', () => {
     };
 
     it('should not poll when offline', async () => {
-      service.setOnline(false);
-
       await service.start(preferences);
 
+      // Set offline AFTER starting (setupNetworkHandlers resets online state)
+      service.setOnline(false);
+
+      // Reset only the onRefresh call count after setting offline
+      mockCallbacks.onRefresh.mockClear();
+
       vi.advanceTimersByTime(60000);
-      await vi.runAllTimersAsync();
 
       // Should not refresh when offline
       expect(mockCallbacks.onRefresh).not.toHaveBeenCalled();
@@ -394,11 +388,9 @@ describe('PricePollingService', () => {
       service.setOnline(false);
 
       vi.advanceTimersByTime(60000);
-      await vi.runAllTimersAsync();
       expect(mockCallbacks.onRefresh).toHaveBeenCalledTimes(0);
 
       service.setOnline(true);
-      await vi.runAllTimersAsync();
 
       // Should refresh immediately when coming online
       expect(mockCallbacks.onRefresh).toHaveBeenCalled();
@@ -418,7 +410,7 @@ describe('PricePollingService', () => {
       });
 
       vi.advanceTimersByTime(60000);
-      await vi.runAllTimersAsync();
+      await vi.runOnlyPendingTimersAsync();
 
       expect(consoleSpy).toHaveBeenCalledWith('Polling error:', expect.any(Error));
       expect(service.isPolling).toBe(true); // Should continue polling
