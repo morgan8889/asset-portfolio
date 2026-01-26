@@ -69,8 +69,10 @@ export const BenchmarkSelector = memo(function BenchmarkSelector({
         onClick={onToggle}
         disabled={isLoading}
         className="gap-2"
+        aria-label={isEnabled ? 'Hide benchmark comparison' : 'Show benchmark comparison'}
+        aria-pressed={isEnabled}
       >
-        <TrendingUp className="h-4 w-4" />
+        <TrendingUp className="h-4 w-4" aria-hidden="true" />
         <span className="hidden sm:inline">Compare</span>
       </Button>
 
@@ -83,6 +85,7 @@ export const BenchmarkSelector = memo(function BenchmarkSelector({
               size="sm"
               disabled={isLoading}
               className="gap-2 min-w-[120px]"
+              aria-label={`Select benchmark index, currently ${selectedInfo?.name || selectedBenchmark}`}
             >
               <span className="truncate">
                 {selectedInfo?.name || selectedBenchmark}
