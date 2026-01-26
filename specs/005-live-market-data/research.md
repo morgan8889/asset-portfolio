@@ -237,3 +237,180 @@ const getExchange = (symbol: string): string => {
 | Yahoo Finance API changes | Low | High | Abstract price fetching; easy to swap providers |
 | Timezone edge cases (DST) | Medium | Low | Use date-fns-tz for robust handling |
 | Browser tab throttling | Medium | Low | Visibility API pauses polling; resume on focus |
+
+---
+
+## Performance Page Integration (Added 2026-01-25)
+
+### 7. Performance Metrics Calculations
+
+**Question**: How to calculate CAGR, Max Drawdown, and Sharpe Ratio?
+
+**Decision**: Implement dedicated functions in `metrics-service.ts` using decimal.js
+
+**Rationale**:
+- CAGR (Compound Annual Growth Rate) is standard for annualized returns
+- Max Drawdown measures risk as largest peak-to-trough decline
+- Sharpe Ratio provides risk-adjusted return metric
+- All calculations must use decimal.js per constitution requirement
+
+**Implementation**:
+
+```typescript
+// CAGR: Annualized Return
+// Formula: ((endValue / startValue) ^ (1 / years)) - 1
+export function calculateAnnualizedReturn(
+  startValue: Decimal,
+  endValue: Decimal,
+  daysHeld: number
+): number {
+  if (daysHeld <= 0 || startValue.isZero()) return 0;
+  const years = daysHeld / 365;
+  const ratio = endValue.div(startValue).toNumber();
+  return (Math.pow(ratio, 1 / years) - 1) * 100;
+}
+
+// Max Drawdown: Largest peak-to-trough decline
+export function calculateMaxDrawdown(
+  historicalValues: { date: Date; value: Decimal }[]
+): number {
+  let maxDrawdown = 0;
+  let peak = new Decimal(0);
+
+  for (const point of historicalValues) {
+    if (point.value.gt(peak)) peak = point.value;
+    if (peak.gt(0)) {
+      const drawdown = peak.minus(point.value).div(peak).toNumber();
+      if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+    }
+  }
+  return maxDrawdown * 100; // As percentage
+}
+
+// Sharpe Ratio: Risk-adjusted return
+// Formula: (avgReturn - riskFreeRate) / stdDev
+export function calculateSharpeRatio(
+  returns: number[],
+  riskFreeRate: number = 0.04 // 4% annual
+): number {
+  if (returns.length < 30) return 0; // Insufficient data per spec
+
+  const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+  const variance = returns.reduce((sum, r) =>
+    sum + Math.pow(r - avgReturn, 2), 0) / returns.length;
+  const stdDev = Math.sqrt(variance);
+
+  if (stdDev === 0) return 0;
+  // Annualize: multiply by sqrt(252) for daily returns
+  return ((avgReturn - riskFreeRate / 252) / stdDev) * Math.sqrt(252);
+}
+```
+
+**Alternatives Considered**:
+1. **External financial library**: Adds dependency; calculations are straightforward
+2. **Server-side calculation**: Violates privacy-first architecture
+
+---
+
+### 8. Historical Data Resolution
+
+**Question**: How to reconstruct portfolio value history for charts and drawdown?
+
+**Decision**: Use existing `getHistoricalValues()` from `historical-value.ts`
+
+**Rationale**:
+- Function already reconstructs portfolio value at any historical date
+- Calculates holdings from transaction history
+- Applies historical prices from cache
+- Well-tested and used by existing dashboard widgets
+
+**Pattern**:
+```typescript
+const historicalData = await getHistoricalValues(portfolioId, 'ALL');
+// Returns: { date: Date; value: Decimal }[]
+
+// Use for Max Drawdown calculation
+const maxDrawdown = calculateMaxDrawdown(historicalData);
+
+// Calculate daily returns for Sharpe Ratio
+const dailyReturns = calculateDailyReturns(historicalData);
+const sharpeRatio = calculateSharpeRatio(dailyReturns);
+```
+
+---
+
+### 9. Performance Chart Implementation
+
+**Question**: How to implement the historical performance chart?
+
+**Decision**: Create `PerformanceChart` component reusing patterns from `GrowthChartWidget`
+
+**Rationale**:
+- Existing `GrowthChartWidget` uses Recharts and works well
+- Same data source (`getHistoricalValues`)
+- Consistent styling and user experience
+- Time period selector already exists in dashboard
+
+**Implementation Notes**:
+- Reuse `ResponsiveContainer` + `LineChart` pattern
+- Add time period tabs (1M, 3M, YTD, 1Y, ALL)
+- Show percentage change on y-axis
+- Include tooltip with date and value
+
+---
+
+### 10. usePerformanceData Hook Design
+
+**Question**: How to compose live metrics with performance calculations?
+
+**Decision**: Create `usePerformanceData` hook that combines `useLivePriceMetrics` with async calculations
+
+**Rationale**:
+- `useLivePriceMetrics` already provides totalValue, totalGain, topPerformers
+- Historical calculations (CAGR, Sharpe, Drawdown) need async data fetching
+- Separate hook keeps Performance page clean
+- Follows existing hook composition patterns
+
+**Pattern**:
+```typescript
+export function usePerformanceData() {
+  const { holdings, assets, currentPortfolio } = usePortfolioStore();
+  const liveMetrics = useLivePriceMetrics(holdings, assets);
+
+  const [advancedMetrics, setAdvancedMetrics] = useState({
+    annualizedReturn: 0,
+    sharpeRatio: 0,
+    maxDrawdown: 0,
+    loading: true,
+  });
+
+  useEffect(() => {
+    if (!currentPortfolio) return;
+
+    async function calculate() {
+      const history = await getHistoricalValues(currentPortfolio.id, 'ALL');
+      // Calculate metrics from history...
+      setAdvancedMetrics({...});
+    }
+    calculate();
+  }, [currentPortfolio?.id, liveMetrics.totalValue]);
+
+  return {
+    ...liveMetrics,
+    ...advancedMetrics,
+  };
+}
+```
+
+---
+
+## Summary of Performance Page Decisions
+
+| Topic | Decision | Key Rationale |
+|-------|----------|---------------|
+| CAGR Calculation | Standard formula with decimal.js | Financial precision requirement |
+| Max Drawdown | Peak-to-trough algorithm | Industry-standard risk metric |
+| Sharpe Ratio | 4% risk-free rate, min 30 days | Simplified but accurate |
+| Historical Data | Reuse getHistoricalValues | Already implemented and tested |
+| Chart Component | Follow GrowthChartWidget pattern | Consistent UX |
+| Data Hook | Compose useLivePriceMetrics + async | Clean separation of concerns |
