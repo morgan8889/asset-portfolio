@@ -434,12 +434,22 @@ export const priceQueries = {
 
 // Settings queries
 export const settingsQueries = {
-  async get(key: string): Promise<any> {
+  /**
+   * Get a setting value by key with type safety.
+   * @param key - The setting key
+   * @returns The setting value or undefined if not found
+   */
+  async get<T = unknown>(key: string): Promise<T | undefined> {
     const setting = await db.userSettings.where('key').equals(key).first();
-    return setting?.value;
+    return setting?.value as T | undefined;
   },
 
-  async set(key: string, value: any): Promise<void> {
+  /**
+   * Set a setting value by key.
+   * @param key - The setting key
+   * @param value - The value to store
+   */
+  async set<T = unknown>(key: string, value: T): Promise<void> {
     const existing = await db.userSettings.where('key').equals(key).first();
 
     if (existing) {
@@ -456,18 +466,26 @@ export const settingsQueries = {
     }
   },
 
+  /**
+   * Delete a setting by key.
+   * @param key - The setting key to delete
+   */
   async delete(key: string): Promise<void> {
     await db.userSettings.where('key').equals(key).delete();
   },
 
-  async getAll(): Promise<Record<string, any>> {
+  /**
+   * Get all settings as a key-value record.
+   * @returns All settings as a record
+   */
+  async getAll(): Promise<Record<string, unknown>> {
     const settings = await db.userSettings.toArray();
     return settings.reduce(
       (acc, setting) => {
         acc[setting.key] = setting.value;
         return acc;
       },
-      {} as Record<string, any>
+      {} as Record<string, unknown>
     );
   },
 };

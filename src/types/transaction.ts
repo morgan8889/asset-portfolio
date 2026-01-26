@@ -88,6 +88,12 @@ export interface ImportError {
   data: Record<string, any>;
 }
 
+/**
+ * Transaction import error (alias for ImportError with stricter typing)
+ * Used by CSV importer and other import services.
+ */
+export type TransactionImportError = ImportError;
+
 export interface CSVImportMapping {
   date: string;
   symbol: string;
