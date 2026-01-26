@@ -21,7 +21,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Settings, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
 import { useDashboardStore } from '@/lib/stores';
-import { WidgetId, WIDGET_DEFINITIONS, GridColumns, WidgetSpan } from '@/types/dashboard';
+import { WidgetId, WIDGET_DEFINITIONS, GridColumns, WidgetSpan, WidgetRowSpan } from '@/types/dashboard';
 import { cn } from '@/lib/utils';
 import { LayoutModeSelector } from './layout-mode-selector';
 import {
@@ -46,6 +46,8 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     setLayoutMode,
     setGridColumns,
     setWidgetSpan,
+    setDensePacking,
+    setWidgetRowSpan,
     resetToDefault,
   } = useDashboardStore();
 
@@ -122,6 +124,20 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     [setWidgetSpan]
   );
 
+  const handleDensePackingChange = useCallback(
+    async (enabled: boolean) => {
+      await setDensePacking(enabled);
+    },
+    [setDensePacking]
+  );
+
+  const handleWidgetRowSpanChange = useCallback(
+    async (widgetId: WidgetId, rowSpan: string) => {
+      await setWidgetRowSpan(widgetId, Number(rowSpan) as WidgetRowSpan);
+    },
+    [setWidgetRowSpan]
+  );
+
   if (!config) {
     return null;
   }
@@ -177,6 +193,25 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
               </Select>
             </div>
           )}
+
+          {config.layoutMode === 'grid' && (
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="dense-packing" className="text-sm font-medium">
+                  Dense Packing
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Fill gaps with smaller widgets
+                </p>
+              </div>
+              <Switch
+                id="dense-packing"
+                checked={config.densePacking}
+                onCheckedChange={handleDensePackingChange}
+                aria-label="Toggle dense packing"
+              />
+            </div>
+          )}
         </div>
 
         {/* Widget Settings Section */}
@@ -217,7 +252,7 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
                 </div>
 
                 <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-                  {/* Widget span selector - only shown in grid mode */}
+                  {/* Widget column span selector - only shown in grid mode */}
                   {config.layoutMode === 'grid' && (
                     <Select
                       value={String(config.widgetSpans?.[widgetId] ?? 1)}
@@ -233,6 +268,26 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
                       <SelectContent>
                         <SelectItem value="1">1x</SelectItem>
                         <SelectItem value="2">2x</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {/* Widget row span selector - only shown when dense packing is enabled */}
+                  {config.layoutMode === 'grid' && config.densePacking && (
+                    <Select
+                      value={String(config.widgetRowSpans?.[widgetId] ?? 1)}
+                      onValueChange={(value) => handleWidgetRowSpanChange(widgetId, value)}
+                      disabled={!isVisible}
+                    >
+                      <SelectTrigger
+                        className="w-16 h-8"
+                        aria-label={`Row span for ${definition.displayName}`}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1h</SelectItem>
+                        <SelectItem value="2">2h</SelectItem>
+                        <SelectItem value="3">3h</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
