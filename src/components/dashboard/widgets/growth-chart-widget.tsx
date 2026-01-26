@@ -23,7 +23,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, LineChart } from 'lucide-react';
 import { formatCurrency, cn } from '@/lib/utils';
-import { TimePeriod, TIME_PERIOD_CONFIGS, HistoricalValuePoint } from '@/types/dashboard';
+import {
+  TimePeriod,
+  TIME_PERIOD_CONFIGS,
+  HistoricalValuePoint,
+} from '@/types/dashboard';
 import { getHistoricalValues } from '@/lib/services/historical-value';
 import { useDashboardStore, usePortfolioStore } from '@/lib/stores';
 
@@ -39,7 +43,13 @@ interface GrowthChartWidgetProps {
   isLoading?: boolean;
 }
 
-const AVAILABLE_PERIODS: TimePeriod[] = ['WEEK', 'MONTH', 'QUARTER', 'YEAR', 'ALL'];
+const AVAILABLE_PERIODS: TimePeriod[] = [
+  'WEEK',
+  'MONTH',
+  'QUARTER',
+  'YEAR',
+  'ALL',
+];
 
 function GrowthChartSkeleton() {
   return (
@@ -52,13 +62,16 @@ function GrowthChartSkeleton() {
           </CardTitle>
           <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="h-8 w-10 bg-muted animate-pulse rounded" />
+              <div
+                key={i}
+                className="h-8 w-10 animate-pulse rounded bg-muted"
+              />
             ))}
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] bg-muted animate-pulse rounded" />
+        <div className="h-[300px] animate-pulse rounded bg-muted" />
       </CardContent>
     </Card>
   );
@@ -74,10 +87,10 @@ function GrowthChartEmpty() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col items-center justify-center h-[300px] text-center">
-          <LineChart className="h-12 w-12 text-muted-foreground opacity-50 mb-4" />
+        <div className="flex h-[300px] flex-col items-center justify-center text-center">
+          <LineChart className="mb-4 h-12 w-12 text-muted-foreground opacity-50" />
           <p className="text-muted-foreground">No historical data available</p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="mt-1 text-sm text-muted-foreground">
             Add transactions to see portfolio growth over time
           </p>
         </div>
@@ -90,7 +103,11 @@ interface ChartTooltipProps extends TooltipProps<number, string> {
   period: TimePeriod;
 }
 
-const ChartTooltip = memo(function ChartTooltip({ active, payload, period }: ChartTooltipProps) {
+const ChartTooltip = memo(function ChartTooltip({
+  active,
+  payload,
+  period,
+}: ChartTooltipProps) {
   if (active && payload && payload[0]) {
     const data = payload[0].payload as ChartDataPoint;
     const value = payload[0].value ?? 0;
@@ -99,8 +116,8 @@ const ChartTooltip = memo(function ChartTooltip({ active, payload, period }: Cha
     const showYear = period === 'ALL' || period === 'YEAR';
 
     return (
-      <div className="bg-background border rounded-lg shadow-lg p-3 min-w-[180px]">
-        <p className="text-sm text-muted-foreground mb-1">
+      <div className="min-w-[180px] rounded-lg border bg-background p-3 shadow-lg">
+        <p className="mb-1 text-sm text-muted-foreground">
           {date.toLocaleDateString('en-US', {
             weekday: 'short',
             month: 'short',
@@ -108,8 +125,13 @@ const ChartTooltip = memo(function ChartTooltip({ active, payload, period }: Cha
             year: showYear ? 'numeric' : undefined,
           })}
         </p>
-        <p className="text-lg font-bold mb-1">{formatCurrency(value)}</p>
-        <p className={cn('text-sm', data.change >= 0 ? 'text-green-600' : 'text-red-600')}>
+        <p className="mb-1 text-lg font-bold">{formatCurrency(value)}</p>
+        <p
+          className={cn(
+            'text-sm',
+            data.change >= 0 ? 'text-green-600' : 'text-red-600'
+          )}
+        >
           {data.change >= 0 ? '+' : ''}
           {formatCurrency(data.change)} change
         </p>
@@ -125,12 +147,21 @@ function formatXAxisLabel(tickItem: string, period: TimePeriod): string {
   switch (period) {
     case 'TODAY':
     case 'WEEK':
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      });
     case 'MONTH':
     case 'QUARTER':
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      });
     case 'YEAR':
-      return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        year: '2-digit',
+      });
     case 'ALL':
       return date.toLocaleDateString('en-US', { year: 'numeric' });
     default:
@@ -146,7 +177,9 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
   const { currentPortfolio } = usePortfolioStore();
   const effectivePortfolioId = portfolioId || currentPortfolio?.id;
 
-  const [period, setPeriod] = useState<TimePeriod>(config?.timePeriod || 'MONTH');
+  const [period, setPeriod] = useState<TimePeriod>(
+    config?.timePeriod || 'MONTH'
+  );
   const [data, setData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -166,17 +199,22 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
         // Check cancelled before starting async work
         if (cancelled) return;
 
-        const historicalData = await getHistoricalValues(effectivePortfolioId!, period);
+        const historicalData = await getHistoricalValues(
+          effectivePortfolioId!,
+          period
+        );
 
         // Check cancelled after each await to prevent state updates on unmounted component
         if (cancelled || abortController.signal.aborted) return;
 
-        const chartData: ChartDataPoint[] = historicalData.map((point: HistoricalValuePoint) => ({
-          date: point.date.toISOString(),
-          value: point.totalValue.toNumber(),
-          change: point.change.toNumber(),
-          timestamp: point.date.getTime(),
-        }));
+        const chartData: ChartDataPoint[] = historicalData.map(
+          (point: HistoricalValuePoint) => ({
+            date: point.date.toISOString(),
+            value: point.totalValue.toNumber(),
+            change: point.change.toNumber(),
+            timestamp: point.date.getTime(),
+          })
+        );
 
         if (!cancelled) {
           setData(chartData);
@@ -221,7 +259,9 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
   }, [data]);
 
   const renderTooltip = useCallback(
-    (props: TooltipProps<number, string>) => <ChartTooltip {...props} period={period} />,
+    (props: TooltipProps<number, string>) => (
+      <ChartTooltip {...props} period={period} />
+    ),
     [period]
   );
 
@@ -250,7 +290,9 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
               <div className="flex items-center gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">Current: </span>
-                  <span className="font-medium">{formatCurrency(chartStats.currentValue)}</span>
+                  <span className="font-medium">
+                    {formatCurrency(chartStats.currentValue)}
+                  </span>
                 </div>
                 <div className={cn('flex items-center gap-1', trendColor)}>
                   <TrendIcon className="h-4 w-4" />
@@ -300,7 +342,10 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
       <CardContent>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <AreaChart
+              data={data}
+              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            >
               <defs>
                 <linearGradient id="colorGrowth" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={chartColor} stopOpacity={0.3} />
@@ -308,7 +353,10 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
                 </linearGradient>
               </defs>
 
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted opacity-30" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                className="stroke-muted opacity-30"
+              />
 
               <XAxis
                 dataKey="date"
@@ -364,7 +412,7 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
           </ResponsiveContainer>
         </div>
 
-        <div className="mt-4 text-xs text-muted-foreground text-center">
+        <div className="mt-4 text-center text-xs text-muted-foreground">
           {TIME_PERIOD_CONFIGS[period].label} performance
         </div>
       </CardContent>

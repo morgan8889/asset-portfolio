@@ -29,7 +29,10 @@ import { usePortfolioStore } from '@/lib/stores';
 import { PortfolioType } from '@/types/portfolio';
 
 const portfolioSchema = z.object({
-  name: z.string().min(1, 'Portfolio name is required').max(50, 'Name too long'),
+  name: z
+    .string()
+    .min(1, 'Portfolio name is required')
+    .max(50, 'Name too long'),
   type: z.enum(['taxable', 'ira', '401k', 'roth'] as const),
   currency: z.string().default('USD'),
 });
@@ -41,7 +44,10 @@ interface CreatePortfolioDialogProps {
   variant?: 'default' | 'outline';
 }
 
-export function CreatePortfolioDialog({ children, variant = 'default' }: CreatePortfolioDialogProps) {
+export function CreatePortfolioDialog({
+  children,
+  variant = 'default',
+}: CreatePortfolioDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createPortfolio } = usePortfolioStore();
@@ -94,7 +100,7 @@ export function CreatePortfolioDialog({ children, variant = 'default' }: CreateP
       <DialogTrigger asChild>
         {children || (
           <Button variant={variant}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Create Portfolio
           </Button>
         )}
@@ -124,7 +130,9 @@ export function CreatePortfolioDialog({ children, variant = 'default' }: CreateP
             <div className="space-y-2">
               <Label htmlFor="type">Account Type</Label>
               <Select
-                onValueChange={(value: PortfolioType) => setValue('type', value)}
+                onValueChange={(value: PortfolioType) =>
+                  setValue('type', value)
+                }
                 value={portfolioType}
               >
                 <SelectTrigger>
@@ -160,7 +168,9 @@ export function CreatePortfolioDialog({ children, variant = 'default' }: CreateP
                 </SelectContent>
               </Select>
               {errors.currency && (
-                <p className="text-sm text-red-600">{errors.currency.message}</p>
+                <p className="text-sm text-red-600">
+                  {errors.currency.message}
+                </p>
               )}
             </div>
           </div>

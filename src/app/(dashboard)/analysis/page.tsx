@@ -20,7 +20,7 @@ export default function AnalysisPage() {
             <CardTitle>Risk Analysis</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center text-muted-foreground py-8">
+            <div className="py-8 text-center text-muted-foreground">
               Risk metrics will be displayed here
             </div>
           </CardContent>
@@ -31,7 +31,7 @@ export default function AnalysisPage() {
             <CardTitle>Correlation Matrix</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center text-muted-foreground py-8">
+            <div className="py-8 text-center text-muted-foreground">
               Asset correlation analysis will be displayed here
             </div>
           </CardContent>
@@ -43,7 +43,7 @@ export default function AnalysisPage() {
           <CardTitle>Performance Attribution</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-muted-foreground py-8">
+          <div className="py-8 text-center text-muted-foreground">
             Performance attribution analysis will be displayed here
           </div>
         </CardContent>

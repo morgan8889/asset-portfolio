@@ -18,7 +18,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
-import type { ParsedRow, ColumnMapping, TransactionField } from '@/types/csv-import';
+import type {
+  ParsedRow,
+  ColumnMapping,
+  TransactionField,
+} from '@/types/csv-import';
 
 interface ImportPreviewTableProps {
   rows: ParsedRow[];
@@ -51,7 +55,15 @@ export function ImportPreviewTable({
     return mappings
       .filter((m) => m.transactionField !== null)
       .sort((a, b) => {
-        const order: TransactionField[] = ['date', 'symbol', 'quantity', 'price', 'type', 'fees', 'notes'];
+        const order: TransactionField[] = [
+          'date',
+          'symbol',
+          'quantity',
+          'price',
+          'type',
+          'fees',
+          'notes',
+        ];
         const aIndex = order.indexOf(a.transactionField!);
         const bIndex = order.indexOf(b.transactionField!);
         return aIndex - bIndex;
@@ -78,12 +90,24 @@ export function ImportPreviewTable({
 
   const getConfidenceBadge = (confidence: number) => {
     if (confidence >= 0.9) {
-      return <Badge variant="default" className="ml-2 text-xs">Auto</Badge>;
+      return (
+        <Badge variant="default" className="ml-2 text-xs">
+          Auto
+        </Badge>
+      );
     }
     if (confidence >= 0.7) {
-      return <Badge variant="secondary" className="ml-2 text-xs">Likely</Badge>;
+      return (
+        <Badge variant="secondary" className="ml-2 text-xs">
+          Likely
+        </Badge>
+      );
     }
-    return <Badge variant="outline" className="ml-2 text-xs">Manual</Badge>;
+    return (
+      <Badge variant="outline" className="ml-2 text-xs">
+        Manual
+      </Badge>
+    );
   };
 
   const getRowStatusIcon = (row: ParsedRow) => {
@@ -98,7 +122,7 @@ export function ImportPreviewTable({
 
   if (displayRows.length === 0) {
     return (
-      <div className={cn('text-center py-8 text-muted-foreground', className)}>
+      <div className={cn('py-8 text-center text-muted-foreground', className)}>
         No data to preview
       </div>
     );
@@ -106,7 +130,7 @@ export function ImportPreviewTable({
 
   return (
     <div className={cn('w-full', className)}>
-      <div className="rounded-md border overflow-hidden">
+      <div className="overflow-hidden rounded-md border">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -121,7 +145,7 @@ export function ImportPreviewTable({
                       <span>{FIELD_LABELS[mapping.transactionField!]}</span>
                       {getConfidenceBadge(mapping.confidence)}
                     </div>
-                    <div className="text-xs text-muted-foreground font-normal mt-0.5">
+                    <div className="mt-0.5 text-xs font-normal text-muted-foreground">
                       {mapping.csvColumn}
                     </div>
                   </TableHead>
@@ -132,9 +156,7 @@ export function ImportPreviewTable({
               {displayRows.map((row, index) => (
                 <TableRow
                   key={index}
-                  className={cn(
-                    !row.isValid && 'bg-destructive/5'
-                  )}
+                  className={cn(!row.isValid && 'bg-destructive/5')}
                 >
                   {showValidationStatus && (
                     <TableCell className="text-center">
@@ -147,7 +169,9 @@ export function ImportPreviewTable({
                   {mappedFields.map((mapping) => {
                     const field = mapping.transactionField!;
                     const hasError = row.errors.some((e) => e.field === field);
-                    const errorMessage = row.errors.find((e) => e.field === field)?.message;
+                    const errorMessage = row.errors.find(
+                      (e) => e.field === field
+                    )?.message;
 
                     return (
                       <TableCell
@@ -157,7 +181,7 @@ export function ImportPreviewTable({
                       >
                         {formatCellValue(row, field)}
                         {hasError && (
-                          <AlertCircle className="inline-block h-3 w-3 ml-1" />
+                          <AlertCircle className="ml-1 inline-block h-3 w-3" />
                         )}
                       </TableCell>
                     );
@@ -170,7 +194,7 @@ export function ImportPreviewTable({
       </div>
 
       {rows.length > maxRows && (
-        <p className="text-sm text-muted-foreground text-center mt-3">
+        <p className="mt-3 text-center text-sm text-muted-foreground">
           Showing {maxRows} of {rows.length} rows
         </p>
       )}

@@ -105,9 +105,7 @@ describe('generateCsv', () => {
   });
 
   it('respects column order when specified', () => {
-    const data = [
-      { Symbol: 'AAPL', Date: '2025-01-15', Quantity: '10' },
-    ];
+    const data = [{ Symbol: 'AAPL', Date: '2025-01-15', Quantity: '10' }];
 
     const csv = generateCsv(data, ['Date', 'Symbol', 'Quantity']);
 
@@ -120,9 +118,7 @@ describe('generateCsv', () => {
   });
 
   it('handles values with special characters', () => {
-    const data = [
-      { Notes: 'Quote "test"', Symbol: 'AAPL' },
-    ];
+    const data = [{ Notes: 'Quote "test"', Symbol: 'AAPL' }];
 
     const csv = generateCsv(data);
     expect(csv).toContain('AAPL');
@@ -193,7 +189,9 @@ describe('validateCsvStructure', () => {
   it('validates valid CSV structure', () => {
     const result: CsvParserResult = {
       headers: ['Date', 'Symbol', 'Quantity', 'Price'],
-      rows: [{ Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150' }],
+      rows: [
+        { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150' },
+      ],
       delimiter: ',',
       rowCount: 1,
     };
@@ -259,6 +257,8 @@ describe('validateCsvStructure', () => {
     const validation = validateCsvStructure(result);
 
     expect(validation.isValid).toBe(false);
-    expect(validation.errors).toContain('CSV contains duplicate column headers');
+    expect(validation.errors).toContain(
+      'CSV contains duplicate column headers'
+    );
   });
 });

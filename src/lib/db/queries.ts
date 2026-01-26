@@ -51,12 +51,18 @@ export const portfolioQueries = {
   },
 
   async delete(id: string): Promise<void> {
-    await db.transaction('rw', db.portfolios, db.holdings, db.transactions, async () => {
-      // Delete related holdings and transactions first
-      await db.holdings.where('portfolioId').equals(id).delete();
-      await db.transactions.where('portfolioId').equals(id).delete();
-      await db.portfolios.delete(id);
-    });
+    await db.transaction(
+      'rw',
+      db.portfolios,
+      db.holdings,
+      db.transactions,
+      async () => {
+        // Delete related holdings and transactions first
+        await db.holdings.where('portfolioId').equals(id).delete();
+        await db.transactions.where('portfolioId').equals(id).delete();
+        await db.portfolios.delete(id);
+      }
+    );
   },
 };
 
@@ -114,10 +120,20 @@ export const assetQueries = {
   async delete(id: string): Promise<void> {
     await db.transaction(
       'rw',
-      [db.assets, db.holdings, db.transactions, db.priceHistory, db.priceSnapshots, db.dividendRecords],
+      [
+        db.assets,
+        db.holdings,
+        db.transactions,
+        db.priceHistory,
+        db.priceSnapshots,
+        db.dividendRecords,
+      ],
       async () => {
         // Check if asset is used in any holdings
-        const holdingsCount = await db.holdings.where('assetId').equals(id).count();
+        const holdingsCount = await db.holdings
+          .where('assetId')
+          .equals(id)
+          .count();
         if (holdingsCount > 0) {
           throw new Error('Cannot delete asset that is used in holdings');
         }
@@ -181,9 +197,10 @@ export const holdingQueries = {
       (field) => updates[field as keyof Holding] !== undefined
     );
 
-    const serializedUpdates = decimalFields.length > 0
-      ? serializeDecimalFields(updates, decimalFields as (keyof Holding)[])
-      : updates;
+    const serializedUpdates =
+      decimalFields.length > 0
+        ? serializeDecimalFields(updates, decimalFields as (keyof Holding)[])
+        : updates;
 
     await db.holdings.update(id, {
       ...serializedUpdates,
@@ -287,7 +304,9 @@ export const transactionQueries = {
       id: generateTransactionId(),
     }));
 
-    await db.transactions.bulkAdd(transactionsWithIds as unknown as TransactionStorage[]);
+    await db.transactions.bulkAdd(
+      transactionsWithIds as unknown as TransactionStorage[]
+    );
     return transactionsWithIds.map((t) => t.id);
   },
 
@@ -312,8 +331,12 @@ export const transactionQueries = {
     );
 
     const totalTransactions = convertedTransactions.length;
-    const totalBuys = convertedTransactions.filter((t) => t.type === 'buy').length;
-    const totalSells = convertedTransactions.filter((t) => t.type === 'sell').length;
+    const totalBuys = convertedTransactions.filter(
+      (t) => t.type === 'buy'
+    ).length;
+    const totalSells = convertedTransactions.filter(
+      (t) => t.type === 'sell'
+    ).length;
     const totalDividends = convertedTransactions.filter(
       (t) => t.type === 'dividend'
     ).length;
@@ -364,7 +387,9 @@ export const priceQueries = {
     } as unknown as import('@/types').PriceSnapshotStorage);
   },
 
-  async saveBatchSnapshots(snapshots: Omit<PriceSnapshot, 'id'>[]): Promise<void> {
+  async saveBatchSnapshots(
+    snapshots: Omit<PriceSnapshot, 'id'>[]
+  ): Promise<void> {
     const snapshotsWithIds = snapshots.map((s) => ({
       ...s,
       id: generatePriceSnapshotId(),
@@ -389,8 +414,9 @@ export const priceQueries = {
       .toArray();
 
     // Sort manually by timestamp
-    const sortedSnapshots = snapshots.sort((a, b) =>
-      new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    const sortedSnapshots = snapshots.sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
     return sortedSnapshots.map((s) => db.convertPriceSnapshotDecimals(s));

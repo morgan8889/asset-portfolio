@@ -290,10 +290,15 @@ export function validateExportRequest(format: string, data: any[]): boolean {
 export const csvFileSchema = z.object({
   name: z.string().regex(/\.csv$/i, 'File must have .csv extension'),
   size: z.number().max(10 * 1024 * 1024, 'File size exceeds 10MB limit'),
-  type: z.string().refine(
-    (type) => type === 'text/csv' || type === 'application/vnd.ms-excel' || type === '',
-    'Invalid file type'
-  ),
+  type: z
+    .string()
+    .refine(
+      (type) =>
+        type === 'text/csv' ||
+        type === 'application/vnd.ms-excel' ||
+        type === '',
+      'Invalid file type'
+    ),
 });
 
 // Column Mapping Validation
@@ -315,17 +320,16 @@ export const columnMappingSchema = z.object({
   isUserOverride: z.boolean(),
 });
 
-export const columnMappingsSchema = z.array(columnMappingSchema).refine(
-  (mappings) => {
+export const columnMappingsSchema = z
+  .array(columnMappingSchema)
+  .refine((mappings) => {
     const requiredFields = ['date', 'symbol', 'quantity', 'price'];
     const mappedFields = mappings
       .filter((m) => m.transactionField !== null)
       .map((m) => m.transactionField);
 
     return requiredFields.every((field) => mappedFields.includes(field as any));
-  },
-  'All required fields (date, symbol, quantity, price) must be mapped'
-);
+  }, 'All required fields (date, symbol, quantity, price) must be mapped');
 
 // Row Data Validation
 export const csvSymbolSchema = z
@@ -334,35 +338,29 @@ export const csvSymbolSchema = z
   .max(10, 'Symbol exceeds 10 character limit')
   .regex(/^[A-Za-z0-9.]+$/, 'Symbol contains invalid characters');
 
-export const csvQuantitySchema = z.string().refine(
-  (val) => {
-    const num = parseFloat(val);
-    return !isNaN(num) && num !== 0;
-  },
-  'Quantity must be a non-zero number'
-);
+export const csvQuantitySchema = z.string().refine((val) => {
+  const num = parseFloat(val);
+  return !isNaN(num) && num !== 0;
+}, 'Quantity must be a non-zero number');
 
-export const csvPriceSchema = z.string().refine(
-  (val) => {
-    const num = parseFloat(val);
-    return !isNaN(num) && num >= 0;
-  },
-  'Price must be a non-negative number'
-);
+export const csvPriceSchema = z.string().refine((val) => {
+  const num = parseFloat(val);
+  return !isNaN(num) && num >= 0;
+}, 'Price must be a non-negative number');
 
 export const csvFeesSchema = z
   .string()
   .optional()
-  .refine(
-    (val) => {
-      if (!val || val === '') return true;
-      const num = parseFloat(val);
-      return !isNaN(num) && num >= 0;
-    },
-    'Fees must be a non-negative number'
-  );
+  .refine((val) => {
+    if (!val || val === '') return true;
+    const num = parseFloat(val);
+    return !isNaN(num) && num >= 0;
+  }, 'Fees must be a non-negative number');
 
-export const csvNotesSchema = z.string().max(1000, 'Notes exceed 1000 character limit').optional();
+export const csvNotesSchema = z
+  .string()
+  .max(1000, 'Notes exceed 1000 character limit')
+  .optional();
 
 // Transaction type values (case-insensitive matching handled in code)
 export const csvTransactionTypeSchema = z
@@ -480,14 +478,7 @@ export const HEADER_KEYWORDS: Record<string, string[]> = {
     'tradedate',
     'settlementdate',
   ],
-  symbol: [
-    'symbol',
-    'ticker',
-    'asset',
-    'stock',
-    'security',
-    'instrument',
-  ],
+  symbol: ['symbol', 'ticker', 'asset', 'stock', 'security', 'instrument'],
   type: [
     'type',
     'action',
@@ -496,14 +487,7 @@ export const HEADER_KEYWORDS: Record<string, string[]> = {
     'side',
     'activity',
   ],
-  quantity: [
-    'quantity',
-    'qty',
-    'shares',
-    'units',
-    'amount',
-    'volume',
-  ],
+  quantity: ['quantity', 'qty', 'shares', 'units', 'amount', 'volume'],
   price: [
     'price',
     'cost',
@@ -513,20 +497,8 @@ export const HEADER_KEYWORDS: Record<string, string[]> = {
     'unitprice',
     'rate',
   ],
-  fees: [
-    'fees',
-    'fee',
-    'commission',
-    'commissions',
-  ],
-  notes: [
-    'notes',
-    'note',
-    'description',
-    'memo',
-    'comments',
-    'comment',
-  ],
+  fees: ['fees', 'fee', 'commission', 'commissions'],
+  notes: ['notes', 'note', 'description', 'memo', 'comments', 'comment'],
 };
 
 // ============================================================================

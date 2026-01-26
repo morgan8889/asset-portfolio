@@ -9,7 +9,11 @@
 
 import { Asset } from '@/types';
 import { assetQueries } from '@/lib/db/queries';
-import { isUKSymbol, getExchange, normalizeSymbol } from '@/lib/utils/market-utils';
+import {
+  isUKSymbol,
+  getExchange,
+  normalizeSymbol,
+} from '@/lib/utils/market-utils';
 import { Exchange } from '@/types/market';
 
 export interface SearchResult extends Asset {
@@ -138,7 +142,8 @@ export function getExchangeBadgeColor(exchange: Exchange): string {
     AMEX: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
     LSE: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
     AIM: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-    CRYPTO: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    CRYPTO:
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
     UNKNOWN: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
   };
 

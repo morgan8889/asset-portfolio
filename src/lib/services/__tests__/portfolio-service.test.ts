@@ -10,7 +10,11 @@ import {
   compareToBenchmark,
 } from '../portfolio-service';
 import { Portfolio, Holding, Asset, PortfolioSettings } from '@/types';
-import { generatePortfolioId, generateHoldingId, generateAssetId } from '@/types/storage';
+import {
+  generatePortfolioId,
+  generateHoldingId,
+  generateAssetId,
+} from '@/types/storage';
 
 const defaultSettings: PortfolioSettings = {
   rebalanceThreshold: 5,
@@ -286,7 +290,12 @@ describe('Portfolio Service', () => {
         ['a2', new Decimal(100)],
       ]);
 
-      const result = generateRebalancingPlan(portfolio, holdings, assets, currentPrices);
+      const result = generateRebalancingPlan(
+        portfolio,
+        holdings,
+        assets,
+        currentPrices
+      );
 
       expect(result.portfolioId).toBe(portfolio.id);
       expect(result.suggestions.length).toBeGreaterThan(0);
@@ -366,7 +375,12 @@ describe('Portfolio Service', () => {
         ['a2', new Decimal(100)],
       ]);
 
-      const result = generateRebalancingPlan(portfolio, holdings, assets, currentPrices);
+      const result = generateRebalancingPlan(
+        portfolio,
+        holdings,
+        assets,
+        currentPrices
+      );
 
       expect(result.suggestions).toHaveLength(0);
       expect(result.totalTrades).toBe(0);
@@ -427,7 +441,12 @@ describe('Portfolio Service', () => {
 
       const currentPrices = new Map([['a1', new Decimal(120)]]);
 
-      const result = generateRebalancingPlan(portfolio, holdings, assets, currentPrices);
+      const result = generateRebalancingPlan(
+        portfolio,
+        holdings,
+        assets,
+        currentPrices
+      );
 
       // Tax implications should be calculated if there are sell suggestions
       if (result.suggestions.some((s) => s.action === 'sell')) {
@@ -480,7 +499,12 @@ describe('Portfolio Service', () => {
 
       const currentPrices = new Map([['a1', new Decimal(1000)]]);
 
-      const result = generateRebalancingPlan(portfolio, holdings, assets, currentPrices);
+      const result = generateRebalancingPlan(
+        portfolio,
+        holdings,
+        assets,
+        currentPrices
+      );
 
       // Suggestions should filter out tiny adjustments (< 0.01 shares)
       for (const suggestion of result.suggestions) {

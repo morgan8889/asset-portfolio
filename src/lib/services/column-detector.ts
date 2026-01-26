@@ -40,7 +40,12 @@ export function detectColumnMappings(
 
   if (brokerageResult.format && brokerageResult.confidence >= 0.5) {
     // Use brokerage-specific mappings for higher accuracy
-    return createBrokerageMappings(headers, brokerageResult.format, brokerageResult.confidence, sampleRows);
+    return createBrokerageMappings(
+      headers,
+      brokerageResult.format,
+      brokerageResult.confidence,
+      sampleRows
+    );
   }
 
   // Fall back to generic detection
@@ -68,7 +73,12 @@ function buildDetectionResult(
     (field) => !mappedFields.has(field)
   );
 
-  return { mappings, unmappedColumns, missingRequiredFields, detectedBrokerage };
+  return {
+    mappings,
+    unmappedColumns,
+    missingRequiredFields,
+    detectedBrokerage,
+  };
 }
 
 /**
@@ -159,13 +169,12 @@ function createGenericMappings(
 
     // Pass 2: Data pattern validation (if sample rows provided)
     if (sampleRows && sampleRows.length > 0 && bestMatch) {
-      const dataConfidence = validateDataPattern(
-        header,
-        bestMatch,
-        sampleRows
-      );
+      const dataConfidence = validateDataPattern(header, bestMatch, sampleRows);
       // Adjust confidence based on data validation
-      confidence = Math.min(confidence, confidence * (0.5 + dataConfidence * 0.5));
+      confidence = Math.min(
+        confidence,
+        confidence * (0.5 + dataConfidence * 0.5)
+      );
     }
 
     if (bestMatch) {
@@ -285,8 +294,17 @@ export function updateColumnMapping(
 ): ColumnMapping[] {
   return mappings.map((mapping, index) => {
     // Unmap the field from any other column first
-    if (newField !== null && mapping.transactionField === newField && index !== columnIndex) {
-      return { ...mapping, transactionField: null, confidence: 0, isUserOverride: true };
+    if (
+      newField !== null &&
+      mapping.transactionField === newField &&
+      index !== columnIndex
+    ) {
+      return {
+        ...mapping,
+        transactionField: null,
+        confidence: 0,
+        isUserOverride: true,
+      };
     }
     // Update the target column
     if (index === columnIndex) {
@@ -304,7 +322,9 @@ export function updateColumnMapping(
 /**
  * Get the set of mapped fields from column mappings.
  */
-function getMappedFieldsSet(mappings: ColumnMapping[]): Set<TransactionField | null> {
+function getMappedFieldsSet(
+  mappings: ColumnMapping[]
+): Set<TransactionField | null> {
   return new Set(mappings.map((m) => m.transactionField));
 }
 
@@ -329,7 +349,9 @@ export function getMappingForField(
 /**
  * Get all unmapped required fields.
  */
-export function getUnmappedRequiredFields(mappings: ColumnMapping[]): TransactionField[] {
+export function getUnmappedRequiredFields(
+  mappings: ColumnMapping[]
+): TransactionField[] {
   const mappedFields = getMappedFieldsSet(mappings);
   return REQUIRED_FIELDS.filter((field) => !mappedFields.has(field));
 }

@@ -11,6 +11,13 @@
 
 - Q: At what age should cached prices be marked as stale? → A: 2x the user's chosen update interval (adaptive threshold)
 
+### Session 2026-01-25 (Performance Page Addition)
+
+- This addition extends live market data functionality to the Performance page
+- Performance metrics (Total Return, Annual Return, Sharpe Ratio) will use live price data
+
+---
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - View Real-Time Portfolio Value (Priority: P1)
@@ -105,6 +112,64 @@ As a user, I want the application to handle data provider outages gracefully so 
 
 ---
 
+### User Story 6 - Performance Page with Live Data (Priority: P2)
+
+As an investor, I want the Performance page to display real-time portfolio performance metrics calculated from live market prices so that I can see accurate return calculations and risk metrics based on current market conditions.
+
+**Why this priority**: The Performance page is a key destination for understanding portfolio success. Currently it shows hardcoded placeholder values. Connecting it to live data completes the live market data feature across the application.
+
+**Independent Test**: Can be fully tested by navigating to the Performance page with a portfolio containing holdings, and verifying that displayed metrics (Total Return, Annual Return, Sharpe Ratio, Max Drawdown) reflect calculations based on actual portfolio data and current prices.
+
+**Acceptance Scenarios**:
+
+1. **Given** a portfolio with holdings and live price data, **When** I navigate to the Performance page, **Then** I see Total Return calculated as the percentage gain/loss from my total cost basis to current value.
+
+2. **Given** a portfolio held for more than one year, **When** I view the Performance page, **Then** I see Annualized Return (CAGR) showing the compound annual growth rate.
+
+3. **Given** a portfolio with historical value data, **When** I view the Performance page, **Then** I see Max Drawdown showing the largest peak-to-trough decline as a percentage.
+
+4. **Given** a portfolio with sufficient return history, **When** I view the Performance page, **Then** I see Sharpe Ratio indicating risk-adjusted return.
+
+5. **Given** live prices update during my session, **When** I'm viewing the Performance page, **Then** the performance metrics update to reflect the new prices.
+
+---
+
+### User Story 7 - Performance Chart with Live Data (Priority: P3)
+
+As an investor, I want to see a chart of my portfolio value over time on the Performance page so that I can visualize trends and patterns in my portfolio's performance.
+
+**Why this priority**: Visual representation of performance over time helps users understand long-term trends. This builds on User Story 6's metrics with graphical representation.
+
+**Independent Test**: Can be fully tested by viewing the Performance page and verifying that a line chart displays historical portfolio values with the most recent point reflecting current live prices.
+
+**Acceptance Scenarios**:
+
+1. **Given** a portfolio with historical transactions, **When** I view the Performance page chart, **Then** I see a line chart showing portfolio value over time.
+
+2. **Given** I select a time period (1M, 3M, YTD, 1Y, ALL), **When** the chart updates, **Then** the display adjusts to show performance for that period.
+
+3. **Given** live prices are available, **When** viewing the chart, **Then** the most recent data point reflects the current portfolio value.
+
+---
+
+### User Story 8 - Top Performers and Losers (Priority: P3)
+
+As an investor, I want to see which holdings have performed best and worst on the Performance page so that I can identify winners and underperformers in my portfolio.
+
+**Why this priority**: Understanding individual holding performance helps with portfolio rebalancing decisions. This complements the aggregate metrics from User Story 6.
+
+**Independent Test**: Can be fully tested by viewing the Performance page with multiple holdings and verifying that top performers and biggest losers are listed with their return percentages.
+
+**Acceptance Scenarios**:
+
+1. **Given** a portfolio with multiple holdings, **When** I view the Performance page, **Then** I see a list of top 5 best-performing holdings with their return percentages.
+
+2. **Given** a portfolio with multiple holdings, **When** I view the Performance page, **Then** I see a list of top 5 worst-performing holdings with their return percentages.
+
+3. **Given** live prices update, **When** viewing the top performers list, **Then** the rankings and percentages update to reflect current performance.
+
+---
+
 ### Edge Cases
 
 - What happens when a symbol exists on both US and UK exchanges with the same ticker?
@@ -121,6 +186,18 @@ As a user, I want the application to handle data provider outages gracefully so 
 
 - What happens when the user's device goes offline?
   - Continue displaying last known prices with offline indicator; sync when connection restores.
+
+- What happens when the portfolio has no transactions or holdings?
+  - Performance page displays placeholder content indicating no data is available yet, with guidance to add holdings.
+
+- How is Sharpe Ratio calculated when there's insufficient return history?
+  - Display "N/A" or a dash with tooltip explaining insufficient data (requires at least 30 days of history).
+
+- What happens when annualized return is calculated for a portfolio less than 1 year old?
+  - Still calculate CAGR but note that short-term projections may not be indicative of long-term performance.
+
+- How is Max Drawdown calculated with no price history?
+  - Display "N/A" with tooltip explaining that historical data is needed for this calculation.
 
 ## Requirements *(mandatory)*
 
@@ -150,6 +227,26 @@ As a user, I want the application to handle data provider outages gracefully so 
 
 - **FR-012**: System MUST preserve existing rate limiting to prevent overuse of external price services.
 
+- **FR-013**: Performance page MUST display Total Return calculated from cost basis and current portfolio value using live prices.
+
+- **FR-014**: Performance page MUST display Annualized Return (CAGR) when portfolio has sufficient history.
+
+- **FR-015**: Performance page MUST display Max Drawdown showing the largest peak-to-trough decline percentage.
+
+- **FR-016**: Performance page MUST display Sharpe Ratio when sufficient return history is available (minimum 30 days).
+
+- **FR-017**: Performance page MUST display a historical performance chart showing portfolio value over time.
+
+- **FR-018**: Performance page MUST allow users to select different time periods (1M, 3M, YTD, 1Y, ALL) for the chart.
+
+- **FR-019**: Performance page MUST display top 5 best-performing holdings with their return percentages.
+
+- **FR-020**: Performance page MUST display top 5 worst-performing holdings with their return percentages.
+
+- **FR-021**: Performance metrics MUST update when live prices change without requiring page refresh.
+
+- **FR-022**: Performance page MUST gracefully handle empty portfolios or insufficient data with appropriate placeholder messages.
+
 ### Key Entities
 
 - **Market**: Represents a trading venue (NYSE, NASDAQ, LSE, AIM) with attributes including name, country, timezone, trading hours, and symbol suffix conventions.
@@ -157,6 +254,10 @@ As a user, I want the application to handle data provider outages gracefully so 
 - **PriceUpdate**: Represents a real-time price event with symbol, price, currency, timestamp, market state, and change metrics.
 
 - **UserPricePreferences**: User settings for price updates including refresh interval and display preferences.
+
+- **PerformanceMetrics**: Calculated portfolio metrics including total return percentage, annualized return (CAGR), max drawdown percentage, and Sharpe ratio.
+
+- **HistoricalPortfolioValue**: Time-series data representing portfolio value at specific dates, used for performance charts and drawdown calculations.
 
 ## Success Criteria *(mandatory)*
 
@@ -173,6 +274,14 @@ As a user, I want the application to handle data provider outages gracefully so 
 - **SC-005**: The application remains fully functional (display cached prices, record transactions) when external price services are unavailable.
 
 - **SC-006**: Price updates for a portfolio of up to 50 holdings complete within 10 seconds when fetching fresh data.
+
+- **SC-007**: Performance page displays calculated metrics (not placeholder values) within 2 seconds of loading when data is available.
+
+- **SC-008**: Users can view total return, annualized return, and max drawdown calculated from their actual portfolio data.
+
+- **SC-009**: Performance chart displays historical portfolio value with time period selection working correctly.
+
+- **SC-010**: Top/bottom performer lists accurately rank holdings by return percentage using live price data.
 
 ## Assumptions
 

@@ -61,7 +61,10 @@ export class MigrationManager {
     }
   }
 
-  static async setCurrentVersion(version: number, description: string): Promise<void> {
+  static async setCurrentVersion(
+    version: number,
+    description: string
+  ): Promise<void> {
     const state: MigrationState = {
       version,
       appliedAt: new Date(),
@@ -96,19 +99,28 @@ export class MigrationManager {
       return;
     }
 
-    console.log(`Migrating database from version ${currentVersion} to ${latestVersion}`);
+    console.log(
+      `Migrating database from version ${currentVersion} to ${latestVersion}`
+    );
 
     // Apply migrations in order
     for (const migration of migrations) {
       if (migration.version > currentVersion) {
         try {
-          console.log(`Applying migration ${migration.version}: ${migration.description}`);
+          console.log(
+            `Applying migration ${migration.version}: ${migration.description}`
+          );
           await migration.up();
-          await this.setCurrentVersion(migration.version, migration.description);
+          await this.setCurrentVersion(
+            migration.version,
+            migration.description
+          );
           console.log(`Migration ${migration.version} completed`);
         } catch (error) {
           console.error(`Migration ${migration.version} failed:`, error);
-          throw new Error(`Migration failed at version ${migration.version}: ${error}`);
+          throw new Error(
+            `Migration failed at version ${migration.version}: ${error}`
+          );
         }
       }
     }
@@ -124,7 +136,9 @@ export class MigrationManager {
       return;
     }
 
-    console.log(`Rolling back database from version ${currentVersion} to ${targetVersion}`);
+    console.log(
+      `Rolling back database from version ${currentVersion} to ${targetVersion}`
+    );
 
     // Apply rollbacks in reverse order
     const rollbackMigrations = migrations
@@ -133,12 +147,16 @@ export class MigrationManager {
 
     for (const migration of rollbackMigrations) {
       try {
-        console.log(`Rolling back migration ${migration.version}: ${migration.description}`);
+        console.log(
+          `Rolling back migration ${migration.version}: ${migration.description}`
+        );
         await migration.down();
         console.log(`Rollback ${migration.version} completed`);
       } catch (error) {
         console.error(`Rollback ${migration.version} failed:`, error);
-        throw new Error(`Rollback failed at version ${migration.version}: ${error}`);
+        throw new Error(
+          `Rollback failed at version ${migration.version}: ${error}`
+        );
       }
     }
 
@@ -265,7 +283,8 @@ export async function seedInitialData(): Promise<void> {
       currency: 'USD',
       sector: 'Technology',
       metadata: {
-        description: 'Apple Inc. designs, manufactures, and markets consumer electronics, computer software, and online services.',
+        description:
+          'Apple Inc. designs, manufactures, and markets consumer electronics, computer software, and online services.',
         website: 'https://www.apple.com',
         industry: 'Consumer Electronics',
         country: 'US',
@@ -282,7 +301,8 @@ export async function seedInitialData(): Promise<void> {
       currency: 'USD',
       sector: 'Financial Services',
       metadata: {
-        description: 'The SPDR S&P 500 ETF Trust seeks to provide investment results that correspond to the price and yield performance of the S&P 500 Index.',
+        description:
+          'The SPDR S&P 500 ETF Trust seeks to provide investment results that correspond to the price and yield performance of the S&P 500 Index.',
         website: 'https://www.ssga.com',
         industry: 'Asset Management',
         country: 'US',

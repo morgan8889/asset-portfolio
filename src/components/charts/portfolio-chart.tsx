@@ -14,7 +14,10 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendIndicator, getTrendColorClass } from '@/components/ui/trend-indicator';
+import {
+  TrendIndicator,
+  getTrendColorClass,
+} from '@/components/ui/trend-indicator';
 import { Activity } from 'lucide-react';
 import { formatCurrency, cn } from '@/lib/utils';
 
@@ -48,7 +51,7 @@ const periodConfigs = {
   '1M': { days: 30, label: 'Past Month', format: 'MMM dd' },
   '3M': { days: 90, label: 'Past 3 Months', format: 'MMM dd' },
   '1Y': { days: 365, label: 'Past Year', format: 'MMM yyyy' },
-  'ALL': { days: 365 * 3, label: 'All Time', format: 'MMM yyyy' },
+  ALL: { days: 365 * 3, label: 'All Time', format: 'MMM yyyy' },
 };
 
 // Generate mock data for demonstration
@@ -66,7 +69,8 @@ const generateMockData = (days: number): ChartDataPoint[] => {
     const trend = 0.0002; // Small upward trend
     const randomChange = (Math.random() - 0.48) * volatility + trend;
 
-    const previousValue = i === days ? baseValue : data[data.length - 1]?.value || baseValue;
+    const previousValue =
+      i === days ? baseValue : data[data.length - 1]?.value || baseValue;
     const value = previousValue * (1 + randomChange);
     const change = value - previousValue;
 
@@ -87,13 +91,22 @@ const formatXAxisLabel = (tickItem: string, period: TimePeriod): string => {
 
   switch (period) {
     case '1D':
-      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
     case '1W':
     case '1M':
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      });
     case '3M':
     case '1Y':
-      return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        year: '2-digit',
+      });
     case 'ALL':
       return date.toLocaleDateString('en-US', { year: 'numeric' });
     default:
@@ -106,26 +119,39 @@ interface ChartTooltipProps extends TooltipProps<number, string> {
   period: TimePeriod;
 }
 
-const ChartTooltip = memo(function ChartTooltip({ active, payload, period }: ChartTooltipProps) {
+const ChartTooltip = memo(function ChartTooltip({
+  active,
+  payload,
+  period,
+}: ChartTooltipProps) {
   if (active && payload && payload[0]) {
     const data = payload[0].payload as ChartDataPoint;
     const value = payload[0].value ?? 0;
     const date = new Date(data.date);
 
     return (
-      <div className="bg-background border rounded-lg shadow-lg p-3 min-w-[200px]">
-        <p className="text-sm text-muted-foreground mb-1">
+      <div className="min-w-[200px] rounded-lg border bg-background p-3 shadow-lg">
+        <p className="mb-1 text-sm text-muted-foreground">
           {period === '1D'
-            ? date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            ? date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })
             : date.toLocaleDateString('en-US', {
                 weekday: 'short',
                 month: 'short',
                 day: 'numeric',
-                year: period === 'ALL' || period === '1Y' ? 'numeric' : undefined,
+                year:
+                  period === 'ALL' || period === '1Y' ? 'numeric' : undefined,
               })}
         </p>
-        <p className="text-lg font-bold mb-1">{formatCurrency(value)}</p>
-        <p className={cn('text-sm flex items-center gap-1', getTrendColorClass(data.change))}>
+        <p className="mb-1 text-lg font-bold">{formatCurrency(value)}</p>
+        <p
+          className={cn(
+            'flex items-center gap-1 text-sm',
+            getTrendColorClass(data.change)
+          )}
+        >
           <TrendIndicator value={data.change} size="xs" iconOnly />
           {data.change >= 0 ? '+' : ''}
           {formatCurrency(data.change)} change
@@ -148,13 +174,16 @@ const PortfolioChartComponent = ({
 
   // Support controlled and uncontrolled period
   const period = controlledPeriod ?? internalPeriod;
-  const handlePeriodChange = useCallback((newPeriod: TimePeriod) => {
-    if (onPeriodChange) {
-      onPeriodChange(newPeriod);
-    } else {
-      setInternalPeriod(newPeriod);
-    }
-  }, [onPeriodChange]);
+  const handlePeriodChange = useCallback(
+    (newPeriod: TimePeriod) => {
+      if (onPeriodChange) {
+        onPeriodChange(newPeriod);
+      } else {
+        setInternalPeriod(newPeriod);
+      }
+    },
+    [onPeriodChange]
+  );
 
   // Use external data if provided, otherwise generate mock data
   const data = useMemo(() => {
@@ -174,8 +203,8 @@ const PortfolioChartComponent = ({
     const totalChange = lastValue - firstValue;
     const percentChange = firstValue > 0 ? (totalChange / firstValue) * 100 : 0;
 
-    const highValue = Math.max(...data.map(d => d.value));
-    const lowValue = Math.min(...data.map(d => d.value));
+    const highValue = Math.max(...data.map((d) => d.value));
+    const lowValue = Math.min(...data.map((d) => d.value));
 
     return {
       currentValue: lastValue,
@@ -189,7 +218,9 @@ const PortfolioChartComponent = ({
 
   // Memoized tooltip with period closure - must be before early return
   const renderTooltip = useCallback(
-    (props: TooltipProps<number, string>) => <ChartTooltip {...props} period={period} />,
+    (props: TooltipProps<number, string>) => (
+      <ChartTooltip {...props} period={period} />
+    ),
     [period]
   );
 
@@ -203,7 +234,7 @@ const PortfolioChartComponent = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[400px] w-full bg-muted animate-pulse rounded" />
+          <div className="h-[400px] w-full animate-pulse rounded bg-muted" />
         </CardContent>
       </Card>
     );
@@ -222,7 +253,9 @@ const PortfolioChartComponent = ({
               <div className="flex items-center gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">Current: </span>
-                  <span className="font-medium">{formatCurrency(chartStats.currentValue)}</span>
+                  <span className="font-medium">
+                    {formatCurrency(chartStats.currentValue)}
+                  </span>
                 </div>
                 <div
                   className={cn(
@@ -279,7 +312,10 @@ const PortfolioChartComponent = ({
       <CardContent>
         <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <AreaChart
+              data={data}
+              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            >
               <defs>
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                   <stop
@@ -295,7 +331,10 @@ const PortfolioChartComponent = ({
                 </linearGradient>
               </defs>
 
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted opacity-30" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                className="stroke-muted opacity-30"
+              />
 
               <XAxis
                 dataKey="date"
@@ -345,7 +384,7 @@ const PortfolioChartComponent = ({
           </ResponsiveContainer>
         </div>
 
-        <div className="mt-4 text-xs text-muted-foreground text-center">
+        <div className="mt-4 text-center text-xs text-muted-foreground">
           {periodConfigs[period].label} • Prices delayed by 15 minutes
         </div>
       </CardContent>

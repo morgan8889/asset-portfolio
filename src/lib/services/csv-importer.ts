@@ -132,7 +132,12 @@ export async function detectDuplicates(
   // Check each valid row for duplicates
   const duplicates: DuplicateMatch[] = [];
   for (const row of validRows) {
-    if (!row.parsed.date || !row.parsed.symbol || !row.parsed.quantity || !row.parsed.price) {
+    if (
+      !row.parsed.date ||
+      !row.parsed.symbol ||
+      !row.parsed.quantity ||
+      !row.parsed.price
+    ) {
       continue;
     }
 

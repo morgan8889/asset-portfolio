@@ -19,7 +19,10 @@ import Decimal from 'decimal.js';
 import { cn } from '@/lib/utils';
 import { LivePriceData, StalenessLevel, MarketState } from '@/types/market';
 import { formatDataAge } from '@/lib/utils/staleness';
-import { MarketStatusBadge, MarketStatusDot } from '@/components/ui/market-status-badge';
+import {
+  MarketStatusBadge,
+  MarketStatusDot,
+} from '@/components/ui/market-status-badge';
 
 interface PriceDisplayProps {
   priceData?: LivePriceData;
@@ -147,9 +150,19 @@ export function PriceDisplay({
     return (
       <div className={cn('flex items-center gap-2', className)}>
         <div className="animate-pulse">
-          <div className={cn('h-5 w-20 bg-muted rounded', size === 'sm' && 'h-4 w-16')} />
+          <div
+            className={cn(
+              'h-5 w-20 rounded bg-muted',
+              size === 'sm' && 'h-4 w-16'
+            )}
+          />
           {showChange && (
-            <div className={cn('h-4 w-14 bg-muted rounded mt-1', size === 'sm' && 'h-3 w-12')} />
+            <div
+              className={cn(
+                'mt-1 h-4 w-14 rounded bg-muted',
+                size === 'sm' && 'h-3 w-12'
+              )}
+            />
           )}
         </div>
       </div>
@@ -191,7 +204,7 @@ export function PriceDisplay({
         {showStaleness && (
           <span
             className={cn(
-              'rounded-full shrink-0',
+              'shrink-0 rounded-full',
               classes.dot,
               getStalenessBgColor(priceData.staleness)
             )}
@@ -216,7 +229,9 @@ export function PriceDisplay({
 
       {/* Change row */}
       {showChange && (
-        <div className={cn('flex items-center gap-1', classes.change, changeColor)}>
+        <div
+          className={cn('flex items-center gap-1', classes.change, changeColor)}
+        >
           <span>
             {isPositive ? '+' : ''}
             {formatCurrency(priceData.change, priceData.displayCurrency)}

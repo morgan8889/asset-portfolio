@@ -216,3 +216,151 @@ Already has `marketState` field - will be populated from Yahoo Finance response.
 - New `userSettings` entry created on first access with defaults
 - Existing `PriceSnapshot` records remain compatible
 - `Asset.exchange` field already exists; may be null for legacy data
+
+---
+
+## Performance Page Entities (Added 2026-01-25)
+
+### PerformanceMetrics
+
+Calculated portfolio performance metrics displayed on the Performance page.
+
+```typescript
+interface PerformanceMetrics {
+  roi: number;                    // Total return percentage
+  annualizedReturn: number;       // CAGR percentage
+  volatility: number;             // Standard deviation of returns
+  sharpeRatio: number;            // Risk-adjusted return (0 if < 30 days data)
+  maxDrawdown: number;            // Largest peak-to-trough decline %
+}
+```
+
+**Relationships**: Computed from `HistoricalPortfolioValue` series
+
+**Validation Rules**:
+- All percentage values are stored as numbers (e.g., 12.5 for 12.5%)
+- `sharpeRatio` returns 0 when insufficient data (< 30 days)
+- `maxDrawdown` is always non-negative (represents a loss)
+
+**Storage**: Computed at runtime (not persisted)
+
+---
+
+### HistoricalPortfolioValue
+
+Time-series data representing portfolio value at specific dates.
+
+```typescript
+interface HistoricalPortfolioValue {
+  date: Date;
+  value: Decimal;                 // Total portfolio value at date
+  costBasis?: Decimal;            // Total invested amount at date
+}
+```
+
+**Relationships**:
+- Computed from `Transaction` history + `PriceSnapshot` cache
+- Used by `getHistoricalValues()` in `historical-value.ts`
+
+**Validation Rules**:
+- `date` must be unique within a time series
+- `value` must be non-negative
+- Series should be sorted chronologically
+
+**Storage**: Computed at runtime from transactions + price cache
+
+---
+
+### PerformancePageData
+
+Complete data structure for Performance page rendering.
+
+```typescript
+interface PerformancePageData {
+  // Live metrics (from useLivePriceMetrics)
+  totalValue: Decimal;
+  totalGain: Decimal;
+  totalGainPercent: number;
+  dayChange: Decimal;
+  dayChangePercent: number;
+  topPerformers: HoldingPerformance[];
+  biggestLosers: HoldingPerformance[];
+
+  // Calculated metrics (from historical data)
+  metrics: PerformanceMetrics;
+
+  // Chart data
+  historicalData: HistoricalPortfolioValue[];
+  selectedPeriod: TimePeriod;
+
+  // State
+  loading: boolean;
+  error: string | null;
+}
+
+type TimePeriod = '1M' | '3M' | 'YTD' | '1Y' | 'ALL';
+
+interface HoldingPerformance {
+  assetId: string;
+  symbol: string;
+  name: string;
+  returnPercent: number;
+  value: Decimal;
+  gain: Decimal;
+}
+```
+
+**Relationships**:
+- Composed from `useLivePriceMetrics` hook output
+- Plus async-calculated `PerformanceMetrics`
+- Plus `getHistoricalValues()` output
+
+**Validation Rules**:
+- `loading` is true during initial calculation
+- `error` set if calculation fails
+- `topPerformers` and `biggestLosers` limited to 5 items each
+
+**Storage**: In-memory only (React state via usePerformanceData hook)
+
+---
+
+## Updated Entity Relationship Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     PERFORMANCE PAGE DATA                            │
+│                                                                      │
+│  ┌─────────────────────┐     computes     ┌───────────────────────┐ │
+│  │ useLivePriceMetrics │ ───────────────► │  PerformancePageData  │ │
+│  │    (existing)       │                  │                       │ │
+│  └─────────────────────┘                  │  - totalValue         │ │
+│           │                               │  - totalGain          │ │
+│           │ uses                          │  - topPerformers      │ │
+│           ▼                               │  - biggestLosers      │ │
+│  ┌─────────────────────┐                  │  - metrics            │ │
+│  │    LivePriceData    │                  │  - historicalData     │ │
+│  │    (price store)    │                  └───────────────────────┘ │
+│  └─────────────────────┘                            ▲               │
+│                                                     │               │
+│  ┌─────────────────────┐     computes              │               │
+│  │ getHistoricalValues │ ──────────────────────────┤               │
+│  │    (existing)       │                           │               │
+│  └─────────────────────┘                           │               │
+│           │                                        │               │
+│           │ generates                              │               │
+│           ▼                                        │               │
+│  ┌─────────────────────────────┐                   │               │
+│  │ HistoricalPortfolioValue[]  │ ──────────────────┤               │
+│  │  (time series)              │                   │               │
+│  └─────────────────────────────┘                   │               │
+│           │                                        │               │
+│           │ calculates                             │               │
+│           ▼                                        │               │
+│  ┌─────────────────────┐                           │               │
+│  │  PerformanceMetrics │ ──────────────────────────┘               │
+│  │  - annualizedReturn │                                           │
+│  │  - sharpeRatio      │                                           │
+│  │  - maxDrawdown      │                                           │
+│  └─────────────────────┘                                           │
+└─────────────────────────────────────────────────────────────────────┘
+```

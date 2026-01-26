@@ -6,12 +6,15 @@ import { logger } from '@/lib/utils/logger';
 import { isUKSymbol, convertPenceToPounds } from '@/lib/utils/market-utils';
 
 // In-memory cache for price data (in production, use Redis)
-const priceCache = new Map<string, {
-  price: number;
-  timestamp: number;
-  source: string;
-  metadata?: any;
-}>();
+const priceCache = new Map<
+  string,
+  {
+    price: number;
+    timestamp: number;
+    source: string;
+    metadata?: any;
+  }
+>();
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const MAX_RETRIES = 3;
@@ -30,7 +33,9 @@ const rateLimiter = rateLimit({
 });
 
 // Yahoo Finance API wrapper with error handling
-async function fetchYahooPrice(symbol: string): Promise<{ price: number; metadata?: any }> {
+async function fetchYahooPrice(
+  symbol: string
+): Promise<{ price: number; metadata?: any }> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -39,7 +44,7 @@ async function fetchYahooPrice(symbol: string): Promise<{ price: number; metadat
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; Portfolio-Tracker/1.0)',
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
       signal: controller.signal,
     });
@@ -61,14 +66,21 @@ async function fetchYahooPrice(symbol: string): Promise<{ price: number; metadat
 
     // Convert pence to pounds for UK stocks quoted in GBp
     const priceDecimal = new Decimal(rawPrice);
-    const { displayPrice, displayCurrency } = convertPenceToPounds(priceDecimal, currency);
+    const { displayPrice, displayCurrency } = convertPenceToPounds(
+      priceDecimal,
+      currency
+    );
 
     // Calculate change (also needs conversion for GBp)
     const changeRaw = rawPrice - previousClose;
-    const changePercent = previousClose > 0 ? ((changeRaw / previousClose) * 100) : 0;
+    const changePercent =
+      previousClose > 0 ? (changeRaw / previousClose) * 100 : 0;
 
     const changeDecimal = new Decimal(changeRaw);
-    const { displayPrice: displayChange } = convertPenceToPounds(changeDecimal, currency);
+    const { displayPrice: displayChange } = convertPenceToPounds(
+      changeDecimal,
+      currency
+    );
 
     return {
       price: displayPrice.toNumber(),
@@ -90,18 +102,20 @@ async function fetchYahooPrice(symbol: string): Promise<{ price: number; metadat
 }
 
 // CoinGecko API for cryptocurrency prices
-async function fetchCoinGeckoPrice(symbol: string): Promise<{ price: number; metadata?: any }> {
+async function fetchCoinGeckoPrice(
+  symbol: string
+): Promise<{ price: number; metadata?: any }> {
   const cryptoMapping: Record<string, string> = {
-    'BTC': 'bitcoin',
-    'ETH': 'ethereum',
-    'USDT': 'tether',
-    'BNB': 'binancecoin',
-    'SOL': 'solana',
-    'XRP': 'ripple',
-    'ADA': 'cardano',
-    'AVAX': 'avalanche-2',
-    'DOT': 'polkadot',
-    'MATIC': 'matic-network',
+    BTC: 'bitcoin',
+    ETH: 'ethereum',
+    USDT: 'tether',
+    BNB: 'binancecoin',
+    SOL: 'solana',
+    XRP: 'ripple',
+    ADA: 'cardano',
+    AVAX: 'avalanche-2',
+    DOT: 'polkadot',
+    MATIC: 'matic-network',
   };
 
   const coinId = cryptoMapping[symbol.toUpperCase()];
@@ -117,7 +131,7 @@ async function fetchCoinGeckoPrice(symbol: string): Promise<{ price: number; met
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
     });
 
@@ -150,17 +164,27 @@ const priceSources: PriceSource[] = [
   {
     name: 'yahoo',
     fetch: fetchYahooPrice,
-    supports: (symbol) => !/^(BTC|ETH|USDT|BNB|SOL|XRP|ADA|AVAX|DOT|MATIC)$/.test(symbol.toUpperCase()),
+    supports: (symbol) =>
+      !/^(BTC|ETH|USDT|BNB|SOL|XRP|ADA|AVAX|DOT|MATIC)$/.test(
+        symbol.toUpperCase()
+      ),
   },
   {
     name: 'coingecko',
     fetch: fetchCoinGeckoPrice,
-    supports: (symbol) => /^(BTC|ETH|USDT|BNB|SOL|XRP|ADA|AVAX|DOT|MATIC)$/.test(symbol.toUpperCase()),
+    supports: (symbol) =>
+      /^(BTC|ETH|USDT|BNB|SOL|XRP|ADA|AVAX|DOT|MATIC)$/.test(
+        symbol.toUpperCase()
+      ),
   },
 ];
 
-async function fetchPriceWithRetry(symbol: string): Promise<{ price: number; source: string; metadata?: any }> {
-  const applicableSources = priceSources.filter(source => source.supports(symbol));
+async function fetchPriceWithRetry(
+  symbol: string
+): Promise<{ price: number; source: string; metadata?: any }> {
+  const applicableSources = priceSources.filter((source) =>
+    source.supports(symbol)
+  );
 
   if (applicableSources.length === 0) {
     throw new Error(`No price source available for symbol: ${symbol}`);
@@ -171,11 +195,15 @@ async function fetchPriceWithRetry(symbol: string): Promise<{ price: number; sou
   for (const source of applicableSources) {
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        logger.info(`Fetching price for ${symbol} from ${source.name}, attempt ${attempt}`);
+        logger.info(
+          `Fetching price for ${symbol} from ${source.name}, attempt ${attempt}`
+        );
 
         const result = await source.fetch(symbol);
 
-        logger.info(`Successfully fetched price for ${symbol} from ${source.name}: $${result.price}`);
+        logger.info(
+          `Successfully fetched price for ${symbol} from ${source.name}: $${result.price}`
+        );
 
         return {
           ...result,
@@ -183,18 +211,23 @@ async function fetchPriceWithRetry(symbol: string): Promise<{ price: number; sou
         };
       } catch (error) {
         lastError = error as Error;
-        logger.warn(`Failed to fetch price for ${symbol} from ${source.name}, attempt ${attempt}:`, error);
+        logger.warn(
+          `Failed to fetch price for ${symbol} from ${source.name}, attempt ${attempt}:`,
+          error
+        );
 
         if (attempt < MAX_RETRIES) {
           // Exponential backoff
           const delay = Math.pow(2, attempt) * 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
   }
 
-  throw new Error(`All price sources failed for ${symbol}. Last error: ${lastError?.message}`);
+  throw new Error(
+    `All price sources failed for ${symbol}. Last error: ${lastError?.message}`
+  );
 }
 
 export async function GET(
@@ -252,7 +285,11 @@ export async function GET(
     const priceData = await fetchPriceWithRetry(symbol);
 
     // Validate price data
-    if (typeof priceData.price !== 'number' || isNaN(priceData.price) || priceData.price <= 0) {
+    if (
+      typeof priceData.price !== 'number' ||
+      isNaN(priceData.price) ||
+      priceData.price <= 0
+    ) {
       throw new Error('Invalid price data received');
     }
 
@@ -273,13 +310,16 @@ export async function GET(
       cached: false,
       timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred';
     logger.error(`Error fetching price for ${params.symbol}:`, error);
 
     // Return appropriate error response
-    if (errorMessage.includes('not supported') || errorMessage.includes('Invalid symbol')) {
+    if (
+      errorMessage.includes('not supported') ||
+      errorMessage.includes('Invalid symbol')
+    ) {
       return NextResponse.json(
         { error: 'Symbol not supported or invalid', symbol: params.symbol },
         { status: 404 }
@@ -297,10 +337,10 @@ export async function GET(
       {
         error: 'Failed to fetch price data. Please try again later.',
         symbol: params.symbol,
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+        details:
+          process.env.NODE_ENV === 'development' ? errorMessage : undefined,
       },
       { status: 500 }
     );
   }
 }
-

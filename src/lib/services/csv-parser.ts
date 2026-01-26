@@ -85,7 +85,9 @@ export async function parseCsvFile(file: File): Promise<CsvParserResult> {
  * Parse CSV content from a string (useful for testing).
  */
 export function parseCsvString(content: string): CsvParserResult {
-  const results = Papa.parse(content, PAPA_CONFIG) as Papa.ParseResult<Record<string, string>>;
+  const results = Papa.parse(content, PAPA_CONFIG) as Papa.ParseResult<
+    Record<string, string>
+  >;
   return processParseResults(results, 'content');
 }
 

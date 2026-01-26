@@ -315,7 +315,8 @@ export function mapTransactionType(value: string): TransactionType | null {
  */
 export function getValidationSummary(result: ValidationResult): string {
   const total = result.validCount + result.errorCount;
-  const successRate = total > 0 ? ((result.validCount / total) * 100).toFixed(1) : '0';
+  const successRate =
+    total > 0 ? ((result.validCount / total) * 100).toFixed(1) : '0';
 
   if (result.errorCount === 0) {
     return `All ${result.validCount} rows are valid and ready to import.`;

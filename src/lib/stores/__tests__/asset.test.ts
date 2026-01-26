@@ -213,9 +213,13 @@ describe('Asset Store', () => {
       mockAssetQueries.update.mockResolvedValue(undefined);
       mockAssetQueries.getAll.mockResolvedValue([updatedAsset]);
 
-      await useAssetStore.getState().updateAsset('a1', { name: 'Apple Corporation' });
+      await useAssetStore
+        .getState()
+        .updateAsset('a1', { name: 'Apple Corporation' });
 
-      expect(mockAssetQueries.update).toHaveBeenCalledWith('a1', { name: 'Apple Corporation' });
+      expect(mockAssetQueries.update).toHaveBeenCalledWith('a1', {
+        name: 'Apple Corporation',
+      });
       expect(mockAssetQueries.getAll).toHaveBeenCalled();
 
       const state = useAssetStore.getState();
@@ -236,7 +240,9 @@ describe('Asset Store', () => {
       mockAssetQueries.getAll.mockResolvedValue([updatedAsset]);
       mockAssetQueries.getById.mockResolvedValue(updatedAsset);
 
-      await useAssetStore.getState().updateAsset('a1', { name: 'Apple Corporation' });
+      await useAssetStore
+        .getState()
+        .updateAsset('a1', { name: 'Apple Corporation' });
 
       const state = useAssetStore.getState();
       expect(state.selectedAsset).toEqual(updatedAsset);
@@ -397,7 +403,9 @@ describe('Asset Store', () => {
     });
 
     it('should handle price loading errors silently', async () => {
-      mockPriceQueries.getLatestSnapshot.mockRejectedValue(new Error('Price fetch failed'));
+      mockPriceQueries.getLatestSnapshot.mockRejectedValue(
+        new Error('Price fetch failed')
+      );
 
       // Should not throw
       await useAssetStore.getState().loadPrice('a1');

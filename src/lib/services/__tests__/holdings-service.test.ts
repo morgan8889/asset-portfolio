@@ -9,7 +9,11 @@ import {
   mergeHoldings,
 } from '../holdings-service';
 import { Transaction, Holding, TaxLot } from '@/types';
-import { generateAssetId, generateHoldingId, generateTransactionId } from '@/types/storage';
+import {
+  generateAssetId,
+  generateHoldingId,
+  generateTransactionId,
+} from '@/types/storage';
 
 describe('Holdings Service', () => {
   describe('calculateHoldingFromTransactions', () => {

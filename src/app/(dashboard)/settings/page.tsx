@@ -5,7 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Settings, Save, RefreshCw, Download, Upload } from 'lucide-react';
 import { PriceSettings } from '@/components/settings/price-settings';
 
@@ -49,9 +55,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>Dark Mode</Label>
-                <p className="text-sm text-muted-foreground">
-                  Use dark theme
-                </p>
+                <p className="text-sm text-muted-foreground">Use dark theme</p>
               </div>
               <Switch />
             </div>
@@ -65,7 +69,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Button variant="outline" className="w-full justify-start">
-                <Download className="h-4 w-4 mr-2" />
+                <Download className="mr-2 h-4 w-4" />
                 Export All Data
               </Button>
               <p className="text-xs text-muted-foreground">
@@ -75,7 +79,7 @@ export default function SettingsPage() {
 
             <div className="space-y-2">
               <Button variant="outline" className="w-full justify-start">
-                <Upload className="h-4 w-4 mr-2" />
+                <Upload className="mr-2 h-4 w-4" />
                 Import Data
               </Button>
               <p className="text-xs text-muted-foreground">
@@ -85,7 +89,7 @@ export default function SettingsPage() {
 
             <div className="space-y-2">
               <Button variant="outline" className="w-full justify-start">
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className="mr-2 h-4 w-4" />
                 Clear Cache
               </Button>
               <p className="text-xs text-muted-foreground">
@@ -95,7 +99,7 @@ export default function SettingsPage() {
 
             <div className="space-y-2">
               <Button variant="destructive" className="w-full justify-start">
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className="mr-2 h-4 w-4" />
                 Reset All Data
               </Button>
               <p className="text-xs text-muted-foreground">
@@ -136,7 +140,7 @@ export default function SettingsPage() {
           </div>
 
           <Button className="w-full">
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="mr-2 h-4 w-4" />
             Save Settings
           </Button>
         </CardContent>

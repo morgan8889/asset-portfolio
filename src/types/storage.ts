@@ -6,7 +6,12 @@
  * Use these types for type-safe database operations.
  */
 
-import { AssetType, PortfolioType, PortfolioSettings, TaxStrategy } from './portfolio';
+import {
+  AssetType,
+  PortfolioType,
+  PortfolioSettings,
+  TaxStrategy,
+} from './portfolio';
 import { TransactionType } from './transaction';
 import { AssetMetadata } from './asset';
 
@@ -262,13 +267,20 @@ export interface UserSettingsStorage {
 /**
  * Maps domain types to storage types
  */
-export type DomainToStorage<T> =
-  T extends import('./asset').Holding ? HoldingStorage :
-  T extends import('./transaction').Transaction ? TransactionStorage :
-  T extends import('./portfolio').Portfolio ? PortfolioStorage :
-  T extends import('./asset').Asset ? AssetStorage :
-  T extends import('./asset').PriceHistory ? PriceHistoryStorage :
-  T extends import('./asset').PriceSnapshot ? PriceSnapshotStorage :
-  T extends import('./asset').DividendRecord ? DividendRecordStorage :
-  T extends import('./asset').TaxLot ? TaxLotStorage :
-  never;
+export type DomainToStorage<T> = T extends import('./asset').Holding
+  ? HoldingStorage
+  : T extends import('./transaction').Transaction
+    ? TransactionStorage
+    : T extends import('./portfolio').Portfolio
+      ? PortfolioStorage
+      : T extends import('./asset').Asset
+        ? AssetStorage
+        : T extends import('./asset').PriceHistory
+          ? PriceHistoryStorage
+          : T extends import('./asset').PriceSnapshot
+            ? PriceSnapshotStorage
+            : T extends import('./asset').DividendRecord
+              ? DividendRecordStorage
+              : T extends import('./asset').TaxLot
+                ? TaxLotStorage
+                : never;

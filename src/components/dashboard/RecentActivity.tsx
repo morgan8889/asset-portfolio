@@ -11,7 +11,8 @@ import { Transaction } from '@/types';
 
 export function RecentActivity() {
   // Use recentTransactions from context (already sorted and limited to 5)
-  const { transactions, recentTransactions, transactionsLoading } = useDashboardContext();
+  const { transactions, recentTransactions, transactionsLoading } =
+    useDashboardContext();
 
   return (
     <Card>
@@ -41,7 +42,7 @@ function LoadingState() {
   return (
     <div className="flex items-center justify-center py-8">
       <div className="flex items-center gap-3">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+        <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
         <div>Loading activity...</div>
       </div>
     </div>
@@ -50,9 +51,9 @@ function LoadingState() {
 
 function EmptyState() {
   return (
-    <div className="text-center text-muted-foreground py-8">
-      <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
-      <p className="text-lg font-medium mb-2">No recent activity</p>
+    <div className="py-8 text-center text-muted-foreground">
+      <Activity className="mx-auto mb-4 h-12 w-12 opacity-50" />
+      <p className="mb-2 text-lg font-medium">No recent activity</p>
       <p className="text-sm">Add your first transaction to see activity here</p>
       <div className="mt-4">
         <AddTransactionDialog />
@@ -66,13 +67,16 @@ interface TransactionListProps {
   totalCount: number;
 }
 
-function TransactionList({ recentTransactions, totalCount }: TransactionListProps) {
+function TransactionList({
+  recentTransactions,
+  totalCount,
+}: TransactionListProps) {
   return (
     <div className="space-y-4">
       {recentTransactions.map((transaction) => (
         <div
           key={transaction.id}
-          className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+          className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
         >
           <div className="flex items-center gap-3">
             <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -81,7 +85,9 @@ function TransactionList({ recentTransactions, totalCount }: TransactionListProp
                 <span className="font-medium">{transaction.assetId}</span>
                 {getTransactionTypeBadge(transaction.type)}
               </div>
-              <div className="text-sm text-muted-foreground">{formatDate(transaction.date)}</div>
+              <div className="text-sm text-muted-foreground">
+                {formatDate(transaction.date)}
+              </div>
             </div>
           </div>
           <div className="text-right">
@@ -95,7 +101,7 @@ function TransactionList({ recentTransactions, totalCount }: TransactionListProp
         </div>
       ))}
       {totalCount > 5 && (
-        <div className="text-center pt-2">
+        <div className="pt-2 text-center">
           <Button variant="outline" size="sm">
             View All Transactions
           </Button>

@@ -134,17 +134,14 @@ export function CsvFileUpload({
     }
   }, [disabled]);
 
-  const handleClear = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setSelectedFile(null);
-      setError(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    },
-    []
-  );
+  const handleClear = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedFile(null);
+    setError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return `${bytes} B`;
@@ -161,12 +158,15 @@ export function CsvFileUpload({
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         className={cn(
-          'relative flex flex-col items-center justify-center w-full min-h-[200px] p-6 border-2 border-dashed rounded-lg transition-colors cursor-pointer',
+          'relative flex min-h-[200px] w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors',
           isDragging && 'border-primary bg-primary/5',
           error && 'border-destructive bg-destructive/5',
           selectedFile && !error && 'border-green-500 bg-green-500/5',
-          !isDragging && !error && !selectedFile && 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50',
-          disabled && 'opacity-50 cursor-not-allowed'
+          !isDragging &&
+            !error &&
+            !selectedFile &&
+            'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50',
+          disabled && 'cursor-not-allowed opacity-50'
         )}
         role="button"
         tabIndex={disabled ? -1 : 0}
@@ -203,14 +203,14 @@ export function CsvFileUpload({
               onClick={handleClear}
               className="mt-2"
             >
-              <X className="h-4 w-4 mr-1" />
+              <X className="mr-1 h-4 w-4" />
               Clear
             </Button>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center gap-3 text-destructive">
             <AlertCircle className="h-12 w-12" />
-            <p className="text-sm text-center">{error}</p>
+            <p className="text-center text-sm">{error}</p>
             <Button
               variant="outline"
               size="sm"
@@ -225,13 +225,15 @@ export function CsvFileUpload({
             <Upload className="h-12 w-12 text-muted-foreground" />
             <div className="text-center">
               <p className="font-medium text-foreground">
-                {isDragging ? 'Drop your CSV file here' : 'Drag & drop your CSV file here'}
+                {isDragging
+                  ? 'Drop your CSV file here'
+                  : 'Drag & drop your CSV file here'}
               </p>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="mt-1 text-sm text-muted-foreground">
                 or click to browse
               </p>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
+            <p className="mt-2 text-xs text-muted-foreground">
               Max file size: {maxSizeMB}MB
             </p>
           </div>

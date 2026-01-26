@@ -46,7 +46,11 @@ async function getHoldingValueAtDate(
   priceCache = createPriceCache()
 ): Promise<{ value: Decimal; isInterpolated: boolean }> {
   try {
-    const { price, isInterpolated } = await getPriceAtDate(holding.assetId, date, priceCache);
+    const { price, isInterpolated } = await getPriceAtDate(
+      holding.assetId,
+      date,
+      priceCache
+    );
 
     if (price.isZero()) {
       // No price history, use current value as fallback
@@ -58,7 +62,10 @@ async function getHoldingValueAtDate(
       isInterpolated,
     };
   } catch (error) {
-    console.error(`Error getting holding value at date for ${holding.assetId}:`, error);
+    console.error(
+      `Error getting holding value at date for ${holding.assetId}:`,
+      error
+    );
     return { value: new Decimal(0), isInterpolated: true };
   }
 }
@@ -86,11 +93,8 @@ export async function calculateAllPerformance(
       const asset = assetMap.get(holding.assetId);
       if (!asset || holding.quantity.isZero()) continue;
 
-      const { value: periodStartValue, isInterpolated } = await getHoldingValueAtDate(
-        holding,
-        startDate,
-        priceCache
-      );
+      const { value: periodStartValue, isInterpolated } =
+        await getHoldingValueAtDate(holding, startDate, priceCache);
 
       const { absoluteGain, percentGain } = calculatePerformance(
         periodStartValue,
@@ -110,7 +114,10 @@ export async function calculateAllPerformance(
         isInterpolated,
       });
     } catch (error) {
-      console.error(`Error calculating performance for holding ${holding.id}:`, error);
+      console.error(
+        `Error calculating performance for holding ${holding.id}:`,
+        error
+      );
       // Skip this holding and continue
     }
   }

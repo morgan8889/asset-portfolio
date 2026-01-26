@@ -131,7 +131,10 @@ export function generateRebalancingPlan(
   }));
 
   const totalValue = calculateTotalValue(holdings);
-  const currentAllocation = calculateAllocationByType(holdingsWithAssets, totalValue);
+  const currentAllocation = calculateAllocationByType(
+    holdingsWithAssets,
+    totalValue
+  );
 
   const suggestions: RebalancingSuggestion[] = [];
   const taxImplications: TaxImplication[] = [];
@@ -172,7 +175,8 @@ export function generateRebalancingPlan(
         : holding.currentValue.dividedBy(currentTypeValue);
 
       const holdingAdjustment = adjustmentNeeded.mul(holdingWeight);
-      const currentPrice = currentPrices.get(asset.id) || new Decimal(asset.currentPrice || 0);
+      const currentPrice =
+        currentPrices.get(asset.id) || new Decimal(asset.currentPrice || 0);
 
       if (currentPrice.isZero()) continue;
 
@@ -180,7 +184,9 @@ export function generateRebalancingPlan(
 
       if (quantity.lessThan(0.01)) continue; // Skip tiny adjustments
 
-      const action: 'buy' | 'sell' = holdingAdjustment.greaterThan(0) ? 'buy' : 'sell';
+      const action: 'buy' | 'sell' = holdingAdjustment.greaterThan(0)
+        ? 'buy'
+        : 'sell';
 
       suggestions.push({
         holdingId: holding.id,
@@ -319,7 +325,8 @@ export function calculateRiskMetrics(
     if (weight > maxWeight) {
       maxWeight = weight;
       const asset = assets.find((a) => a.id === holding.assetId);
-      concentratedPosition = weight > 25 ? asset?.symbol || holding.assetId : null;
+      concentratedPosition =
+        weight > 25 ? asset?.symbol || holding.assetId : null;
     }
 
     // Check for volatile assets (beta > 1.5 or crypto)
@@ -377,7 +384,9 @@ export function calculateProjectedIncome(
   return {
     annualIncome: totalIncome,
     yield: portfolioYield,
-    incomeByAsset: incomeByAsset.sort((a, b) => b.income.minus(a.income).toNumber()),
+    incomeByAsset: incomeByAsset.sort((a, b) =>
+      b.income.minus(a.income).toNumber()
+    ),
   };
 }
 

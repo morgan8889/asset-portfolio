@@ -49,7 +49,8 @@ export const useAssetStore = create<AssetState>()(
           set({ assets, loading: false });
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to load assets',
+            error:
+              error instanceof Error ? error.message : 'Failed to load assets',
             loading: false,
           });
         }
@@ -67,7 +68,10 @@ export const useAssetStore = create<AssetState>()(
           set({ searchResults: results, loading: false });
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to search assets',
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to search assets',
             loading: false,
           });
         }
@@ -89,7 +93,8 @@ export const useAssetStore = create<AssetState>()(
           return id;
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to create asset',
+            error:
+              error instanceof Error ? error.message : 'Failed to create asset',
             loading: false,
           });
           throw error;
@@ -113,7 +118,8 @@ export const useAssetStore = create<AssetState>()(
           set({ loading: false });
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to update asset',
+            error:
+              error instanceof Error ? error.message : 'Failed to update asset',
             loading: false,
           });
         }
@@ -140,7 +146,8 @@ export const useAssetStore = create<AssetState>()(
           set({ loading: false });
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to delete asset',
+            error:
+              error instanceof Error ? error.message : 'Failed to delete asset',
             loading: false,
           });
         }
@@ -166,7 +173,9 @@ export const useAssetStore = create<AssetState>()(
       loadPrices: async (assetIds) => {
         set({ priceLoading: true });
         try {
-          const pricePromises = assetIds.map((id) => priceQueries.getLatestSnapshot(id));
+          const pricePromises = assetIds.map((id) =>
+            priceQueries.getLatestSnapshot(id)
+          );
           const priceResults = await Promise.allSettled(pricePromises);
 
           const { prices } = get();
