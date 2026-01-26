@@ -22,7 +22,8 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
-  const { currentPortfolio, loading, error, loadPortfolios } = useDashboardContext();
+  const { currentPortfolio, loading, error, loadPortfolios } =
+    useDashboardContext();
   const { holdings, assets } = usePortfolioStore();
   const {
     loadPreferences,

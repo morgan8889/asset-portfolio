@@ -22,7 +22,14 @@ interface TimePeriodSelectorProps {
   size?: 'sm' | 'default';
 }
 
-const DEFAULT_PERIODS: TimePeriod[] = ['TODAY', 'WEEK', 'MONTH', 'QUARTER', 'YEAR', 'ALL'];
+const DEFAULT_PERIODS: TimePeriod[] = [
+  'TODAY',
+  'WEEK',
+  'MONTH',
+  'QUARTER',
+  'YEAR',
+  'ALL',
+];
 
 export const TimePeriodSelector = memo(function TimePeriodSelector({
   periods = DEFAULT_PERIODS,
@@ -84,42 +91,48 @@ TimePeriodSelector.displayName = 'TimePeriodSelector';
 /**
  * Compact version for use in widget headers
  */
-export const TimePeriodSelectorCompact = memo(function TimePeriodSelectorCompact({
-  periods = ['WEEK', 'MONTH', 'QUARTER', 'YEAR', 'ALL'],
-  className,
-}: Omit<TimePeriodSelectorProps, 'size'>) {
-  const { config, setTimePeriod } = useDashboardStore();
-  const currentPeriod = config?.timePeriod || 'ALL';
+export const TimePeriodSelectorCompact = memo(
+  function TimePeriodSelectorCompact({
+    periods = ['WEEK', 'MONTH', 'QUARTER', 'YEAR', 'ALL'],
+    className,
+  }: Omit<TimePeriodSelectorProps, 'size'>) {
+    const { config, setTimePeriod } = useDashboardStore();
+    const currentPeriod = config?.timePeriod || 'ALL';
 
-  const handlePeriodChange = useCallback(
-    async (period: TimePeriod) => {
-      await setTimePeriod(period);
-    },
-    [setTimePeriod]
-  );
+    const handlePeriodChange = useCallback(
+      async (period: TimePeriod) => {
+        await setTimePeriod(period);
+      },
+      [setTimePeriod]
+    );
 
-  return (
-    <div className={cn('flex gap-1', className)} role="group" aria-label="Select time period">
-      {periods.map((period) => {
-        const config = TIME_PERIOD_CONFIGS[period];
-        const isActive = currentPeriod === period;
+    return (
+      <div
+        className={cn('flex gap-1', className)}
+        role="group"
+        aria-label="Select time period"
+      >
+        {periods.map((period) => {
+          const config = TIME_PERIOD_CONFIGS[period];
+          const isActive = currentPeriod === period;
 
-        return (
-          <Button
-            key={period}
-            variant={isActive ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => handlePeriodChange(period)}
-            className="h-7 px-2 text-xs"
-            aria-pressed={isActive}
-            aria-label={config.label}
-          >
-            {config.shortLabel}
-          </Button>
-        );
-      })}
-    </div>
-  );
-});
+          return (
+            <Button
+              key={period}
+              variant={isActive ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handlePeriodChange(period)}
+              className="h-7 px-2 text-xs"
+              aria-pressed={isActive}
+              aria-label={config.label}
+            >
+              {config.shortLabel}
+            </Button>
+          );
+        })}
+      </div>
+    );
+  }
+);
 
 TimePeriodSelectorCompact.displayName = 'TimePeriodSelectorCompact';

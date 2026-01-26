@@ -20,7 +20,7 @@ import {
   MoreHorizontal,
   Calendar,
   DollarSign,
-  Filter
+  Filter,
 } from 'lucide-react';
 import { useTransactionStore, usePortfolioStore } from '@/lib/stores';
 import { formatCurrency, formatDate } from '@/lib/utils';
@@ -32,18 +32,61 @@ interface TransactionTableProps {
 
 export const getTransactionTypeBadge = (type: TransactionType) => {
   const typeConfig = {
-    buy: { label: 'Buy', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' },
-    sell: { label: 'Sell', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' },
-    dividend: { label: 'Dividend', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' },
-    interest: { label: 'Interest', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' },
-    split: { label: 'Split', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' },
-    transfer_in: { label: 'Transfer In', color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300' },
-    transfer_out: { label: 'Transfer Out', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' },
-    fee: { label: 'Fee', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300' },
-    tax: { label: 'Tax', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' },
-    spinoff: { label: 'Spinoff', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300' },
-    merger: { label: 'Merger', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' },
-    reinvestment: { label: 'Reinvest', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' },
+    buy: {
+      label: 'Buy',
+      color:
+        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+    },
+    sell: {
+      label: 'Sell',
+      color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+    },
+    dividend: {
+      label: 'Dividend',
+      color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    },
+    interest: {
+      label: 'Interest',
+      color:
+        'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+    },
+    split: {
+      label: 'Split',
+      color:
+        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+    },
+    transfer_in: {
+      label: 'Transfer In',
+      color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
+    },
+    transfer_out: {
+      label: 'Transfer Out',
+      color:
+        'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+    },
+    fee: {
+      label: 'Fee',
+      color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
+    },
+    tax: {
+      label: 'Tax',
+      color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+    },
+    spinoff: {
+      label: 'Spinoff',
+      color:
+        'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300',
+    },
+    merger: {
+      label: 'Merger',
+      color:
+        'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+    },
+    reinvestment: {
+      label: 'Reinvest',
+      color:
+        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+    },
   };
 
   const config = typeConfig[type] || typeConfig.buy;
@@ -54,7 +97,9 @@ export const getTransactionTypeBadge = (type: TransactionType) => {
   );
 };
 
-const TransactionTableComponent = ({ showPortfolioFilter = false }: TransactionTableProps) => {
+const TransactionTableComponent = ({
+  showPortfolioFilter = false,
+}: TransactionTableProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<TransactionType | 'all'>('all');
 
@@ -65,7 +110,7 @@ const TransactionTableComponent = ({ showPortfolioFilter = false }: TransactionT
     error,
     loadTransactions,
     filterTransactions,
-    clearError
+    clearError,
   } = useTransactionStore();
 
   const { currentPortfolio } = usePortfolioStore();
@@ -77,23 +122,31 @@ const TransactionTableComponent = ({ showPortfolioFilter = false }: TransactionT
   }, [currentPortfolio?.id, loadTransactions]);
 
   const displayTransactions = useMemo(() => {
-    let filtered = filteredTransactions.length > 0 ? filteredTransactions : transactions;
+    let filtered =
+      filteredTransactions.length > 0 ? filteredTransactions : transactions;
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(transaction =>
-        transaction.assetId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        transaction.notes?.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (transaction) =>
+          transaction.assetId
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          transaction.notes?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     // Apply type filter
     if (filterType !== 'all') {
-      filtered = filtered.filter(transaction => transaction.type === filterType);
+      filtered = filtered.filter(
+        (transaction) => transaction.type === filterType
+      );
     }
 
     // Sort by date (newest first)
-    return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return filtered.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
   }, [filteredTransactions, transactions, searchTerm, filterType]);
 
   if (loading) {
@@ -105,7 +158,7 @@ const TransactionTableComponent = ({ showPortfolioFilter = false }: TransactionT
         <CardContent>
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center gap-3">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
               <div>Loading transactions...</div>
             </div>
           </div>
@@ -121,9 +174,17 @@ const TransactionTableComponent = ({ showPortfolioFilter = false }: TransactionT
           <CardTitle>Transaction History</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
-            <div className="text-red-600 mb-2">Error loading transactions: {error}</div>
-            <Button onClick={() => { clearError(); loadTransactions(currentPortfolio?.id); }} variant="outline">
+          <div className="py-8 text-center">
+            <div className="mb-2 text-red-600">
+              Error loading transactions: {error}
+            </div>
+            <Button
+              onClick={() => {
+                clearError();
+                loadTransactions(currentPortfolio?.id);
+              }}
+              variant="outline"
+            >
               Retry
             </Button>
           </div>
@@ -139,10 +200,12 @@ const TransactionTableComponent = ({ showPortfolioFilter = false }: TransactionT
           <CardTitle>Transaction History</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-muted-foreground py-8">
-            <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium mb-2">No transactions found</p>
-            <p className="text-sm">Add your first transaction to get started tracking your portfolio.</p>
+          <div className="py-8 text-center text-muted-foreground">
+            <DollarSign className="mx-auto mb-4 h-12 w-12 opacity-50" />
+            <p className="mb-2 text-lg font-medium">No transactions found</p>
+            <p className="text-sm">
+              Add your first transaction to get started tracking your portfolio.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -154,13 +217,15 @@ const TransactionTableComponent = ({ showPortfolioFilter = false }: TransactionT
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Transaction History</span>
-          <Badge variant="outline">{displayTransactions.length} transactions</Badge>
+          <Badge variant="outline">
+            {displayTransactions.length} transactions
+          </Badge>
         </CardTitle>
 
         {/* Search and Filter Controls */}
-        <div className="flex gap-4 mt-4">
+        <div className="mt-4 flex gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
             <Input
               placeholder="Search by symbol or notes..."
               value={searchTerm}
@@ -171,8 +236,10 @@ const TransactionTableComponent = ({ showPortfolioFilter = false }: TransactionT
 
           <select
             value={filterType}
-            onChange={(e) => setFilterType(e.target.value as TransactionType | 'all')}
-            className="px-3 py-2 border border-input bg-background rounded-md text-sm"
+            onChange={(e) =>
+              setFilterType(e.target.value as TransactionType | 'all')
+            }
+            className="rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
             <option value="all">All Types</option>
             <option value="buy">Buy</option>
@@ -187,8 +254,8 @@ const TransactionTableComponent = ({ showPortfolioFilter = false }: TransactionT
 
       <CardContent>
         {displayTransactions.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
-            <Filter className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <div className="py-8 text-center text-muted-foreground">
+            <Filter className="mx-auto mb-2 h-8 w-8 opacity-50" />
             <p>No transactions match your search criteria.</p>
           </div>
         ) : (
@@ -229,10 +296,16 @@ const TransactionTableComponent = ({ showPortfolioFilter = false }: TransactionT
                       {formatCurrency(parseFloat(transaction.price.toString()))}
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {formatCurrency(parseFloat(transaction.totalAmount.toString()))}
+                      {formatCurrency(
+                        parseFloat(transaction.totalAmount.toString())
+                      )}
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">
-                      {transaction.fees.toString() !== '0' ? formatCurrency(parseFloat(transaction.fees.toString())) : '-'}
+                      {transaction.fees.toString() !== '0'
+                        ? formatCurrency(
+                            parseFloat(transaction.fees.toString())
+                          )
+                        : '-'}
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate text-muted-foreground">
                       {transaction.notes || '-'}

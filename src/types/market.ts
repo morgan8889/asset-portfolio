@@ -16,7 +16,14 @@ export type RefreshInterval = 'realtime' | 'frequent' | 'standard' | 'manual';
 
 export type StalenessLevel = 'fresh' | 'aging' | 'stale';
 
-export type Exchange = 'NYSE' | 'NASDAQ' | 'AMEX' | 'LSE' | 'AIM' | 'CRYPTO' | 'UNKNOWN';
+export type Exchange =
+  | 'NYSE'
+  | 'NASDAQ'
+  | 'AMEX'
+  | 'LSE'
+  | 'AIM'
+  | 'CRYPTO'
+  | 'UNKNOWN';
 
 export const REFRESH_INTERVALS: Record<RefreshInterval, number> = {
   realtime: 15_000, // 15 seconds

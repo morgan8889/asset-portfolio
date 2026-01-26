@@ -24,9 +24,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ChevronDown, ChevronRight, AlertCircle, AlertTriangle, Download } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  AlertCircle,
+  AlertTriangle,
+  Download,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ImportError, ErrorSeverity, TransactionField } from '@/types/csv-import';
+import type {
+  ImportError,
+  ErrorSeverity,
+  TransactionField,
+} from '@/types/csv-import';
 import { FIELD_LABELS } from '@/types/csv-import';
 
 interface ImportErrorReportProps {
@@ -62,7 +72,10 @@ function getSeverityBadge(severity: ErrorSeverity) {
     );
   }
   return (
-    <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-xs">
+    <Badge
+      variant="outline"
+      className="border-yellow-200 bg-yellow-50 text-xs text-yellow-700"
+    >
       Warning
     </Badge>
   );
@@ -127,12 +140,10 @@ function ErrorRow({
               {FIELD_LABELS[primaryError.field]}
             </div>
           </TableCell>
-          <TableCell className="font-mono text-sm max-w-[150px] truncate">
+          <TableCell className="max-w-[150px] truncate font-mono text-sm">
             {primaryError.value || '(empty)'}
           </TableCell>
-          <TableCell className="text-sm">
-            {primaryError.message}
-          </TableCell>
+          <TableCell className="text-sm">{primaryError.message}</TableCell>
           <TableCell>
             <div className="flex items-center gap-2">
               {getSeverityBadge(primaryError.severity)}
@@ -154,11 +165,13 @@ function ErrorRow({
                 key={`${rowNumber}-${idx}`}
                 className={cn(
                   'bg-muted/30',
-                  error.severity === 'warning' ? 'bg-yellow-50/30' : 'bg-red-50/30'
+                  error.severity === 'warning'
+                    ? 'bg-yellow-50/30'
+                    : 'bg-red-50/30'
                 )}
               >
                 <TableCell className="pl-10">
-                  <span className="text-muted-foreground text-sm">↳</span>
+                  <span className="text-sm text-muted-foreground">↳</span>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
@@ -166,15 +179,11 @@ function ErrorRow({
                     {FIELD_LABELS[error.field]}
                   </div>
                 </TableCell>
-                <TableCell className="font-mono text-sm max-w-[150px] truncate">
+                <TableCell className="max-w-[150px] truncate font-mono text-sm">
                   {error.value || '(empty)'}
                 </TableCell>
-                <TableCell className="text-sm">
-                  {error.message}
-                </TableCell>
-                <TableCell>
-                  {getSeverityBadge(error.severity)}
-                </TableCell>
+                <TableCell className="text-sm">{error.message}</TableCell>
+                <TableCell>{getSeverityBadge(error.severity)}</TableCell>
               </TableRow>
             ))}
           </>
@@ -194,7 +203,9 @@ export function ImportErrorReport({
 
   const groupedErrors = groupErrorsByRow(errors);
   const rowNumbers = Array.from(groupedErrors.keys()).sort((a, b) => a - b);
-  const displayedRows = showAll ? rowNumbers : rowNumbers.slice(0, initialDisplayCount);
+  const displayedRows = showAll
+    ? rowNumbers
+    : rowNumbers.slice(0, initialDisplayCount);
   const hasMore = rowNumbers.length > initialDisplayCount;
 
   const errorCount = errors.filter((e) => e.severity === 'error').length;
@@ -208,13 +219,13 @@ export function ImportErrorReport({
     <Card className={cn('w-full', className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
             <AlertCircle className="h-5 w-5 text-destructive" />
             Import Errors
           </CardTitle>
           {onDownloadFailed && (
             <Button variant="outline" size="sm" onClick={onDownloadFailed}>
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="mr-2 h-4 w-4" />
               Download Failed Rows
             </Button>
           )}

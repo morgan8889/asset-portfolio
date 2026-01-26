@@ -17,21 +17,79 @@ import type { ColumnMapping } from '@/types/csv-import';
 // Helper to create standard mappings
 function createStandardMappings(): ColumnMapping[] {
   return [
-    { csvColumn: 'Date', csvColumnIndex: 0, transactionField: 'date', confidence: 1, isUserOverride: false },
-    { csvColumn: 'Symbol', csvColumnIndex: 1, transactionField: 'symbol', confidence: 1, isUserOverride: false },
-    { csvColumn: 'Quantity', csvColumnIndex: 2, transactionField: 'quantity', confidence: 1, isUserOverride: false },
-    { csvColumn: 'Price', csvColumnIndex: 3, transactionField: 'price', confidence: 1, isUserOverride: false },
-    { csvColumn: 'Type', csvColumnIndex: 4, transactionField: 'type', confidence: 1, isUserOverride: false },
-    { csvColumn: 'Fees', csvColumnIndex: 5, transactionField: 'fees', confidence: 1, isUserOverride: false },
-    { csvColumn: 'Notes', csvColumnIndex: 6, transactionField: 'notes', confidence: 1, isUserOverride: false },
+    {
+      csvColumn: 'Date',
+      csvColumnIndex: 0,
+      transactionField: 'date',
+      confidence: 1,
+      isUserOverride: false,
+    },
+    {
+      csvColumn: 'Symbol',
+      csvColumnIndex: 1,
+      transactionField: 'symbol',
+      confidence: 1,
+      isUserOverride: false,
+    },
+    {
+      csvColumn: 'Quantity',
+      csvColumnIndex: 2,
+      transactionField: 'quantity',
+      confidence: 1,
+      isUserOverride: false,
+    },
+    {
+      csvColumn: 'Price',
+      csvColumnIndex: 3,
+      transactionField: 'price',
+      confidence: 1,
+      isUserOverride: false,
+    },
+    {
+      csvColumn: 'Type',
+      csvColumnIndex: 4,
+      transactionField: 'type',
+      confidence: 1,
+      isUserOverride: false,
+    },
+    {
+      csvColumn: 'Fees',
+      csvColumnIndex: 5,
+      transactionField: 'fees',
+      confidence: 1,
+      isUserOverride: false,
+    },
+    {
+      csvColumn: 'Notes',
+      csvColumnIndex: 6,
+      transactionField: 'notes',
+      confidence: 1,
+      isUserOverride: false,
+    },
   ];
 }
 
 describe('validateRows', () => {
   it('validates all rows and returns results', () => {
     const rows = [
-      { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'buy', Fees: '5', Notes: '' },
-      { Date: '2025-01-16', Symbol: 'GOOGL', Quantity: '5', Price: '175.50', Type: 'buy', Fees: '0', Notes: 'Test' },
+      {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: 'buy',
+        Fees: '5',
+        Notes: '',
+      },
+      {
+        Date: '2025-01-16',
+        Symbol: 'GOOGL',
+        Quantity: '5',
+        Price: '175.50',
+        Type: 'buy',
+        Fees: '0',
+        Notes: 'Test',
+      },
     ];
     const mappings = createStandardMappings();
 
@@ -45,8 +103,24 @@ describe('validateRows', () => {
 
   it('separates valid and invalid rows', () => {
     const rows = [
-      { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'buy', Fees: '', Notes: '' },
-      { Date: 'invalid-date', Symbol: 'GOOGL', Quantity: '5', Price: '175.50', Type: 'buy', Fees: '', Notes: '' },
+      {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: 'buy',
+        Fees: '',
+        Notes: '',
+      },
+      {
+        Date: 'invalid-date',
+        Symbol: 'GOOGL',
+        Quantity: '5',
+        Price: '175.50',
+        Type: 'buy',
+        Fees: '',
+        Notes: '',
+      },
     ];
     const mappings = createStandardMappings();
 
@@ -60,8 +134,24 @@ describe('validateRows', () => {
 
   it('includes correct row numbers in results', () => {
     const rows = [
-      { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: '' },
-      { Date: '2025-01-16', Symbol: 'GOOGL', Quantity: '5', Price: '175.50', Type: '', Fees: '', Notes: '' },
+      {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      },
+      {
+        Date: '2025-01-16',
+        Symbol: 'GOOGL',
+        Quantity: '5',
+        Price: '175.50',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      },
     ];
     const mappings = createStandardMappings();
 
@@ -78,7 +168,15 @@ describe('validateRow', () => {
 
   describe('date validation', () => {
     it('validates valid date', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.isValid).toBe(true);
@@ -86,64 +184,128 @@ describe('validateRow', () => {
     });
 
     it('rejects empty date', () => {
-      const row = { Date: '', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => e.field === 'date')).toBe(true);
+      expect(result.errors.some((e) => e.field === 'date')).toBe(true);
     });
 
     it('rejects invalid date format', () => {
-      const row = { Date: 'not-a-date', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: 'not-a-date',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => e.field === 'date')).toBe(true);
+      expect(result.errors.some((e) => e.field === 'date')).toBe(true);
     });
   });
 
   describe('symbol validation', () => {
     it('validates valid symbol', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.symbol).toBe('AAPL');
     });
 
     it('converts symbol to uppercase', () => {
-      const row = { Date: '2025-01-15', Symbol: 'aapl', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'aapl',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.symbol).toBe('AAPL');
     });
 
     it('rejects empty symbol', () => {
-      const row = { Date: '2025-01-15', Symbol: '', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: '',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => e.field === 'symbol')).toBe(true);
+      expect(result.errors.some((e) => e.field === 'symbol')).toBe(true);
     });
 
     it('rejects symbol with invalid characters', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL$%', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL$%',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => e.field === 'symbol')).toBe(true);
+      expect(result.errors.some((e) => e.field === 'symbol')).toBe(true);
     });
   });
 
   describe('quantity validation', () => {
     it('validates positive quantity', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.quantity?.toString()).toBe('10');
     });
 
     it('validates negative quantity (for sells)', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '-10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '-10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.isValid).toBe(true);
@@ -151,39 +313,79 @@ describe('validateRow', () => {
     });
 
     it('validates decimal quantity', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10.5', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10.5',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.quantity?.toString()).toBe('10.5');
     });
 
     it('rejects zero quantity', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '0', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '0',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => e.field === 'quantity')).toBe(true);
+      expect(result.errors.some((e) => e.field === 'quantity')).toBe(true);
     });
 
     it('rejects non-numeric quantity', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: 'ten', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: 'ten',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => e.field === 'quantity')).toBe(true);
+      expect(result.errors.some((e) => e.field === 'quantity')).toBe(true);
     });
   });
 
   describe('price validation', () => {
     it('validates valid price', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.price?.toString()).toBe('150');
     });
 
     it('accepts zero price (for some transaction types)', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '0', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '0',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.isValid).toBe(true);
@@ -191,38 +393,78 @@ describe('validateRow', () => {
     });
 
     it('rejects negative price', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '-150', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '-150',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors.some(e => e.field === 'price')).toBe(true);
+      expect(result.errors.some((e) => e.field === 'price')).toBe(true);
     });
   });
 
   describe('type inference', () => {
     it('maps buy type', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'Buy', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: 'Buy',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.type).toBe('buy');
     });
 
     it('maps sell type', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'Sell', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: 'Sell',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.type).toBe('sell');
     });
 
     it('infers buy from positive quantity when type is missing', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.type).toBe('buy');
     });
 
     it('infers sell from negative quantity when type is missing', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '-10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '-10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.type).toBe('sell');
@@ -231,21 +473,45 @@ describe('validateRow', () => {
 
   describe('fees validation', () => {
     it('validates valid fees', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: '5.99', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '5.99',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.fees?.toString()).toBe('5.99');
     });
 
     it('defaults to zero when fees is empty', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.fees?.toString()).toBe('0');
     });
 
     it('defaults to zero for invalid fees (non-blocking)', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: 'invalid', Notes: '' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: 'invalid',
+        Notes: '',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.isValid).toBe(true); // Fees errors are non-blocking
@@ -255,7 +521,15 @@ describe('validateRow', () => {
 
   describe('notes handling', () => {
     it('preserves notes content', () => {
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: 'Test note' };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: 'Test note',
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.notes).toBe('Test note');
@@ -263,7 +537,15 @@ describe('validateRow', () => {
 
     it('truncates long notes', () => {
       const longNote = 'A'.repeat(1500);
-      const row = { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: '', Fees: '', Notes: longNote };
+      const row = {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: '',
+        Fees: '',
+        Notes: longNote,
+      };
       const result = validateRow(row, mappings, 2);
 
       expect(result.parsed.notes?.length).toBe(1000);
@@ -362,9 +644,30 @@ describe('getValidationSummary', () => {
 describe('groupErrorsByField', () => {
   it('groups errors by field type', () => {
     const errors = [
-      { rowNumber: 2, originalData: {}, field: 'date' as const, value: '', message: '', severity: 'error' as const },
-      { rowNumber: 3, originalData: {}, field: 'date' as const, value: '', message: '', severity: 'error' as const },
-      { rowNumber: 4, originalData: {}, field: 'symbol' as const, value: '', message: '', severity: 'error' as const },
+      {
+        rowNumber: 2,
+        originalData: {},
+        field: 'date' as const,
+        value: '',
+        message: '',
+        severity: 'error' as const,
+      },
+      {
+        rowNumber: 3,
+        originalData: {},
+        field: 'date' as const,
+        value: '',
+        message: '',
+        severity: 'error' as const,
+      },
+      {
+        rowNumber: 4,
+        originalData: {},
+        field: 'symbol' as const,
+        value: '',
+        message: '',
+        severity: 'error' as const,
+      },
     ];
 
     const grouped = groupErrorsByField(errors);
@@ -380,7 +683,15 @@ describe('Error Reporting', () => {
 
   it('includes original row data in errors for debugging', () => {
     const rows = [
-      { Date: 'bad-date', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'buy', Fees: '', Notes: '' },
+      {
+        Date: 'bad-date',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: 'buy',
+        Fees: '',
+        Notes: '',
+      },
     ];
 
     const result = validateRows(rows, mappings);
@@ -392,7 +703,15 @@ describe('Error Reporting', () => {
 
   it('provides clear error messages for each validation failure', () => {
     const rows = [
-      { Date: '', Symbol: '', Quantity: 'invalid', Price: '-100', Type: 'buy', Fees: '', Notes: '' },
+      {
+        Date: '',
+        Symbol: '',
+        Quantity: 'invalid',
+        Price: '-100',
+        Type: 'buy',
+        Fees: '',
+        Notes: '',
+      },
     ];
 
     const result = validateRows(rows, mappings);
@@ -401,7 +720,7 @@ describe('Error Reporting', () => {
     expect(result.errors.length).toBeGreaterThan(0);
 
     // Each error should have a meaningful message
-    result.errors.forEach(error => {
+    result.errors.forEach((error) => {
       expect(error.message).toBeTruthy();
       expect(error.message.length).toBeGreaterThan(0);
     });
@@ -409,7 +728,15 @@ describe('Error Reporting', () => {
 
   it('correctly assigns error severity', () => {
     const rows = [
-      { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'buy', Fees: 'invalid', Notes: '' },
+      {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: 'buy',
+        Fees: 'invalid',
+        Notes: '',
+      },
     ];
 
     const result = validateRows(rows, mappings);
@@ -421,22 +748,62 @@ describe('Error Reporting', () => {
 
   it('accumulates multiple errors for a single row', () => {
     const rows = [
-      { Date: 'bad-date', Symbol: '', Quantity: '', Price: '', Type: 'buy', Fees: '', Notes: '' },
+      {
+        Date: 'bad-date',
+        Symbol: '',
+        Quantity: '',
+        Price: '',
+        Type: 'buy',
+        Fees: '',
+        Notes: '',
+      },
     ];
 
     const result = validateRows(rows, mappings);
 
     // Single row with multiple field errors
     expect(result.errors.length).toBeGreaterThan(1);
-    expect(result.errors.every(e => e.rowNumber === 2)).toBe(true);
+    expect(result.errors.every((e) => e.rowNumber === 2)).toBe(true);
   });
 
   it('preserves row ordering in error reports', () => {
     const rows = [
-      { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'buy', Fees: '', Notes: '' },
-      { Date: 'bad-date-2', Symbol: 'GOOGL', Quantity: '5', Price: '175.50', Type: 'buy', Fees: '', Notes: '' },
-      { Date: '2025-01-17', Symbol: 'MSFT', Quantity: '20', Price: '380.25', Type: 'buy', Fees: '', Notes: '' },
-      { Date: 'bad-date-4', Symbol: 'TSLA', Quantity: '15', Price: '250.00', Type: 'buy', Fees: '', Notes: '' },
+      {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: 'buy',
+        Fees: '',
+        Notes: '',
+      },
+      {
+        Date: 'bad-date-2',
+        Symbol: 'GOOGL',
+        Quantity: '5',
+        Price: '175.50',
+        Type: 'buy',
+        Fees: '',
+        Notes: '',
+      },
+      {
+        Date: '2025-01-17',
+        Symbol: 'MSFT',
+        Quantity: '20',
+        Price: '380.25',
+        Type: 'buy',
+        Fees: '',
+        Notes: '',
+      },
+      {
+        Date: 'bad-date-4',
+        Symbol: 'TSLA',
+        Quantity: '15',
+        Price: '250.00',
+        Type: 'buy',
+        Fees: '',
+        Notes: '',
+      },
     ];
 
     const result = validateRows(rows, mappings);
@@ -445,7 +812,7 @@ describe('Error Reporting', () => {
     expect(result.errorCount).toBe(2);
 
     // Errors should be from rows 3 and 5 (1-indexed with header)
-    const errorRows = result.errors.map(e => e.rowNumber);
+    const errorRows = result.errors.map((e) => e.rowNumber);
     expect(errorRows).toContain(3);
     expect(errorRows).toContain(5);
   });

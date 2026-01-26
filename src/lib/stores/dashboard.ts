@@ -62,9 +62,10 @@ async function optimisticUpdate<T extends keyof DashboardConfiguration>(
   } catch (error) {
     // Log the actual error for debugging while showing user-friendly message
     console.error('Dashboard config update failed:', error);
-    const detailedMessage = error instanceof Error
-      ? `${errorMessage}: ${error.message}`
-      : errorMessage;
+    const detailedMessage =
+      error instanceof Error
+        ? `${errorMessage}: ${error.message}`
+        : errorMessage;
     set({ config, error: detailedMessage });
   }
 }
@@ -83,7 +84,10 @@ export const useDashboardStore = create<DashboardState>()(
           set({ config, loading: false });
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to load dashboard config',
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to load dashboard config',
             loading: false,
             config: { ...DEFAULT_DASHBOARD_CONFIG },
           });
@@ -213,7 +217,10 @@ export const useDashboardStore = create<DashboardState>()(
           set({ config, loading: false });
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to reset dashboard config',
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to reset dashboard config',
             loading: false,
           });
         }

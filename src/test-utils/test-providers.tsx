@@ -1,14 +1,18 @@
-import { ReactNode } from 'react'
-import { ThemeProvider } from 'next-themes'
+import { ReactNode } from 'react';
+import { ThemeProvider } from 'next-themes';
 
 interface TestProvidersProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export function TestProviders({ children }: TestProvidersProps) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      disableTransitionOnChange
+    >
       {children}
     </ThemeProvider>
-  )
+  );
 }

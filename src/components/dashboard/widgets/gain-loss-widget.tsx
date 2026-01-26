@@ -44,7 +44,8 @@ export const GainLossWidget = memo(function GainLossWidget({
   const iconColor = isPositive ? 'text-green-600' : 'text-red-600';
 
   const trendDescription = isPositive ? 'gain' : 'loss';
-  const periodDescription = period !== 'ALL' ? periodLabel.toLowerCase() : 'from cost basis';
+  const periodDescription =
+    period !== 'ALL' ? periodLabel.toLowerCase() : 'from cost basis';
 
   return (
     <WidgetCard
@@ -60,8 +61,7 @@ export const GainLossWidget = memo(function GainLossWidget({
         ariaLabel={`Total ${trendDescription}: ${formatCurrency(Math.abs(numericGain), currency)}`}
       />
       <p className="text-xs text-muted-foreground">
-        {formatPercentage(gainPercent, 2, true)}{' '}
-        {periodDescription}
+        {formatPercentage(gainPercent, 2, true)} {periodDescription}
       </p>
     </WidgetCard>
   );

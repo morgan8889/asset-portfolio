@@ -91,7 +91,12 @@ export function StalenessIndicator({
 
   return (
     <span
-      className={cn('inline-block rounded-full', classes.dot, config.dotColor, className)}
+      className={cn(
+        'inline-block rounded-full',
+        classes.dot,
+        config.dotColor,
+        className
+      )}
       title={`Data is ${config.label.toLowerCase()}`}
     />
   );
@@ -106,13 +111,22 @@ interface StalenessDotProps {
   className?: string;
 }
 
-export function StalenessDot({ level, size = 'md', className }: StalenessDotProps) {
+export function StalenessDot({
+  level,
+  size = 'md',
+  className,
+}: StalenessDotProps) {
   const config = levelConfig[level] || levelConfig.fresh;
   const dotSize = sizeClasses[size].dot;
 
   return (
     <span
-      className={cn('inline-block rounded-full', dotSize, config.dotColor, className)}
+      className={cn(
+        'inline-block rounded-full',
+        dotSize,
+        config.dotColor,
+        className
+      )}
       title={`Data is ${config.label.toLowerCase()}`}
     />
   );
@@ -133,7 +147,11 @@ const textSizeClasses = {
   lg: 'text-base',
 };
 
-export function StalenessText({ level, size = 'sm', className }: StalenessTextProps) {
+export function StalenessText({
+  level,
+  size = 'sm',
+  className,
+}: StalenessTextProps) {
   const config = levelConfig[level] || levelConfig.fresh;
 
   return (

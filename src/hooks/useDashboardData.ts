@@ -1,8 +1,18 @@
 'use client';
 
 import { useEffect, useMemo, useCallback, useRef } from 'react';
-import { usePortfolioStore, useTransactionStore, useAssetStore } from '@/lib/stores';
-import { Portfolio, PortfolioMetrics, Transaction, Asset, Holding } from '@/types';
+import {
+  usePortfolioStore,
+  useTransactionStore,
+  useAssetStore,
+} from '@/lib/stores';
+import {
+  Portfolio,
+  PortfolioMetrics,
+  Transaction,
+  Asset,
+  Holding,
+} from '@/types';
 
 interface DashboardData {
   // Core state
@@ -52,8 +62,12 @@ export function useDashboardData(): DashboardData {
   } = usePortfolioStore();
 
   // Get stable action references via getState() to avoid effect dependency issues with devtools middleware
-  const { loadPortfolios, loadHoldings, calculateMetrics, refreshData: refreshPortfolioData } =
-    usePortfolioStore.getState();
+  const {
+    loadPortfolios,
+    loadHoldings,
+    calculateMetrics,
+    refreshData: refreshPortfolioData,
+  } = usePortfolioStore.getState();
 
   const { transactions, loading: transactionsLoading } = useTransactionStore();
 
@@ -147,10 +161,16 @@ export function useDashboardData(): DashboardData {
 
   // Memoized metric values with safe defaults
   const derivedMetrics = useMemo(() => {
-    const totalValue = metrics?.totalValue ? parseFloat(metrics.totalValue.toString()) : 0;
-    const totalGain = metrics?.totalGain ? parseFloat(metrics.totalGain.toString()) : 0;
+    const totalValue = metrics?.totalValue
+      ? parseFloat(metrics.totalValue.toString())
+      : 0;
+    const totalGain = metrics?.totalGain
+      ? parseFloat(metrics.totalGain.toString())
+      : 0;
     const totalGainPercent = metrics?.totalGainPercent || 0;
-    const dayChange = metrics?.dayChange ? parseFloat(metrics.dayChange.toString()) : 0;
+    const dayChange = metrics?.dayChange
+      ? parseFloat(metrics.dayChange.toString())
+      : 0;
     const dayChangePercent = metrics?.dayChangePercent || 0;
 
     return {

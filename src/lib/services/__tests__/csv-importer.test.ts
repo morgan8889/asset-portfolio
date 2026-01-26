@@ -9,11 +9,20 @@ import {
   detectDuplicates,
   executeImport,
 } from '../csv-importer';
-import type { ParsedRow, ColumnMapping, ImportSession } from '@/types/csv-import';
+import type {
+  ParsedRow,
+  ColumnMapping,
+  ImportSession,
+} from '@/types/csv-import';
 
 // Mock the database module - correct path is @/lib/db/schema
 vi.mock('@/lib/db/schema', () => {
-  const mockAsset = { id: 'asset-1', symbol: 'AAPL', name: 'Apple', type: 'stock' };
+  const mockAsset = {
+    id: 'asset-1',
+    symbol: 'AAPL',
+    name: 'Apple',
+    type: 'stock',
+  };
   return {
     db: {
       transactions: {
@@ -47,26 +56,74 @@ vi.mock('../csv-parser', () => ({
   parseCsvFile: vi.fn().mockResolvedValue({
     headers: ['Date', 'Symbol', 'Quantity', 'Price', 'Type'],
     rows: [
-      { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'buy' },
+      {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: 'buy',
+      },
     ],
     delimiter: ',',
     rowCount: 1,
   }),
-  generateCsv: vi.fn().mockReturnValue('Date,Symbol,Quantity,Price,Type\n2025-01-15,AAPL,10,150.00,buy'),
-  getPreviewData: vi.fn().mockReturnValue([
-    { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150.00', Type: 'buy' },
-  ]),
+  generateCsv: vi
+    .fn()
+    .mockReturnValue(
+      'Date,Symbol,Quantity,Price,Type\n2025-01-15,AAPL,10,150.00,buy'
+    ),
+  getPreviewData: vi
+    .fn()
+    .mockReturnValue([
+      {
+        Date: '2025-01-15',
+        Symbol: 'AAPL',
+        Quantity: '10',
+        Price: '150.00',
+        Type: 'buy',
+      },
+    ]),
 }));
 
 // Mock column detector
 vi.mock('../column-detector', () => ({
   detectColumnMappings: vi.fn().mockReturnValue({
     mappings: [
-      { csvColumn: 'Date', csvColumnIndex: 0, transactionField: 'date', confidence: 1, isUserOverride: false },
-      { csvColumn: 'Symbol', csvColumnIndex: 1, transactionField: 'symbol', confidence: 1, isUserOverride: false },
-      { csvColumn: 'Quantity', csvColumnIndex: 2, transactionField: 'quantity', confidence: 1, isUserOverride: false },
-      { csvColumn: 'Price', csvColumnIndex: 3, transactionField: 'price', confidence: 1, isUserOverride: false },
-      { csvColumn: 'Type', csvColumnIndex: 4, transactionField: 'type', confidence: 1, isUserOverride: false },
+      {
+        csvColumn: 'Date',
+        csvColumnIndex: 0,
+        transactionField: 'date',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'Symbol',
+        csvColumnIndex: 1,
+        transactionField: 'symbol',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'Quantity',
+        csvColumnIndex: 2,
+        transactionField: 'quantity',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'Price',
+        csvColumnIndex: 3,
+        transactionField: 'price',
+        confidence: 1,
+        isUserOverride: false,
+      },
+      {
+        csvColumn: 'Type',
+        csvColumnIndex: 4,
+        transactionField: 'type',
+        confidence: 1,
+        isUserOverride: false,
+      },
     ],
     unmappedColumns: [],
     missingRequiredFields: [],
@@ -85,15 +142,17 @@ vi.mock('../csv-validator', () => ({
 }));
 
 // Helper to create a valid parsed row for tests
-function createParsedRow(overrides: Partial<{
-  rowNumber: number;
-  date: Date;
-  symbol: string;
-  quantity: Decimal;
-  price: Decimal;
-  type: string;
-  raw: Record<string, string>;
-}>): ParsedRow {
+function createParsedRow(
+  overrides: Partial<{
+    rowNumber: number;
+    date: Date;
+    symbol: string;
+    quantity: Decimal;
+    price: Decimal;
+    type: string;
+    raw: Record<string, string>;
+  }>
+): ParsedRow {
   return {
     rowNumber: overrides.rowNumber ?? 1,
     raw: overrides.raw ?? {},
@@ -112,7 +171,9 @@ function createParsedRow(overrides: Partial<{
 }
 
 // Helper to create a valid import session for tests
-function createImportSession(overrides: Partial<ImportSession> = {}): ImportSession {
+function createImportSession(
+  overrides: Partial<ImportSession> = {}
+): ImportSession {
   return {
     id: 'session-123',
     portfolioId: 'portfolio-123',
@@ -141,7 +202,9 @@ describe('startImportSession', () => {
   });
 
   it('creates an import session with correct initial state', async () => {
-    const mockFile = new File(['test'], 'transactions.csv', { type: 'text/csv' });
+    const mockFile = new File(['test'], 'transactions.csv', {
+      type: 'text/csv',
+    });
     const portfolioId = 'portfolio-123';
 
     const session = await startImportSession(mockFile, portfolioId);
@@ -154,7 +217,9 @@ describe('startImportSession', () => {
   });
 
   it('populates column mappings from detection', async () => {
-    const mockFile = new File(['test'], 'transactions.csv', { type: 'text/csv' });
+    const mockFile = new File(['test'], 'transactions.csv', {
+      type: 'text/csv',
+    });
 
     const session = await startImportSession(mockFile, 'portfolio-123');
 
@@ -201,7 +266,12 @@ describe('detectDuplicates', () => {
 
     const validRows: ParsedRow[] = [
       createParsedRow({
-        raw: { Date: '2025-01-15', Symbol: 'AAPL', Quantity: '10', Price: '150' },
+        raw: {
+          Date: '2025-01-15',
+          Symbol: 'AAPL',
+          Quantity: '10',
+          Price: '150',
+        },
       }),
     ];
 
@@ -221,7 +291,14 @@ describe('executeImport', () => {
     vi.mocked(db.transactions.add).mockResolvedValue('transaction-id');
     vi.mocked(db.assets.where).mockReturnValue({
       equals: vi.fn().mockReturnValue({
-        first: vi.fn().mockResolvedValue({ id: 'asset-1', symbol: 'AAPL', name: 'Apple', type: 'stock' }),
+        first: vi
+          .fn()
+          .mockResolvedValue({
+            id: 'asset-1',
+            symbol: 'AAPL',
+            name: 'Apple',
+            type: 'stock',
+          }),
       }),
     } as any);
   });
@@ -233,7 +310,11 @@ describe('executeImport', () => {
 
     const validRows: ParsedRow[] = [
       createParsedRow({ rowNumber: 1 }),
-      createParsedRow({ rowNumber: 2, symbol: 'GOOGL', price: new Decimal(175) }),
+      createParsedRow({
+        rowNumber: 2,
+        symbol: 'GOOGL',
+        price: new Decimal(175),
+      }),
     ];
 
     const result = await executeImport(session, validRows, [], 'skip');

@@ -39,43 +39,92 @@ import { cn } from '@/lib/utils';
 import { useTransactionStore, usePortfolioStore } from '@/lib/stores';
 
 const transactionSchema = z.object({
-  type: z.enum(['buy', 'sell', 'dividend', 'split', 'transfer_in', 'transfer_out']),
-  assetSymbol: z.string().min(1, 'Asset symbol is required').max(10, 'Symbol too long'),
+  type: z.enum([
+    'buy',
+    'sell',
+    'dividend',
+    'split',
+    'transfer_in',
+    'transfer_out',
+  ]),
+  assetSymbol: z
+    .string()
+    .min(1, 'Asset symbol is required')
+    .max(10, 'Symbol too long'),
   assetName: z.string().optional(),
   date: z.date({
     required_error: 'Transaction date is required',
   }),
-  quantity: z.string().refine((val) => {
-    const num = parseFloat(val);
-    return !isNaN(num) && num > 0;
-  }, {
-    message: 'Quantity must be a positive number',
-  }),
-  price: z.string().refine((val) => {
-    const num = parseFloat(val);
-    return !isNaN(num) && num >= 0;
-  }, {
-    message: 'Price must be a non-negative number',
-  }),
-  fees: z.string().optional().refine((val) => {
-    if (!val || val === '') return true;
-    const num = parseFloat(val);
-    return !isNaN(num) && num >= 0;
-  }, {
-    message: 'Fees must be a non-negative number',
-  }),
+  quantity: z.string().refine(
+    (val) => {
+      const num = parseFloat(val);
+      return !isNaN(num) && num > 0;
+    },
+    {
+      message: 'Quantity must be a positive number',
+    }
+  ),
+  price: z.string().refine(
+    (val) => {
+      const num = parseFloat(val);
+      return !isNaN(num) && num >= 0;
+    },
+    {
+      message: 'Price must be a non-negative number',
+    }
+  ),
+  fees: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val || val === '') return true;
+        const num = parseFloat(val);
+        return !isNaN(num) && num >= 0;
+      },
+      {
+        message: 'Fees must be a non-negative number',
+      }
+    ),
   notes: z.string().max(500, 'Notes too long').optional(),
 });
 
 type TransactionFormValues = z.infer<typeof transactionSchema>;
 
 const transactionTypes = [
-  { value: 'buy', label: 'Buy', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' },
-  { value: 'sell', label: 'Sell', color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' },
-  { value: 'dividend', label: 'Dividend', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' },
-  { value: 'split', label: 'Stock Split', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300' },
-  { value: 'transfer_in', label: 'Transfer In', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' },
-  { value: 'transfer_out', label: 'Transfer Out', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300' },
+  {
+    value: 'buy',
+    label: 'Buy',
+    color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+  },
+  {
+    value: 'sell',
+    label: 'Sell',
+    color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+  },
+  {
+    value: 'dividend',
+    label: 'Dividend',
+    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+  },
+  {
+    value: 'split',
+    label: 'Stock Split',
+    color:
+      'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+  },
+  {
+    value: 'transfer_in',
+    label: 'Transfer In',
+    color:
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+  },
+  {
+    value: 'transfer_out',
+    label: 'Transfer Out',
+    color:
+      'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+  },
 ];
 
 export function AddTransactionDialog() {
@@ -154,7 +203,9 @@ export function AddTransactionDialog() {
     }
   };
 
-  const selectedTypeInfo = transactionTypes.find(t => t.value === watchedType);
+  const selectedTypeInfo = transactionTypes.find(
+    (t) => t.value === watchedType
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -164,7 +215,7 @@ export function AddTransactionDialog() {
           Add Transaction
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Add New Transaction
@@ -175,7 +226,8 @@ export function AddTransactionDialog() {
             )}
           </DialogTitle>
           <DialogDescription>
-            Add a new transaction to your portfolio. All fields marked with * are required.
+            Add a new transaction to your portfolio. All fields marked with *
+            are required.
           </DialogDescription>
         </DialogHeader>
 
@@ -185,7 +237,9 @@ export function AddTransactionDialog() {
             <Label htmlFor="type">Transaction Type *</Label>
             <Select
               value={watchedType}
-              onValueChange={(value: string) => setValue('type', value as any, { shouldValidate: true })}
+              onValueChange={(value: string) =>
+                setValue('type', value as any, { shouldValidate: true })
+              }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select transaction type" />
@@ -222,7 +276,9 @@ export function AddTransactionDialog() {
                 className={errors.assetSymbol ? 'border-red-500' : ''}
               />
               {errors.assetSymbol && (
-                <p className="text-sm text-red-600">{errors.assetSymbol.message}</p>
+                <p className="text-sm text-red-600">
+                  {errors.assetSymbol.message}
+                </p>
               )}
             </div>
 
@@ -260,7 +316,9 @@ export function AddTransactionDialog() {
                     value={watchedDate ? format(watchedDate, 'yyyy-MM-dd') : ''}
                     onChange={(e) => {
                       if (e.target.value) {
-                        setValue('date', new Date(e.target.value), { shouldValidate: true });
+                        setValue('date', new Date(e.target.value), {
+                          shouldValidate: true,
+                        });
                       }
                     }}
                     max={format(new Date(), 'yyyy-MM-dd')}
@@ -278,8 +336,7 @@ export function AddTransactionDialog() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="quantity">
-                Quantity *
-                {watchedType === 'dividend' && ' (Shares held)'}
+                Quantity *{watchedType === 'dividend' && ' (Shares held)'}
               </Label>
               <Input
                 id="quantity"
@@ -290,13 +347,17 @@ export function AddTransactionDialog() {
                 className={errors.quantity ? 'border-red-500' : ''}
               />
               {errors.quantity && (
-                <p className="text-sm text-red-600">{errors.quantity.message}</p>
+                <p className="text-sm text-red-600">
+                  {errors.quantity.message}
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="price">
-                {watchedType === 'dividend' ? 'Dividend per Share *' : 'Price per Share *'}
+                {watchedType === 'dividend'
+                  ? 'Dividend per Share *'
+                  : 'Price per Share *'}
               </Label>
               <Input
                 id="price"
@@ -331,7 +392,7 @@ export function AddTransactionDialog() {
 
             <div className="space-y-2">
               <Label>Total Transaction Value</Label>
-              <div className="p-3 bg-muted rounded-md">
+              <div className="rounded-md bg-muted p-3">
                 <span className="text-lg font-semibold">
                   ${calculateTotal().toFixed(2)}
                 </span>

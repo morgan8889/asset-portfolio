@@ -2,7 +2,13 @@
 
 import { createContext, useContext, ReactNode } from 'react';
 import { useDashboardData } from '@/hooks/useDashboardData';
-import { Portfolio, PortfolioMetrics, Transaction, Asset, Holding } from '@/types';
+import {
+  Portfolio,
+  PortfolioMetrics,
+  Transaction,
+  Asset,
+  Holding,
+} from '@/types';
 
 interface DashboardContextValue {
   // Portfolio state
@@ -35,7 +41,9 @@ const DashboardContext = createContext<DashboardContextValue | null>(null);
 export function useDashboardContext() {
   const context = useContext(DashboardContext);
   if (!context) {
-    throw new Error('useDashboardContext must be used within DashboardProvider');
+    throw new Error(
+      'useDashboardContext must be used within DashboardProvider'
+    );
   }
   return context;
 }
@@ -77,5 +85,9 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
     refreshData: dashboardData.refreshData,
   };
 
-  return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
+  return (
+    <DashboardContext.Provider value={value}>
+      {children}
+    </DashboardContext.Provider>
+  );
 }

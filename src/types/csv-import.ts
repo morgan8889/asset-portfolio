@@ -81,7 +81,10 @@ export const REQUIRED_FIELDS: TransactionField[] = [
 
 export const OPTIONAL_FIELDS: TransactionField[] = ['type', 'fees', 'notes'];
 
-export const ALL_FIELDS: TransactionField[] = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
+export const ALL_FIELDS: TransactionField[] = [
+  ...REQUIRED_FIELDS,
+  ...OPTIONAL_FIELDS,
+];
 
 /**
  * Field display labels for UI components.
@@ -227,7 +230,10 @@ export interface CsvImportDialogProps {
 export interface ColumnMappingEditorProps {
   mappings: ColumnMapping[];
   previewRows: ParsedRow[];
-  onMappingChange: (columnIndex: number, field: TransactionField | null) => void;
+  onMappingChange: (
+    columnIndex: number,
+    field: TransactionField | null
+  ) => void;
   requiredFieldsMissing: TransactionField[];
 }
 

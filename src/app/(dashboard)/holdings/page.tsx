@@ -25,7 +25,7 @@ export default function HoldingsPage() {
           <CardTitle>Your Holdings</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-muted-foreground py-8">
+          <div className="py-8 text-center text-muted-foreground">
             No holdings found. Add your first investment to get started.
           </div>
         </CardContent>

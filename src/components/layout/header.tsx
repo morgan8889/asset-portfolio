@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { Menu, Moon, Sun, Settings, User, WifiOff, RefreshCw } from 'lucide-react';
+import {
+  Menu,
+  Moon,
+  Sun,
+  Settings,
+  User,
+  WifiOff,
+  RefreshCw,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useUIStore, usePriceStore } from '@/lib/stores';
@@ -48,7 +56,7 @@ export function Header() {
           <nav className="flex items-center space-x-1">
             {/* Offline Indicator */}
             {mounted && !isOnline && (
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-red-100 dark:bg-red-900/30 rounded-full text-red-700 dark:text-red-400 text-xs font-medium">
+              <div className="flex items-center gap-1.5 rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
                 <WifiOff className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Offline</span>
               </div>

@@ -33,21 +33,57 @@ async function seedMockData() {
 
   // Create mock assets
   const assets = [
-    { id: 'AAPL', symbol: 'AAPL', name: 'Apple Inc.', type: 'stock' as const, sector: 'Technology' },
-    { id: 'GOOGL', symbol: 'GOOGL', name: 'Alphabet Inc.', type: 'stock' as const, sector: 'Technology' },
-    { id: 'MSFT', symbol: 'MSFT', name: 'Microsoft Corp.', type: 'stock' as const, sector: 'Technology' },
-    { id: 'AMZN', symbol: 'AMZN', name: 'Amazon.com Inc.', type: 'stock' as const, sector: 'Consumer' },
-    { id: 'VTI', symbol: 'VTI', name: 'Vanguard Total Stock Market ETF', type: 'etf' as const, sector: 'Broad Market' },
-    { id: 'BTC', symbol: 'BTC', name: 'Bitcoin', type: 'crypto' as const, sector: 'Cryptocurrency' },
+    {
+      id: 'AAPL',
+      symbol: 'AAPL',
+      name: 'Apple Inc.',
+      type: 'stock' as const,
+      sector: 'Technology',
+    },
+    {
+      id: 'GOOGL',
+      symbol: 'GOOGL',
+      name: 'Alphabet Inc.',
+      type: 'stock' as const,
+      sector: 'Technology',
+    },
+    {
+      id: 'MSFT',
+      symbol: 'MSFT',
+      name: 'Microsoft Corp.',
+      type: 'stock' as const,
+      sector: 'Technology',
+    },
+    {
+      id: 'AMZN',
+      symbol: 'AMZN',
+      name: 'Amazon.com Inc.',
+      type: 'stock' as const,
+      sector: 'Consumer',
+    },
+    {
+      id: 'VTI',
+      symbol: 'VTI',
+      name: 'Vanguard Total Stock Market ETF',
+      type: 'etf' as const,
+      sector: 'Broad Market',
+    },
+    {
+      id: 'BTC',
+      symbol: 'BTC',
+      name: 'Bitcoin',
+      type: 'crypto' as const,
+      sector: 'Cryptocurrency',
+    },
   ];
 
   const prices: Record<string, number> = {
-    AAPL: 178.50,
+    AAPL: 178.5,
     GOOGL: 141.25,
-    MSFT: 378.90,
+    MSFT: 378.9,
     AMZN: 178.75,
-    VTI: 245.30,
-    BTC: 43250.00,
+    VTI: 245.3,
+    BTC: 43250.0,
   };
 
   for (const asset of assets) {
@@ -63,12 +99,12 @@ async function seedMockData() {
 
   // Create mock transactions and holdings
   const holdings = [
-    { assetId: 'AAPL', quantity: 50, avgCost: 145.00, currentPrice: 178.50 },
-    { assetId: 'GOOGL', quantity: 30, avgCost: 125.50, currentPrice: 141.25 },
-    { assetId: 'MSFT', quantity: 25, avgCost: 320.00, currentPrice: 378.90 },
-    { assetId: 'AMZN', quantity: 20, avgCost: 155.00, currentPrice: 178.75 },
-    { assetId: 'VTI', quantity: 100, avgCost: 220.00, currentPrice: 245.30 },
-    { assetId: 'BTC', quantity: 0.5, avgCost: 35000.00, currentPrice: 43250.00 },
+    { assetId: 'AAPL', quantity: 50, avgCost: 145.0, currentPrice: 178.5 },
+    { assetId: 'GOOGL', quantity: 30, avgCost: 125.5, currentPrice: 141.25 },
+    { assetId: 'MSFT', quantity: 25, avgCost: 320.0, currentPrice: 378.9 },
+    { assetId: 'AMZN', quantity: 20, avgCost: 155.0, currentPrice: 178.75 },
+    { assetId: 'VTI', quantity: 100, avgCost: 220.0, currentPrice: 245.3 },
+    { assetId: 'BTC', quantity: 0.5, avgCost: 35000.0, currentPrice: 43250.0 },
   ];
 
   for (const h of holdings) {
@@ -78,7 +114,9 @@ async function seedMockData() {
     const costBasis = quantity.mul(avgCost);
     const currentValue = quantity.mul(currentPrice);
     const unrealizedGain = currentValue.minus(costBasis);
-    const unrealizedGainPercent = costBasis.isZero() ? 0 : unrealizedGain.dividedBy(costBasis).mul(100).toNumber();
+    const unrealizedGainPercent = costBasis.isZero()
+      ? 0
+      : unrealizedGain.dividedBy(costBasis).mul(100).toNumber();
 
     // Add transaction (use string values for Decimal fields in storage)
     await db.transactions.add({
@@ -168,32 +206,37 @@ export default function TestPage() {
 
       <div className="space-y-4">
         {/* Mock Data Section */}
-        <div className="p-4 border rounded-lg bg-muted/50">
-          <h2 className="text-lg font-semibold mb-2">Mock Data Generator</h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            Generate sample portfolio with stocks, ETFs, and crypto to test the dashboard.
+        <div className="rounded-lg border bg-muted/50 p-4">
+          <h2 className="mb-2 text-lg font-semibold">Mock Data Generator</h2>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Generate sample portfolio with stocks, ETFs, and crypto to test the
+            dashboard.
           </p>
           <div className="flex gap-2">
             <Button onClick={handleSeed} disabled={seeding || seeded}>
               {seeding ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Generating...
                 </>
               ) : seeded ? (
                 <>
-                  <CheckCircle className="h-4 w-4 mr-2" />
+                  <CheckCircle className="mr-2 h-4 w-4" />
                   Done! Redirecting...
                 </>
               ) : (
                 'Generate Mock Data'
               )}
             </Button>
-            <Button variant="destructive" onClick={handleClear} disabled={clearing}>
+            <Button
+              variant="destructive"
+              onClick={handleClear}
+              disabled={clearing}
+            >
               {clearing ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="mr-2 h-4 w-4" />
               )}
               Clear All Data
             </Button>
@@ -201,17 +244,19 @@ export default function TestPage() {
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-2">Create Portfolio Dialog</h2>
+          <h2 className="mb-2 text-lg font-semibold">
+            Create Portfolio Dialog
+          </h2>
           <CreatePortfolioDialog />
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-2">Add Transaction Dialog</h2>
+          <h2 className="mb-2 text-lg font-semibold">Add Transaction Dialog</h2>
           <AddTransactionDialog />
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-2">Basic Button Test</h2>
+          <h2 className="mb-2 text-lg font-semibold">Basic Button Test</h2>
           <Button onClick={() => alert('Basic button works!')}>
             Test Basic Button
           </Button>

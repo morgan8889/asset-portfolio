@@ -38,17 +38,20 @@ const INTERPOLATION_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000;
 /**
  * Find the closest price to a target date from a price history array.
  */
-export function findClosestPrice<T extends { timestamp: Date | string; price: Decimal | number }>(
-  priceHistory: T[],
-  targetDate: Date
-): { price: T; diffMs: number } | null {
+export function findClosestPrice<
+  T extends { timestamp: Date | string; price: Decimal | number },
+>(priceHistory: T[], targetDate: Date): { price: T; diffMs: number } | null {
   if (priceHistory.length === 0) return null;
 
   let closest = priceHistory[0];
-  let minDiff = Math.abs(new Date(priceHistory[0].timestamp).getTime() - targetDate.getTime());
+  let minDiff = Math.abs(
+    new Date(priceHistory[0].timestamp).getTime() - targetDate.getTime()
+  );
 
   for (const snapshot of priceHistory) {
-    const diff = Math.abs(new Date(snapshot.timestamp).getTime() - targetDate.getTime());
+    const diff = Math.abs(
+      new Date(snapshot.timestamp).getTime() - targetDate.getTime()
+    );
     if (diff < minDiff) {
       minDiff = diff;
       closest = snapshot;
@@ -82,8 +85,13 @@ export async function getPriceAtDate(
   }
 
   // Get historical prices (request extra days for interpolation)
-  const daysSinceDate = Math.ceil((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
-  const priceHistory = await priceQueries.getHistoryForAsset(assetId, daysSinceDate + 30);
+  const daysSinceDate = Math.ceil(
+    (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const priceHistory = await priceQueries.getHistoryForAsset(
+    assetId,
+    daysSinceDate + 30
+  );
 
   // No history available
   if (priceHistory.length === 0) {
@@ -99,7 +107,10 @@ export async function getPriceAtDate(
   try {
     priceValue = new Decimal(closest.price.price.toString());
   } catch (error) {
-    console.error(`Invalid price value for asset ${assetId} at ${date}:`, error);
+    console.error(
+      `Invalid price value for asset ${assetId} at ${date}:`,
+      error
+    );
     return { price: new Decimal(0), isInterpolated: true };
   }
 
