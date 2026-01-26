@@ -136,16 +136,73 @@
 
 ---
 
-## Phase 8: Polish & Cross-Cutting Concerns
+## Phase 8: User Story 6 - Performance Page with Live Data (Priority: P2)
+
+**Goal**: Performance page displays real-time calculated metrics (Total Return, CAGR, Max Drawdown, Sharpe Ratio) using live prices
+
+**Independent Test**: Navigate to /performance with holdings, verify metrics show calculated values (not hardcoded "+12.5%", "+8.2%", etc.)
+
+### Implementation for User Story 6
+
+- [ ] T037 [US6] Add PerformancePageData and PerformanceMetrics types in src/types/dashboard.ts
+- [ ] T038 [P] [US6] Implement calculateAnnualizedReturn (CAGR) in src/lib/services/metrics-service.ts
+- [ ] T039 [P] [US6] Implement calculateMaxDrawdown in src/lib/services/metrics-service.ts
+- [ ] T040 [P] [US6] Implement calculateSharpeRatio in src/lib/services/metrics-service.ts
+- [ ] T041 [P] [US6] Add unit tests for CAGR, MaxDrawdown, SharpeRatio in src/lib/services/__tests__/metrics-service.test.ts
+- [ ] T042 [US6] Export new calculation functions in src/lib/services/index.ts
+- [ ] T043 [US6] Create usePerformanceData hook in src/hooks/usePerformanceData.ts
+- [ ] T044 [US6] Export usePerformanceData hook in src/hooks/index.ts
+- [ ] T045 [US6] Rewrite Performance page to use hook data in src/app/(dashboard)/performance/page.tsx
+- [ ] T046 [US6] Add empty state handling for portfolios without holdings in src/app/(dashboard)/performance/page.tsx
+
+**Checkpoint**: Performance page shows calculated metrics (Total Return, CAGR, Max Drawdown, Sharpe) from real data
+
+---
+
+## Phase 9: User Story 7 - Performance Chart with Live Data (Priority: P3)
+
+**Goal**: Performance page displays a line chart of portfolio value over time with period selection
+
+**Independent Test**: View Performance page with holdings, verify chart shows historical values; select different periods (1M, 3M, YTD, 1Y, ALL)
+
+### Implementation for User Story 7
+
+- [ ] T047 [US7] Create PerformanceChart component in src/components/charts/performance-chart.tsx
+- [ ] T048 [US7] Add time period selector (1M, 3M, YTD, 1Y, ALL) to PerformanceChart in src/components/charts/performance-chart.tsx
+- [ ] T049 [US7] Integrate chart into Performance page in src/app/(dashboard)/performance/page.tsx
+- [ ] T050 [US7] Ensure chart endpoint reflects current live value in src/hooks/usePerformanceData.ts
+
+**Checkpoint**: Performance chart displays with period selection; most recent point reflects live value
+
+---
+
+## Phase 10: User Story 8 - Top Performers and Losers (Priority: P3)
+
+**Goal**: Performance page shows top 5 best and worst performing holdings
+
+**Independent Test**: View Performance page with multiple holdings, verify top performers and biggest losers lists are displayed with return percentages
+
+### Implementation for User Story 8
+
+- [ ] T051 [US8] Add top performers table to Performance page in src/app/(dashboard)/performance/page.tsx
+- [ ] T052 [US8] Add biggest losers table to Performance page in src/app/(dashboard)/performance/page.tsx
+- [ ] T053 [US8] Connect lists to useLivePriceMetrics topPerformers/biggestLosers in src/app/(dashboard)/performance/page.tsx
+
+**Checkpoint**: Performance page shows top 5 performers and bottom 5 losers with return percentages
+
+---
+
+## Phase 11: Polish & Cross-Cutting Concerns
 
 **Purpose**: Final testing, integration, and cleanup
 
-- [X] T037 Create E2E test for price refresh workflow in tests/e2e/price-refresh.spec.ts
-- [X] T038 [P] Add loading states for price fetching in src/components/dashboard/price-display.tsx
-- [X] T039 [P] Add error states for failed price fetches in src/components/dashboard/price-display.tsx
-- [X] T040 Run full test suite and fix any failures (71 market data tests pass; pre-existing portfolio store test failures unrelated to feature)
-- [ ] T041 Manual testing per quickstart.md validation scenarios
-- [X] T042 Update CLAUDE.md with feature documentation
+- [X] T054 Create E2E test for price refresh workflow in tests/e2e/price-refresh.spec.ts
+- [X] T055 [P] Add loading states for price fetching in src/components/dashboard/price-display.tsx
+- [X] T056 [P] Add error states for failed price fetches in src/components/dashboard/price-display.tsx
+- [X] T057 Run full test suite and fix any failures (71 market data tests pass; pre-existing portfolio store test failures unrelated to feature)
+- [ ] T058 Create E2E test for Performance page in tests/e2e/performance-page.spec.ts
+- [ ] T059 Manual testing per quickstart.md validation scenarios
+- [X] T060 Update CLAUDE.md with feature documentation
 
 ---
 
@@ -153,80 +210,81 @@
 
 ### Phase Dependencies
 
-- **Setup (Phase 1)**: No dependencies - can start immediately
-- **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
-- **User Stories (Phase 3-7)**: All depend on Foundational phase completion
-  - User stories can proceed in parallel (if staffed)
-  - Or sequentially in priority order (P1 → P2 → P3)
-- **Polish (Phase 8)**: Depends on all desired user stories being complete
+- **Setup (Phase 1)**: No dependencies - can start immediately ✅ COMPLETE
+- **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories ✅ COMPLETE
+- **User Stories (Phase 3-7)**: Dashboard live data features ✅ COMPLETE
+- **User Stories (Phase 8-10)**: Performance page features - Can start immediately
+  - US6 (Performance Metrics) should be completed first
+  - US7 (Chart) and US8 (Top Performers) can run in parallel after US6
+- **Polish (Phase 11)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
 
-- **User Story 1 (P1)**: Can start after Foundational - No dependencies on other stories
-- **User Story 2 (P2)**: Can start after Foundational - Independent of US1
-- **User Story 3 (P2)**: Can start after Foundational - Independent of US1/US2
-- **User Story 4 (P3)**: Can start after Foundational - Benefits from US1 PriceDisplay
-- **User Story 5 (P3)**: Can start after Foundational - Benefits from US1 PriceDisplay
+- **User Story 1 (P1)**: ✅ COMPLETE - Live prices with timestamps
+- **User Story 2 (P2)**: ✅ COMPLETE - UK symbol recognition
+- **User Story 3 (P2)**: ✅ COMPLETE - Price update frequency control
+- **User Story 4 (P3)**: ✅ COMPLETE - Market hours awareness
+- **User Story 5 (P3)**: ✅ COMPLETE - Graceful degradation
+- **User Story 6 (P2)**: Can start after Foundational - Reuses useLivePriceMetrics hook
+- **User Story 7 (P3)**: Depends on US6 (usePerformanceData hook)
+- **User Story 8 (P3)**: Can start after Foundational - Reuses useLivePriceMetrics
 
 ### Within Each User Story
 
-- Models/types before services
-- Services before UI components
+- Types before services/calculations
+- Services/calculations before hooks
+- Hooks before UI components
 - Core implementation before integration
 - Story complete before moving to next priority
 
 ### Parallel Opportunities
 
-- All Setup tasks marked [P] can run in parallel
-- T002, T003, T004, T005 can all run in parallel (different files)
-- T006, T007 can run in parallel (service + tests)
-- Once Foundational phase completes, all user stories can start in parallel
-- T037, T038, T039 in Polish phase can run in parallel
+- All Setup tasks marked [P] can run in parallel ✅ COMPLETE
+- T038, T039, T040 (CAGR, MaxDrawdown, SharpeRatio implementations) can run in parallel
+- T041 (unit tests) can run in parallel with implementations
+- US7 and US8 can run in parallel once US6 is complete
 
 ---
 
-## Parallel Example: Setup Phase
+## Parallel Example: Performance Page Calculations
 
 ```bash
-# Launch all parallel tasks in Setup together:
-Task: "Create market utilities in src/lib/utils/market-utils.ts"
-Task: "Create staleness utility in src/lib/utils/staleness.ts"
-Task: "Create unit tests for market utilities in src/lib/utils/__tests__/market-utils.test.ts"
-Task: "Create unit tests for staleness utility in src/lib/utils/__tests__/staleness.test.ts"
+# Launch parallel calculation implementations together:
+Task: "Implement calculateAnnualizedReturn (CAGR) in src/lib/services/metrics-service.ts"
+Task: "Implement calculateMaxDrawdown in src/lib/services/metrics-service.ts"
+Task: "Implement calculateSharpeRatio in src/lib/services/metrics-service.ts"
+Task: "Add unit tests for CAGR, MaxDrawdown, SharpeRatio in src/lib/services/__tests__/metrics-service.test.ts"
 ```
 
 ---
 
 ## Implementation Strategy
 
-### MVP First (User Story 1 Only)
+### Dashboard MVP (User Stories 1-5) ✅ COMPLETE
 
-1. Complete Phase 1: Setup (types, utilities)
-2. Complete Phase 2: Foundational (market hours, price store)
-3. Complete Phase 3: User Story 1 (live prices with timestamps)
-4. **STOP and VALIDATE**: Test US and UK prices display correctly
-5. Deploy/demo if ready
+1. ✅ Complete Phase 1: Setup (types, utilities)
+2. ✅ Complete Phase 2: Foundational (market hours, price store)
+3. ✅ Complete Phase 3-7: User Stories 1-5 (live prices on dashboard)
+4. **Dashboard live data is fully functional**
 
-### Incremental Delivery
+### Performance Page Extension (User Stories 6-8) 🎯 CURRENT
 
-1. Complete Setup + Foundational → Foundation ready
-2. Add User Story 1 → Test independently → **Deploy (MVP!)**
-3. Add User Story 2 → Test UK symbol search → Deploy
-4. Add User Story 3 → Test frequency control → Deploy
-5. Add User Story 4 → Test market hours → Deploy
-6. Add User Story 5 → Test offline mode → Deploy
-7. Each story adds value without breaking previous stories
+1. Complete Phase 8: User Story 6 (core Performance page metrics)
+   - Implement CAGR, MaxDrawdown, SharpeRatio calculations
+   - Create usePerformanceData hook
+   - Rewrite Performance page with real data
+2. **STOP and VALIDATE**: Verify metrics display calculated values
+3. Complete Phase 9: User Story 7 (Performance chart)
+4. Complete Phase 10: User Story 8 (Top performers)
+5. Complete Phase 11: Polish (E2E test, manual validation)
 
 ### Parallel Team Strategy
 
-With multiple developers:
+With multiple developers after Phase 8:
 
-1. Team completes Setup + Foundational together
-2. Once Foundational is done:
-   - Developer A: User Story 1 (P1 - core value)
-   - Developer B: User Story 2 + 3 (P2 features)
-   - Developer C: User Story 4 + 5 (P3 enhancements)
-3. Stories complete and integrate independently
+- Developer A: User Story 7 (Performance chart)
+- Developer B: User Story 8 (Top performers)
+- Both can work in parallel once US6 (hook + page rewrite) is complete
 
 ---
 
