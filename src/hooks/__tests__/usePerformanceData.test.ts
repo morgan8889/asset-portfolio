@@ -47,18 +47,24 @@ describe('usePerformanceData', () => {
       totalValue: new Decimal(9000),
       totalCost: new Decimal(9000),
       unrealizedGain: new Decimal(0),
+      change: new Decimal(0),
+      hasInterpolatedPrices: false,
     },
     {
       date: new Date('2024-06-01'),
       totalValue: new Decimal(9500),
       totalCost: new Decimal(9000),
       unrealizedGain: new Decimal(500),
+      change: new Decimal(500),
+      hasInterpolatedPrices: false,
     },
     {
       date: new Date('2024-12-31'),
       totalValue: new Decimal(10000),
       totalCost: new Decimal(9000),
       unrealizedGain: new Decimal(1000),
+      change: new Decimal(500),
+      hasInterpolatedPrices: false,
     },
   ];
 
@@ -243,9 +249,8 @@ describe('usePerformanceData', () => {
       expect(result.current.loading).toBe(false);
     });
 
-    const initialCallCount = vi.mocked(
-      metricsService.getHistoricalValues
-    ).mock.calls.length;
+    const initialCallCount = vi.mocked(metricsService.getHistoricalValues).mock
+      .calls.length;
 
     // Update live prices
     vi.mocked(useLivePriceMetrics).mockReturnValue({
