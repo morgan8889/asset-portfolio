@@ -21,6 +21,11 @@ export {
   calculatePositionWeight,
   calculatePositionGainLoss,
   calculateDividendYield,
+  // Advanced performance metrics (User Story 6)
+  calculateAnnualizedReturn,
+  calculateMaxDrawdown,
+  calculateSharpeRatio,
+  calculateDailyReturns,
   type HoldingWithAsset,
 } from './metrics-service';
 
@@ -66,10 +71,7 @@ export {
 } from './performance-calculator';
 
 // Historical value tracking
-export {
-  getHistoricalValues,
-  getValueAtDate,
-} from './historical-value';
+export { getHistoricalValues, getValueAtDate } from './historical-value';
 
 // Market hours service
 export {
