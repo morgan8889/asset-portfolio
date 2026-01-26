@@ -549,8 +549,9 @@ describe('Database Converters', () => {
 
       const result = toTransactionStorage(input);
 
-      expect(result.quantity).toBe('0.00000001');
-      expect(result.price).toBe('0.00000001');
+      // Decimal.js may use scientific notation for very small values (1e-8 = 0.00000001)
+      expect(new Decimal(result.quantity).equals('0.00000001')).toBe(true);
+      expect(new Decimal(result.price).equals('0.00000001')).toBe(true);
     });
   });
 });

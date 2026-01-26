@@ -5,7 +5,7 @@
  * Domain types use Decimal.js for precision, Storage types use strings for IndexedDB.
  */
 
-import type { Decimal } from 'decimal.js';
+import Decimal from 'decimal.js';
 import type {
   Asset,
   Holding,
