@@ -27,7 +27,7 @@ import { PieChart } from 'lucide-react';
 
 import { useDashboardStore, usePortfolioStore, usePriceStore } from '@/lib/stores';
 import { useLivePriceMetrics, LiveHolding } from '@/hooks';
-import { WidgetId, WIDGET_DEFINITIONS, CategoryAllocation, LayoutMode, GridColumns } from '@/types/dashboard';
+import { WidgetId, WIDGET_DEFINITIONS, CategoryAllocation, LayoutMode, GridColumns, WidgetRowSpan, DEFAULT_WIDGET_ROW_SPANS } from '@/types/dashboard';
 import { Holding, Asset } from '@/types';
 import { cn } from '@/lib/utils';
 import { WidgetWrapper } from './widget-wrapper';
@@ -245,6 +245,18 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
     return GRID_CLASSES[effectiveGridColumns];
   }, [effectiveLayoutMode, effectiveGridColumns]);
 
+  // Dense packing is disabled on mobile (FR-006)
+  const effectiveDensePacking = !isMobile && config?.densePacking === true;
+
+  // Compute effective row span for a widget
+  const getEffectiveRowSpan = useCallback((widgetId: WidgetId): WidgetRowSpan => {
+    // Dense packing row spans only apply when dense packing is enabled and in grid mode
+    if (!effectiveDensePacking || effectiveLayoutMode !== 'grid') {
+      return 1;
+    }
+    return config?.widgetRowSpans?.[widgetId] ?? DEFAULT_WIDGET_ROW_SPANS[widgetId] ?? 1;
+  }, [config?.widgetRowSpans, effectiveDensePacking, effectiveLayoutMode]);
+
   // renderWidget must be defined before early returns (React hooks rules)
   const renderWidget = useCallback((widgetId: WidgetId) => {
     switch (widgetId) {
@@ -323,13 +335,18 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
           strategy={rectSortingStrategy}
           disabled={isDragDropDisabled}
         >
-          <div className={cn('grid gap-4 transition-all duration-300', gridClass)}>
+          <div className={cn(
+            'grid gap-4 transition-all duration-300',
+            gridClass,
+            effectiveDensePacking && effectiveLayoutMode === 'grid' && 'grid-flow-row-dense'
+          )}>
             {visibleWidgets.map((widgetId) => (
               <WidgetWrapper
                 key={widgetId}
                 id={widgetId}
                 disabled={isDragDropDisabled}
                 span={config?.widgetSpans?.[widgetId] ?? 1}
+                rowSpan={getEffectiveRowSpan(widgetId)}
                 layoutMode={effectiveLayoutMode}
               >
                 {renderWidget(widgetId)}

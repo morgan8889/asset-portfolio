@@ -1,23 +1,30 @@
-# Implementation Plan: Dashboard Grid Dense Packing
+# Implementation Plan: Dashboard Grid Dense Packing (Extended Column Spans)
 
 **Branch**: `004-grid-dense-packing` | **Date**: 2026-01-25 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/004-grid-dense-packing/spec.md`
+**Status**: Incremental Update - Extending existing implementation with expanded column spans
 
 ## Summary
 
-Enable masonry-style dense packing where smaller widgets fill vertical gaps alongside larger widgets. Uses **CSS Grid `grid-auto-flow: dense`** with Tailwind utilities - a zero-dependency approach that integrates seamlessly with the existing dnd-kit drag-drop implementation from feature 003.
+Extend the existing dashboard grid dense packing feature to support expanded column spans (1-4 plus "full-width") as clarified in the latest spec session. The base dense packing with row spans 1-3 is already implemented; this update modifies the column span system from the current 1-2 range to 1-4 plus a "full" option that spans all available columns.
+
+**Key Changes from Existing Implementation**:
+- `WidgetSpan` type: `1 | 2` → `1 | 2 | 3 | 4 | 'full'`
+- Column span selector UI: 2 options → 5 options (1x, 2x, 3x, 4x, Full)
+- Clamping logic: Add runtime clamping when column span exceeds grid columns
+- Schema migration: v3 → v4 (or inline update if no breaking changes)
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.3 (strict mode)
-**Primary Dependencies**: Next.js 14.2, React 18, Tailwind CSS, dnd-kit, Zustand 4.5
+**Language/Version**: TypeScript 5.3+ with Next.js 14.2 (App Router)
+**Primary Dependencies**: React 18, Zustand 4.5, Tailwind CSS, shadcn/ui, dnd-kit, Zod
 **Storage**: IndexedDB via Dexie.js (privacy-first, browser-only)
 **Testing**: Vitest (unit), Playwright (E2E)
-**Target Platform**: Web browser (responsive: mobile/tablet/desktop)
-**Project Type**: Web application (Next.js App Router)
-**Performance Goals**: Widget reflow < 200ms, instant dense packing toggle
-**Constraints**: Zero additional dependencies, maintain dnd-kit compatibility
-**Scale/Scope**: 8 dashboard widgets, single dashboard view
+**Target Platform**: Web (modern browsers), responsive design
+**Project Type**: Web application (Next.js monolith)
+**Performance Goals**: Widget changes reflect within 200ms (SC-003)
+**Constraints**: < 768px mobile disables dense packing; offline-capable
+**Scale/Scope**: 8 dashboard widgets, 2-4 grid columns
 
 ## Constitution Check
 
@@ -25,12 +32,16 @@ Enable masonry-style dense packing where smaller widgets fill vertical gaps alon
 
 | Principle | Status | Notes |
 |-----------|--------|-------|
-| I. Privacy-First | ✅ PASS | All config stored in IndexedDB via Dexie.js |
-| II. Financial Precision | ✅ N/A | No monetary calculations in layout feature |
-| III. Type Safety | ✅ PASS | New types with Zod validation, strict mode |
-| IV. Test-Driven | ✅ PASS | Unit tests for types/store, E2E for workflow |
-| V. Component Architecture | ✅ PASS | shadcn/ui components, Zustand store, CSS-only layout |
-| Technology Stack | ✅ PASS | No new dependencies - uses CSS Grid + Tailwind |
+| I. Privacy-First Architecture | ✅ PASS | All data remains in IndexedDB; no server persistence |
+| II. Financial Precision | ✅ N/A | Layout feature, no monetary calculations |
+| III. Type Safety & Validation | ✅ PASS | Zod schemas for WidgetSpan; strict TypeScript |
+| IV. Test-Driven Quality | ✅ PASS | Unit tests for store, E2E for settings UI |
+| V. Component Architecture | ✅ PASS | Uses shadcn/ui Select; Zustand store pattern |
+
+**Technology Stack Compliance**:
+- Uses existing stack (Next.js, TypeScript, Zustand, Dexie.js, Tailwind, shadcn/ui)
+- No new dependencies required
+- CSS Grid native features (`grid-auto-flow: dense`, `col-span-*`)
 
 ## Project Structure
 
@@ -39,13 +50,12 @@ Enable masonry-style dense packing where smaller widgets fill vertical gaps alon
 ```text
 specs/004-grid-dense-packing/
 ├── plan.md              # This file
-├── spec.md              # Feature specification
-├── research.md          # Framework evaluation (CSS Grid vs react-grid-layout)
-├── data-model.md        # Type definitions and schema changes
-├── quickstart.md        # Quick implementation guide
-├── contracts/           # API contracts (store actions)
-└── checklists/          # Quality checklists
-    └── requirements.md  # Spec validation checklist
+├── research.md          # Phase 0 output
+├── data-model.md        # Phase 1 output
+├── quickstart.md        # Phase 1 output
+├── contracts/           # Phase 1 output
+│   └── store-actions.md # Zustand store action contracts
+└── tasks.md             # Phase 2 output (existing, needs update)
 ```
 
 ### Source Code (repository root)
@@ -53,33 +63,33 @@ specs/004-grid-dense-packing/
 ```text
 src/
 ├── types/
-│   └── dashboard.ts            # Add WidgetRowSpan, densePacking, v3 schema
+│   └── dashboard.ts         # WidgetSpan type + Zod schema (MODIFY)
 ├── lib/
 │   ├── stores/
-│   │   └── dashboard.ts        # Add setDensePacking, setWidgetRowSpan actions
+│   │   └── dashboard.ts     # setWidgetSpan action (MODIFY)
 │   └── services/
-│       └── dashboard-config.ts # Add persistence + v2→v3 migration
-└── components/
-    └── dashboard/
-        ├── dashboard-container.tsx  # Add grid-flow-row-dense class
-        ├── widget-wrapper.tsx       # Add rowSpan prop + row-span-{n} class
-        └── dashboard-settings.tsx   # Add dense packing toggle + row span selectors
+│       └── dashboard-config.ts  # Persistence + clamping logic (MODIFY)
+├── components/
+│   └── dashboard/
+│       ├── dashboard-container.tsx  # Column span class computation (MODIFY)
+│       ├── widget-wrapper.tsx       # Column span prop handling (MODIFY)
+│       └── dashboard-settings.tsx   # Column span dropdown (MODIFY)
 
 tests/
-├── unit/
-│   └── dashboard-types.test.ts     # Schema validation tests
-└── e2e/
-    └── dashboard-dense-packing.spec.ts  # Dense packing workflow test
+├── e2e/
+│   └── dashboard-dense-packing.spec.ts  # Extended column span tests (MODIFY)
+└── (unit tests inline via __tests__ folders)
 ```
 
-**Structure Decision**: Extends existing dashboard module structure from feature 003. All changes are additive modifications to existing files - no new directories needed.
+**Structure Decision**: Single Next.js application following existing patterns. All changes are modifications to existing files introduced in the base dense packing implementation.
 
 ## Complexity Tracking
 
-> No constitution violations requiring justification.
+> No violations - feature uses established patterns and existing stack.
 
-| Decision | Rationale |
-|----------|-----------|
-| CSS Grid over react-grid-layout | Zero bundle impact, no dnd-kit conflicts, native browser perf |
-| Schema version bump (v2→v3) | Clean migration path, preserves existing user configs |
-| Row spans limited to 1/2/3 | Matches spec, sufficient for dashboard use case |
+| Aspect | Complexity | Justification |
+|--------|------------|---------------|
+| Type expansion | Low | Adding values to union type |
+| UI changes | Low | Extending existing dropdown |
+| Clamping logic | Medium | New runtime computation for edge cases |
+| Migration | Low | Additive change, backward compatible |

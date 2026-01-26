@@ -81,6 +81,7 @@ A user wants to see how their layout changes will look before committing them, p
 - What happens when all widgets have the same row span? → Falls back to standard grid flow (dense packing has no effect when all heights are equal)
 - What happens when a widget's row span exceeds available rows? → Row span is clamped to maximum available space
 - How does the system handle very narrow viewports (mobile)? → Dense packing is automatically disabled on mobile; single-column stacking takes precedence
+- What happens when widget column span exceeds grid columns? → Column span is clamped to current grid columns at render time; saved preference is preserved for when grid expands
 - What happens when widget column span + row span creates an impossibly large widget? → Widget is constrained to fit within viewport bounds
 - How does drag-and-drop reordering work with dense packing? → Users can still drag widgets; the system recalculates optimal placement after drop
 
@@ -90,6 +91,9 @@ A user wants to see how their layout changes will look before committing them, p
 
 - **FR-001**: System MUST provide a "Dense Packing" toggle in dashboard settings that enables/disables masonry-style gap filling
 - **FR-002**: System MUST allow users to configure widget row spans (1, 2, or 3 rows) independently of column spans
+- **FR-002a**: System MUST allow users to configure widget column spans (1, 2, 3, or 4 columns) constrained by the current grid columns setting
+- **FR-002b**: System MUST provide a "full-width" column span option that automatically spans all available columns regardless of grid column setting
+- **FR-002c**: System MUST present column span selection as a dropdown with options: 1x, 2x, 3x, 4x, Full
 - **FR-003**: System MUST automatically calculate widget placement to minimize vertical gaps when dense packing is enabled
 - **FR-004**: System MUST preserve configured widget order as the primary sorting criteria, using gap-filling as secondary optimization
 - **FR-005**: System MUST persist dense packing preference and row span configurations in user settings
@@ -101,7 +105,8 @@ A user wants to see how their layout changes will look before committing them, p
 
 ### Key Entities
 
-- **Widget Row Span**: Number of grid rows a widget occupies (1, 2, or 3); stored per-widget similar to column spans
+- **Widget Row Span**: Number of grid rows a widget occupies (1, 2, or 3); stored per-widget
+- **Widget Column Span**: Number of grid columns a widget occupies (1, 2, 3, 4, or "full"); constrained by grid columns setting; "full" spans all available columns
 - **Dense Packing Mode**: Boolean flag indicating whether gap-filling placement algorithm is active
 - **Widget Placement**: Calculated grid position (column, row) determined by the layout algorithm based on spans and order
 
@@ -123,6 +128,14 @@ A user wants to see how their layout changes will look before committing them, p
 - Default widget heights are determined by widget type (metric cards are compact, charts are tall)
 - Dense packing respects the underlying layout system and browser capabilities
 - Performance impact is negligible for the current 8-widget dashboard
+
+## Clarifications
+
+### Session 2026-01-25
+
+- Q: What column span values should widgets support? → A: Column spans 1-4 (constrained by grid columns) plus a "full-width" option that spans all available columns
+- Q: How should the column span selector be presented in settings UI? → A: Dropdown with options: 1x, 2x, 3x, 4x, Full
+- Q: What happens when widget column span exceeds grid columns setting? → A: Clamp to current grid columns (saved preference preserved for when grid expands)
 
 ## Out of Scope
 
