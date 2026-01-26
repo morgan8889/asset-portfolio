@@ -272,6 +272,108 @@ export const Dashboard = () => {
 
 ---
 
+---
+
+## Extended Column Spans Research (2026-01-25 Update)
+
+Following spec clarification session, widget column spans need to expand from 1-2 to 1-4 plus "full-width".
+
+### 1. CSS Grid Column Span Classes for 1-4 + Full
+
+**Decision**: Use Tailwind CSS utility classes for column spans
+
+**Rationale**: Tailwind provides built-in `col-span-{n}` utilities. For "full" span, use `col-span-full` which sets `grid-column: 1 / -1` to span all columns.
+
+**Implementation**:
+```typescript
+const COL_SPAN_CLASSES: Record<WidgetSpan, string> = {
+  1: 'col-span-1',
+  2: 'col-span-2',
+  3: 'col-span-3',
+  4: 'col-span-4',
+  'full': 'col-span-full',  // spans all available columns
+};
+```
+
+**Alternatives Considered**:
+- Custom CSS with `grid-column` property → Rejected: Tailwind already provides optimized utilities
+- Inline styles → Rejected: Inconsistent with codebase patterns
+
+### 2. Runtime Clamping for Column Span > Grid Columns
+
+**Decision**: Clamp at render time, preserve saved preference
+
+**Rationale**: Users may switch between 2, 3, and 4 column grids. A widget configured as 4x should render as 3x in a 3-column grid but revert to 4x when grid expands. This prevents data loss and matches user mental model.
+
+**Implementation**:
+```typescript
+function getEffectiveColumnSpan(
+  savedSpan: WidgetSpan,
+  gridColumns: GridColumns
+): number {
+  if (savedSpan === 'full') return gridColumns;
+  return Math.min(savedSpan, gridColumns);
+}
+```
+
+**Alternatives Considered**:
+- Reset to 1x when exceeding → Rejected: Loses user configuration
+- Block grid column reduction → Rejected: Too restrictive
+- Show warning → Rejected: Unnecessary friction for common operation
+
+### 3. Type Representation for 'full' Span
+
+**Decision**: Use union type `1 | 2 | 3 | 4 | 'full'` with separate effective span computation
+
+**Rationale**: The 'full' option is semantically different from numeric spans - it's dynamic based on grid columns. Using a string literal keeps the type self-documenting and distinguishes the "span all" intent from a fixed numeric span.
+
+**Implementation**:
+```typescript
+// Type definition
+export type WidgetSpan = 1 | 2 | 3 | 4 | 'full';
+
+// Zod schema
+export const WidgetSpanSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+  z.literal('full'),
+]);
+```
+
+**Alternatives Considered**:
+- Use -1 or 0 for full → Rejected: Magic numbers are unclear
+- Use `Infinity` → Rejected: JSON serialization issues
+- Separate boolean `isFullWidth` → Rejected: Splits single concept into two fields
+
+### 4. Schema Migration Strategy
+
+**Decision**: Backward-compatible additive change, no version bump required
+
+**Rationale**: Existing configs have `widgetSpans` with values 1 or 2. The new type (`1 | 2 | 3 | 4 | 'full'`) is a superset. Zod validation will pass for existing values. No migration function needed.
+
+**Implementation**:
+- Update `WidgetSpanSchema` to accept new values
+- Existing configs remain valid
+- New values available immediately after code update
+
+### 5. Tailwind col-span Classes Availability
+
+**Decision**: Use default Tailwind grid classes; no config changes needed
+
+**Verification**:
+```css
+/* Available by default in Tailwind */
+.col-span-1 { grid-column: span 1 / span 1; }
+.col-span-2 { grid-column: span 2 / span 2; }
+.col-span-3 { grid-column: span 3 / span 3; }
+.col-span-4 { grid-column: span 4 / span 4; }
+.col-span-full { grid-column: 1 / -1; }
+```
+
+---
+
 ## Sources
 
 - [react-grid-layout GitHub](https://github.com/react-grid-layout/react-grid-layout)

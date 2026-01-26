@@ -14,7 +14,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { WidgetId, WIDGET_DEFINITIONS, WidgetSpan, LayoutMode } from '@/types/dashboard';
+import { WidgetId, WIDGET_DEFINITIONS, WidgetSpan, WidgetRowSpan, LayoutMode } from '@/types/dashboard';
 
 interface WidgetWrapperProps {
   /** Unique widget identifier */
@@ -25,17 +25,29 @@ interface WidgetWrapperProps {
   disabled?: boolean;
   /** Column span for this widget (1 or 2) */
   span?: WidgetSpan;
+  /** Row span for this widget (1, 2, or 3) - used with dense packing */
+  rowSpan?: WidgetRowSpan;
   /** Current layout mode */
   layoutMode?: LayoutMode;
   /** Additional CSS classes */
   className?: string;
 }
 
+/**
+ * Row span class mapping for dense packing layout.
+ */
+const ROW_SPAN_CLASSES: Record<WidgetRowSpan, string> = {
+  1: 'row-span-1',
+  2: 'row-span-2',
+  3: 'row-span-3',
+};
+
 export const WidgetWrapper = memo(function WidgetWrapper({
   id,
   children,
   disabled = false,
   span = 1,
+  rowSpan = 1,
   layoutMode = 'grid',
   className,
 }: WidgetWrapperProps) {
@@ -68,6 +80,12 @@ export const WidgetWrapper = memo(function WidgetWrapper({
       ? 'md:col-span-2'
       : 'col-span-1';
 
+  // Compute row span class for dense packing
+  // In stacking mode, row spans are ignored
+  const rowSpanClass = layoutMode === 'stacking'
+    ? ''
+    : ROW_SPAN_CLASSES[rowSpan];
+
   return (
     <div
       ref={setNodeRef}
@@ -75,6 +93,8 @@ export const WidgetWrapper = memo(function WidgetWrapper({
       className={cn(
         // Grid column span based on config span
         spanClass,
+        // Grid row span for dense packing
+        rowSpanClass,
         // Drag state styling
         isDragging && 'z-50 opacity-90 shadow-xl',
         'relative group',
