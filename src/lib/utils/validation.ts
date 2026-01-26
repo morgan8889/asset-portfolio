@@ -15,12 +15,20 @@ export function sanitizeInput(input: string): string {
     .trim(); // Clean up any trailing space from truncation
 }
 
-// Symbol validation (stocks, ETFs, crypto)
+// Symbol validation (stocks, ETFs, crypto, indices)
 export function validateSymbol(symbol: string): boolean {
   // Symbol should be 1-10 characters, alphanumeric
-  // Also allows .L suffix for UK market symbols (e.g., VOD.L, HSBA.L)
-  const symbolRegex = /^[A-Z0-9]{1,10}(\.[A-Z])?$/;
+  // Also allows:
+  // - .L suffix for UK market symbols (e.g., VOD.L, HSBA.L)
+  // - ^ prefix for indices (e.g., ^GSPC, ^DJI)
+  // - Dots in symbols (e.g., BRK.B)
+  const symbolRegex = /^[\^]?[A-Z0-9.]{1,10}$/;
   return symbolRegex.test(symbol);
+}
+
+// Check if symbol is a benchmark/index symbol (starts with ^)
+export function isIndexSymbol(symbol: string): boolean {
+  return symbol.startsWith('^');
 }
 
 // Portfolio validation schemas
@@ -80,12 +88,12 @@ export const assetSchema = z.object({
     .string()
     .min(1, 'Symbol is required')
     .max(10, 'Symbol too long')
-    .regex(/^[A-Z0-9]+$/, 'Invalid symbol format'),
+    .regex(/^[\^]?[A-Z0-9.]+$/, 'Invalid symbol format'),
   name: z
     .string()
     .min(1, 'Asset name is required')
     .max(200, 'Asset name too long'),
-  type: z.enum(['stock', 'etf', 'crypto', 'bond', 'real_estate', 'commodity']),
+  type: z.enum(['stock', 'etf', 'crypto', 'bond', 'real_estate', 'commodity', 'index', 'cash', 'other']),
   exchange: z.string().max(50, 'Exchange name too long').optional(),
   currency: z
     .string()

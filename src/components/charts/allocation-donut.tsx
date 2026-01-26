@@ -14,7 +14,7 @@ interface AllocationData {
   value: number;
   percentage: number;
   color: string;
-  type: 'stock' | 'etf' | 'crypto' | 'bond' | 'real_estate' | 'commodity' | 'cash' | 'other';
+  type: AssetType;
 }
 
 // Color mapping for asset types
@@ -26,6 +26,7 @@ const assetTypeColors: Record<AssetType, string> = {
   real_estate: '#f97316',
   commodity: '#84cc16',
   cash: '#6b7280',
+  index: '#06b6d4',
   other: '#ec4899',
 };
 
@@ -38,6 +39,7 @@ const assetTypeNames: Record<AssetType, string> = {
   real_estate: 'Real Estate',
   commodity: 'Commodities',
   cash: 'Cash',
+  index: 'Index Funds',
   other: 'Other',
 };
 

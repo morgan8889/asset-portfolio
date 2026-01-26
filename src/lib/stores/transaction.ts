@@ -11,6 +11,7 @@ import {
 import { generateTransactionId } from '@/types/storage';
 import { transactionQueries, HoldingsCalculator } from '@/lib/db';
 import { showSuccessNotification, showErrorNotification } from './ui';
+import { handleSnapshotTrigger } from '@/lib/services/snapshot-service';
 
 // Optimistic ID prefix to identify temporary IDs
 const OPTIMISTIC_ID_PREFIX = 'optimistic-';
@@ -210,6 +211,13 @@ export const useTransactionStore = create<TransactionState>()(
             await get().loadSummary(transactionData.portfolioId);
           }
 
+          // Trigger snapshot recomputation (non-blocking)
+          handleSnapshotTrigger({
+            type: 'TRANSACTION_ADDED',
+            portfolioId: transactionData.portfolioId,
+            date: new Date(transactionData.date),
+          }).catch((err) => console.error('Failed to update performance snapshots:', err));
+
           showSuccessNotification(
             'Transaction Added',
             'Transaction has been successfully added to your portfolio.'
@@ -293,6 +301,16 @@ export const useTransactionStore = create<TransactionState>()(
             await get().loadTransactions();
           }
 
+          // Trigger snapshot recomputation (non-blocking)
+          if (updatedTransaction && originalTransaction) {
+            handleSnapshotTrigger({
+              type: 'TRANSACTION_MODIFIED',
+              portfolioId: updatedTransaction.portfolioId,
+              oldDate: new Date(originalTransaction.date),
+              newDate: new Date(updatedTransaction.date),
+            }).catch((err) => console.error('Failed to update performance snapshots:', err));
+          }
+
           set({ loading: false });
           showSuccessNotification('Transaction Updated', 'Transaction has been successfully updated.');
         } catch (error) {
@@ -328,6 +346,13 @@ export const useTransactionStore = create<TransactionState>()(
 
           // Recalculate holdings for the affected asset after deletion
           await HoldingsCalculator.updateHoldingsForTransaction(deletedTransaction);
+
+          // Trigger snapshot recomputation (non-blocking)
+          handleSnapshotTrigger({
+            type: 'TRANSACTION_DELETED',
+            portfolioId: deletedTransaction.portfolioId,
+            date: new Date(deletedTransaction.date),
+          }).catch((err) => console.error('Failed to update performance snapshots:', err));
 
           showSuccessNotification(
             'Transaction Deleted',

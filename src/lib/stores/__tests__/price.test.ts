@@ -77,7 +77,7 @@ describe('Price Store', () => {
       store.setPreferences({ refreshInterval: 'realtime' });
 
       // Wait for microtask
-      await new Promise((resolve) => queueMicrotask(resolve));
+      await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
 
       expect(wasPolling).toBe(true);
       expect(store.isPolling).toBe(true);
