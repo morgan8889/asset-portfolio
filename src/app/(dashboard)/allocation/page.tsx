@@ -9,7 +9,8 @@ export default function AllocationPage() {
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">Asset Allocation</h1>
         <p className="text-muted-foreground">
-          View and manage your portfolio allocation across different asset classes and sectors.
+          View and manage your portfolio allocation across different asset
+          classes and sectors.
         </p>
       </div>
 
@@ -65,7 +66,7 @@ export default function AllocationPage() {
             <CardTitle>Current Allocation</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64 flex items-center justify-center text-muted-foreground">
+            <div className="flex h-64 items-center justify-center text-muted-foreground">
               Allocation donut chart will be implemented here
             </div>
           </CardContent>
@@ -76,7 +77,7 @@ export default function AllocationPage() {
             <CardTitle>Target vs Actual</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64 flex items-center justify-center text-muted-foreground">
+            <div className="flex h-64 items-center justify-center text-muted-foreground">
               Target allocation comparison will be implemented here
             </div>
           </CardContent>

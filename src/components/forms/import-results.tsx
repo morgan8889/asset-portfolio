@@ -8,7 +8,14 @@
  */
 
 import { useState } from 'react';
-import { CheckCircle, AlertCircle, FileDown, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
+import {
+  CheckCircle,
+  AlertCircle,
+  FileDown,
+  AlertTriangle,
+  ChevronDown,
+  ChevronRight,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Collapsible,
@@ -42,13 +49,16 @@ export function ImportResults({
   const totalProcessed = importedCount + skippedCount + errorCount;
 
   // Group errors by row for display
-  const errorsByRow = errors.reduce((acc, error) => {
-    if (!acc[error.rowNumber]) {
-      acc[error.rowNumber] = [];
-    }
-    acc[error.rowNumber].push(error);
-    return acc;
-  }, {} as Record<number, ImportError[]>);
+  const errorsByRow = errors.reduce(
+    (acc, error) => {
+      if (!acc[error.rowNumber]) {
+        acc[error.rowNumber] = [];
+      }
+      acc[error.rowNumber].push(error);
+      return acc;
+    },
+    {} as Record<number, ImportError[]>
+  );
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -56,21 +66,21 @@ export function ImportResults({
       <div className="flex flex-col items-center justify-center py-6">
         {success ? (
           <>
-            <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
+            <CheckCircle className="mb-4 h-16 w-16 text-green-500" />
             <h3 className="text-xl font-semibold text-foreground">
               Import Successful
             </h3>
-            <p className="text-muted-foreground mt-1">
+            <p className="mt-1 text-muted-foreground">
               Your transactions have been imported to your portfolio.
             </p>
           </>
         ) : (
           <>
-            <AlertCircle className="h-16 w-16 text-destructive mb-4" />
+            <AlertCircle className="mb-4 h-16 w-16 text-destructive" />
             <h3 className="text-xl font-semibold text-foreground">
               Import Completed with Errors
             </h3>
-            <p className="text-muted-foreground mt-1">
+            <p className="mt-1 text-muted-foreground">
               Some transactions could not be imported.
             </p>
           </>
@@ -80,25 +90,31 @@ export function ImportResults({
       {/* Statistics */}
       <div className="grid grid-cols-3 gap-4">
         {/* Imported */}
-        <div className="flex flex-col items-center p-4 rounded-lg bg-green-500/10 border border-green-500/20">
-          <CheckCircle className="h-6 w-6 text-green-500 mb-2" />
-          <span className="text-2xl font-bold text-foreground">{importedCount}</span>
+        <div className="flex flex-col items-center rounded-lg border border-green-500/20 bg-green-500/10 p-4">
+          <CheckCircle className="mb-2 h-6 w-6 text-green-500" />
+          <span className="text-2xl font-bold text-foreground">
+            {importedCount}
+          </span>
           <span className="text-sm text-muted-foreground">Imported</span>
         </div>
 
         {/* Skipped (Duplicates) */}
-        <div className="flex flex-col items-center p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-          <AlertTriangle className="h-6 w-6 text-yellow-500 mb-2" />
-          <span className="text-2xl font-bold text-foreground">{skippedCount}</span>
+        <div className="flex flex-col items-center rounded-lg border border-yellow-500/20 bg-yellow-500/10 p-4">
+          <AlertTriangle className="mb-2 h-6 w-6 text-yellow-500" />
+          <span className="text-2xl font-bold text-foreground">
+            {skippedCount}
+          </span>
           <span className="text-sm text-muted-foreground">
             {skippedCount === 1 ? 'Duplicate Skipped' : 'Duplicates Skipped'}
           </span>
         </div>
 
         {/* Errors */}
-        <div className="flex flex-col items-center p-4 rounded-lg bg-destructive/10 border border-destructive/20">
-          <AlertCircle className="h-6 w-6 text-destructive mb-2" />
-          <span className="text-2xl font-bold text-foreground">{errorCount}</span>
+        <div className="flex flex-col items-center rounded-lg border border-destructive/20 bg-destructive/10 p-4">
+          <AlertCircle className="mb-2 h-6 w-6 text-destructive" />
+          <span className="text-2xl font-bold text-foreground">
+            {errorCount}
+          </span>
           <span className="text-sm text-muted-foreground">Errors</span>
         </div>
       </div>
@@ -112,10 +128,7 @@ export function ImportResults({
       {errorCount > 0 && errors.length > 0 && (
         <Collapsible open={showErrors} onOpenChange={setShowErrors}>
           <CollapsibleTrigger asChild>
-            <Button
-              variant="ghost"
-              className="w-full justify-between py-2"
-            >
+            <Button variant="ghost" className="w-full justify-between py-2">
               <span className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-destructive" />
                 View Error Details ({Object.keys(errorsByRow).length} rows)
@@ -154,7 +167,7 @@ export function ImportResults({
                   </div>
                 ))}
               {Object.keys(errorsByRow).length > 10 && (
-                <div className="mt-2 text-sm text-muted-foreground text-center">
+                <div className="mt-2 text-center text-sm text-muted-foreground">
                   ... and {Object.keys(errorsByRow).length - 10} more rows
                 </div>
               )}
@@ -165,7 +178,7 @@ export function ImportResults({
 
       {/* Download Failed Rows */}
       {errorCount > 0 && onDownloadFailed && (
-        <div className="flex flex-col items-center gap-2 pt-4 border-t">
+        <div className="flex flex-col items-center gap-2 border-t pt-4">
           <p className="text-sm text-muted-foreground">
             Download the failed rows to review and fix the issues.
           </p>
@@ -182,7 +195,7 @@ export function ImportResults({
 
       {/* Success Actions */}
       {success && importedCount > 0 && (
-        <div className="text-center pt-4 border-t">
+        <div className="border-t pt-4 text-center">
           <p className="text-sm text-muted-foreground">
             Your portfolio has been updated with {importedCount} new transaction
             {importedCount === 1 ? '' : 's'}.

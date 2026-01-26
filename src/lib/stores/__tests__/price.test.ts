@@ -8,18 +8,39 @@
  * and error recovery.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  type Mock,
+} from 'vitest';
 import { usePriceStore } from '../price';
 import { DEFAULT_PRICE_PREFERENCES } from '@/types/market';
 
+// Use vi.hoisted to ensure mocks are available when vi.mock factory runs
+// (vi.mock is hoisted and runs before module-level variable declarations)
+const { mockSettingsGet, mockSettingsSet, mockSaveBatchSnapshots, mockFetch } =
+  vi.hoisted(() => ({
+    mockSettingsGet: vi.fn(),
+    mockSettingsSet: vi.fn(),
+    mockSaveBatchSnapshots: vi.fn(),
+    mockFetch: vi.fn(),
+  }));
+
 // Mock fetch globally
-global.fetch = vi.fn();
+global.fetch = mockFetch;
 
 // Mock IndexedDB queries
 vi.mock('@/lib/db/queries', () => ({
   settingsQueries: {
-    get: vi.fn(),
-    set: vi.fn(),
+    get: mockSettingsGet,
+    set: mockSettingsSet,
+  },
+  priceQueries: {
+    saveBatchSnapshots: mockSaveBatchSnapshots,
   },
 }));
 
@@ -37,6 +58,12 @@ describe('Price Store', () => {
       isPolling: false,
       watchedSymbols: new Set(),
       isOnline: true,
+      pollingLock: false,
+      eventHandlers: {
+        visibilityHandler: null,
+        onlineHandler: null,
+        offlineHandler: null,
+      },
     });
 
     // Clear all mocks
@@ -52,12 +79,20 @@ describe('Price Store', () => {
     it('should set preferences', () => {
       usePriceStore.getState().setPreferences({ refreshInterval: 'realtime' });
 
-      expect(usePriceStore.getState().preferences.refreshInterval).toBe('realtime');
+      // Re-read state after mutation
+      expect(usePriceStore.getState().preferences.refreshInterval).toBe(
+        'realtime'
+      );
     });
 
     it('should merge preferences instead of replacing', () => {
-      usePriceStore.getState().setPreferences({ refreshInterval: 'realtime' });
-      usePriceStore.getState().setPreferences({ showStalenessIndicator: false });
+      const store = usePriceStore.getState();
+      store.setPreferences({ refreshInterval: 'realtime' });
+      usePriceStore
+        .getState()
+        .setPreferences({ showStalenessIndicator: false });
+
+      // Re-read state after mutations
 
       const state = usePriceStore.getState();
       expect(state.preferences.refreshInterval).toBe('realtime');
@@ -66,7 +101,9 @@ describe('Price Store', () => {
     });
 
     it('should restart polling when interval changes', async () => {
-      usePriceStore.getState().setWatchedSymbols(['AAPL']);
+      const store = usePriceStore.getState();
+      store.setWatchedSymbols(['AAPL']);
+
       usePriceStore.getState().startPolling();
 
       const wasPolling = usePriceStore.getState().isPolling;
@@ -75,18 +112,25 @@ describe('Price Store', () => {
       usePriceStore.getState().setPreferences({ refreshInterval: 'realtime' });
 
       // Wait for microtask
-      await new Promise<void>((resolve) => queueMicrotask(() => resolve()));
+      await new Promise<void>((resolve) => queueMicrotask(resolve));
 
+
+      // Re-read state after mutation
+      const state = usePriceStore.getState();
       expect(wasPolling).toBe(true);
-      expect(usePriceStore.getState().isPolling).toBe(true);
-      expect(usePriceStore.getState().preferences.refreshInterval).toBe('realtime');
+      expect(state.isPolling).toBe(true);
+      expect(state.preferences.refreshInterval).toBe('realtime');
     });
 
     it('should not restart polling when changing to manual', () => {
-      usePriceStore.getState().setWatchedSymbols(['AAPL']);
+      const store = usePriceStore.getState();
+      store.setWatchedSymbols(['AAPL']);
+
       usePriceStore.getState().startPolling();
 
       usePriceStore.getState().setPreferences({ refreshInterval: 'manual' });
+
+      // Re-read state after mutation
 
       expect(usePriceStore.getState().isPolling).toBe(false);
     });
@@ -96,18 +140,25 @@ describe('Price Store', () => {
     it('should add watched symbol', () => {
       usePriceStore.getState().addWatchedSymbol('AAPL');
 
+      // Re-read state after mutation
+
       expect(usePriceStore.getState().watchedSymbols.has('AAPL')).toBe(true);
     });
 
     it('should normalize symbols to uppercase', () => {
       usePriceStore.getState().addWatchedSymbol('aapl');
 
+      // Re-read state after mutation
+
       expect(usePriceStore.getState().watchedSymbols.has('AAPL')).toBe(true);
     });
 
     it('should remove watched symbol', () => {
-      usePriceStore.getState().addWatchedSymbol('AAPL');
+      const store = usePriceStore.getState();
+      store.addWatchedSymbol('AAPL');
       usePriceStore.getState().removeWatchedSymbol('AAPL');
+
+      // Re-read state after mutation
 
       expect(usePriceStore.getState().watchedSymbols.has('AAPL')).toBe(false);
     });
@@ -125,11 +176,15 @@ describe('Price Store', () => {
 
       usePriceStore.getState().removeWatchedSymbol('AAPL');
 
+      // Re-read state after mutation
+
       expect(usePriceStore.getState().prices.has('AAPL')).toBe(false);
     });
 
     it('should set multiple watched symbols', () => {
       usePriceStore.getState().setWatchedSymbols(['AAPL', 'GOOGL', 'MSFT']);
+
+      // Re-read state after mutation
 
       const state = usePriceStore.getState();
       expect(state.watchedSymbols.size).toBe(3);
@@ -152,6 +207,8 @@ describe('Price Store', () => {
         timestamp,
         source: 'yahoo',
       });
+
+      // Re-read state after mutation
 
       const price = usePriceStore.getState().getPrice('AAPL');
       expect(price).toBeDefined();
@@ -184,6 +241,8 @@ describe('Price Store', () => {
         },
       });
 
+      // Re-read state after mutation
+
       const state = usePriceStore.getState();
       expect(state.prices.size).toBe(2);
       expect(state.getPrice('AAPL')).toBeDefined();
@@ -200,6 +259,8 @@ describe('Price Store', () => {
         timestamp: new Date(),
         source: 'yahoo',
       });
+
+      // Re-read state after mutation
 
       const price = usePriceStore.getState().getPrice('VOD.L');
       expect(price?.displayPrice).toBe('72.5');
@@ -219,6 +280,8 @@ describe('Price Store', () => {
       usePriceStore.getState().setWatchedSymbols(['AAPL']);
       usePriceStore.getState().startPolling();
 
+      // Re-read state after mutation
+
       expect(usePriceStore.getState().isPolling).toBe(true);
     });
 
@@ -226,6 +289,8 @@ describe('Price Store', () => {
       usePriceStore.getState().setWatchedSymbols(['AAPL']);
       usePriceStore.getState().setPreferences({ refreshInterval: 'manual' });
       usePriceStore.getState().startPolling();
+
+      // Re-read state after mutation
 
       expect(usePriceStore.getState().isPolling).toBe(false);
     });
@@ -237,6 +302,7 @@ describe('Price Store', () => {
       const firstPoll = usePriceStore.getState().isPolling;
       usePriceStore.getState().startPolling();
 
+
       expect(firstPoll).toBe(true);
       expect(usePriceStore.getState().isPolling).toBe(true);
     });
@@ -244,6 +310,8 @@ describe('Price Store', () => {
     it('should stop polling', () => {
       usePriceStore.getState().setWatchedSymbols(['AAPL']);
       usePriceStore.getState().startPolling();
+
+      // Re-read state after mutation
 
       expect(usePriceStore.getState().isPolling).toBe(true);
 
@@ -273,6 +341,8 @@ describe('Price Store', () => {
       // Fast-forward 5 seconds to trigger staleness update
       vi.advanceTimersByTime(5000);
 
+      // Re-read state after timer-triggered mutation
+
       const price = usePriceStore.getState().getPrice('AAPL');
       expect(price?.staleness).toBe('stale'); // 2 min old with 60s interval = stale
 
@@ -285,6 +355,8 @@ describe('Price Store', () => {
     it('should set online status', () => {
       usePriceStore.getState().setOnline(false);
 
+      // Re-read state after mutation
+
       expect(usePriceStore.getState().isOnline).toBe(false);
     });
 
@@ -293,14 +365,14 @@ describe('Price Store', () => {
 
       await usePriceStore.getState().refreshPrice('AAPL');
 
-      expect(global.fetch).not.toHaveBeenCalled();
+      expect(mockFetch).not.toHaveBeenCalled();
     });
 
     it('should resume polling when coming online', async () => {
       usePriceStore.getState().setWatchedSymbols(['AAPL']);
 
       // Mock successful fetch
-      (global.fetch as any).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           symbol: 'AAPL',
@@ -317,7 +389,7 @@ describe('Price Store', () => {
 
       // Should trigger refresh
       await vi.waitFor(() => {
-        expect(global.fetch).toHaveBeenCalled();
+        expect(mockFetch).toHaveBeenCalled();
       });
     });
   });
@@ -336,12 +408,14 @@ describe('Price Store', () => {
       });
 
       // Mock failed fetch
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       await usePriceStore.getState().refreshPrice('AAPL');
 
-      // Should still have cached data
+      // Re-read state after mutation
       const state = usePriceStore.getState();
+      // Should still have cached data
+
       const price = state.getPrice('AAPL');
       expect(price).toBeDefined();
       expect(price?.symbol).toBe('AAPL');
@@ -349,9 +423,14 @@ describe('Price Store', () => {
     });
 
     it('should set error state on fetch failure', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('API error'));
+      const store = usePriceStore.getState();
+
+      mockFetch.mockRejectedValueOnce(new Error('API error'));
+
 
       await usePriceStore.getState().refreshPrice('AAPL');
+
+      // Re-read state after mutation
 
       const state = usePriceStore.getState();
       expect(state.error).toContain('API error');
@@ -360,6 +439,8 @@ describe('Price Store', () => {
 
     it('should clear error state', () => {
       usePriceStore.getState().setError('Test error');
+
+      // Re-read state after mutation
 
       expect(usePriceStore.getState().error).toBe('Test error');
 
@@ -396,6 +477,8 @@ describe('Price Store', () => {
 
       usePriceStore.getState().updateStaleness();
 
+      // Re-read state after mutation
+
       const state = usePriceStore.getState();
       const aaplPrice = state.getPrice('AAPL');
       const googlPrice = state.getPrice('GOOGL');
@@ -428,8 +511,6 @@ describe('Price Store', () => {
 
   describe('Cache Persistence', () => {
     it('should load cached prices from IndexedDB', async () => {
-      const { settingsQueries } = await import('@/lib/db/queries');
-
       const cachedData = {
         AAPL: {
           symbol: 'AAPL',
@@ -447,19 +528,18 @@ describe('Price Store', () => {
         },
       };
 
-      (settingsQueries.get as any).mockResolvedValueOnce(cachedData);
+      mockSettingsGet.mockResolvedValueOnce(cachedData);
 
       await usePriceStore.getState().loadCachedPrices();
 
-      // Get fresh state after async operation
+      // Re-read state after async mutation
+
       const state = usePriceStore.getState();
       expect(state.prices.size).toBe(1);
       expect(state.getPrice('AAPL')).toBeDefined();
     });
 
     it('should persist prices to IndexedDB', async () => {
-      const { settingsQueries } = await import('@/lib/db/queries');
-
       const store = usePriceStore.getState();
       store.updatePrice('AAPL', {
         symbol: 'AAPL',
@@ -471,9 +551,9 @@ describe('Price Store', () => {
         source: 'yahoo',
       });
 
-      await store.persistPriceCache();
+      await usePriceStore.getState().persistPriceCache();
 
-      expect(settingsQueries.set).toHaveBeenCalledWith(
+      expect(mockSettingsSet).toHaveBeenCalledWith(
         'priceCache',
         expect.objectContaining({
           AAPL: expect.objectContaining({
@@ -485,12 +565,10 @@ describe('Price Store', () => {
     });
 
     it('should not persist empty cache', async () => {
-      const { settingsQueries } = await import('@/lib/db/queries');
-
       const store = usePriceStore.getState();
       await store.persistPriceCache();
 
-      expect(settingsQueries.set).not.toHaveBeenCalled();
+      expect(mockSettingsSet).not.toHaveBeenCalled();
     });
   });
 
@@ -502,7 +580,7 @@ describe('Price Store', () => {
 
       usePriceStore.getState().setWatchedSymbols(['AAPL', 'GOOGL']);
 
-      (global.fetch as any).mockResolvedValueOnce({
+      mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           successful: [
@@ -531,7 +609,8 @@ describe('Price Store', () => {
 
       await usePriceStore.getState().refreshAllPrices();
 
-      // Get fresh state after async operation
+      // Re-read state after async mutation
+
       const state = usePriceStore.getState();
       expect(state.prices.size).toBe(2);
       expect(state.getPrice('AAPL')).toBeDefined();
@@ -553,13 +632,17 @@ describe('Price Store', () => {
       });
 
       usePriceStore.getState().setOnline(false);
+
       await usePriceStore.getState().refreshAllPrices();
 
       // Should not call fetch
-      expect(global.fetch).not.toHaveBeenCalled();
+      expect(mockFetch).not.toHaveBeenCalled();
 
+      // Re-read state after mutation
+      const state = usePriceStore.getState();
       // Should still have cached data
-      expect(usePriceStore.getState().getPrice('AAPL')).toBeDefined();
+      expect(state.getPrice('AAPL')).toBeDefined();
+
     });
   });
 });

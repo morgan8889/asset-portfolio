@@ -15,12 +15,20 @@ const tokenStorage = new Map<string, TokenData>();
 
 export function rateLimit(config: RateLimitConfig) {
   return {
-    check: async (limit: number, token: string): Promise<{ success: boolean; remaining?: number; resetTime?: number }> => {
+    check: async (
+      limit: number,
+      token: string
+    ): Promise<{
+      success: boolean;
+      remaining?: number;
+      resetTime?: number;
+    }> => {
       const now = Date.now();
       const key = token;
 
       // Clean up expired entries periodically
-      if (Math.random() < 0.01) { // 1% chance to clean up
+      if (Math.random() < 0.01) {
+        // 1% chance to clean up
         cleanupExpiredTokens(now);
       }
 
@@ -100,7 +108,9 @@ export function createRateLimitMiddleware(
   limit: number,
   keyExtractor: (request: Request) => string
 ) {
-  return async (request: Request): Promise<{ allowed: boolean; headers: Record<string, string> }> => {
+  return async (
+    request: Request
+  ): Promise<{ allowed: boolean; headers: Record<string, string> }> => {
     const key = keyExtractor(request);
     const result = await rateLimiter.check(limit, key);
 
@@ -110,7 +120,9 @@ export function createRateLimitMiddleware(
     };
 
     if (result.resetTime) {
-      headers['X-RateLimit-Reset'] = Math.ceil(result.resetTime / 1000).toString();
+      headers['X-RateLimit-Reset'] = Math.ceil(
+        result.resetTime / 1000
+      ).toString();
     }
 
     return {
@@ -152,7 +164,10 @@ export const extractUserKey = (request: Request): string => {
 };
 
 // Rate limit status response helper
-export function createRateLimitResponse(allowed: boolean, headers: Record<string, string>) {
+export function createRateLimitResponse(
+  allowed: boolean,
+  headers: Record<string, string>
+) {
   if (allowed) {
     return null; // No response needed, continue with request
   }
@@ -161,9 +176,9 @@ export function createRateLimitResponse(allowed: boolean, headers: Record<string
     JSON.stringify({
       error: 'Rate limit exceeded',
       message: 'Too many requests. Please try again later.',
-      retryAfter: headers['X-RateLimit-Reset'] ?
-        parseInt(headers['X-RateLimit-Reset']) - Math.floor(Date.now() / 1000) :
-        60,
+      retryAfter: headers['X-RateLimit-Reset']
+        ? parseInt(headers['X-RateLimit-Reset']) - Math.floor(Date.now() / 1000)
+        : 60,
     }),
     {
       status: 429,

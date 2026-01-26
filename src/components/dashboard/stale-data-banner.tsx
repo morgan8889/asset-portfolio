@@ -49,13 +49,14 @@ export const StaleDataBanner = memo(function StaleDataBanner({
     <div
       className={cn(
         'mb-4 flex items-center gap-3 rounded-lg border p-4',
-        'bg-amber-50 border-amber-200 text-amber-800'
+        'border-amber-200 bg-amber-50 text-amber-800'
       )}
       role="alert"
     >
-      <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0" />
+      <AlertCircle className="h-5 w-5 flex-shrink-0 text-amber-600" />
       <span className="flex-1 text-sm">
-        Prices last updated {formatRelativeTime(lastUpdated)}. Some values may be outdated.
+        Prices last updated {formatRelativeTime(lastUpdated)}. Some values may
+        be outdated.
       </span>
       {onRefresh && (
         <Button
@@ -63,9 +64,11 @@ export const StaleDataBanner = memo(function StaleDataBanner({
           size="sm"
           onClick={onRefresh}
           disabled={isRefreshing}
-          className="text-amber-700 hover:text-amber-900 hover:bg-amber-100"
+          className="text-amber-700 hover:bg-amber-100 hover:text-amber-900"
         >
-          <RefreshCw className={cn('h-4 w-4 mr-1', isRefreshing && 'animate-spin')} />
+          <RefreshCw
+            className={cn('mr-1 h-4 w-4', isRefreshing && 'animate-spin')}
+          />
           Refresh
         </Button>
       )}
@@ -95,8 +98,12 @@ export const StaleDataBadge = memo(function StaleDataBadge({
 
   return (
     <span
-      className="inline-flex items-center gap-1 px-1.5 py-0.5 text-xs rounded bg-amber-100 text-amber-700"
-      title={lastUpdated ? `Last updated: ${formatRelativeTime(lastUpdated)}` : 'Data may be outdated'}
+      className="inline-flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-700"
+      title={
+        lastUpdated
+          ? `Last updated: ${formatRelativeTime(lastUpdated)}`
+          : 'Data may be outdated'
+      }
     >
       <AlertCircle className="h-3 w-3" />
       Stale

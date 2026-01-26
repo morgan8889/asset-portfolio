@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Decimal } from 'decimal.js';
-import { Transaction, TransactionFilter, TransactionSummary, ImportResult } from '@/types';
+import {
+  Transaction,
+  TransactionFilter,
+  TransactionSummary,
+  ImportResult,
+} from '@/types';
 
 // Use vi.hoisted to define mocks that can be referenced by hoisted vi.mock
 const { mockTransactionQueries, mockHoldingsCalculator } = vi.hoisted(() => ({
@@ -127,7 +132,10 @@ describe('Transaction Store', () => {
       });
 
       mockTransactionQueries.create.mockResolvedValue('new-id');
-      mockTransactionQueries.getById.mockResolvedValue({ ...transaction, id: 'new-id' });
+      mockTransactionQueries.getById.mockResolvedValue({
+        ...transaction,
+        id: 'new-id',
+      });
       mockTransactionQueries.getFiltered.mockResolvedValue([]);
 
       await useTransactionStore.getState().createTransaction(transaction);
@@ -143,7 +151,10 @@ describe('Transaction Store', () => {
       });
 
       mockTransactionQueries.create.mockResolvedValue('new-id');
-      mockTransactionQueries.getById.mockResolvedValue({ ...transaction, id: 'new-id' });
+      mockTransactionQueries.getById.mockResolvedValue({
+        ...transaction,
+        id: 'new-id',
+      });
       mockTransactionQueries.getFiltered.mockResolvedValue([]);
 
       await useTransactionStore.getState().createTransaction(transaction);
@@ -222,7 +233,9 @@ describe('Transaction Store', () => {
 
     it('should handle loading errors gracefully', async () => {
       const errorMessage = 'Database connection failed';
-      mockTransactionQueries.getByPortfolio.mockRejectedValue(new Error(errorMessage));
+      mockTransactionQueries.getByPortfolio.mockRejectedValue(
+        new Error(errorMessage)
+      );
 
       await useTransactionStore.getState().loadTransactions('p1');
 
@@ -243,7 +256,9 @@ describe('Transaction Store', () => {
         type: ['buy'],
       };
 
-      mockTransactionQueries.getFiltered.mockResolvedValue(mockFilteredTransactions);
+      mockTransactionQueries.getFiltered.mockResolvedValue(
+        mockFilteredTransactions
+      );
 
       await useTransactionStore.getState().filterTransactions(filter);
 
@@ -255,9 +270,13 @@ describe('Transaction Store', () => {
 
     it('should handle filter errors', async () => {
       const errorMessage = 'Filter query failed';
-      mockTransactionQueries.getFiltered.mockRejectedValue(new Error(errorMessage));
+      mockTransactionQueries.getFiltered.mockRejectedValue(
+        new Error(errorMessage)
+      );
 
-      await useTransactionStore.getState().filterTransactions({ portfolioId: 'p1' });
+      await useTransactionStore
+        .getState()
+        .filterTransactions({ portfolioId: 'p1' });
 
       const state = useTransactionStore.getState();
       expect(state.error).toBe(errorMessage);
@@ -290,7 +309,9 @@ describe('Transaction Store', () => {
     });
 
     it('should handle summary load errors silently', async () => {
-      mockTransactionQueries.getSummary.mockRejectedValue(new Error('Summary failed'));
+      mockTransactionQueries.getSummary.mockRejectedValue(
+        new Error('Summary failed')
+      );
 
       // Should not throw
       await useTransactionStore.getState().loadSummary('p1');
@@ -307,13 +328,20 @@ describe('Transaction Store', () => {
       const newId = 'new-transaction-id';
 
       mockTransactionQueries.create.mockResolvedValue(newId);
-      mockTransactionQueries.getById.mockResolvedValue({ ...transaction, id: newId });
-      mockTransactionQueries.getFiltered.mockResolvedValue([{ ...transaction, id: newId }]);
+      mockTransactionQueries.getById.mockResolvedValue({
+        ...transaction,
+        id: newId,
+      });
+      mockTransactionQueries.getFiltered.mockResolvedValue([
+        { ...transaction, id: newId },
+      ]);
 
       await useTransactionStore.getState().createTransaction(transaction);
 
       expect(mockTransactionQueries.create).toHaveBeenCalledWith(transaction);
-      expect(mockHoldingsCalculator.updateHoldingsForTransaction).toHaveBeenCalled();
+      expect(
+        mockHoldingsCalculator.updateHoldingsForTransaction
+      ).toHaveBeenCalled();
 
       const state = useTransactionStore.getState();
       expect(state.loading).toBe(false);
@@ -334,7 +362,10 @@ describe('Transaction Store', () => {
     });
 
     it('should optimistically add transaction with current filter', async () => {
-      const transaction = createMockTransaction({ portfolioId: 'p1', type: 'buy' });
+      const transaction = createMockTransaction({
+        portfolioId: 'p1',
+        type: 'buy',
+      });
       const filter: TransactionFilter = { portfolioId: 'p1', type: ['buy'] };
 
       useTransactionStore.setState({
@@ -344,7 +375,10 @@ describe('Transaction Store', () => {
       });
 
       mockTransactionQueries.create.mockResolvedValue('new-id');
-      mockTransactionQueries.getById.mockResolvedValue({ ...transaction, id: 'new-id' });
+      mockTransactionQueries.getById.mockResolvedValue({
+        ...transaction,
+        id: 'new-id',
+      });
 
       await useTransactionStore.getState().createTransaction(transaction);
 
@@ -368,8 +402,12 @@ describe('Transaction Store', () => {
 
       await useTransactionStore.getState().createTransactions(transactions);
 
-      expect(mockTransactionQueries.createMany).toHaveBeenCalledWith(transactions);
-      expect(mockHoldingsCalculator.recalculatePortfolioHoldings).toHaveBeenCalledWith('p1');
+      expect(mockTransactionQueries.createMany).toHaveBeenCalledWith(
+        transactions
+      );
+      expect(
+        mockHoldingsCalculator.recalculatePortfolioHoldings
+      ).toHaveBeenCalledWith('p1');
 
       const state = useTransactionStore.getState();
       expect(state.loading).toBe(false);
@@ -385,7 +423,9 @@ describe('Transaction Store', () => {
       await useTransactionStore.getState().createTransactions(transactions);
 
       const state = useTransactionStore.getState();
-      expect(state.error).toBe('Transaction 1: Quantity must be greater than 0');
+      expect(state.error).toBe(
+        'Transaction 1: Quantity must be greater than 0'
+      );
       expect(mockTransactionQueries.createMany).not.toHaveBeenCalled();
     });
 
@@ -393,7 +433,9 @@ describe('Transaction Store', () => {
       const transactions = [createMockTransaction()];
       const errorMessage = 'Bulk creation failed';
 
-      mockTransactionQueries.createMany.mockRejectedValue(new Error(errorMessage));
+      mockTransactionQueries.createMany.mockRejectedValue(
+        new Error(errorMessage)
+      );
 
       await useTransactionStore.getState().createTransactions(transactions);
 
@@ -408,14 +450,24 @@ describe('Transaction Store', () => {
         createMockTransaction({ portfolioId: 'p1' }),
       ];
 
-      mockTransactionQueries.createMany.mockResolvedValue(['id1', 'id2', 'id3']);
+      mockTransactionQueries.createMany.mockResolvedValue([
+        'id1',
+        'id2',
+        'id3',
+      ]);
       mockTransactionQueries.getFiltered.mockResolvedValue([]);
 
       await useTransactionStore.getState().createTransactions(transactions);
 
-      expect(mockHoldingsCalculator.recalculatePortfolioHoldings).toHaveBeenCalledTimes(2);
-      expect(mockHoldingsCalculator.recalculatePortfolioHoldings).toHaveBeenCalledWith('p1');
-      expect(mockHoldingsCalculator.recalculatePortfolioHoldings).toHaveBeenCalledWith('p2');
+      expect(
+        mockHoldingsCalculator.recalculatePortfolioHoldings
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        mockHoldingsCalculator.recalculatePortfolioHoldings
+      ).toHaveBeenCalledWith('p1');
+      expect(
+        mockHoldingsCalculator.recalculatePortfolioHoldings
+      ).toHaveBeenCalledWith('p2');
     });
   });
 
@@ -431,7 +483,9 @@ describe('Transaction Store', () => {
       await useTransactionStore.getState().updateTransaction('t1', updates);
 
       expect(mockTransactionQueries.update).toHaveBeenCalledWith('t1', updates);
-      expect(mockHoldingsCalculator.updateHoldingsForTransaction).toHaveBeenCalled();
+      expect(
+        mockHoldingsCalculator.updateHoldingsForTransaction
+      ).toHaveBeenCalled();
 
       const state = useTransactionStore.getState();
       expect(state.loading).toBe(false);
@@ -443,7 +497,9 @@ describe('Transaction Store', () => {
       mockTransactionQueries.getById.mockResolvedValue(createMockTransaction());
       mockTransactionQueries.update.mockRejectedValue(new Error(errorMessage));
 
-      await useTransactionStore.getState().updateTransaction('t1', { price: new Decimal(150) });
+      await useTransactionStore
+        .getState()
+        .updateTransaction('t1', { price: new Decimal(150) });
 
       const state = useTransactionStore.getState();
       expect(state.error).toBe(errorMessage);
@@ -478,7 +534,10 @@ describe('Transaction Store', () => {
     });
 
     it('should handle delete failure and rollback', async () => {
-      const transaction = createMockTransaction({ id: 't1', portfolioId: 'p1' });
+      const transaction = createMockTransaction({
+        id: 't1',
+        portfolioId: 'p1',
+      });
       const errorMessage = 'Delete failed';
 
       // Pre-populate state with the transaction
@@ -511,7 +570,10 @@ describe('Transaction Store', () => {
     });
 
     it('should update holdings after deletion', async () => {
-      const transaction = createMockTransaction({ id: 't1', portfolioId: 'p1' });
+      const transaction = createMockTransaction({
+        id: 't1',
+        portfolioId: 'p1',
+      });
 
       // Pre-populate state with the transaction (optimistic delete finds it in state)
       useTransactionStore.setState({
@@ -523,7 +585,9 @@ describe('Transaction Store', () => {
 
       await useTransactionStore.getState().deleteTransaction('t1');
 
-      expect(mockHoldingsCalculator.updateHoldingsForTransaction).toHaveBeenCalledWith(transaction);
+      expect(
+        mockHoldingsCalculator.updateHoldingsForTransaction
+      ).toHaveBeenCalledWith(transaction);
     });
   });
 
@@ -536,9 +600,13 @@ describe('Transaction Store', () => {
 
       mockTransactionQueries.create.mockResolvedValue('new-id');
       mockTransactionQueries.getByPortfolio.mockResolvedValue([]);
-      mockTransactionQueries.getSummary.mockResolvedValue({} as TransactionSummary);
+      mockTransactionQueries.getSummary.mockResolvedValue(
+        {} as TransactionSummary
+      );
 
-      const result = await useTransactionStore.getState().importTransactions(transactions, 'p1');
+      const result = await useTransactionStore
+        .getState()
+        .importTransactions(transactions, 'p1');
 
       expect(result.success).toBe(true);
       expect(result.totalRows).toBe(2);
@@ -559,9 +627,13 @@ describe('Transaction Store', () => {
         .mockResolvedValueOnce('id1')
         .mockRejectedValueOnce(new Error('Import error'));
       mockTransactionQueries.getByPortfolio.mockResolvedValue([]);
-      mockTransactionQueries.getSummary.mockResolvedValue({} as TransactionSummary);
+      mockTransactionQueries.getSummary.mockResolvedValue(
+        {} as TransactionSummary
+      );
 
-      const result = await useTransactionStore.getState().importTransactions(transactions, 'p1');
+      const result = await useTransactionStore
+        .getState()
+        .importTransactions(transactions, 'p1');
 
       expect(result.success).toBe(false);
       expect(result.totalRows).toBe(2);
@@ -574,10 +646,16 @@ describe('Transaction Store', () => {
     it('should handle complete import failure', async () => {
       const transactions = [createMockTransaction({ portfolioId: 'p1' })];
 
-      mockTransactionQueries.create.mockRejectedValue(new Error('Import failed'));
-      mockTransactionQueries.getByPortfolio.mockRejectedValue(new Error('Load failed'));
+      mockTransactionQueries.create.mockRejectedValue(
+        new Error('Import failed')
+      );
+      mockTransactionQueries.getByPortfolio.mockRejectedValue(
+        new Error('Load failed')
+      );
 
-      const result = await useTransactionStore.getState().importTransactions(transactions, 'p1');
+      const result = await useTransactionStore
+        .getState()
+        .importTransactions(transactions, 'p1');
 
       expect(result.success).toBe(false);
       expect(result.successfulImports).toBe(0);
@@ -599,9 +677,13 @@ describe('Transaction Store', () => {
         .mockRejectedValueOnce(new Error('Error 1'))
         .mockResolvedValueOnce('id3');
       mockTransactionQueries.getByPortfolio.mockResolvedValue([]);
-      mockTransactionQueries.getSummary.mockResolvedValue({} as TransactionSummary);
+      mockTransactionQueries.getSummary.mockResolvedValue(
+        {} as TransactionSummary
+      );
 
-      const result = await useTransactionStore.getState().importTransactions(transactions, 'p1');
+      const result = await useTransactionStore
+        .getState()
+        .importTransactions(transactions, 'p1');
 
       expect(result).toMatchObject({
         success: false,
@@ -620,10 +702,7 @@ describe('Transaction Store', () => {
 
   describe('clearFilter', () => {
     it('should reset filter and restore original transactions', () => {
-      const transactions = [
-        createMockTransaction(),
-        createMockTransaction(),
-      ];
+      const transactions = [createMockTransaction(), createMockTransaction()];
 
       useTransactionStore.setState({
         transactions,

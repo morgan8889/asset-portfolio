@@ -15,7 +15,11 @@ import {
 } from '@/types/dashboard';
 import { transactionQueries } from '@/lib/db';
 import { Transaction } from '@/types';
-import { eachDayOfInterval, eachWeekOfInterval, eachMonthOfInterval } from 'date-fns';
+import {
+  eachDayOfInterval,
+  eachWeekOfInterval,
+  eachMonthOfInterval,
+} from 'date-fns';
 import { getPriceAtDate, createPriceCache, PriceCache } from './price-lookup';
 
 type Resolution = 'daily' | 'weekly' | 'monthly';
@@ -40,7 +44,11 @@ function getDefaultResolution(period: TimePeriod): Resolution {
 /**
  * Get date intervals for the given period and resolution.
  */
-function getDateIntervals(startDate: Date, endDate: Date, resolution: Resolution): Date[] {
+function getDateIntervals(
+  startDate: Date,
+  endDate: Date,
+  resolution: Resolution
+): Date[] {
   const interval = { start: startDate, end: endDate };
 
   switch (resolution) {
@@ -63,7 +71,9 @@ function calculateHoldingsAtDate(
 ): Map<string, Decimal> {
   const holdings = new Map<string, Decimal>();
 
-  const relevantTx = transactions.filter((tx) => new Date(tx.date) <= targetDate);
+  const relevantTx = transactions.filter(
+    (tx) => new Date(tx.date) <= targetDate
+  );
 
   for (const tx of relevantTx) {
     const currentQty = holdings.get(tx.assetId) || new Decimal(0);
@@ -105,11 +115,18 @@ async function calculateValueAtDate(
 
   for (const [assetId, quantity] of holdings.entries()) {
     try {
-      const { price, isInterpolated } = await getPriceAtDate(assetId, date, priceCache);
+      const { price, isInterpolated } = await getPriceAtDate(
+        assetId,
+        date,
+        priceCache
+      );
       totalValue = totalValue.plus(quantity.mul(price));
       if (isInterpolated) hasInterpolatedPrices = true;
     } catch (error) {
-      console.error(`Error calculating value for asset ${assetId} at ${date}:`, error);
+      console.error(
+        `Error calculating value for asset ${assetId} at ${date}:`,
+        error
+      );
       // Skip this asset and continue with others
       hasInterpolatedPrices = true;
     }
@@ -189,7 +206,11 @@ export async function getValueAtDate(
   if (holdingsAtDate.size === 0) return new Decimal(0);
 
   const priceCache = createPriceCache();
-  const { totalValue } = await calculateValueAtDate(holdingsAtDate, date, priceCache);
+  const { totalValue } = await calculateValueAtDate(
+    holdingsAtDate,
+    date,
+    priceCache
+  );
 
   return totalValue;
 }

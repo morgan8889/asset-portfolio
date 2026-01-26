@@ -35,8 +35,8 @@ export const WidgetSkeleton = memo(function WidgetSkeleton({
         <Icon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="h-8 w-32 bg-muted animate-pulse rounded" />
-        <div className="h-4 w-24 bg-muted animate-pulse rounded mt-2" />
+        <div className="h-8 w-32 animate-pulse rounded bg-muted" />
+        <div className="mt-2 h-4 w-24 animate-pulse rounded bg-muted" />
       </CardContent>
     </Card>
   );
@@ -99,7 +99,12 @@ export const MetricValue = memo(function MetricValue({
   const direction = getTrendDirection(value);
   const colorClass = getTrendColorClass(direction);
   const sign = showSign && value >= 0 ? '+' : '';
-  const trendText = direction === 'positive' ? 'gain' : direction === 'negative' ? 'loss' : 'no change';
+  const trendText =
+    direction === 'positive'
+      ? 'gain'
+      : direction === 'negative'
+        ? 'loss'
+        : 'no change';
   const defaultAriaLabel = `${formatCurrency(Math.abs(value), currency)} ${trendText}`;
 
   return (

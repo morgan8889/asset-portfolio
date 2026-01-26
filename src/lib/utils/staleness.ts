@@ -6,7 +6,11 @@
  * Utilities for calculating price data staleness based on user preferences.
  */
 
-import { REFRESH_INTERVALS, RefreshInterval, StalenessLevel } from '@/types/market';
+import {
+  REFRESH_INTERVALS,
+  RefreshInterval,
+  StalenessLevel,
+} from '@/types/market';
 
 /**
  * Calculates the staleness level of price data based on its age

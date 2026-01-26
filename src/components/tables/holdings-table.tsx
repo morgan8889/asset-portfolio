@@ -13,7 +13,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, TrendingUp, TrendingDown, MoreHorizontal, DollarSign } from 'lucide-react';
+import {
+  Search,
+  TrendingUp,
+  TrendingDown,
+  MoreHorizontal,
+  DollarSign,
+} from 'lucide-react';
 import { usePortfolioStore, usePriceStore } from '@/lib/stores';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { PriceDisplay } from '@/components/dashboard/price-display';
@@ -37,27 +43,29 @@ interface HoldingDisplayData {
 
 const HoldingsTableComponent = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortField, setSortField] = useState<keyof HoldingDisplayData>('symbol');
+  const [sortField, setSortField] =
+    useState<keyof HoldingDisplayData>('symbol');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  const {
-    holdings,
-    assets,
-    currentPortfolio,
-    loading,
-    error,
-    clearError
-  } = usePortfolioStore();
+  const { holdings, assets, currentPortfolio, loading, error, clearError } =
+    usePortfolioStore();
 
   // Get live prices from the price store
-  const { prices: livePrices, loading: priceLoading, preferences } = usePriceStore();
+  const {
+    prices: livePrices,
+    loading: priceLoading,
+    preferences,
+  } = usePriceStore();
 
   // Holdings are loaded by useDashboardData hook - no need to load here
 
   // Get live price for a symbol
-  const getLivePrice = useCallback((symbol: string): LivePriceData | undefined => {
-    return livePrices.get(symbol.toUpperCase());
-  }, [livePrices]);
+  const getLivePrice = useCallback(
+    (symbol: string): LivePriceData | undefined => {
+      return livePrices.get(symbol.toUpperCase());
+    },
+    [livePrices]
+  );
 
   // Transform real holdings data for display
   const displayHoldings = useMemo((): HoldingDisplayData[] => {
@@ -67,19 +75,24 @@ const HoldingsTableComponent = () => {
 
       // Try to get live price from price store
       const livePrice = getLivePrice(symbol);
-      const livePriceValue = livePrice ? parseFloat(livePrice.displayPrice) : undefined;
+      const livePriceValue = livePrice
+        ? parseFloat(livePrice.displayPrice)
+        : undefined;
 
       const costBasis = parseFloat(holding.costBasis.toString());
       const quantity = parseFloat(holding.quantity.toString());
 
       // Use live price if available, otherwise fall back to stored price
-      const currentPrice = livePriceValue !== undefined
-        ? livePriceValue
-        : (quantity > 0 ? parseFloat(holding.currentValue.toString()) / quantity : 0);
+      const currentPrice =
+        livePriceValue !== undefined
+          ? livePriceValue
+          : quantity > 0
+            ? parseFloat(holding.currentValue.toString()) / quantity
+            : 0;
 
       const currentValue = quantity * currentPrice;
       const gainLoss = currentValue - costBasis;
-      const gainLossPercent = costBasis > 0 ? ((gainLoss / costBasis) * 100) : 0;
+      const gainLossPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
 
       return {
         id: holding.id,
@@ -145,8 +158,14 @@ const HoldingsTableComponent = () => {
     }
   };
 
-  const totalValue = filteredAndSortedHoldings.reduce((sum, holding) => sum + holding.currentValue, 0);
-  const totalGainLoss = filteredAndSortedHoldings.reduce((sum, holding) => sum + holding.gainLoss, 0);
+  const totalValue = filteredAndSortedHoldings.reduce(
+    (sum, holding) => sum + holding.currentValue,
+    0
+  );
+  const totalGainLoss = filteredAndSortedHoldings.reduce(
+    (sum, holding) => sum + holding.gainLoss,
+    0
+  );
 
   if (loading) {
     return (
@@ -157,7 +176,7 @@ const HoldingsTableComponent = () => {
         <CardContent>
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center gap-3">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
               <div>Loading holdings...</div>
             </div>
           </div>
@@ -173,8 +192,10 @@ const HoldingsTableComponent = () => {
           <CardTitle>Holdings</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
-            <div className="text-red-600 mb-2">Error loading holdings: {error}</div>
+          <div className="py-8 text-center">
+            <div className="mb-2 text-red-600">
+              Error loading holdings: {error}
+            </div>
             <Button onClick={handleRetry} variant="outline">
               Retry
             </Button>
@@ -191,10 +212,12 @@ const HoldingsTableComponent = () => {
           <CardTitle>Holdings</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-muted-foreground py-8">
-            <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium mb-2">No holdings found</p>
-            <p className="text-sm">Add your first transaction to see your holdings here.</p>
+          <div className="py-8 text-center text-muted-foreground">
+            <DollarSign className="mx-auto mb-4 h-12 w-12 opacity-50" />
+            <p className="mb-2 text-lg font-medium">No holdings found</p>
+            <p className="text-sm">
+              Add your first transaction to see your holdings here.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -213,7 +236,7 @@ const HoldingsTableComponent = () => {
                 placeholder="Search holdings..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 w-64"
+                className="w-64 pl-8"
               />
             </div>
           </div>
@@ -225,8 +248,14 @@ const HoldingsTableComponent = () => {
           </div>
           <div>
             <span className="text-muted-foreground">Total Gain/Loss: </span>
-            <span className={`font-medium ${totalGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatCurrency(totalGainLoss)} ({formatPercentage((totalGainLoss / (totalValue - totalGainLoss)) * 100)})
+            <span
+              className={`font-medium ${totalGainLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}
+            >
+              {formatCurrency(totalGainLoss)} (
+              {formatPercentage(
+                (totalGainLoss / (totalValue - totalGainLoss)) * 100
+              )}
+              )
             </span>
           </div>
         </div>
@@ -263,7 +292,7 @@ const HoldingsTableComponent = () => {
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50 text-right"
+                  className="cursor-pointer text-right hover:bg-muted/50"
                   onClick={() => handleSort('quantity')}
                 >
                   <div className="flex items-center justify-end space-x-1">
@@ -276,7 +305,7 @@ const HoldingsTableComponent = () => {
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50 text-right"
+                  className="cursor-pointer text-right hover:bg-muted/50"
                   onClick={() => handleSort('currentPrice')}
                 >
                   <div className="flex items-center justify-end space-x-1">
@@ -289,7 +318,7 @@ const HoldingsTableComponent = () => {
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50 text-right"
+                  className="cursor-pointer text-right hover:bg-muted/50"
                   onClick={() => handleSort('currentValue')}
                 >
                   <div className="flex items-center justify-end space-x-1">
@@ -302,7 +331,7 @@ const HoldingsTableComponent = () => {
                   </div>
                 </TableHead>
                 <TableHead
-                  className="cursor-pointer hover:bg-muted/50 text-right"
+                  className="cursor-pointer text-right hover:bg-muted/50"
                   onClick={() => handleSort('gainLoss')}
                 >
                   <div className="flex items-center justify-end space-x-1">
@@ -320,8 +349,13 @@ const HoldingsTableComponent = () => {
             <TableBody>
               {filteredAndSortedHoldings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    {searchTerm ? 'No holdings found matching your search.' : 'No holdings in this portfolio yet.'}
+                  <TableCell
+                    colSpan={7}
+                    className="py-8 text-center text-muted-foreground"
+                  >
+                    {searchTerm
+                      ? 'No holdings found matching your search.'
+                      : 'No holdings in this portfolio yet.'}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -329,14 +363,21 @@ const HoldingsTableComponent = () => {
                   <TableRow key={holding.symbol} className="hover:bg-muted/50">
                     <TableCell className="font-medium">
                       <div className="flex items-center space-x-2">
-                        <span className="font-mono text-sm font-bold">{holding.symbol}</span>
-                        <Badge className={getTypeColor(holding.type)} variant="secondary">
+                        <span className="font-mono text-sm font-bold">
+                          {holding.symbol}
+                        </span>
+                        <Badge
+                          className={getTypeColor(holding.type)}
+                          variant="secondary"
+                        >
                           {holding.type.toUpperCase()}
                         </Badge>
                         {/* Show exchange badge for UK stocks */}
                         {holding.exchange && holding.exchange !== 'UNKNOWN' && (
                           <Badge
-                            className={getExchangeBadgeColor(holding.exchange as Exchange)}
+                            className={getExchangeBadgeColor(
+                              holding.exchange as Exchange
+                            )}
                             variant="outline"
                           >
                             {holding.exchange}
@@ -359,7 +400,9 @@ const HoldingsTableComponent = () => {
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-mono">
-                      {holding.quantity.toFixed(holding.type === 'crypto' ? 4 : 0)}
+                      {holding.quantity.toFixed(
+                        holding.type === 'crypto' ? 4 : 0
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       {(() => {
@@ -377,7 +420,9 @@ const HoldingsTableComponent = () => {
                           );
                         }
                         return (
-                          <span className="font-mono">{formatCurrency(holding.currentPrice)}</span>
+                          <span className="font-mono">
+                            {formatCurrency(holding.currentPrice)}
+                          </span>
                         );
                       })()}
                     </TableCell>
@@ -391,9 +436,13 @@ const HoldingsTableComponent = () => {
                         ) : (
                           <TrendingDown className="h-4 w-4 text-red-600" />
                         )}
-                        <div className={`font-mono text-sm ${
-                          holding.gainLoss >= 0 ? 'text-green-600' : 'text-red-600'
-                        }`}>
+                        <div
+                          className={`font-mono text-sm ${
+                            holding.gainLoss >= 0
+                              ? 'text-green-600'
+                              : 'text-red-600'
+                          }`}
+                        >
                           <div>{formatCurrency(holding.gainLoss)}</div>
                           <div className="text-xs">
                             ({formatPercentage(holding.gainLossPercent)})

@@ -90,7 +90,13 @@ export interface WidgetDefinition {
 /**
  * Time periods for gain/loss calculation windows.
  */
-export type TimePeriod = 'TODAY' | 'WEEK' | 'MONTH' | 'QUARTER' | 'YEAR' | 'ALL';
+export type TimePeriod =
+  | 'TODAY'
+  | 'WEEK'
+  | 'MONTH'
+  | 'QUARTER'
+  | 'YEAR'
+  | 'ALL';
 
 /**
  * Configuration for a time period including helper methods.
@@ -315,7 +321,11 @@ export const TimePeriodSchema = z.enum([
 
 export const LayoutModeSchema = z.enum(['grid', 'stacking']);
 
-export const GridColumnsSchema = z.union([z.literal(2), z.literal(3), z.literal(4)]);
+export const GridColumnsSchema = z.union([
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+]);
 
 export const WidgetSpanSchema = z.union([z.literal(1), z.literal(2)]);
 
@@ -390,7 +400,10 @@ export const DashboardConfigurationSchemaV2 = z.object({
   lastUpdated: z.string().datetime('Must be a valid ISO 8601 datetime'),
   layoutMode: LayoutModeSchema,
   gridColumns: GridColumnsSchema,
-  widgetSpans: z.record(WidgetIdSchema, WidgetSpanSchema).optional().default({}),
+  widgetSpans: z
+    .record(WidgetIdSchema, WidgetSpanSchema)
+    .optional()
+    .default({}),
 });
 
 /**
@@ -599,3 +612,83 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
   densePacking: false,
   widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
 };
+
+// =============================================================================
+// Performance Page Types (User Story 6-8)
+// =============================================================================
+
+/**
+ * Time periods for Performance page chart selection.
+ */
+export type ChartTimePeriod = '1M' | '3M' | 'YTD' | '1Y' | 'ALL';
+
+/**
+ * Historical portfolio value data point for performance chart.
+ */
+export interface HistoricalPortfolioValue {
+  /** Date of this snapshot */
+  date: Date;
+  /** Total portfolio value at date */
+  value: Decimal;
+  /** Total invested amount at date (cost basis) */
+  costBasis?: Decimal;
+}
+
+/**
+ * Calculated portfolio performance metrics for the Performance page.
+ * All percentage values are stored as numbers (e.g., 12.5 for 12.5%).
+ */
+export interface PerformancePageMetrics {
+  /** Total return on investment percentage */
+  roi: number;
+  /** Compound Annual Growth Rate (CAGR) percentage */
+  annualizedReturn: number;
+  /** Standard deviation of returns */
+  volatility: number;
+  /** Risk-adjusted return (0 if < 30 days data) */
+  sharpeRatio: number;
+  /** Largest peak-to-trough decline percentage (always non-negative) */
+  maxDrawdown: number;
+}
+
+/**
+ * Complete data structure for Performance page rendering.
+ * Combines live metrics with calculated historical metrics.
+ */
+export interface PerformancePageData {
+  // Live metrics (from useLivePriceMetrics)
+  /** Current total portfolio value */
+  totalValue: Decimal;
+  /** Total gain/loss in currency */
+  totalGain: Decimal;
+  /** Total gain/loss as percentage */
+  totalGainPercent: number;
+  /** Today's change in currency */
+  dayChange: Decimal;
+  /** Today's change as percentage */
+  dayChangePercent: number;
+  /** Top 5 best performing holdings */
+  topPerformers: HoldingPerformance[];
+  /** Top 5 worst performing holdings */
+  biggestLosers: HoldingPerformance[];
+
+  // Calculated metrics (from historical data)
+  /** Portfolio performance metrics (CAGR, Sharpe, Drawdown) */
+  metrics: PerformancePageMetrics;
+
+  // Chart data
+  /** Historical portfolio values for chart */
+  historicalData: HistoricalPortfolioValue[];
+  /** Currently selected chart time period */
+  selectedPeriod: ChartTimePeriod;
+
+  // State
+  /** True while initial data is loading */
+  loading: boolean;
+  /** Error message if calculation failed */
+  error: string | null;
+
+  // Actions
+  /** Update the selected chart time period */
+  setSelectedPeriod: (period: ChartTimePeriod) => void;
+}

@@ -160,7 +160,16 @@ export interface PriceFetchRequest {
   source?: 'yahoo' | 'alphaVantage' | 'coinGecko' | 'auto';
   currency?: string;
   includeHistory?: boolean;
-  historyPeriod?: '1d' | '5d' | '1mo' | '3mo' | '6mo' | '1y' | '2y' | '5y' | 'max';
+  historyPeriod?:
+    | '1d'
+    | '5d'
+    | '1mo'
+    | '3mo'
+    | '6mo'
+    | '1y'
+    | '2y'
+    | '5y'
+    | 'max';
 }
 
 export interface PriceFetchResult {

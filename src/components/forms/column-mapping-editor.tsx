@@ -22,7 +22,11 @@ import { Label } from '@/components/ui/label';
 import { Building2, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ColumnMapping, TransactionField } from '@/types/csv-import';
-import { REQUIRED_FIELDS, OPTIONAL_FIELDS, FIELD_LABELS } from '@/types/csv-import';
+import {
+  REQUIRED_FIELDS,
+  OPTIONAL_FIELDS,
+  FIELD_LABELS,
+} from '@/types/csv-import';
 import { getSupportedBrokerages } from '@/lib/services/brokerage-formats';
 import {
   hasAllRequiredMappings,
@@ -56,7 +60,10 @@ interface ColumnMappingEditorProps {
 function getConfidenceBadge(confidence: number, isUserOverride: boolean) {
   if (isUserOverride) {
     return (
-      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+      <Badge
+        variant="outline"
+        className="border-blue-200 bg-blue-50 text-blue-700"
+      >
         Manual
       </Badge>
     );
@@ -64,7 +71,10 @@ function getConfidenceBadge(confidence: number, isUserOverride: boolean) {
 
   if (confidence >= 0.9) {
     return (
-      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+      <Badge
+        variant="outline"
+        className="border-green-200 bg-green-50 text-green-700"
+      >
         High ({Math.round(confidence * 100)}%)
       </Badge>
     );
@@ -72,7 +82,10 @@ function getConfidenceBadge(confidence: number, isUserOverride: boolean) {
 
   if (confidence >= 0.6) {
     return (
-      <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+      <Badge
+        variant="outline"
+        className="border-yellow-200 bg-yellow-50 text-yellow-700"
+      >
         Medium ({Math.round(confidence * 100)}%)
       </Badge>
     );
@@ -80,14 +93,20 @@ function getConfidenceBadge(confidence: number, isUserOverride: boolean) {
 
   if (confidence > 0) {
     return (
-      <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+      <Badge
+        variant="outline"
+        className="border-orange-200 bg-orange-50 text-orange-700"
+      >
         Low ({Math.round(confidence * 100)}%)
       </Badge>
     );
   }
 
   return (
-    <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-200">
+    <Badge
+      variant="outline"
+      className="border-gray-200 bg-gray-50 text-gray-500"
+    >
       Not Mapped
     </Badge>
   );
@@ -123,33 +142,40 @@ export function ColumnMappingEditor({
   const supportedBrokerages = getSupportedBrokerages();
   const [selectedOverride, setSelectedOverride] = useState<string>('');
 
-  const handleBrokerageOverride = useCallback((brokerageId: string) => {
-    if (brokerageId === 'auto') {
-      // Reset to auto-detection
-      setSelectedOverride('');
-      return;
-    }
-    if (brokerageId && onApplyBrokeragePreset) {
-      onApplyBrokeragePreset(brokerageId);
-      setSelectedOverride(brokerageId);
-    }
-  }, [onApplyBrokeragePreset]);
+  const handleBrokerageOverride = useCallback(
+    (brokerageId: string) => {
+      if (brokerageId === 'auto') {
+        // Reset to auto-detection
+        setSelectedOverride('');
+        return;
+      }
+      if (brokerageId && onApplyBrokeragePreset) {
+        onApplyBrokeragePreset(brokerageId);
+        setSelectedOverride(brokerageId);
+      }
+    },
+    [onApplyBrokeragePreset]
+  );
 
   return (
-    <Card className={cn('w-full', className)} data-testid="column-mapping-editor">
+    <Card
+      className={cn('w-full', className)}
+      data-testid="column-mapping-editor"
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <CardTitle className="text-lg flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               Column Mapping
               {hasUnmappedRequired && (
                 <Badge variant="destructive">
-                  {unmappedRequired.length} required field{unmappedRequired.length > 1 ? 's' : ''} unmapped
+                  {unmappedRequired.length} required field
+                  {unmappedRequired.length > 1 ? 's' : ''} unmapped
                 </Badge>
               )}
             </CardTitle>
             {hasUnmappedRequired && (
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Missing required fields:{' '}
                 {unmappedRequired.map((f) => FIELD_LABELS[f]).join(', ')}
               </p>
@@ -164,13 +190,18 @@ export function ColumnMappingEditor({
                 onValueChange={handleBrokerageOverride}
                 disabled={readOnly}
               >
-                <SelectTrigger className="w-48" aria-label="Select brokerage format">
-                  <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectTrigger
+                  className="w-48"
+                  aria-label="Select brokerage format"
+                >
+                  <Building2 className="mr-2 h-4 w-4 text-muted-foreground" />
                   <SelectValue placeholder="Apply brokerage preset..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="auto">
-                    <span className="text-muted-foreground">— Auto Detect —</span>
+                    <span className="text-muted-foreground">
+                      — Auto Detect —
+                    </span>
                   </SelectItem>
                   {supportedBrokerages.map((brokerage) => (
                     <SelectItem key={brokerage.id} value={brokerage.id}>
@@ -186,11 +217,11 @@ export function ColumnMappingEditor({
 
         {/* Detected Brokerage Info */}
         {detectedBrokerage && !selectedOverride && (
-          <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
             <Building2 className="h-4 w-4" />
             <span>
-              Auto-detected: <strong>{detectedBrokerage.name}</strong>
-              {' '}({Math.round(detectedBrokerage.confidence * 100)}% confidence)
+              Auto-detected: <strong>{detectedBrokerage.name}</strong> (
+              {Math.round(detectedBrokerage.confidence * 100)}% confidence)
             </span>
           </div>
         )}
@@ -206,28 +237,31 @@ export function ColumnMappingEditor({
             <div
               key={`${mapping.csvColumn}-${index}`}
               className={cn(
-                'flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg border',
+                'flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center',
                 !isMapped && 'border-dashed bg-muted/30',
                 isMapped && 'bg-background'
               )}
             >
               {/* CSV Column Info */}
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <Label className="font-medium text-sm">
+                  <Label className="text-sm font-medium">
                     {mapping.csvColumn}
                   </Label>
-                  {getConfidenceBadge(mapping.confidence, mapping.isUserOverride)}
+                  {getConfidenceBadge(
+                    mapping.confidence,
+                    mapping.isUserOverride
+                  )}
                 </div>
                 {sampleData && sampleData[mapping.csvColumn] && (
-                  <p className="text-xs text-muted-foreground mt-1 truncate">
+                  <p className="mt-1 truncate text-xs text-muted-foreground">
                     Sample: {sampleData[mapping.csvColumn]}
                   </p>
                 )}
               </div>
 
               {/* Arrow indicator */}
-              <div className="hidden sm:flex items-center text-muted-foreground">
+              <div className="hidden items-center text-muted-foreground sm:flex">
                 →
               </div>
 
@@ -236,7 +270,8 @@ export function ColumnMappingEditor({
                 <Select
                   value={mapping.transactionField ?? 'unmapped'}
                   onValueChange={(value) => {
-                    const newField = value === 'unmapped' ? null : (value as TransactionField);
+                    const newField =
+                      value === 'unmapped' ? null : (value as TransactionField);
                     onMappingChange(index, newField);
                   }}
                   disabled={readOnly}
@@ -253,7 +288,9 @@ export function ColumnMappingEditor({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="unmapped">
-                      <span className="text-muted-foreground">— Not Mapped —</span>
+                      <span className="text-muted-foreground">
+                        — Not Mapped —
+                      </span>
                     </SelectItem>
 
                     {/* Required Fields */}
@@ -261,7 +298,11 @@ export function ColumnMappingEditor({
                       Required *
                     </div>
                     {REQUIRED_FIELDS.map((field) => {
-                      const alreadyMapped = isFieldAlreadyMapped(field, mappings, index);
+                      const alreadyMapped = isFieldAlreadyMapped(
+                        field,
+                        mappings,
+                        index
+                      );
                       return (
                         <SelectItem
                           key={field}
@@ -280,7 +321,11 @@ export function ColumnMappingEditor({
                       Optional
                     </div>
                     {OPTIONAL_FIELDS.map((field) => {
-                      const alreadyMapped = isFieldAlreadyMapped(field, mappings, index);
+                      const alreadyMapped = isFieldAlreadyMapped(
+                        field,
+                        mappings,
+                        index
+                      );
                       return (
                         <SelectItem
                           key={field}
@@ -299,7 +344,10 @@ export function ColumnMappingEditor({
 
               {/* Required indicator */}
               {isRequired && (
-                <span className="text-xs text-primary font-medium" title="Required field">
+                <span
+                  className="text-xs font-medium text-primary"
+                  title="Required field"
+                >
                   *
                 </span>
               )}
@@ -308,7 +356,7 @@ export function ColumnMappingEditor({
         })}
 
         {mappings.length === 0 && (
-          <p className="text-sm text-muted-foreground text-center py-4">
+          <p className="py-4 text-center text-sm text-muted-foreground">
             No columns detected. Please upload a CSV file.
           </p>
         )}

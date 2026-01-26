@@ -36,7 +36,11 @@ class Logger {
     return level === 'info' || level === 'warn' || level === 'error';
   }
 
-  private createLogEntry(level: LogLevel, message: string, data?: any): LogEntry {
+  private createLogEntry(
+    level: LogLevel,
+    message: string,
+    data?: any
+  ): LogEntry {
     return {
       timestamp: this.formatTimestamp(),
       level,
@@ -134,7 +138,11 @@ class Logger {
   withContext(context: Partial<LogEntry>): Logger {
     const contextualLogger = Object.create(this);
 
-    contextualLogger.createLogEntry = (level: LogLevel, message: string, data?: any): LogEntry => {
+    contextualLogger.createLogEntry = (
+      level: LogLevel,
+      message: string,
+      data?: any
+    ): LogEntry => {
       return {
         ...this.createLogEntry(level, message, data),
         ...context,
@@ -161,12 +169,16 @@ class Logger {
 
   // Performance logging
   performance(operation: string, duration: number, data?: any): void {
-    const entry = this.createLogEntry('info', `[PERFORMANCE] ${operation} took ${duration}ms`, {
-      ...data,
-      operation,
-      duration,
-      performance: true,
-    });
+    const entry = this.createLogEntry(
+      'info',
+      `[PERFORMANCE] ${operation} took ${duration}ms`,
+      {
+        ...data,
+        operation,
+        duration,
+        performance: true,
+      }
+    );
     this.writeLog(entry);
   }
 
@@ -234,7 +246,9 @@ export function measurePerformance<T>(
 // Request logging middleware helper
 export function createRequestLogger(requestId?: string) {
   return logger.withContext({
-    sessionId: requestId || `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    sessionId:
+      requestId ||
+      `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
   });
 }
 
@@ -248,7 +262,8 @@ export function logUnhandledError(error: Error, errorInfo?: any): void {
     },
     errorInfo,
     url: typeof window !== 'undefined' ? window.location.href : undefined,
-    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+    userAgent:
+      typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
   });
 }
 

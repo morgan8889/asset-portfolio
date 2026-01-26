@@ -14,7 +14,8 @@ export const metadata: Metadata = {
     default: 'Portfolio Tracker',
     template: '%s | Portfolio Tracker',
   },
-  description: 'A modern, privacy-first financial portfolio tracking application with interactive visualizations for multi-asset investment management and financial planning.',
+  description:
+    'A modern, privacy-first financial portfolio tracking application with interactive visualizations for multi-asset investment management and financial planning.',
   keywords: [
     'portfolio',
     'investment',
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
     'crypto',
     'etf',
     'trading',
-    'analytics'
+    'analytics',
   ],
   authors: [
     {
@@ -37,13 +38,15 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://portfoliotracker.app',
     title: 'Portfolio Tracker',
-    description: 'A modern, privacy-first financial portfolio tracking application',
+    description:
+      'A modern, privacy-first financial portfolio tracking application',
     siteName: 'Portfolio Tracker',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Portfolio Tracker',
-    description: 'A modern, privacy-first financial portfolio tracking application',
+    description:
+      'A modern, privacy-first financial portfolio tracking application',
     creator: '@portfoliotracker',
   },
   icons: {

@@ -11,7 +11,11 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingDown, AlertTriangle } from 'lucide-react';
 import { formatCurrency, formatPercentage, cn } from '@/lib/utils';
-import { HoldingPerformance, TimePeriod, TIME_PERIOD_CONFIGS } from '@/types/dashboard';
+import {
+  HoldingPerformance,
+  TimePeriod,
+  TIME_PERIOD_CONFIGS,
+} from '@/types/dashboard';
 import { getBiggestLosers } from '@/lib/services/performance-calculator';
 import { useDashboardStore, usePortfolioStore } from '@/lib/stores';
 
@@ -34,10 +38,10 @@ function LosersSkeleton() {
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="h-6 w-6 bg-muted animate-pulse rounded-full" />
-              <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+              <div className="h-6 w-6 animate-pulse rounded-full bg-muted" />
+              <div className="h-4 w-16 animate-pulse rounded bg-muted" />
             </div>
-            <div className="h-4 w-12 bg-muted animate-pulse rounded" />
+            <div className="h-4 w-12 animate-pulse rounded bg-muted" />
           </div>
         ))}
       </CardContent>
@@ -54,8 +58,10 @@ function LosersEmpty() {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center justify-center py-6 text-center">
-          <TrendingDown className="h-8 w-8 text-muted-foreground opacity-50 mb-2" />
-          <p className="text-sm text-muted-foreground">No losers in this period</p>
+          <TrendingDown className="mb-2 h-8 w-8 text-muted-foreground opacity-50" />
+          <p className="text-sm text-muted-foreground">
+            No losers in this period
+          </p>
         </div>
       </CardContent>
     </Card>
@@ -75,26 +81,30 @@ function LoserRow({ loser, rank, currency, onClick }: LoserRowProps) {
       type="button"
       onClick={onClick}
       className={cn(
-        'flex items-center justify-between py-1 w-full text-left',
-        'rounded px-1 -mx-1 transition-colors',
+        'flex w-full items-center justify-between py-1 text-left',
+        '-mx-1 rounded px-1 transition-colors',
         'hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1'
       )}
       aria-label={`View details for ${loser.symbol}`}
     >
-      <div className="flex items-center gap-2 min-w-0">
-        <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center">
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center">
           {rank === 1 ? (
             <AlertTriangle className="h-4 w-4 text-red-500" />
           ) : (
-            <span className="text-xs text-muted-foreground font-medium">{rank}</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              {rank}
+            </span>
           )}
         </div>
         <div className="min-w-0">
-          <div className="font-medium text-sm truncate">{loser.symbol}</div>
-          <div className="text-xs text-muted-foreground truncate">{loser.name}</div>
+          <div className="truncate text-sm font-medium">{loser.symbol}</div>
+          <div className="truncate text-xs text-muted-foreground">
+            {loser.name}
+          </div>
         </div>
       </div>
-      <div className="text-right flex-shrink-0 ml-2">
+      <div className="ml-2 flex-shrink-0 text-right">
         <div className="text-sm font-medium text-red-600">
           {formatPercentage(loser.percentGain, 2)}
         </div>
@@ -150,7 +160,11 @@ export const BiggestLosersWidget = memo(function BiggestLosersWidget({
     async function fetchLosers() {
       setLoading(true);
       try {
-        const data = await getBiggestLosers(effectivePortfolioId!, period, effectiveCount);
+        const data = await getBiggestLosers(
+          effectivePortfolioId!,
+          period,
+          effectiveCount
+        );
         if (!cancelled) setFetchedLosers(data);
       } catch (error) {
         console.error('Failed to load biggest losers:', error);
@@ -198,7 +212,7 @@ export const BiggestLosersWidget = memo(function BiggestLosersWidget({
             />
           ))}
         </div>
-        <div className="mt-3 pt-2 border-t text-xs text-muted-foreground text-center">
+        <div className="mt-3 border-t pt-2 text-center text-xs text-muted-foreground">
           {periodLabel} performance
         </div>
       </CardContent>

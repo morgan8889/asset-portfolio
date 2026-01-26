@@ -222,6 +222,136 @@ npm run test:e2e -- tests/e2e/price-refresh.spec.ts
 **Problem**: 429 errors from Yahoo Finance
 **Solution**: Reduce refresh frequency; existing rate limiting should handle this
 
+---
+
+## Performance Page Integration (Added 2026-01-25)
+
+### Overview
+
+The Performance page integration extends live market data to display real-time calculated metrics including CAGR, Max Drawdown, and Sharpe Ratio.
+
+### New Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/hooks/usePerformanceData.ts` | Data hook combining live metrics + calculations |
+| `src/components/charts/performance-chart.tsx` | Historical performance line chart |
+| `src/types/dashboard.ts` | Add PerformancePageData type |
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/lib/services/metrics-service.ts` | Implement CAGR, MaxDrawdown, SharpeRatio |
+| `src/lib/services/index.ts` | Export new calculation functions |
+| `src/hooks/index.ts` | Export usePerformanceData hook |
+| `src/app/(dashboard)/performance/page.tsx` | Replace hardcoded values with hook |
+
+### Implementation Order
+
+#### Phase 1: Core Calculations (metrics-service.ts)
+
+Replace stubbed functions with real implementations:
+
+```typescript
+// src/lib/services/metrics-service.ts
+
+// Annualized Return (CAGR)
+export function calculateAnnualizedReturn(
+  startValue: Decimal,
+  endValue: Decimal,
+  daysHeld: number
+): number {
+  if (daysHeld <= 0 || startValue.isZero()) return 0;
+  const years = daysHeld / 365;
+  const ratio = endValue.div(startValue).toNumber();
+  return (Math.pow(ratio, 1 / years) - 1) * 100;
+}
+
+// Max Drawdown
+export function calculateMaxDrawdown(
+  historicalValues: { date: Date; value: Decimal }[]
+): number {
+  let maxDrawdown = 0;
+  let peak = new Decimal(0);
+
+  for (const point of historicalValues) {
+    if (point.value.gt(peak)) peak = point.value;
+    if (peak.gt(0)) {
+      const drawdown = peak.minus(point.value).div(peak).toNumber();
+      if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+    }
+  }
+  return maxDrawdown * 100;
+}
+
+// Sharpe Ratio (4% risk-free rate)
+export function calculateSharpeRatio(
+  returns: number[],
+  riskFreeRate: number = 0.04
+): number {
+  if (returns.length < 30) return 0; // Insufficient data
+
+  const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+  const variance = returns.reduce((sum, r) =>
+    sum + Math.pow(r - avgReturn, 2), 0) / returns.length;
+  const stdDev = Math.sqrt(variance);
+
+  if (stdDev === 0) return 0;
+  return (avgReturn - riskFreeRate / 252) / stdDev;
+}
+```
+
+#### Phase 2: Data Hook (usePerformanceData.ts)
+
+```typescript
+// src/hooks/usePerformanceData.ts
+export function usePerformanceData() {
+  const { holdings, assets, currentPortfolio } = usePortfolioStore();
+  const liveMetrics = useLivePriceMetrics(holdings, assets);
+
+  const [performanceData, setPerformanceData] = useState<PerformancePageData | null>(null);
+
+  useEffect(() => {
+    if (!currentPortfolio) return;
+
+    async function calculate() {
+      const historicalValues = await getHistoricalValues(currentPortfolio.id, 'ALL');
+      const annualizedReturn = calculateAnnualizedReturn(...);
+      const maxDrawdown = calculateMaxDrawdown(historicalValues);
+      const sharpeRatio = calculateSharpeRatio(...);
+      // Combine with liveMetrics
+      setPerformanceData({...});
+    }
+    calculate();
+  }, [currentPortfolio?.id, liveMetrics.totalValue]);
+
+  return performanceData;
+}
+```
+
+#### Phase 3: UI Components
+
+1. **Performance Page** (`page.tsx`): Replace hardcoded values with hook data
+2. **PerformanceChart**: Reuse patterns from existing `GrowthChartWidget`
+
+### Testing Performance Page
+
+```bash
+# Unit tests for calculations
+npm run test -- src/lib/services/__tests__/metrics-service.test.ts
+
+# E2E tests
+npx playwright test tests/e2e/performance-page.spec.ts
+```
+
+### Manual Verification
+
+1. Navigate to http://localhost:3000/performance
+2. Verify metrics show calculated values (not hardcoded "+12.5%", "+8.2%", etc.)
+3. Change time period, verify chart updates
+4. Verify top/bottom performers display correctly
+
 ## Reference Links
 
 - [Spec Document](./spec.md)

@@ -11,7 +11,8 @@ import { Market, MarketState, MarketStatus, MARKETS } from '@/types/market';
 import { isUKSymbol } from '@/lib/utils/market-utils';
 
 // Cache for market state to reduce recalculation
-let marketStateCache: Map<string, { status: MarketStatus; timestamp: number }> = new Map();
+let marketStateCache: Map<string, { status: MarketStatus; timestamp: number }> =
+  new Map();
 const CACHE_DURATION = 60_000; // 1 minute
 
 /**
@@ -26,7 +27,10 @@ function parseTimeToMinutes(time: string): number {
  * Gets the current time in a specific timezone as minutes since midnight.
  * Also returns the current day of week (0 = Sunday, 6 = Saturday).
  */
-function getCurrentTimeInTimezone(timezone: string): { minutes: number; dayOfWeek: number } {
+function getCurrentTimeInTimezone(timezone: string): {
+  minutes: number;
+  dayOfWeek: number;
+} {
   const now = new Date();
   const options: Intl.DateTimeFormatOptions = {
     hour: '2-digit',
@@ -106,7 +110,10 @@ function calculateMarketState(market: Market): MarketState {
 /**
  * Calculates when the next market state change will occur.
  */
-function calculateNextStateChange(market: Market, currentState: MarketState): Date | undefined {
+function calculateNextStateChange(
+  market: Market,
+  currentState: MarketState
+): Date | undefined {
   const { minutes, dayOfWeek } = getCurrentTimeInTimezone(market.timezone);
   const { tradingHours } = market;
 
@@ -116,21 +123,25 @@ function calculateNextStateChange(market: Market, currentState: MarketState): Da
   switch (currentState) {
     case 'PRE':
       // Next change is when regular hours start
-      minutesToNextChange = parseTimeToMinutes(tradingHours.regular.start) - minutes;
+      minutesToNextChange =
+        parseTimeToMinutes(tradingHours.regular.start) - minutes;
       break;
 
     case 'REGULAR':
       // Next change is when post-market starts or market closes
       if (tradingHours.postMarket) {
-        minutesToNextChange = parseTimeToMinutes(tradingHours.postMarket.start) - minutes;
+        minutesToNextChange =
+          parseTimeToMinutes(tradingHours.postMarket.start) - minutes;
       } else {
-        minutesToNextChange = parseTimeToMinutes(tradingHours.regular.end) - minutes;
+        minutesToNextChange =
+          parseTimeToMinutes(tradingHours.regular.end) - minutes;
       }
       break;
 
     case 'POST':
       // Next change is market close
-      minutesToNextChange = parseTimeToMinutes(tradingHours.postMarket!.end) - minutes;
+      minutesToNextChange =
+        parseTimeToMinutes(tradingHours.postMarket!.end) - minutes;
       break;
 
     case 'CLOSED':

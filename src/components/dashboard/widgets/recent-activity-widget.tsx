@@ -24,20 +24,37 @@ interface RecentActivityWidgetProps {
 }
 
 // Transaction type badge colors
-const TYPE_BADGE_STYLES: Record<string, { bg: string; text: string; label: string }> = {
+const TYPE_BADGE_STYLES: Record<
+  string,
+  { bg: string; text: string; label: string }
+> = {
   buy: { bg: 'bg-green-100', text: 'text-green-700', label: 'Buy' },
   sell: { bg: 'bg-red-100', text: 'text-red-700', label: 'Sell' },
   dividend: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Dividend' },
-  transfer_in: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Transfer In' },
-  transfer_out: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Transfer Out' },
+  transfer_in: {
+    bg: 'bg-purple-100',
+    text: 'text-purple-700',
+    label: 'Transfer In',
+  },
+  transfer_out: {
+    bg: 'bg-orange-100',
+    text: 'text-orange-700',
+    label: 'Transfer Out',
+  },
   split: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Split' },
   reinvestment: { bg: 'bg-teal-100', text: 'text-teal-700', label: 'Reinvest' },
 };
 
 function getTransactionBadge(type: string) {
-  const style = TYPE_BADGE_STYLES[type] || { bg: 'bg-gray-100', text: 'text-gray-700', label: type };
+  const style = TYPE_BADGE_STYLES[type] || {
+    bg: 'bg-gray-100',
+    text: 'text-gray-700',
+    label: type,
+  };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${style.bg} ${style.text}`}>
+    <span
+      className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${style.bg} ${style.text}`}
+    >
       {style.label}
     </span>
   );
@@ -54,17 +71,20 @@ function ActivitySkeleton() {
       </CardHeader>
       <CardContent className="space-y-3">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="flex items-center justify-between p-3 rounded-lg border">
+          <div
+            key={i}
+            className="flex items-center justify-between rounded-lg border p-3"
+          >
             <div className="flex items-center gap-3">
-              <div className="h-4 w-4 bg-muted animate-pulse rounded" />
+              <div className="h-4 w-4 animate-pulse rounded bg-muted" />
               <div>
-                <div className="h-4 w-24 bg-muted animate-pulse rounded mb-1" />
-                <div className="h-3 w-16 bg-muted animate-pulse rounded" />
+                <div className="mb-1 h-4 w-24 animate-pulse rounded bg-muted" />
+                <div className="h-3 w-16 animate-pulse rounded bg-muted" />
               </div>
             </div>
             <div className="text-right">
-              <div className="h-4 w-16 bg-muted animate-pulse rounded mb-1" />
-              <div className="h-3 w-12 bg-muted animate-pulse rounded" />
+              <div className="mb-1 h-4 w-16 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-12 animate-pulse rounded bg-muted" />
             </div>
           </div>
         ))}
@@ -84,9 +104,9 @@ function ActivityEmpty() {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center justify-center py-8 text-center">
-          <Activity className="h-12 w-12 text-muted-foreground opacity-50 mb-4" />
+          <Activity className="mb-4 h-12 w-12 text-muted-foreground opacity-50" />
           <p className="text-muted-foreground">No recent activity</p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="mt-1 text-sm text-muted-foreground">
             Add transactions to see activity here
           </p>
         </div>
@@ -101,14 +121,18 @@ interface TransactionRowProps {
   currency: string;
 }
 
-function TransactionRow({ transaction, assetMap, currency }: TransactionRowProps) {
+function TransactionRow({
+  transaction,
+  assetMap,
+  currency,
+}: TransactionRowProps) {
   const asset = assetMap.get(transaction.assetId);
   const displaySymbol = asset?.symbol || transaction.assetId;
 
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+    <div className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50">
       <div className="flex items-center gap-3">
-        <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        <Calendar className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
         <div>
           <div className="flex items-center gap-2">
             <span className="font-medium">{displaySymbol}</span>
@@ -219,7 +243,7 @@ export const RecentActivityWidget = memo(function RecentActivityWidget({
           ))}
         </div>
         {totalCount > limit && (
-          <div className="text-center pt-4">
+          <div className="pt-4 text-center">
             <Button variant="outline" size="sm">
               View All {totalCount} Transactions
             </Button>

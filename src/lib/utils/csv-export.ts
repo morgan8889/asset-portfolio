@@ -19,10 +19,16 @@ export interface CsvExportOptions {
  */
 export function generateFailedRowsCsv(
   errors: ImportError[],
-  { includeRowNumbers = true, includeErrorMessages = true }: CsvExportOptions = {}
+  {
+    includeRowNumbers = true,
+    includeErrorMessages = true,
+  }: CsvExportOptions = {}
 ): string {
   // Group errors by row number
-  const rowsMap = new Map<number, { data: Record<string, string>; errors: string[] }>();
+  const rowsMap = new Map<
+    number,
+    { data: Record<string, string>; errors: string[] }
+  >();
 
   for (const error of errors) {
     const existing = rowsMap.get(error.rowNumber);
@@ -30,7 +36,10 @@ export function generateFailedRowsCsv(
     if (existing) {
       existing.errors.push(errorMsg);
     } else {
-      rowsMap.set(error.rowNumber, { data: { ...error.originalData }, errors: [errorMsg] });
+      rowsMap.set(error.rowNumber, {
+        data: { ...error.originalData },
+        errors: [errorMsg],
+      });
     }
   }
 
@@ -127,7 +136,8 @@ export function getErrorStatistics(errors: ImportError[]): {
 
   for (const error of errors) {
     errorsByField[error.field] = (errorsByField[error.field] ?? 0) + 1;
-    errorsBySeverity[error.severity] = (errorsBySeverity[error.severity] ?? 0) + 1;
+    errorsBySeverity[error.severity] =
+      (errorsBySeverity[error.severity] ?? 0) + 1;
     affectedRowNumbers.add(error.rowNumber);
   }
 

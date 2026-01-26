@@ -65,8 +65,12 @@ describe('getHistoricalValues', () => {
       },
     ];
 
-    vi.mocked(transactionQueries.getByPortfolio).mockResolvedValue(mockTransactions as any);
-    vi.mocked(priceQueries.getHistoryForAsset).mockResolvedValue(mockPriceHistory as any);
+    vi.mocked(transactionQueries.getByPortfolio).mockResolvedValue(
+      mockTransactions as any
+    );
+    vi.mocked(priceQueries.getHistoryForAsset).mockResolvedValue(
+      mockPriceHistory as any
+    );
 
     const result = await getHistoricalValues('portfolio-1', 'WEEK');
 
@@ -111,7 +115,9 @@ describe('getValueAtDate', () => {
       },
     ];
 
-    vi.mocked(transactionQueries.getByPortfolio).mockResolvedValue(mockTransactions as any);
+    vi.mocked(transactionQueries.getByPortfolio).mockResolvedValue(
+      mockTransactions as any
+    );
 
     const result = await getValueAtDate('portfolio-1', new Date('2024-01-01'));
 

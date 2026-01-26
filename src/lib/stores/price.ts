@@ -60,6 +60,7 @@ interface PriceState {
   isOnline: boolean;
   pollingLock: boolean; // Prevents race conditions in polling restart
   eventHandlers: EventHandlers; // Store event handlers for proper cleanup
+  symbolToAssetId: Map<string, string>; // Maps symbol -> assetId for snapshot persistence
 
   // Actions
   setPreferences: (preferences: Partial<PriceUpdatePreferences>) => void;
@@ -69,6 +70,10 @@ interface PriceState {
   addWatchedSymbol: (symbol: string) => void;
   removeWatchedSymbol: (symbol: string) => void;
   setWatchedSymbols: (symbols: string[]) => void;
+
+  // Symbol-to-AssetId mapping for historical snapshots
+  setSymbolAssetMapping: (symbol: string, assetId: string) => void;
+  setSymbolAssetMappings: (mappings: Record<string, string>) => void;
 
   updatePrice: (symbol: string, data: PriceData) => void;
   updatePrices: (data: Record<string, PriceData>) => void;
@@ -84,6 +89,7 @@ interface PriceState {
   // Cache persistence
   loadCachedPrices: () => Promise<void>;
   persistPriceCache: () => Promise<void>;
+  persistPriceSnapshots: () => Promise<void>; // Save to priceSnapshots table for historical data
 
   // Network state
   setOnline: (online: boolean) => void;
@@ -107,7 +113,10 @@ function transformPriceData(
   refreshInterval: RefreshInterval
 ): LivePriceData {
   const price = new Decimal(data.price);
-  const { displayPrice, displayCurrency } = convertPenceToPounds(price, data.currency);
+  const { displayPrice, displayCurrency } = convertPenceToPounds(
+    price,
+    data.currency
+  );
   const exchange = getExchange(data.symbol);
   const marketState = data.marketState || getMarketState(data.symbol);
   const staleness = calculateStaleness(data.timestamp, refreshInterval);
@@ -146,6 +155,7 @@ export const usePriceStore = create<PriceState>()(
         onlineHandler: null,
         offlineHandler: null,
       },
+      symbolToAssetId: new Map(),
 
       // Preference management
       setPreferences: (newPreferences) => {
@@ -210,7 +220,10 @@ export const usePriceStore = create<PriceState>()(
       savePreferences: async () => {
         try {
           const { settingsQueries } = await import('@/lib/db/queries');
-          await settingsQueries.set('priceUpdatePreferences', get().preferences);
+          await settingsQueries.set(
+            'priceUpdatePreferences',
+            get().preferences
+          );
         } catch (error) {
           console.error('Failed to save price preferences:', error);
         }
@@ -238,10 +251,28 @@ export const usePriceStore = create<PriceState>()(
         set({ watchedSymbols: new Set(symbols.map((s) => s.toUpperCase())) });
       },
 
+      // Symbol-to-AssetId mapping for historical snapshots
+      setSymbolAssetMapping: (symbol, assetId) => {
+        const mapping = new Map(get().symbolToAssetId);
+        mapping.set(symbol.toUpperCase(), assetId);
+        set({ symbolToAssetId: mapping });
+      },
+
+      setSymbolAssetMappings: (mappings) => {
+        const newMapping = new Map(get().symbolToAssetId);
+        Object.entries(mappings).forEach(([symbol, assetId]) => {
+          newMapping.set(symbol.toUpperCase(), assetId);
+        });
+        set({ symbolToAssetId: newMapping });
+      },
+
       // Price management
       updatePrice: (symbol, data) => {
         const prices = new Map(get().prices);
-        const liveData = transformPriceData(data, get().preferences.refreshInterval);
+        const liveData = transformPriceData(
+          data,
+          get().preferences.refreshInterval
+        );
         prices.set(symbol.toUpperCase(), liveData);
         set({ prices, lastFetchTime: new Date() });
       },
@@ -275,11 +306,15 @@ export const usePriceStore = create<PriceState>()(
         set({ loading: true, error: null });
 
         try {
-          const response = await fetch(`/api/prices/${encodeURIComponent(symbol)}`);
+          const response = await fetch(
+            `/api/prices/${encodeURIComponent(symbol)}`
+          );
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `Failed to fetch price for ${symbol}`);
+            throw new Error(
+              errorData.error || `Failed to fetch price for ${symbol}`
+            );
           }
 
           const rawData = await response.json();
@@ -306,9 +341,13 @@ export const usePriceStore = create<PriceState>()(
           // Persist to cache after successful fetch
           get().persistPriceCache();
 
+          // Persist to priceSnapshots for historical data (Growth Chart)
+          get().persistPriceSnapshots();
+
           set({ loading: false });
         } catch (error) {
-          const message = error instanceof Error ? error.message : 'Failed to fetch price';
+          const message =
+            error instanceof Error ? error.message : 'Failed to fetch price';
 
           // Keep cached data available - don't clear prices on error
           // Just set error state so UI can show staleness indicator
@@ -318,7 +357,10 @@ export const usePriceStore = create<PriceState>()(
             // Recalculate staleness for the cached data
             const updatedPrice = {
               ...existingPrice,
-              staleness: calculateStaleness(existingPrice.timestamp, get().preferences.refreshInterval),
+              staleness: calculateStaleness(
+                existingPrice.timestamp,
+                get().preferences.refreshInterval
+              ),
             };
             const prices = new Map(get().prices);
             prices.set(symbol.toUpperCase(), updatedPrice);
@@ -363,7 +405,9 @@ export const usePriceStore = create<PriceState>()(
 
           if (!response.ok) {
             // Fall back to individual requests
-            await Promise.allSettled(symbols.map((symbol) => get().refreshPrice(symbol)));
+            await Promise.allSettled(
+              symbols.map((symbol) => get().refreshPrice(symbol))
+            );
             return;
           }
 
@@ -373,7 +417,9 @@ export const usePriceStore = create<PriceState>()(
           const parseResult = batchPriceResponseSchema.safeParse(rawResult);
           if (!parseResult.success) {
             console.error('Invalid batch price response:', parseResult.error);
-            throw new Error('Invalid batch price data format received from API');
+            throw new Error(
+              'Invalid batch price data format received from API'
+            );
           }
 
           const result = parseResult.data;
@@ -397,11 +443,15 @@ export const usePriceStore = create<PriceState>()(
 
             // Persist to cache after successful batch fetch
             get().persistPriceCache();
+
+            // Persist to priceSnapshots for historical data (Growth Chart)
+            get().persistPriceSnapshots();
           }
 
           set({ loading: false });
         } catch (error) {
-          const message = error instanceof Error ? error.message : 'Failed to fetch prices';
+          const message =
+            error instanceof Error ? error.message : 'Failed to fetch prices';
 
           // Keep cached data available - don't clear prices on error
           // Recalculate staleness for existing cached data
@@ -421,7 +471,14 @@ export const usePriceStore = create<PriceState>()(
 
       // Polling management
       startPolling: () => {
-        const { preferences, isPolling, refreshAllPrices, setOnline, loadCachedPrices, eventHandlers } = get();
+        const {
+          preferences,
+          isPolling,
+          refreshAllPrices,
+          setOnline,
+          loadCachedPrices,
+          eventHandlers,
+        } = get();
 
         // Don't start if already polling or in manual mode
         if (isPolling || preferences.refreshInterval === 'manual') {
@@ -443,8 +500,14 @@ export const usePriceStore = create<PriceState>()(
         }
 
         // Clean up any existing event handlers
-        if (eventHandlers.visibilityHandler && typeof document !== 'undefined') {
-          document.removeEventListener('visibilitychange', eventHandlers.visibilityHandler);
+        if (
+          eventHandlers.visibilityHandler &&
+          typeof document !== 'undefined'
+        ) {
+          document.removeEventListener(
+            'visibilitychange',
+            eventHandlers.visibilityHandler
+          );
         }
         if (eventHandlers.onlineHandler && typeof window !== 'undefined') {
           window.removeEventListener('online', eventHandlers.onlineHandler);
@@ -479,7 +542,11 @@ export const usePriceStore = create<PriceState>()(
         // Set up visibility change handler
         if (typeof document !== 'undefined' && preferences.pauseWhenHidden) {
           const newVisibilityHandler = () => {
-            if (document.visibilityState === 'visible' && get().isOnline && !get().loading) {
+            if (
+              document.visibilityState === 'visible' &&
+              get().isOnline &&
+              !get().loading
+            ) {
               // Resume polling and fetch fresh data (with error handling)
               refreshAllPrices().catch((error) => {
                 console.error('Visibility resume error:', error);
@@ -539,8 +606,14 @@ export const usePriceStore = create<PriceState>()(
         }
 
         // Clean up event handlers from state
-        if (eventHandlers.visibilityHandler && typeof document !== 'undefined') {
-          document.removeEventListener('visibilitychange', eventHandlers.visibilityHandler);
+        if (
+          eventHandlers.visibilityHandler &&
+          typeof document !== 'undefined'
+        ) {
+          document.removeEventListener(
+            'visibilitychange',
+            eventHandlers.visibilityHandler
+          );
         }
 
         if (typeof window !== 'undefined') {
@@ -569,7 +642,10 @@ export const usePriceStore = create<PriceState>()(
         let updated = false;
 
         prices.forEach((data, symbol) => {
-          const freshStaleness = calculateStaleness(data.timestamp, refreshInterval);
+          const freshStaleness = calculateStaleness(
+            data.timestamp,
+            refreshInterval
+          );
           if (data.staleness !== freshStaleness) {
             prices.set(symbol, { ...data, staleness: freshStaleness });
             updated = true;
@@ -595,7 +671,10 @@ export const usePriceStore = create<PriceState>()(
               if (data && data.timestamp) {
                 // Reconstruct LivePriceData with recalculated staleness
                 const timestamp = new Date(data.timestamp);
-                const staleness = calculateStaleness(timestamp, refreshInterval);
+                const staleness = calculateStaleness(
+                  timestamp,
+                  refreshInterval
+                );
 
                 prices.set(symbol, {
                   ...data,
@@ -634,6 +713,50 @@ export const usePriceStore = create<PriceState>()(
           await settingsQueries.set('priceCache', cacheObject);
         } catch (error) {
           console.error('Failed to persist price cache:', error);
+        }
+      },
+
+      /**
+       * Persist current prices to priceSnapshots table for historical data.
+       * This enables the Growth Chart widget to display historical portfolio values.
+       */
+      persistPriceSnapshots: async () => {
+        try {
+          const { prices, symbolToAssetId } = get();
+          if (prices.size === 0 || symbolToAssetId.size === 0) return;
+
+          const { priceQueries } = await import('@/lib/db/queries');
+
+          const snapshots: Array<{
+            assetId: string;
+            price: Decimal;
+            change: Decimal;
+            changePercent: number;
+            timestamp: Date;
+            source: string;
+            marketState?: 'PRE' | 'REGULAR' | 'POST' | 'CLOSED';
+          }> = [];
+
+          prices.forEach((data, symbol) => {
+            const assetId = symbolToAssetId.get(symbol);
+            if (assetId) {
+              snapshots.push({
+                assetId,
+                price: new Decimal(data.price),
+                change: new Decimal(data.change),
+                changePercent: data.changePercent,
+                timestamp: data.timestamp,
+                source: data.source,
+                marketState: data.marketState,
+              });
+            }
+          });
+
+          if (snapshots.length > 0) {
+            await priceQueries.saveBatchSnapshots(snapshots);
+          }
+        } catch (error) {
+          console.error('Failed to persist price snapshots:', error);
         }
       },
 

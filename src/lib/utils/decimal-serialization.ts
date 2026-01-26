@@ -13,10 +13,10 @@ import { Decimal } from 'decimal.js';
  * @param fields Array of field names to serialize
  * @returns New object with specified Decimal fields converted to strings
  */
-export function serializeDecimalFields<
-  T extends object,
-  K extends keyof T,
->(obj: T, fields: K[]): Omit<T, K> & Record<K, string> {
+export function serializeDecimalFields<T extends object, K extends keyof T>(
+  obj: T,
+  fields: K[]
+): Omit<T, K> & Record<K, string> {
   const result = { ...obj } as any;
 
   for (const field of fields) {
@@ -41,10 +41,11 @@ export function serializeDecimalFields<
  * @param defaultValue Default Decimal value for undefined/null fields (defaults to 0)
  * @returns New object with specified string fields converted to Decimals
  */
-export function deserializeDecimalFields<
-  T extends object,
-  K extends keyof T,
->(obj: T, fields: K[], defaultValue: Decimal = new Decimal(0)): Omit<T, K> & Record<K, Decimal> {
+export function deserializeDecimalFields<T extends object, K extends keyof T>(
+  obj: T,
+  fields: K[],
+  defaultValue: Decimal = new Decimal(0)
+): Omit<T, K> & Record<K, Decimal> {
   const result = { ...obj } as any;
 
   for (const field of fields) {
@@ -65,21 +66,24 @@ export function deserializeDecimalFields<
 /**
  * Serializes an array of objects with Decimal fields
  */
-export function serializeDecimalArray<
-  T extends object,
-  K extends keyof T,
->(arr: T[], fields: K[]): Array<Omit<T, K> & Record<K, string>> {
+export function serializeDecimalArray<T extends object, K extends keyof T>(
+  arr: T[],
+  fields: K[]
+): Array<Omit<T, K> & Record<K, string>> {
   return arr.map((item) => serializeDecimalFields(item, fields));
 }
 
 /**
  * Deserializes an array of objects with string fields to Decimals
  */
-export function deserializeDecimalArray<
-  T extends object,
-  K extends keyof T,
->(arr: T[], fields: K[], defaultValue?: Decimal): Array<Omit<T, K> & Record<K, Decimal>> {
-  return arr.map((item) => deserializeDecimalFields(item, fields, defaultValue));
+export function deserializeDecimalArray<T extends object, K extends keyof T>(
+  arr: T[],
+  fields: K[],
+  defaultValue?: Decimal
+): Array<Omit<T, K> & Record<K, Decimal>> {
+  return arr.map((item) =>
+    deserializeDecimalFields(item, fields, defaultValue)
+  );
 }
 
 /**
@@ -92,7 +96,9 @@ export function isDecimal(value: unknown): value is Decimal {
 /**
  * Safely converts a value to Decimal
  */
-export function toDecimal(value: string | number | Decimal | undefined | null): Decimal {
+export function toDecimal(
+  value: string | number | Decimal | undefined | null
+): Decimal {
   if (value instanceof Decimal) {
     return value;
   }
@@ -133,10 +139,7 @@ export const PRICE_HISTORY_DECIMAL_FIELDS = [
   'adjustedClose',
 ] as const;
 
-export const PRICE_SNAPSHOT_DECIMAL_FIELDS = [
-  'price',
-  'change',
-] as const;
+export const PRICE_SNAPSHOT_DECIMAL_FIELDS = ['price', 'change'] as const;
 
 export const DIVIDEND_RECORD_DECIMAL_FIELDS = [
   'amount',

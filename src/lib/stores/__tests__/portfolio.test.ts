@@ -60,7 +60,7 @@ describe('Portfolio Store', () => {
   });
 
   describe('loadPortfolios', () => {
-    it('should load portfolios and set first one as current if none selected', async () => {
+    it('should load portfolios without auto-selecting when none is current', async () => {
       const mockPortfolios: Portfolio[] = [
         {
           id: '1',
@@ -88,7 +88,8 @@ describe('Portfolio Store', () => {
 
       const state = usePortfolioStore.getState();
       expect(state.portfolios).toEqual(mockPortfolios);
-      expect(state.currentPortfolio).toEqual(mockPortfolios[0]);
+      // loadPortfolios does not auto-select first portfolio - currentPortfolio stays null
+      expect(state.currentPortfolio).toBeNull();
       expect(state.loading).toBe(false);
       expect(state.error).toBeNull();
     });
@@ -105,9 +106,10 @@ describe('Portfolio Store', () => {
       expect(state.portfolios).toEqual([]);
     });
 
-    it('should not change current portfolio if one is already selected', async () => {
+    it('should not change current portfolio if one is already selected and exists in list', async () => {
+      // Use id that will exist in the loaded portfolios list
       const currentPortfolio: Portfolio = {
-        id: 'current',
+        id: '1',
         name: 'Current Portfolio',
         type: 'taxable',
         currency: 'USD',
@@ -135,30 +137,47 @@ describe('Portfolio Store', () => {
       await usePortfolioStore.getState().loadPortfolios();
 
       const state = usePortfolioStore.getState();
+      // currentPortfolio is preserved because its id exists in loaded list
       expect(state.currentPortfolio).toEqual(currentPortfolio);
+    });
+
+    it('should replace current portfolio with first one if current no longer exists', async () => {
+      const stalePortfolio: Portfolio = {
+        id: 'deleted-id',
+        name: 'Deleted Portfolio',
+        type: 'taxable',
+        currency: 'USD',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        settings: defaultSettings,
+      };
+
+      usePortfolioStore.setState({ currentPortfolio: stalePortfolio });
+
+      const mockPortfolios: Portfolio[] = [
+        {
+          id: '1',
+          name: 'Portfolio 1',
+          type: 'taxable',
+          currency: 'USD',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          settings: defaultSettings,
+        },
+      ];
+
+      mockPortfolioQueries.getAll.mockResolvedValue(mockPortfolios);
+
+      await usePortfolioStore.getState().loadPortfolios();
+
+      const state = usePortfolioStore.getState();
+      // stale portfolio replaced with first from loaded list
+      expect(state.currentPortfolio).toEqual(mockPortfolios[0]);
     });
   });
 
   describe('setCurrentPortfolio', () => {
-    it('should set portfolio and load related data', async () => {
-      const mockHoldings: Holding[] = [
-        {
-          id: 'h1',
-          portfolioId: 'p1',
-          assetId: 'a1',
-          quantity: new Decimal(10),
-          averageCost: new Decimal(100),
-          costBasis: new Decimal(1000),
-          currentValue: new Decimal(1100),
-          unrealizedGain: new Decimal(100),
-          unrealizedGainPercent: 10,
-          lots: [],
-          lastUpdated: new Date(),
-        },
-      ];
-
-      mockHoldingQueries.getByPortfolio.mockResolvedValue(mockHoldings);
-
+    it('should set portfolio without loading holdings (handled by useDashboardData hook)', () => {
       const portfolio: Portfolio = {
         id: 'p1',
         name: 'Test Portfolio',
@@ -171,12 +190,11 @@ describe('Portfolio Store', () => {
 
       usePortfolioStore.getState().setCurrentPortfolio(portfolio);
 
-      // Wait for async operations
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
       const state = usePortfolioStore.getState();
       expect(state.currentPortfolio).toEqual(portfolio);
-      expect(mockHoldingQueries.getByPortfolio).toHaveBeenCalledWith('p1');
+      // loadHoldings is NOT called by setCurrentPortfolio anymore
+      // It's now triggered by useDashboardData hook to avoid race conditions
+      expect(mockHoldingQueries.getByPortfolio).not.toHaveBeenCalled();
     });
 
     it('should clear holdings and metrics when setting portfolio to null', () => {
@@ -259,7 +277,8 @@ describe('Portfolio Store', () => {
       usePortfolioStore.setState({ currentPortfolio });
 
       mockPortfolioQueries.update.mockResolvedValue(undefined);
-      mockPortfolioQueries.getAll.mockResolvedValue([]);
+      // Must include the portfolio in getAll so loadPortfolios doesn't clear currentPortfolio
+      mockPortfolioQueries.getAll.mockResolvedValue([currentPortfolio]);
       mockPortfolioQueries.getById.mockResolvedValue(updatedPortfolio);
 
       const updates = { name: 'Updated Portfolio' };
@@ -341,8 +360,22 @@ describe('Portfolio Store', () => {
 
       // Provide mock assets with different types so allocation groups correctly
       const mockAssets = [
-        { id: 'a1', symbol: 'AAPL', name: 'Apple', type: 'stock', currency: 'USD', metadata: {} },
-        { id: 'a2', symbol: 'BTC', name: 'Bitcoin', type: 'crypto', currency: 'USD', metadata: {} },
+        {
+          id: 'a1',
+          symbol: 'AAPL',
+          name: 'Apple',
+          type: 'stock',
+          currency: 'USD',
+          metadata: {},
+        },
+        {
+          id: 'a2',
+          symbol: 'BTC',
+          name: 'Bitcoin',
+          type: 'crypto',
+          currency: 'USD',
+          metadata: {},
+        },
       ];
 
       mockHoldingQueries.getByPortfolio.mockResolvedValue(mockHoldings);

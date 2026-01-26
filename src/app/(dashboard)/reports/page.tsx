@@ -11,11 +11,12 @@ export default function ReportsPage() {
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
           <p className="text-muted-foreground">
-            Generate and download detailed reports for your portfolio performance and tax reporting.
+            Generate and download detailed reports for your portfolio
+            performance and tax reporting.
           </p>
         </div>
         <Button>
-          <Download className="h-4 w-4 mr-2" />
+          <Download className="mr-2 h-4 w-4" />
           Generate Report
         </Button>
       </div>
@@ -29,11 +30,12 @@ export default function ReportsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              Comprehensive portfolio performance analysis with charts and metrics.
+            <p className="mb-4 text-sm text-muted-foreground">
+              Comprehensive portfolio performance analysis with charts and
+              metrics.
             </p>
             <Button variant="outline" size="sm" className="w-full">
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="mr-2 h-4 w-4" />
               Download PDF
             </Button>
           </CardContent>
@@ -47,11 +49,11 @@ export default function ReportsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="mb-4 text-sm text-muted-foreground">
               Capital gains/losses and dividend income for tax filing.
             </p>
             <Button variant="outline" size="sm" className="w-full">
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="mr-2 h-4 w-4" />
               Download CSV
             </Button>
           </CardContent>
@@ -65,11 +67,11 @@ export default function ReportsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="mb-4 text-sm text-muted-foreground">
               Current holdings with cost basis and market values.
             </p>
             <Button variant="outline" size="sm" className="w-full">
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="mr-2 h-4 w-4" />
               Download Excel
             </Button>
           </CardContent>
@@ -81,9 +83,9 @@ export default function ReportsPage() {
           <CardTitle>Report History</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-muted-foreground py-8">
-            <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium mb-2">No reports generated yet</p>
+          <div className="py-8 text-center text-muted-foreground">
+            <FileText className="mx-auto mb-4 h-12 w-12 opacity-50" />
+            <p className="mb-2 text-lg font-medium">No reports generated yet</p>
             <p className="text-sm">
               Generate your first report to see the history here
             </p>

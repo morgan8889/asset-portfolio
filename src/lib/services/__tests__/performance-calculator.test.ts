@@ -30,20 +30,14 @@ describe('calculatePerformance', () => {
   });
 
   it('handles zero start value without division error', () => {
-    const result = calculatePerformance(
-      new Decimal('0'),
-      new Decimal('100')
-    );
+    const result = calculatePerformance(new Decimal('0'), new Decimal('100'));
 
     expect(result.percentGain).toBe(0); // Avoid division by zero
     expect(result.absoluteGain.toString()).toBe('100');
   });
 
   it('handles zero current value correctly', () => {
-    const result = calculatePerformance(
-      new Decimal('1000'),
-      new Decimal('0')
-    );
+    const result = calculatePerformance(new Decimal('1000'), new Decimal('0'));
 
     expect(result.percentGain).toBe(-100);
     expect(result.absoluteGain.toString()).toBe('-1000');
