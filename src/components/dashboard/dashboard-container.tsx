@@ -31,7 +31,15 @@ import {
   usePriceStore,
 } from '@/lib/stores';
 import { useLivePriceMetrics, LiveHolding } from '@/hooks';
-import { WidgetId, WIDGET_DEFINITIONS, CategoryAllocation, LayoutMode, GridColumns, WidgetRowSpan, DEFAULT_WIDGET_ROW_SPANS } from '@/types/dashboard';
+import {
+  WidgetId,
+  WIDGET_DEFINITIONS,
+  CategoryAllocation,
+  LayoutMode,
+  GridColumns,
+  WidgetRowSpan,
+  DEFAULT_WIDGET_ROW_SPANS,
+} from '@/types/dashboard';
 import { Holding, Asset } from '@/types';
 import { cn } from '@/lib/utils';
 import { WidgetWrapper } from './widget-wrapper';
@@ -293,13 +301,20 @@ const DashboardContainerComponent = ({
   const effectiveDensePacking = !isMobile && config?.densePacking === true;
 
   // Compute effective row span for a widget
-  const getEffectiveRowSpan = useCallback((widgetId: WidgetId): WidgetRowSpan => {
-    // Dense packing row spans only apply when dense packing is enabled and in grid mode
-    if (!effectiveDensePacking || effectiveLayoutMode !== 'grid') {
-      return 1;
-    }
-    return config?.widgetRowSpans?.[widgetId] ?? DEFAULT_WIDGET_ROW_SPANS[widgetId] ?? 1;
-  }, [config?.widgetRowSpans, effectiveDensePacking, effectiveLayoutMode]);
+  const getEffectiveRowSpan = useCallback(
+    (widgetId: WidgetId): WidgetRowSpan => {
+      // Dense packing row spans only apply when dense packing is enabled and in grid mode
+      if (!effectiveDensePacking || effectiveLayoutMode !== 'grid') {
+        return 1;
+      }
+      return (
+        config?.widgetRowSpans?.[widgetId] ??
+        DEFAULT_WIDGET_ROW_SPANS[widgetId] ??
+        1
+      );
+    },
+    [config?.widgetRowSpans, effectiveDensePacking, effectiveLayoutMode]
+  );
 
   // renderWidget must be defined before early returns (React hooks rules)
   const renderWidget = useCallback(
@@ -397,11 +412,15 @@ const DashboardContainerComponent = ({
           strategy={rectSortingStrategy}
           disabled={isDragDropDisabled}
         >
-          <div className={cn(
-            'grid gap-4 transition-all duration-300',
-            gridClass,
-            effectiveDensePacking && effectiveLayoutMode === 'grid' && 'grid-flow-row-dense'
-          )}>
+          <div
+            className={cn(
+              'grid gap-4 transition-all duration-300',
+              gridClass,
+              effectiveDensePacking &&
+                effectiveLayoutMode === 'grid' &&
+                'grid-flow-row-dense'
+            )}
+          >
             {visibleWidgets.map((widgetId) => (
               <WidgetWrapper
                 key={widgetId}

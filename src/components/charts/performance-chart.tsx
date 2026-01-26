@@ -118,7 +118,7 @@ const CustomTooltip = memo(function CustomTooltip({
 
   return (
     <div className="rounded-lg border bg-background p-3 shadow-lg">
-      <div className="text-sm text-muted-foreground mb-1">
+      <div className="mb-1 text-sm text-muted-foreground">
         {format(new Date(data.date), 'EEEE, MMMM d, yyyy')}
       </div>
       <div className="space-y-1">
@@ -135,13 +135,15 @@ const CustomTooltip = memo(function CustomTooltip({
           </span>
         </div>
         {showBenchmark && data.benchmarkValue !== undefined && (
-          <div className="flex items-center justify-between gap-4 border-t pt-1 mt-1">
+          <div className="mt-1 flex items-center justify-between gap-4 border-t pt-1">
             <span className="text-sm font-medium">Benchmark</span>
-            <span className="font-medium">{formatCurrency(data.benchmarkValue)}</span>
+            <span className="font-medium">
+              {formatCurrency(data.benchmarkValue)}
+            </span>
           </div>
         )}
         {data.hasInterpolatedPrices && (
-          <div className="text-xs text-muted-foreground italic mt-2">
+          <div className="mt-2 text-xs italic text-muted-foreground">
             * Some prices were estimated
           </div>
         )}
@@ -157,7 +159,7 @@ const CustomTooltip = memo(function CustomTooltip({
 function ChartSkeleton({ height }: { height: number }) {
   return (
     <div
-      className="animate-pulse bg-muted rounded-lg"
+      className="animate-pulse rounded-lg bg-muted"
       style={{ height }}
       role="status"
       aria-label="Loading chart"
@@ -174,12 +176,14 @@ function ChartSkeleton({ height }: { height: number }) {
 function EmptyState({ height }: { height: number }) {
   return (
     <div
-      className="flex items-center justify-center border border-dashed rounded-lg text-muted-foreground"
+      className="flex items-center justify-center rounded-lg border border-dashed text-muted-foreground"
       style={{ height }}
     >
       <div className="text-center">
         <p className="text-sm">No performance data available</p>
-        <p className="text-xs mt-1">Add transactions to see your portfolio performance</p>
+        <p className="mt-1 text-xs">
+          Add transactions to see your portfolio performance
+        </p>
       </div>
     </div>
   );
@@ -202,34 +206,37 @@ export const PerformanceChart = memo(function PerformanceChart({
   const chartData = useMemo(() => transformData(data, period), [data, period]);
 
   // Calculate chart metrics
-  const { minValue, maxValue, startValue, isPositive, strokeColor, fillColor } = useMemo(() => {
-    if (chartData.length === 0) {
+  const { minValue, maxValue, startValue, isPositive, strokeColor, fillColor } =
+    useMemo(() => {
+      if (chartData.length === 0) {
+        return {
+          minValue: 0,
+          maxValue: 100,
+          startValue: 0,
+          isPositive: true,
+          strokeColor: '#22c55e',
+          fillColor: 'url(#positiveGradient)',
+        };
+      }
+
+      const values = chartData.map((d) => d.value);
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const start = chartData[0].value;
+      const end = chartData[chartData.length - 1].value;
+      const positive = end >= start;
+
       return {
-        minValue: 0,
-        maxValue: 100,
-        startValue: 0,
-        isPositive: true,
-        strokeColor: '#22c55e',
-        fillColor: 'url(#positiveGradient)',
+        minValue: min * 0.995, // Add 0.5% padding
+        maxValue: max * 1.005,
+        startValue: start,
+        isPositive: positive,
+        strokeColor: positive ? '#22c55e' : '#ef4444',
+        fillColor: positive
+          ? 'url(#positiveGradient)'
+          : 'url(#negativeGradient)',
       };
-    }
-
-    const values = chartData.map((d) => d.value);
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const start = chartData[0].value;
-    const end = chartData[chartData.length - 1].value;
-    const positive = end >= start;
-
-    return {
-      minValue: min * 0.995, // Add 0.5% padding
-      maxValue: max * 1.005,
-      startValue: start,
-      isPositive: positive,
-      strokeColor: positive ? '#22c55e' : '#ef4444',
-      fillColor: positive ? 'url(#positiveGradient)' : 'url(#negativeGradient)',
-    };
-  }, [chartData]);
+    }, [chartData]);
 
   // Calculate X-axis ticks
   const xAxisTicks = useMemo(() => {

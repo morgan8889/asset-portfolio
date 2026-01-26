@@ -32,7 +32,9 @@ const STORAGE_KEY = 'dashboard-config';
  * Migrate a v1 configuration to v2.
  * Adds default layout settings while preserving existing config.
  */
-function migrateV1ToV2(v1Config: DashboardConfigurationV1): DashboardConfigurationV2 {
+function migrateV1ToV2(
+  v1Config: DashboardConfigurationV1
+): DashboardConfigurationV2 {
   return {
     ...v1Config,
     version: 2,
@@ -46,7 +48,9 @@ function migrateV1ToV2(v1Config: DashboardConfigurationV1): DashboardConfigurati
  * Migrate a v2 configuration to v3.
  * Adds dense packing settings while preserving existing config.
  */
-function migrateV2ToV3(v2Config: DashboardConfigurationV2): DashboardConfiguration {
+function migrateV2ToV3(
+  v2Config: DashboardConfigurationV2
+): DashboardConfiguration {
   return {
     ...v2Config,
     version: 3,
@@ -127,7 +131,10 @@ export const dashboardConfigService = {
    * Update widget visibility.
    * Convenience method for toggling a single widget.
    */
-  async setWidgetVisibility(widgetId: WidgetId, visible: boolean): Promise<void> {
+  async setWidgetVisibility(
+    widgetId: WidgetId,
+    visible: boolean
+  ): Promise<void> {
     const config = await this.getConfig();
     config.widgetVisibility[widgetId] = visible;
     await this.saveConfig(config);
@@ -204,7 +211,10 @@ export const dashboardConfigService = {
    * Update the row span for a specific widget.
    * Only affects display when densePacking is enabled.
    */
-  async setWidgetRowSpan(widgetId: WidgetId, rowSpan: WidgetRowSpan): Promise<void> {
+  async setWidgetRowSpan(
+    widgetId: WidgetId,
+    rowSpan: WidgetRowSpan
+  ): Promise<void> {
     const config = await this.getConfig();
     config.widgetRowSpans = { ...config.widgetRowSpans, [widgetId]: rowSpan };
     await this.saveConfig(config);

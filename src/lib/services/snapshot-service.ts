@@ -129,11 +129,18 @@ async function calculateValueAtDate(
 
   for (const [assetId, quantity] of holdings.entries()) {
     try {
-      const { price, isInterpolated } = await getPriceAtDate(assetId, date, priceCache);
+      const { price, isInterpolated } = await getPriceAtDate(
+        assetId,
+        date,
+        priceCache
+      );
       totalValue = totalValue.plus(quantity.mul(price));
       if (isInterpolated) hasInterpolatedPrices = true;
     } catch (error) {
-      console.error(`Error getting price for asset ${assetId} at ${date}:`, error);
+      console.error(
+        `Error getting price for asset ${assetId} at ${date}:`,
+        error
+      );
       hasInterpolatedPrices = true;
     }
   }
@@ -154,9 +161,7 @@ function getCashFlowEvents(transactions: Transaction[]): CashFlowEvent[] {
     .filter((tx) => tx.type === 'buy' || tx.type === 'sell')
     .map((tx) => ({
       date: new Date(tx.date),
-      amount: tx.type === 'buy'
-        ? tx.totalAmount
-        : tx.totalAmount.neg(),
+      amount: tx.type === 'buy' ? tx.totalAmount : tx.totalAmount.neg(),
     }));
 }
 
@@ -211,13 +216,17 @@ export async function computeSnapshots(
   }
 
   // Find earliest transaction date
-  const earliestTxDate = transactions.reduce((min, tx) => {
-    const txDate = startOfDay(new Date(tx.date));
-    return txDate < min ? txDate : min;
-  }, startOfDay(new Date(transactions[0].date)));
+  const earliestTxDate = transactions.reduce(
+    (min, tx) => {
+      const txDate = startOfDay(new Date(tx.date));
+      return txDate < min ? txDate : min;
+    },
+    startOfDay(new Date(transactions[0].date))
+  );
 
   // Effective start date is the later of fromDate and earliest transaction
-  const effectiveFrom = normalizedFrom > earliestTxDate ? normalizedFrom : earliestTxDate;
+  const effectiveFrom =
+    normalizedFrom > earliestTxDate ? normalizedFrom : earliestTxDate;
 
   // Generate date range
   const dates = eachDayOfInterval({ start: effectiveFrom, end: normalizedTo });
@@ -265,11 +274,12 @@ export async function computeSnapshots(
     processedCount++;
 
     // Report progress every 10% or every 50 snapshots (whichever is more frequent)
-    const shouldReportProgress = onProgress && (
-      processedCount % 50 === 0 ||
-      processedCount === totalDates ||
-      (totalDates >= 10 && processedCount % Math.ceil(totalDates / 10) === 0)
-    );
+    const shouldReportProgress =
+      onProgress &&
+      (processedCount % 50 === 0 ||
+        processedCount === totalDates ||
+        (totalDates >= 10 &&
+          processedCount % Math.ceil(totalDates / 10) === 0));
 
     if (shouldReportProgress) {
       onProgress({
@@ -295,9 +305,7 @@ export async function computeSnapshots(
 
     // Calculate TWR return - simplified approach using daily returns
     // For proper TWR, we compound daily returns between cash flows
-    const periodCashFlows = cashFlows.filter(
-      (cf) => isSameDay(cf.date, date)
-    );
+    const periodCashFlows = cashFlows.filter((cf) => isSameDay(cf.date, date));
 
     let twrReturn: Decimal;
     if (i === 0 && previousSnapshots.length === 0) {
@@ -379,15 +387,17 @@ export async function deleteSnapshots(portfolioId: string): Promise<void> {
  * Handle snapshot computation trigger event.
  * Called from transaction store when transactions change.
  */
-export async function handleSnapshotTrigger(
-  event: {
-    type: 'TRANSACTION_ADDED' | 'TRANSACTION_MODIFIED' | 'TRANSACTION_DELETED' | 'MANUAL_REFRESH';
-    portfolioId: string;
-    date?: Date;
-    oldDate?: Date;
-    newDate?: Date;
-  }
-): Promise<void> {
+export async function handleSnapshotTrigger(event: {
+  type:
+    | 'TRANSACTION_ADDED'
+    | 'TRANSACTION_MODIFIED'
+    | 'TRANSACTION_DELETED'
+    | 'MANUAL_REFRESH';
+  portfolioId: string;
+  date?: Date;
+  oldDate?: Date;
+  newDate?: Date;
+}): Promise<void> {
   const { type, portfolioId } = event;
 
   switch (type) {
@@ -400,7 +410,8 @@ export async function handleSnapshotTrigger(
     case 'TRANSACTION_MODIFIED':
       if (event.oldDate && event.newDate) {
         // Recompute from the earlier of old and new dates
-        const fromDate = event.oldDate < event.newDate ? event.oldDate : event.newDate;
+        const fromDate =
+          event.oldDate < event.newDate ? event.oldDate : event.newDate;
         await computeSnapshots(portfolioId, fromDate);
       }
       break;
@@ -459,7 +470,9 @@ export async function getAggregatedSnapshots(
   return aggregateToMonthly(snapshots);
 }
 
-function aggregateToWeekly(snapshots: PerformanceSnapshot[]): PerformanceSnapshot[] {
+function aggregateToWeekly(
+  snapshots: PerformanceSnapshot[]
+): PerformanceSnapshot[] {
   if (snapshots.length === 0) return [];
 
   const result: PerformanceSnapshot[] = [];
@@ -467,7 +480,10 @@ function aggregateToWeekly(snapshots: PerformanceSnapshot[]): PerformanceSnapsho
   let currentWeekStart = startOfDay(snapshots[0].date);
 
   for (const snapshot of snapshots) {
-    const daysSinceWeekStart = differenceInDays(snapshot.date, currentWeekStart);
+    const daysSinceWeekStart = differenceInDays(
+      snapshot.date,
+      currentWeekStart
+    );
 
     if (daysSinceWeekStart >= 7) {
       // End of week - take last snapshot
@@ -489,7 +505,9 @@ function aggregateToWeekly(snapshots: PerformanceSnapshot[]): PerformanceSnapsho
   return result;
 }
 
-function aggregateToMonthly(snapshots: PerformanceSnapshot[]): PerformanceSnapshot[] {
+function aggregateToMonthly(
+  snapshots: PerformanceSnapshot[]
+): PerformanceSnapshot[] {
   if (snapshots.length === 0) return [];
 
   const result: PerformanceSnapshot[] = [];

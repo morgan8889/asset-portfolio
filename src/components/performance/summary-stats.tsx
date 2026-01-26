@@ -53,8 +53,8 @@ function StatCard({
           <Icon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="h-8 w-24 bg-muted animate-pulse rounded" />
-          <div className="h-4 w-20 bg-muted animate-pulse rounded mt-2" />
+          <div className="h-8 w-24 animate-pulse rounded bg-muted" />
+          <div className="mt-2 h-4 w-20 animate-pulse rounded bg-muted" />
         </CardContent>
       </Card>
     );
@@ -67,7 +67,9 @@ function StatCard({
         <Icon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className={cn('text-2xl font-bold', trendColors[trend])}>{value}</div>
+        <div className={cn('text-2xl font-bold', trendColors[trend])}>
+          {value}
+        </div>
         {subtitle && (
           <p className="text-xs text-muted-foreground">{subtitle}</p>
         )}
@@ -84,7 +86,9 @@ export function SummaryStats({
 }: SummaryStatsProps) {
   if (!summary && !isLoading) {
     return (
-      <div className={cn('grid gap-4 md:grid-cols-2 lg:grid-cols-4', className)}>
+      <div
+        className={cn('grid gap-4 md:grid-cols-2 lg:grid-cols-4', className)}
+      >
         <StatCard
           title="Total Return"
           value="—"
@@ -127,10 +131,18 @@ export function SummaryStats({
     : 'neutral';
 
   // Format period high/low
-  const periodHigh = summary ? formatCurrency(summary.periodHigh.toNumber()) : '—';
-  const periodHighDate = summary ? format(summary.periodHighDate, 'MMM d, yyyy') : '';
-  const periodLow = summary ? formatCurrency(summary.periodLow.toNumber()) : '—';
-  const periodLowDate = summary ? format(summary.periodLowDate, 'MMM d, yyyy') : '';
+  const periodHigh = summary
+    ? formatCurrency(summary.periodHigh.toNumber())
+    : '—';
+  const periodHighDate = summary
+    ? format(summary.periodHighDate, 'MMM d, yyyy')
+    : '';
+  const periodLow = summary
+    ? formatCurrency(summary.periodLow.toNumber())
+    : '—';
+  const periodLowDate = summary
+    ? format(summary.periodLowDate, 'MMM d, yyyy')
+    : '';
 
   // Format best/worst day
   const bestDayChange = summary
@@ -240,7 +252,11 @@ export function SummaryStats({
             value={sharpeRatio}
             subtitle="Risk-adjusted return"
             icon={Activity}
-            trend={summary && summary.sharpeRatio && summary.sharpeRatio > 1 ? 'positive' : 'neutral'}
+            trend={
+              summary && summary.sharpeRatio && summary.sharpeRatio > 1
+                ? 'positive'
+                : 'neutral'
+            }
             isLoading={isLoading}
           />
         )}

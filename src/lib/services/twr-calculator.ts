@@ -178,14 +178,16 @@ export function createSubPeriods(input: TWRInput): TWRSubPeriod[] {
 
   if (cashFlows.length === 0) {
     // No cash flows - single period
-    return [{
-      startDate,
-      endDate,
-      startValue: input.startValue,
-      endValue: input.endValue,
-      cashFlows: [],
-      periodReturn: new Decimal(0), // Will be calculated
-    }];
+    return [
+      {
+        startDate,
+        endDate,
+        startValue: input.startValue,
+        endValue: input.endValue,
+        cashFlows: [],
+        periodReturn: new Decimal(0), // Will be calculated
+      },
+    ];
   }
 
   // Sort cash flows by date
@@ -293,14 +295,16 @@ export function calculateTWRFromDailyValues(
       annualizedReturn: annualizeReturn(periodReturn, days),
       startDate,
       endDate,
-      subPeriods: [{
-        startDate,
-        endDate,
-        startValue,
-        endValue,
-        cashFlows: [],
-        periodReturn,
-      }],
+      subPeriods: [
+        {
+          startDate,
+          endDate,
+          startValue,
+          endValue,
+          cashFlows: [],
+          periodReturn,
+        },
+      ],
     };
   }
 
@@ -337,7 +341,8 @@ export function calculateTWRFromDailyValues(
   for (let i = 0; i < subPeriods.length; i++) {
     const period = subPeriods[i];
     period.startValue = i === 0 ? startValue : getValue(period.startDate);
-    period.endValue = i === subPeriods.length - 1 ? endValue : getValue(period.endDate);
+    period.endValue =
+      i === subPeriods.length - 1 ? endValue : getValue(period.endDate);
 
     period.periodReturn = calculatePeriodReturn(
       period.startValue,
@@ -424,10 +429,9 @@ export function calculateVolatility(dailyReturns: number[]): number {
   if (dailyReturns.length < 2) return 0;
 
   const mean = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
-  const variance = dailyReturns.reduce(
-    (sum, r) => sum + Math.pow(r - mean, 2),
-    0
-  ) / (dailyReturns.length - 1);
+  const variance =
+    dailyReturns.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) /
+    (dailyReturns.length - 1);
   const stdDev = Math.sqrt(variance);
 
   // Annualize: multiply by sqrt(TRADING_DAYS_PER_YEAR)

@@ -288,7 +288,8 @@ async function createTransactionFromRow(
 
     // Infer asset type from symbol patterns
     const symbol = parsed.symbol.toUpperCase();
-    let inferredType: 'stock' | 'etf' | 'crypto' | 'bond' | 'commodity' = 'stock';
+    let inferredType: 'stock' | 'etf' | 'crypto' | 'bond' | 'commodity' =
+      'stock';
 
     // Crypto detection: symbols with -USD, -USDT, BTC, ETH, etc.
     if (

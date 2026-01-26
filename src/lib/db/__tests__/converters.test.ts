@@ -12,8 +12,18 @@ import {
   type CreateTransactionInput,
 } from '../converters';
 import type { Transaction } from '@/types/transaction';
-import type { Holding, PriceSnapshot, PriceHistory, DividendRecord } from '@/types/asset';
-import type { AssetId, PortfolioId, HoldingId, TaxLotId } from '@/types/storage';
+import type {
+  Holding,
+  PriceSnapshot,
+  PriceHistory,
+  DividendRecord,
+} from '@/types/asset';
+import type {
+  AssetId,
+  PortfolioId,
+  HoldingId,
+  TaxLotId,
+} from '@/types/storage';
 
 describe('Database Converters', () => {
   describe('toAssetStorage', () => {
@@ -69,7 +79,9 @@ describe('Database Converters', () => {
       } as CreateAssetInput;
 
       expect(() => toAssetStorage(input)).toThrow(TypeError);
-      expect(() => toAssetStorage(input)).toThrow('id must be a non-empty string');
+      expect(() => toAssetStorage(input)).toThrow(
+        'id must be a non-empty string'
+      );
     });
 
     it('should throw TypeError for missing symbol', () => {
@@ -82,7 +94,9 @@ describe('Database Converters', () => {
       } as CreateAssetInput;
 
       expect(() => toAssetStorage(input)).toThrow(TypeError);
-      expect(() => toAssetStorage(input)).toThrow('symbol must be a non-empty string');
+      expect(() => toAssetStorage(input)).toThrow(
+        'symbol must be a non-empty string'
+      );
     });
 
     it('should throw TypeError for missing name', () => {
@@ -95,7 +109,9 @@ describe('Database Converters', () => {
       } as CreateAssetInput;
 
       expect(() => toAssetStorage(input)).toThrow(TypeError);
-      expect(() => toAssetStorage(input)).toThrow('name must be a non-empty string');
+      expect(() => toAssetStorage(input)).toThrow(
+        'name must be a non-empty string'
+      );
     });
 
     it('should throw TypeError for missing currency', () => {
@@ -108,7 +124,9 @@ describe('Database Converters', () => {
       } as CreateAssetInput;
 
       expect(() => toAssetStorage(input)).toThrow(TypeError);
-      expect(() => toAssetStorage(input)).toThrow('currency must be a non-empty string');
+      expect(() => toAssetStorage(input)).toThrow(
+        'currency must be a non-empty string'
+      );
     });
 
     it('should throw RangeError for negative currentPrice', () => {
@@ -122,7 +140,9 @@ describe('Database Converters', () => {
       };
 
       expect(() => toAssetStorage(input)).toThrow(RangeError);
-      expect(() => toAssetStorage(input)).toThrow('currentPrice must be a non-negative number');
+      expect(() => toAssetStorage(input)).toThrow(
+        'currentPrice must be a non-negative number'
+      );
     });
 
     it('should throw TypeError for invalid priceUpdatedAt', () => {
@@ -136,7 +156,9 @@ describe('Database Converters', () => {
       } as unknown as CreateAssetInput;
 
       expect(() => toAssetStorage(input)).toThrow(TypeError);
-      expect(() => toAssetStorage(input)).toThrow('priceUpdatedAt must be a Date instance');
+      expect(() => toAssetStorage(input)).toThrow(
+        'priceUpdatedAt must be a Date instance'
+      );
     });
   });
 
@@ -190,7 +212,9 @@ describe('Database Converters', () => {
       } as CreateTransactionInput;
 
       expect(() => toTransactionStorage(input)).toThrow(TypeError);
-      expect(() => toTransactionStorage(input)).toThrow('id must be a non-empty string');
+      expect(() => toTransactionStorage(input)).toThrow(
+        'id must be a non-empty string'
+      );
     });
 
     it('should throw TypeError for missing portfolioId', () => {
@@ -208,7 +232,9 @@ describe('Database Converters', () => {
       } as CreateTransactionInput;
 
       expect(() => toTransactionStorage(input)).toThrow(TypeError);
-      expect(() => toTransactionStorage(input)).toThrow('portfolioId must be a non-empty string');
+      expect(() => toTransactionStorage(input)).toThrow(
+        'portfolioId must be a non-empty string'
+      );
     });
 
     it('should throw TypeError for missing assetId', () => {
@@ -226,7 +252,9 @@ describe('Database Converters', () => {
       } as CreateTransactionInput;
 
       expect(() => toTransactionStorage(input)).toThrow(TypeError);
-      expect(() => toTransactionStorage(input)).toThrow('assetId must be a non-empty string');
+      expect(() => toTransactionStorage(input)).toThrow(
+        'assetId must be a non-empty string'
+      );
     });
 
     it('should throw TypeError for invalid date', () => {
@@ -244,7 +272,9 @@ describe('Database Converters', () => {
       } as unknown as CreateTransactionInput;
 
       expect(() => toTransactionStorage(input)).toThrow(TypeError);
-      expect(() => toTransactionStorage(input)).toThrow('date must be a Date instance');
+      expect(() => toTransactionStorage(input)).toThrow(
+        'date must be a Date instance'
+      );
     });
 
     it('should throw TypeError for non-Decimal quantity', () => {
@@ -262,7 +292,9 @@ describe('Database Converters', () => {
       } as unknown as CreateTransactionInput;
 
       expect(() => toTransactionStorage(input)).toThrow(TypeError);
-      expect(() => toTransactionStorage(input)).toThrow('quantity must be a Decimal instance');
+      expect(() => toTransactionStorage(input)).toThrow(
+        'quantity must be a Decimal instance'
+      );
     });
 
     it('should throw TypeError for non-Decimal price', () => {
@@ -280,7 +312,9 @@ describe('Database Converters', () => {
       } as unknown as CreateTransactionInput;
 
       expect(() => toTransactionStorage(input)).toThrow(TypeError);
-      expect(() => toTransactionStorage(input)).toThrow('price must be a Decimal instance');
+      expect(() => toTransactionStorage(input)).toThrow(
+        'price must be a Decimal instance'
+      );
     });
 
     it('should throw RangeError for negative quantity', () => {
@@ -298,7 +332,9 @@ describe('Database Converters', () => {
       };
 
       expect(() => toTransactionStorage(input)).toThrow(RangeError);
-      expect(() => toTransactionStorage(input)).toThrow('quantity cannot be negative');
+      expect(() => toTransactionStorage(input)).toThrow(
+        'quantity cannot be negative'
+      );
     });
 
     it('should throw RangeError for negative price', () => {
@@ -316,7 +352,9 @@ describe('Database Converters', () => {
       };
 
       expect(() => toTransactionStorage(input)).toThrow(RangeError);
-      expect(() => toTransactionStorage(input)).toThrow('price cannot be negative');
+      expect(() => toTransactionStorage(input)).toThrow(
+        'price cannot be negative'
+      );
     });
 
     it('should throw RangeError for negative fees', () => {
@@ -334,7 +372,9 @@ describe('Database Converters', () => {
       };
 
       expect(() => toTransactionStorage(input)).toThrow(RangeError);
-      expect(() => toTransactionStorage(input)).toThrow('fees cannot be negative');
+      expect(() => toTransactionStorage(input)).toThrow(
+        'fees cannot be negative'
+      );
     });
   });
 

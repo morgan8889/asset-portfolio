@@ -21,7 +21,13 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Settings, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
 import { useDashboardStore } from '@/lib/stores';
-import { WidgetId, WIDGET_DEFINITIONS, GridColumns, WidgetSpan, WidgetRowSpan } from '@/types/dashboard';
+import {
+  WidgetId,
+  WIDGET_DEFINITIONS,
+  GridColumns,
+  WidgetSpan,
+  WidgetRowSpan,
+} from '@/types/dashboard';
 import { cn } from '@/lib/utils';
 import { LayoutModeSelector } from './layout-mode-selector';
 import {
@@ -144,27 +150,31 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
 
   const defaultTrigger = (
     <Button variant="outline" size="sm">
-      <Settings className="h-4 w-4 mr-2" />
+      <Settings className="mr-2 h-4 w-4" />
       Settings
     </Button>
   );
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-      setOpen(isOpen);
-      if (!isOpen) setShowResetConfirm(false);
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) setShowResetConfirm(false);
+      }}
+    >
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Dashboard Settings</DialogTitle>
           <DialogDescription>
-            Customize which widgets are visible and their order on your dashboard.
+            Customize which widgets are visible and their order on your
+            dashboard.
           </DialogDescription>
         </DialogHeader>
 
         {/* Layout Settings Section */}
-        <div className="space-y-4 py-4 border-b">
+        <div className="space-y-4 border-b py-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">Layout Mode</Label>
             <LayoutModeSelector
@@ -215,7 +225,7 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
         </div>
 
         {/* Widget Settings Section */}
-        <div className="space-y-4 py-4 max-h-[300px] overflow-y-auto">
+        <div className="max-h-[300px] space-y-4 overflow-y-auto py-4">
           {config.widgetOrder.map((widgetId, index) => {
             const definition = WIDGET_DEFINITIONS[widgetId];
             const isVisible = config.widgetVisibility[widgetId];
@@ -226,41 +236,45 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
               <div
                 key={widgetId}
                 className={cn(
-                  'flex items-center justify-between p-3 rounded-lg border',
+                  'flex items-center justify-between rounded-lg border p-3',
                   !isVisible && 'opacity-60'
                 )}
               >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
                   <Switch
                     id={`widget-${widgetId}`}
                     checked={isVisible}
-                    onCheckedChange={(checked) => handleVisibilityChange(widgetId, checked)}
+                    onCheckedChange={(checked) =>
+                      handleVisibilityChange(widgetId, checked)
+                    }
                     disabled={!definition.canHide}
                     aria-label={`Toggle ${definition.displayName} visibility`}
                   />
                   <div className="min-w-0">
                     <Label
                       htmlFor={`widget-${widgetId}`}
-                      className="font-medium cursor-pointer"
+                      className="cursor-pointer font-medium"
                     >
                       {definition.displayName}
                     </Label>
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p className="truncate text-xs text-muted-foreground">
                       {definition.description}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                <div className="ml-2 flex flex-shrink-0 items-center gap-1">
                   {/* Widget column span selector - only shown in grid mode */}
                   {config.layoutMode === 'grid' && (
                     <Select
                       value={String(config.widgetSpans?.[widgetId] ?? 1)}
-                      onValueChange={(value) => handleWidgetSpanChange(widgetId, value)}
+                      onValueChange={(value) =>
+                        handleWidgetSpanChange(widgetId, value)
+                      }
                       disabled={!isVisible}
                     >
                       <SelectTrigger
-                        className="w-16 h-8"
+                        className="h-8 w-16"
                         aria-label={`Column span for ${definition.displayName}`}
                       >
                         <SelectValue />
@@ -275,11 +289,13 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
                   {config.layoutMode === 'grid' && config.densePacking && (
                     <Select
                       value={String(config.widgetRowSpans?.[widgetId] ?? 1)}
-                      onValueChange={(value) => handleWidgetRowSpanChange(widgetId, value)}
+                      onValueChange={(value) =>
+                        handleWidgetRowSpanChange(widgetId, value)
+                      }
                       disabled={!isVisible}
                     >
                       <SelectTrigger
-                        className="w-16 h-8"
+                        className="h-8 w-16"
                         aria-label={`Row span for ${definition.displayName}`}
                       >
                         <SelectValue />
@@ -317,10 +333,10 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
           })}
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
           {showResetConfirm ? (
             <>
-              <p className="text-sm text-muted-foreground w-full sm:w-auto">
+              <p className="w-full text-sm text-muted-foreground sm:w-auto">
                 Reset all settings to default?
               </p>
               <Button
@@ -345,10 +361,13 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
                 onClick={handleResetClick}
                 className="w-full sm:w-auto"
               >
-                <RotateCcw className="h-4 w-4 mr-2" />
+                <RotateCcw className="mr-2 h-4 w-4" />
                 Reset to Default
               </Button>
-              <Button onClick={() => setOpen(false)} className="w-full sm:w-auto">
+              <Button
+                onClick={() => setOpen(false)}
+                className="w-full sm:w-auto"
+              >
                 Done
               </Button>
             </>

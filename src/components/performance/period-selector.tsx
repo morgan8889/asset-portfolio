@@ -22,7 +22,13 @@ interface PeriodSelectorProps {
   className?: string;
 }
 
-const DISPLAY_PERIODS: TimePeriod[] = ['WEEK', 'MONTH', 'QUARTER', 'YEAR', 'ALL'];
+const DISPLAY_PERIODS: TimePeriod[] = [
+  'WEEK',
+  'MONTH',
+  'QUARTER',
+  'YEAR',
+  'ALL',
+];
 
 export function PeriodSelector({
   selectedPeriod,
@@ -43,12 +49,14 @@ export function PeriodSelector({
         case 'ArrowLeft':
         case 'ArrowUp':
           event.preventDefault();
-          newIndex = currentIndex > 0 ? currentIndex - 1 : DISPLAY_PERIODS.length - 1;
+          newIndex =
+            currentIndex > 0 ? currentIndex - 1 : DISPLAY_PERIODS.length - 1;
           break;
         case 'ArrowRight':
         case 'ArrowDown':
           event.preventDefault();
-          newIndex = currentIndex < DISPLAY_PERIODS.length - 1 ? currentIndex + 1 : 0;
+          newIndex =
+            currentIndex < DISPLAY_PERIODS.length - 1 ? currentIndex + 1 : 0;
           break;
         case 'Home':
           event.preventDefault();

@@ -176,7 +176,6 @@ describe('Staleness Utilities', () => {
       // 90 seconds ago, standard interval is 60 seconds
       const lastUpdate = new Date(now.getTime() - 90 * 1000);
       expect(shouldRefresh(lastUpdate, 'standard')).toBe(true);
-
     });
 
     it('should return false when age is less than interval', () => {
@@ -214,7 +213,6 @@ describe('Staleness Utilities', () => {
       expect(getStaleThreshold('frequent')).toBe(60_000);
       // standard: 60s * 2 = 120s
       expect(getStaleThreshold('standard')).toBe(120_000);
-
     });
 
     it('should return Infinity for manual mode', () => {

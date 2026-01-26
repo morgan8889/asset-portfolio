@@ -84,10 +84,16 @@ function validateAssetInput(input: CreateAssetInput): void {
     throw new TypeError('currency must be a non-empty string');
   }
   // Validate optional numeric fields
-  if (input.currentPrice !== undefined && (typeof input.currentPrice !== 'number' || input.currentPrice < 0)) {
+  if (
+    input.currentPrice !== undefined &&
+    (typeof input.currentPrice !== 'number' || input.currentPrice < 0)
+  ) {
     throw new RangeError('currentPrice must be a non-negative number');
   }
-  if (input.priceUpdatedAt !== undefined && !(input.priceUpdatedAt instanceof Date)) {
+  if (
+    input.priceUpdatedAt !== undefined &&
+    !(input.priceUpdatedAt instanceof Date)
+  ) {
     throw new TypeError('priceUpdatedAt must be a Date instance');
   }
 }
@@ -140,7 +146,10 @@ export interface CreateTransactionInput {
 /**
  * Validate that a value is a Decimal instance
  */
-function validateDecimal(value: unknown, fieldName: string): asserts value is Decimal {
+function validateDecimal(
+  value: unknown,
+  fieldName: string
+): asserts value is Decimal {
   if (!(value instanceof Decimal)) {
     throw new TypeError(`${fieldName} must be a Decimal instance`);
   }

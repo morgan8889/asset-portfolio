@@ -35,7 +35,10 @@ interface DashboardState {
   setGridColumns: (columns: GridColumns) => Promise<void>;
   setWidgetSpan: (widgetId: WidgetId, span: WidgetSpan) => Promise<void>;
   setDensePacking: (enabled: boolean) => Promise<void>;
-  setWidgetRowSpan: (widgetId: WidgetId, rowSpan: WidgetRowSpan) => Promise<void>;
+  setWidgetRowSpan: (
+    widgetId: WidgetId,
+    rowSpan: WidgetRowSpan
+  ) => Promise<void>;
   resetToDefault: () => Promise<void>;
   clearError: () => void;
 }
@@ -199,7 +202,10 @@ export const useDashboardStore = create<DashboardState>()(
           return;
         }
 
-        const updatedRowSpans = { ...config.widgetRowSpans, [widgetId]: rowSpan };
+        const updatedRowSpans = {
+          ...config.widgetRowSpans,
+          [widgetId]: rowSpan,
+        };
         await optimisticUpdate(
           get,
           set,
