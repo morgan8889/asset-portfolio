@@ -17,7 +17,7 @@ As an investor, I want to view my portfolio's performance over a 3-year period s
 
 **Acceptance Scenarios**:
 
-1. **Given** I am viewing the performance page with portfolio data spanning at least 3 years, **When** I click the "3Y" time period selector, **Then** the performance chart displays data for the past 3 years with monthly data points
+1. **Given** I am viewing the existing performance analytics page with portfolio data spanning at least 3 years, **When** I click the "3Y" time period selector, **Then** the performance chart displays data for the past 3 years with monthly data points
 2. **Given** I have a portfolio with less than 3 years of history, **When** I click the "3Y" selector, **Then** the chart displays all available data from portfolio inception to present
 3. **Given** I am viewing the 3Y chart, **When** I hover over data points, **Then** I see tooltips showing the date, portfolio value, and change from the previous data point
 
@@ -33,7 +33,7 @@ As an investor, I want to see the compound annual growth rate (CAGR) calculated 
 
 **Acceptance Scenarios**:
 
-1. **Given** I have portfolio data spanning multiple years, **When** I view the performance page, **Then** I see a year-over-year growth section displaying CAGR for each consecutive year pair (e.g., 2023-2024, 2024-2025, 2025-2026)
+1. **Given** I have portfolio data spanning multiple years, **When** I view the performance page, **Then** I see a year-over-year growth section below the performance chart displaying CAGR for each individual calendar year (e.g., 2023, 2024) and Year-to-Date (YTD) for the current year.
 2. **Given** I view year-over-year CAGR metrics, **When** the growth is positive, **Then** it displays in green with a "+" prefix, and when negative, it displays in red with a "-" prefix
 3. **Given** I have less than 1 complete year of data, **When** I view the performance page, **Then** the year-over-year section shows a message indicating insufficient data with the requirement (e.g., "Year-over-year growth requires at least 1 year of history")
 
@@ -44,23 +44,33 @@ As an investor, I want to see the compound annual growth rate (CAGR) calculated 
 - What happens when the portfolio has exactly 3 years of data vs more than 3 years? (Chart should show exactly 3 years from current date backward)
 - How does the system handle data gaps in the 3-year period? (Display available data with visual indicators for gaps if any)
 - What happens when switching from 3Y view to other time periods? (Smooth transition with chart re-rendering and data aggregation adjustments)
-- How are partial years handled in year-over-year calculations? (Current incomplete year should be excluded from YoY CAGR calculations or clearly marked as "in progress")
+- How are partial years handled in year-over-year calculations? (Previous full years are shown as completed; the current year is clearly marked as "YTD")
 - What happens when there are no transactions in an entire year? (Still calculate CAGR based on starting and ending portfolio values for that year)
+
+## Clarifications
+
+### Session 2026-01-26
+
+- Q: Which growth calculation methodology should be used for YoY CAGR? → A: Time-Weighted Return (TWR) - Calculate growth independent of deposits/withdrawals, consistent with existing Performance Analytics (Feature 006).
+- Q: How should the 3-year performance data be retrieved/stored? → A: Pre-computed Snapshots - Query existing PerformanceSnapshot table in IndexedDB (Consistent with Feature 006).
+- Q: Should the 3-year view and YoY growth be a new page or extension? → A: Extend Existing Page - Add "3Y" button to current selector and insert YoY section below the chart on the Performance Analytics page.
+- Q: How should the Year-over-Year growth be labeled and grouped? → A: Calendar Year Labels - Display rows for each specific year (e.g., "2023", "2024") and "Current Year (YTD)".
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST add a "3Y" time period selector button to the existing performance chart period options (1M, 3M, YTD, 1Y, ALL)
-- **FR-002**: System MUST display portfolio value data for the past 3 years when the 3Y period is selected, with appropriate data point aggregation (monthly granularity recommended for readability)
-- **FR-003**: System MUST calculate compound annual growth rate (CAGR) for each consecutive year-over-year period using the formula: CAGR = ((Ending Value / Beginning Value) ^ (1 / Years)) - 1
-- **FR-004**: System MUST display year-over-year CAGR metrics in a dedicated section on the performance page, showing each year-pair comparison (e.g., Year 1 → Year 2, Year 2 → Year 3)
-- **FR-005**: System MUST format CAGR values as percentages with appropriate precision (2 decimal places)
-- **FR-006**: System MUST visually distinguish positive growth (green) from negative growth (red) in the year-over-year display
-- **FR-007**: System MUST handle portfolios with less than 3 years of data by displaying available data from inception
-- **FR-008**: System MUST handle portfolios with less than 1 year of data by showing an informative message for the year-over-year section
-- **FR-009**: System MUST maintain existing chart functionality (tooltips, zoom, pan) when displaying 3Y data
-- **FR-010**: System MUST persist the selected time period (3Y) across page refreshes using existing user preferences mechanism
+- **FR-001**: System MUST add a "3Y" time period selector button to the existing performance chart period options (1M, 3M, YTD, 1Y, ALL) on the Performance Analytics page.
+- **FR-002**: System MUST retrieve data from the `PerformanceSnapshot` table in IndexedDB to display portfolio values for the past 3 years.
+- **FR-003**: System MUST calculate year-over-year growth using the Time-Weighted Return (TWR) methodology to ensure metrics are independent of cash flow timing, matching the calculation logic in Feature 006.
+- **FR-004**: System MUST display growth metrics grouped by calendar year (e.g., 2023, 2024) in a dedicated section below the performance chart.
+- **FR-005**: System MUST include a "Year-to-Date" (YTD) metric for the current calendar year in the growth section.
+- **FR-006**: System MUST format growth values as percentages with appropriate precision (2 decimal places).
+- **FR-007**: System MUST visually distinguish positive growth (green) from negative growth (red) in the display.
+- **FR-008**: System MUST handle portfolios with less than 3 years of data by displaying available snapshots from inception to present.
+- **FR-009**: System MUST handle portfolios with less than 1 year of data by showing an informative message for the growth section.
+- **FR-010**: System MUST maintain existing chart functionality (tooltips, zoom, pan) when displaying 3Y data.
+- **FR-011**: System MUST persist the selected time period (3Y) across page refreshes using existing user preferences mechanism.
 
 ### Key Entities
 
