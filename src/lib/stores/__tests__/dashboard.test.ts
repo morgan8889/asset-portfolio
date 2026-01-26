@@ -108,7 +108,9 @@ describe('Dashboard Store', () => {
     });
 
     it('should return default config if service returns default', async () => {
-      mockDashboardConfigService.getConfig.mockResolvedValue({ ...DEFAULT_DASHBOARD_CONFIG });
+      mockDashboardConfigService.getConfig.mockResolvedValue({
+        ...DEFAULT_DASHBOARD_CONFIG,
+      });
 
       await useDashboardStore.getState().loadConfig();
 
@@ -135,7 +137,9 @@ describe('Dashboard Store', () => {
 
     it('should disable dense packing', async () => {
       // Start with dense packing enabled
-      useDashboardStore.setState({ config: { ...defaultV3Config, densePacking: true } });
+      useDashboardStore.setState({
+        config: { ...defaultV3Config, densePacking: true },
+      });
 
       await useDashboardStore.getState().setDensePacking(false);
 
@@ -148,7 +152,9 @@ describe('Dashboard Store', () => {
       const initialConfig = { ...defaultV3Config, densePacking: false };
       useDashboardStore.setState({ config: initialConfig });
 
-      mockDashboardConfigService.setDensePacking.mockRejectedValue(new Error('DB error'));
+      mockDashboardConfigService.setDensePacking.mockRejectedValue(
+        new Error('DB error')
+      );
 
       await useDashboardStore.getState().setDensePacking(true);
 
@@ -193,7 +199,9 @@ describe('Dashboard Store', () => {
     });
 
     it('should reject invalid row span value', async () => {
-      await useDashboardStore.getState().setWidgetRowSpan('growth-chart', 4 as any);
+      await useDashboardStore
+        .getState()
+        .setWidgetRowSpan('growth-chart', 4 as any);
 
       const state = useDashboardStore.getState();
       expect(state.error).toContain('Row span must be 1, 2, or 3');
@@ -201,10 +209,15 @@ describe('Dashboard Store', () => {
 
     it('should rollback on persistence error', async () => {
       const initialRowSpans = { 'growth-chart': 2 as const };
-      const initialConfig = { ...defaultV3Config, widgetRowSpans: initialRowSpans };
+      const initialConfig = {
+        ...defaultV3Config,
+        widgetRowSpans: initialRowSpans,
+      };
       useDashboardStore.setState({ config: initialConfig });
 
-      mockDashboardConfigService.setWidgetRowSpan.mockRejectedValue(new Error('DB error'));
+      mockDashboardConfigService.setWidgetRowSpan.mockRejectedValue(
+        new Error('DB error')
+      );
 
       await useDashboardStore.getState().setWidgetRowSpan('growth-chart', 3);
 
@@ -246,7 +259,9 @@ describe('Dashboard Store', () => {
         },
       });
 
-      mockDashboardConfigService.resetToDefault.mockResolvedValue({ ...DEFAULT_DASHBOARD_CONFIG });
+      mockDashboardConfigService.resetToDefault.mockResolvedValue({
+        ...DEFAULT_DASHBOARD_CONFIG,
+      });
 
       await useDashboardStore.getState().resetToDefault();
 

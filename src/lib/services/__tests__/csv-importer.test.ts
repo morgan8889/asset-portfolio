@@ -72,17 +72,15 @@ vi.mock('../csv-parser', () => ({
     .mockReturnValue(
       'Date,Symbol,Quantity,Price,Type\n2025-01-15,AAPL,10,150.00,buy'
     ),
-  getPreviewData: vi
-    .fn()
-    .mockReturnValue([
-      {
-        Date: '2025-01-15',
-        Symbol: 'AAPL',
-        Quantity: '10',
-        Price: '150.00',
-        Type: 'buy',
-      },
-    ]),
+  getPreviewData: vi.fn().mockReturnValue([
+    {
+      Date: '2025-01-15',
+      Symbol: 'AAPL',
+      Quantity: '10',
+      Price: '150.00',
+      Type: 'buy',
+    },
+  ]),
 }));
 
 // Mock column detector
@@ -292,16 +290,24 @@ describe('executeImport', () => {
 
     vi.mocked(db.transactions.add).mockResolvedValue('transaction-id');
 
-    vi.mocked(db.assets.where).mockImplementation(() => ({
-      equals: vi.fn().mockImplementation((symbol: string) => ({
-        first: vi.fn().mockImplementation(async () => {
-          if (symbol === 'AAPL') {
-            return { id: 'asset-1', symbol: 'AAPL', name: 'Apple', type: 'stock' };
-          }
-          return createdAssets.get(symbol) || null;
-        }),
-      })),
-    } as any));
+    vi.mocked(db.assets.where).mockImplementation(
+      () =>
+        ({
+          equals: vi.fn().mockImplementation((symbol: string) => ({
+            first: vi.fn().mockImplementation(async () => {
+              if (symbol === 'AAPL') {
+                return {
+                  id: 'asset-1',
+                  symbol: 'AAPL',
+                  name: 'Apple',
+                  type: 'stock',
+                };
+              }
+              return createdAssets.get(symbol) || null;
+            }),
+          })),
+        }) as any
+    );
 
     vi.mocked(db.assets.add).mockImplementation(async (asset: any) => {
       createdAssets.set(asset.symbol, asset);
@@ -312,7 +318,9 @@ describe('executeImport', () => {
       for (const asset of createdAssets.values()) {
         if (asset.id === id) return asset;
       }
-      return id === 'asset-1' ? { id: 'asset-1', symbol: 'AAPL', name: 'Apple', type: 'stock' } : null;
+      return id === 'asset-1'
+        ? { id: 'asset-1', symbol: 'AAPL', name: 'Apple', type: 'stock' }
+        : null;
     });
   });
 

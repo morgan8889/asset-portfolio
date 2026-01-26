@@ -4,10 +4,13 @@ import { validateSymbol, sanitizeInput } from '@/lib/utils/validation';
 import { logger } from '@/lib/utils/logger';
 
 // In-memory cache for benchmark data (in production, use Redis)
-const benchmarkCache = new Map<string, {
-  data: any;
-  timestamp: number;
-}>();
+const benchmarkCache = new Map<
+  string,
+  {
+    data: any;
+    timestamp: number;
+  }
+>();
 
 // 6 hours cache duration for benchmark data (less volatile than individual stocks)
 const BENCHMARK_CACHE_DURATION_MS = 6 * 60 * 60 * 1000;
@@ -37,7 +40,7 @@ async function fetchHistoricalData(
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; Portfolio-Tracker/1.0)',
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
       signal: controller.signal,
     });
@@ -80,17 +83,22 @@ async function fetchWithRetry(
       return result;
     } catch (error) {
       lastError = error as Error;
-      logger.warn(`Failed to fetch benchmark data for ${symbol}, attempt ${attempt}:`, error);
+      logger.warn(
+        `Failed to fetch benchmark data for ${symbol}, attempt ${attempt}:`,
+        error
+      );
 
       if (attempt < MAX_RETRIES) {
         // Exponential backoff: 2^attempt * 1000ms
         const delay = Math.pow(2, attempt) * 1000;
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
 
-  throw new Error(`All attempts failed for ${symbol}. Last error: ${lastError?.message}`);
+  throw new Error(
+    `All attempts failed for ${symbol}. Last error: ${lastError?.message}`
+  );
 }
 
 export async function GET(
@@ -125,7 +133,9 @@ export async function GET(
     const supportedBenchmarks = ['^GSPC', '^DJI', '^IXIC'];
     if (!supportedBenchmarks.includes(symbol)) {
       return NextResponse.json(
-        { error: 'Unsupported benchmark symbol. Supported: ^GSPC, ^DJI, ^IXIC' },
+        {
+          error: 'Unsupported benchmark symbol. Supported: ^GSPC, ^DJI, ^IXIC',
+        },
         { status: 400 }
       );
     }
@@ -137,7 +147,10 @@ export async function GET(
 
     if (!period1Str || !period2Str) {
       return NextResponse.json(
-        { error: 'period1 and period2 query parameters are required (Unix timestamps in seconds)' },
+        {
+          error:
+            'period1 and period2 query parameters are required (Unix timestamps in seconds)',
+        },
         { status: 400 }
       );
     }
@@ -152,7 +165,9 @@ export async function GET(
       );
     }
 
-    logger.info(`Benchmark request for ${symbol} from ${new Date(period1 * 1000).toISOString()} to ${new Date(period2 * 1000).toISOString()}`);
+    logger.info(
+      `Benchmark request for ${symbol} from ${new Date(period1 * 1000).toISOString()} to ${new Date(period2 * 1000).toISOString()}`
+    );
 
     // Check cache first
     const cacheKey = `${symbol}-${period1}-${period2}`;
@@ -188,9 +203,9 @@ export async function GET(
       cached: false,
       timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred';
     logger.error(`Error fetching benchmark data for ${params.symbol}:`, error);
 
     // Return appropriate error response
@@ -205,7 +220,8 @@ export async function GET(
       {
         error: 'Failed to fetch benchmark data. Please try again later.',
         symbol: params.symbol,
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+        details:
+          process.env.NODE_ENV === 'development' ? errorMessage : undefined,
       },
       { status: 500 }
     );

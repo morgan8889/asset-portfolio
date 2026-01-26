@@ -337,7 +337,10 @@ export const WidgetRowSpanSchema = z.union([
   z.literal(3),
 ]);
 
-export const WidgetRowSpansSchema = z.record(WidgetIdSchema, WidgetRowSpanSchema);
+export const WidgetRowSpansSchema = z.record(
+  WidgetIdSchema,
+  WidgetRowSpanSchema
+);
 
 /**
  * Version 1 schema for migration validation.
@@ -436,9 +439,15 @@ export const DashboardConfigurationSchema = z.object({
   lastUpdated: z.string().datetime('Must be a valid ISO 8601 datetime'),
   layoutMode: LayoutModeSchema,
   gridColumns: GridColumnsSchema,
-  widgetSpans: z.record(WidgetIdSchema, WidgetSpanSchema).optional().default({}),
+  widgetSpans: z
+    .record(WidgetIdSchema, WidgetSpanSchema)
+    .optional()
+    .default({}),
   densePacking: z.boolean(),
-  widgetRowSpans: z.record(WidgetIdSchema, WidgetRowSpanSchema).optional().default({}),
+  widgetRowSpans: z
+    .record(WidgetIdSchema, WidgetRowSpanSchema)
+    .optional()
+    .default({}),
 });
 
 // =============================================================================
@@ -574,7 +583,9 @@ export const DEFAULT_WIDGET_SPANS: Partial<Record<WidgetId, WidgetSpan>> = {
  * - Tables: 2 rows (needs space for data rows)
  * - Metrics cards: 1 row (compact, implicit default)
  */
-export const DEFAULT_WIDGET_ROW_SPANS: Partial<Record<WidgetId, WidgetRowSpan>> = {
+export const DEFAULT_WIDGET_ROW_SPANS: Partial<
+  Record<WidgetId, WidgetRowSpan>
+> = {
   'growth-chart': 2,
   'recent-activity': 2,
   'category-breakdown': 2,

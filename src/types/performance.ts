@@ -222,9 +222,25 @@ export interface ExportOptions {
  * Events that trigger snapshot computation.
  */
 export type SnapshotTriggerEvent =
-  | { type: 'TRANSACTION_ADDED'; transactionId: string; portfolioId: string; date: Date }
-  | { type: 'TRANSACTION_MODIFIED'; transactionId: string; portfolioId: string; oldDate: Date; newDate: Date }
-  | { type: 'TRANSACTION_DELETED'; transactionId: string; portfolioId: string; date: Date }
+  | {
+      type: 'TRANSACTION_ADDED';
+      transactionId: string;
+      portfolioId: string;
+      date: Date;
+    }
+  | {
+      type: 'TRANSACTION_MODIFIED';
+      transactionId: string;
+      portfolioId: string;
+      oldDate: Date;
+      newDate: Date;
+    }
+  | {
+      type: 'TRANSACTION_DELETED';
+      transactionId: string;
+      portfolioId: string;
+      date: Date;
+    }
   | { type: 'PRICE_UPDATED'; assetId: string; date: Date }
   | { type: 'MANUAL_REFRESH'; portfolioId: string };
 
@@ -236,11 +252,15 @@ export const PerformanceSnapshotSchema = z.object({
   id: z.string().uuid(),
   portfolioId: z.string().uuid(),
   date: z.coerce.date(),
-  totalValue: z.string().refine((s) => !isNaN(parseFloat(s)), 'Invalid decimal'),
+  totalValue: z
+    .string()
+    .refine((s) => !isNaN(parseFloat(s)), 'Invalid decimal'),
   totalCost: z.string().refine((s) => !isNaN(parseFloat(s)), 'Invalid decimal'),
   dayChange: z.string().refine((s) => !isNaN(parseFloat(s)), 'Invalid decimal'),
   dayChangePercent: z.number().min(-100).max(1000),
-  cumulativeReturn: z.string().refine((s) => !isNaN(parseFloat(s)), 'Invalid decimal'),
+  cumulativeReturn: z
+    .string()
+    .refine((s) => !isNaN(parseFloat(s)), 'Invalid decimal'),
   twrReturn: z.string().refine((s) => !isNaN(parseFloat(s)), 'Invalid decimal'),
   holdingCount: z.number().int().min(0),
   hasInterpolatedPrices: z.boolean(),
@@ -268,10 +288,18 @@ export const ExportOptionsSchema = z.object({
 
 export const SUPPORTED_BENCHMARKS: BenchmarkInfo[] = [
   { symbol: '^GSPC', name: 'S&P 500', description: 'US Large Cap' },
-  { symbol: '^DJI', name: 'Dow Jones Industrial Average', description: 'US 30 Blue Chips' },
+  {
+    symbol: '^DJI',
+    name: 'Dow Jones Industrial Average',
+    description: 'US 30 Blue Chips',
+  },
   { symbol: '^IXIC', name: 'NASDAQ Composite', description: 'US Tech-Heavy' },
   { symbol: '^RUT', name: 'Russell 2000', description: 'US Small Cap' },
-  { symbol: '^VIX', name: 'CBOE Volatility Index', description: 'Market Volatility' },
+  {
+    symbol: '^VIX',
+    name: 'CBOE Volatility Index',
+    description: 'Market Volatility',
+  },
 ];
 
 // =============================================================================
@@ -294,7 +322,10 @@ export const PERFORMANCE_SNAPSHOT_DECIMAL_FIELDS = [
  * Generate unique ID for a performance snapshot.
  * Format: perf-snap-{portfolioId}-{date}
  */
-export function createPerformanceSnapshotId(portfolioId: string, date: Date): string {
+export function createPerformanceSnapshotId(
+  portfolioId: string,
+  date: Date
+): string {
   const dateStr = date.toISOString().split('T')[0];
   return `perf-snap-${portfolioId}-${dateStr}`;
 }

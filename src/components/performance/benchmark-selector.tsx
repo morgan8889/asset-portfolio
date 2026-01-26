@@ -69,7 +69,9 @@ export const BenchmarkSelector = memo(function BenchmarkSelector({
         onClick={onToggle}
         disabled={isLoading}
         className="gap-2"
-        aria-label={isEnabled ? 'Hide benchmark comparison' : 'Show benchmark comparison'}
+        aria-label={
+          isEnabled ? 'Hide benchmark comparison' : 'Show benchmark comparison'
+        }
         aria-pressed={isEnabled}
       >
         <TrendingUp className="h-4 w-4" aria-hidden="true" />
@@ -84,7 +86,7 @@ export const BenchmarkSelector = memo(function BenchmarkSelector({
               variant="outline"
               size="sm"
               disabled={isLoading}
-              className="gap-2 min-w-[120px]"
+              className="min-w-[120px] gap-2"
               aria-label={`Select benchmark index, currently ${selectedInfo?.name || selectedBenchmark}`}
             >
               <span className="truncate">
@@ -101,17 +103,17 @@ export const BenchmarkSelector = memo(function BenchmarkSelector({
                 key={benchmark.symbol}
                 onClick={() => onBenchmarkChange(benchmark.symbol)}
                 className={cn(
-                  'flex flex-col items-start gap-0.5 cursor-pointer',
+                  'flex cursor-pointer flex-col items-start gap-0.5',
                   selectedBenchmark === benchmark.symbol && 'bg-accent'
                 )}
               >
-                <div className="flex items-center gap-2 w-full">
+                <div className="flex w-full items-center gap-2">
                   <span className="font-medium">{benchmark.name}</span>
-                  <span className="text-xs text-muted-foreground ml-auto">
+                  <span className="ml-auto text-xs text-muted-foreground">
                     {benchmark.symbol}
                   </span>
                 </div>
-                <span className="text-xs text-muted-foreground line-clamp-1">
+                <span className="line-clamp-1 text-xs text-muted-foreground">
                   {benchmark.description}
                 </span>
               </DropdownMenuItem>

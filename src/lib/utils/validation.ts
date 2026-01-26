@@ -93,7 +93,17 @@ export const assetSchema = z.object({
     .string()
     .min(1, 'Asset name is required')
     .max(200, 'Asset name too long'),
-  type: z.enum(['stock', 'etf', 'crypto', 'bond', 'real_estate', 'commodity', 'index', 'cash', 'other']),
+  type: z.enum([
+    'stock',
+    'etf',
+    'crypto',
+    'bond',
+    'real_estate',
+    'commodity',
+    'index',
+    'cash',
+    'other',
+  ]),
   exchange: z.string().max(50, 'Exchange name too long').optional(),
   currency: z
     .string()

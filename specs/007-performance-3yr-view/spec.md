@@ -1,6 +1,6 @@
 # Feature Specification: Performance Page 3-Year View & YoY Growth
 
-**Feature Branch**: `001-performance-3yr-view`
+**Feature Branch**: `007-performance-3yr-view`
 **Created**: 2026-01-26
 **Status**: Draft
 **Input**: User description: "Enhance the performance page to include 3yr view. Also i'd like to include compound growth rate year to year."
