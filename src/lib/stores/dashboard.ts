@@ -16,6 +16,7 @@ import {
   LayoutMode,
   GridColumns,
   WidgetSpan,
+  WidgetRowSpan,
   DEFAULT_DASHBOARD_CONFIG,
 } from '@/types/dashboard';
 import { dashboardConfigService } from '@/lib/services/dashboard-config';
@@ -33,6 +34,8 @@ interface DashboardState {
   setLayoutMode: (mode: LayoutMode) => Promise<void>;
   setGridColumns: (columns: GridColumns) => Promise<void>;
   setWidgetSpan: (widgetId: WidgetId, span: WidgetSpan) => Promise<void>;
+  setDensePacking: (enabled: boolean) => Promise<void>;
+  setWidgetRowSpan: (widgetId: WidgetId, rowSpan: WidgetRowSpan) => Promise<void>;
   resetToDefault: () => Promise<void>;
   clearError: () => void;
 }
@@ -168,6 +171,38 @@ export const useDashboardStore = create<DashboardState>()(
           updatedSpans,
           () => dashboardConfigService.setWidgetSpan(widgetId, span),
           'Failed to update widget span'
+        );
+      },
+
+      setDensePacking: async (enabled) => {
+        await optimisticUpdate(
+          get,
+          set,
+          'densePacking',
+          enabled,
+          () => dashboardConfigService.setDensePacking(enabled),
+          'Failed to update dense packing setting'
+        );
+      },
+
+      setWidgetRowSpan: async (widgetId, rowSpan) => {
+        const { config } = get();
+        if (!config) return;
+
+        // Validate rowSpan is 1, 2, or 3
+        if (![1, 2, 3].includes(rowSpan)) {
+          set({ error: 'Row span must be 1, 2, or 3' });
+          return;
+        }
+
+        const updatedRowSpans = { ...config.widgetRowSpans, [widgetId]: rowSpan };
+        await optimisticUpdate(
+          get,
+          set,
+          'widgetRowSpans',
+          updatedRowSpans,
+          () => dashboardConfigService.setWidgetRowSpan(widgetId, rowSpan),
+          'Failed to update widget row span'
         );
       },
 
