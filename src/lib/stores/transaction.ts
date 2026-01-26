@@ -12,6 +12,7 @@ import { generateTransactionId } from '@/types/storage';
 import { transactionQueries, HoldingsCalculator } from '@/lib/db';
 import { showSuccessNotification, showErrorNotification } from './ui';
 import { handleSnapshotTrigger } from '@/lib/services/snapshot-service';
+import type { TransactionImportError } from '@/lib/db/converters';
 
 // Optimistic ID prefix to identify temporary IDs
 const OPTIMISTIC_ID_PREFIX = 'optimistic-';
@@ -241,7 +242,9 @@ export const useTransactionStore = create<TransactionState>()(
             type: 'TRANSACTION_ADDED',
             portfolioId: transactionData.portfolioId,
             date: new Date(transactionData.date),
-          }).catch((err) => console.error('Failed to update performance snapshots:', err));
+          }).catch((err) =>
+            console.error('Failed to update performance snapshots:', err)
+          );
 
           showSuccessNotification(
             'Transaction Added',
@@ -347,7 +350,9 @@ export const useTransactionStore = create<TransactionState>()(
               portfolioId: updatedTransaction.portfolioId,
               oldDate: new Date(originalTransaction.date),
               newDate: new Date(updatedTransaction.date),
-            }).catch((err) => console.error('Failed to update performance snapshots:', err));
+            }).catch((err) =>
+              console.error('Failed to update performance snapshots:', err)
+            );
           }
 
           set({ loading: false });
@@ -399,7 +404,9 @@ export const useTransactionStore = create<TransactionState>()(
             type: 'TRANSACTION_DELETED',
             portfolioId: deletedTransaction.portfolioId,
             date: new Date(deletedTransaction.date),
-          }).catch((err) => console.error('Failed to update performance snapshots:', err));
+          }).catch((err) =>
+            console.error('Failed to update performance snapshots:', err)
+          );
 
           showSuccessNotification(
             'Transaction Deleted',
@@ -436,7 +443,7 @@ export const useTransactionStore = create<TransactionState>()(
         set({ importing: true, error: null });
         try {
           const successfulTransactions: Transaction[] = [];
-          const errors: any[] = [];
+          const errors: TransactionImportError[] = [];
 
           // Process transactions one by one to catch individual errors
           for (let i = 0; i < transactionDataList.length; i++) {

@@ -20,12 +20,13 @@ import type {
   DuplicateMatch,
   DuplicateHandling,
 } from '@/types/csv-import';
-import type { Transaction, TransactionType } from '@/types/transaction';
+import type { Transaction } from '@/types/transaction';
 import type { TransactionStorage } from '@/types/storage';
 import { parseCsvFile, getPreviewData } from './csv-parser';
 import { detectColumnMappings } from './column-detector';
 import { validateRows } from './csv-validator';
 import { generateCsv } from './csv-parser';
+import { toAssetStorage, transactionToStorage } from '@/lib/db/converters';
 
 const CHUNK_SIZE = 100;
 
@@ -284,17 +285,16 @@ async function createTransactionFromRow(
   if (!asset) {
     // Create a basic asset record
     const assetId = uuidv4();
-    // TODO: Asset type defaulting - Currently defaults all new assets to 'stock'.
-    // This may be incorrect for ETFs, crypto, etc. Consider inferring type from
-    // symbol patterns (e.g., BTC-USD → crypto) or add post-import review step.
-    // See: Type mismatch with Dexie schema requiring 'as any' cast below.
-    await db.assets.add({
+    // Note: Currently defaults all new assets to 'stock'. Consider inferring type
+    // from symbol patterns (e.g., BTC-USD → crypto) or add post-import review step.
+    const assetStorage = toAssetStorage({
       id: assetId,
       symbol: parsed.symbol,
       name: parsed.symbol, // Use symbol as name initially
       type: 'stock', // Default to stock
       currency: 'USD', // Default to USD
-    } as any); // Type cast needed: Dexie schema expects additional fields not in storage interface
+    });
+    await db.assets.add(assetStorage);
     asset = await db.assets.get(assetId);
   }
 
@@ -320,10 +320,9 @@ async function createTransactionFromRow(
     importSource: importSessionId,
   };
 
-  // Type cast needed: Transaction interface includes computed fields (e.g., totalAmount)
-  // that may not exactly match Dexie's storage schema expectations.
-  // Plan: Define explicit TransactionStorage type to remove this cast.
-  await db.transactions.add(transaction as any);
+  // Convert domain type to storage format with serialized Decimal fields
+  const transactionStorage = transactionToStorage(transaction);
+  await db.transactions.add(transactionStorage);
 
   return transaction;
 }
