@@ -76,6 +76,7 @@ export function ExportButton({
           size="sm"
           disabled={disabled || !hasData || isExporting}
           className={className}
+          aria-label="Export performance data to CSV"
         >
           {isExporting ? (
             <>

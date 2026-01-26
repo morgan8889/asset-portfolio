@@ -46,6 +46,11 @@ export const SUPPORTED_BENCHMARKS: BenchmarkInfo[] = [
 ];
 
 const BENCHMARK_CACHE_KEY_PREFIX = 'benchmark_';
+
+/**
+ * Benchmark data cache duration (6 hours).
+ * Benchmarks are less volatile than individual stocks, so longer cache is acceptable.
+ */
 const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 // =============================================================================
@@ -80,7 +85,7 @@ async function fetchBenchmarkPrice(symbol: string): Promise<{
 }
 
 /**
- * Fetch historical benchmark data from the API.
+ * Fetch historical benchmark data from the Next.js API route.
  * Falls back to cached data if API fails.
  */
 async function fetchHistoricalBenchmarkData(
@@ -94,34 +99,29 @@ async function fetchHistoricalBenchmarkData(
     return cachedData;
   }
 
-  // Fetch from API (Yahoo Finance via proxy)
+  // Fetch from Next.js API route (proxies to Yahoo Finance with retry logic)
   try {
     const period1 = Math.floor(startDate.getTime() / 1000);
     const period2 = Math.floor(endDate.getTime() / 1000);
 
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?period1=${period1}&period2=${period2}&interval=1d`;
+    const url = `/api/benchmark/${encodeURIComponent(symbol)}?period1=${period1}&period2=${period2}`;
 
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; Portfolio-Tracker/1.0)',
-        'Accept': 'application/json',
-      },
-    });
+    const response = await fetch(url);
 
     if (!response.ok) {
-      console.warn(`Failed to fetch historical benchmark data for ${symbol}`);
+      console.warn(`Failed to fetch historical benchmark data for ${symbol}: ${response.status}`);
       return [];
     }
 
     const data = await response.json();
-    const result = data.chart?.result?.[0];
 
-    if (!result?.timestamp || !result?.indicators?.quote?.[0]?.close) {
+    if (!data.timestamps || !data.closes) {
+      console.warn(`Invalid benchmark data format for ${symbol}`);
       return [];
     }
 
-    const timestamps = result.timestamp as number[];
-    const closes = result.indicators.quote[0].close as (number | null)[];
+    const timestamps = data.timestamps as number[];
+    const closes = data.closes as (number | null)[];
 
     const dataPoints: BenchmarkDataPoint[] = [];
     let prevValue: number | null = null;
@@ -150,7 +150,8 @@ async function fetchHistoricalBenchmarkData(
     return dataPoints;
   } catch (error) {
     console.error(`Error fetching historical benchmark data for ${symbol}:`, error);
-    return [];
+    // Return cached data as fallback
+    return getCachedBenchmarkData(symbol, startDate, endDate);
   }
 }
 

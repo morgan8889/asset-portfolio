@@ -9,7 +9,7 @@
  * @module components/charts/performance-chart
  */
 
-import { useMemo, memo } from 'react';
+import { useMemo, memo, useCallback } from 'react';
 import {
   Area,
   AreaChart,

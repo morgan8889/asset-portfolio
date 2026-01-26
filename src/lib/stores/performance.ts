@@ -32,6 +32,16 @@ import {
 import { usePortfolioStore } from './portfolio';
 
 // =============================================================================
+// Constants
+// =============================================================================
+
+/**
+ * Number of trading days per year used for volatility annualization.
+ * Standard market convention is 252 trading days (365 days - weekends - holidays).
+ */
+const TRADING_DAYS_PER_YEAR = 252;
+
+// =============================================================================
 // Types
 // =============================================================================
 
@@ -80,8 +90,9 @@ function calculateVolatility(dailyReturns: number[]): number {
   ) / (dailyReturns.length - 1);
   const stdDev = Math.sqrt(variance);
 
-  // Annualize: multiply by sqrt(252 trading days)
-  return stdDev * Math.sqrt(252) * 100;
+  // Annualize: multiply by sqrt(TRADING_DAYS_PER_YEAR)
+  // Standard deviation scales with the square root of time
+  return stdDev * Math.sqrt(TRADING_DAYS_PER_YEAR) * 100;
 }
 
 // =============================================================================

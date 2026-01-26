@@ -49,6 +49,19 @@ interface ComputeSnapshotResult {
   hasInterpolatedPrices: boolean;
 }
 
+/**
+ * Progress callback for snapshot computation.
+ * Called periodically during long-running computations.
+ */
+export interface SnapshotProgressCallback {
+  (progress: {
+    current: number;
+    total: number;
+    percentage: number;
+    currentDate: Date;
+  }): void;
+}
+
 // =============================================================================
 // Helper Functions
 // =============================================================================
@@ -81,7 +94,8 @@ function calculateHoldingsAtDate(
       case 'sell':
       case 'transfer_out':
         holdings.set(tx.assetId, currentQty.minus(tx.quantity));
-        // Reduce cost basis proportionally (simplified FIFO)
+        // Reduce cost basis proportionally using average cost method
+        // Note: For accurate tax reporting, proper FIFO/LIFO tracking should be implemented
         if (!currentQty.isZero()) {
           const costPerShare = totalCost.div(currentQty);
           totalCost = totalCost.minus(costPerShare.mul(tx.quantity));
@@ -177,11 +191,13 @@ export async function getLatestSnapshot(
  * @param portfolioId Portfolio to compute snapshots for
  * @param fromDate Start computing from this date
  * @param toDate End date (defaults to today)
+ * @param onProgress Optional callback for progress updates (called every 10% or 50 snapshots)
  */
 export async function computeSnapshots(
   portfolioId: string,
   fromDate: Date,
-  toDate: Date = new Date()
+  toDate: Date = new Date(),
+  onProgress?: SnapshotProgressCallback
 ): Promise<void> {
   const normalizedFrom = startOfDay(fromDate);
   const normalizedTo = startOfDay(toDate);
@@ -234,6 +250,9 @@ export async function computeSnapshots(
   // Get cash flows for TWR calculation
   const cashFlows = getCashFlowEvents(transactions);
 
+  const totalDates = dates.length;
+  let processedCount = 0;
+
   for (let i = 0; i < dates.length; i++) {
     const date = dates[i];
     const { holdings, totalCost } = calculateHoldingsAtDate(transactions, date);
@@ -241,6 +260,24 @@ export async function computeSnapshots(
     if (holdings.size === 0) {
       // No holdings at this date - skip
       continue;
+    }
+
+    processedCount++;
+
+    // Report progress every 10% or every 50 snapshots (whichever is more frequent)
+    const shouldReportProgress = onProgress && (
+      processedCount % 50 === 0 ||
+      processedCount === totalDates ||
+      (totalDates >= 10 && processedCount % Math.ceil(totalDates / 10) === 0)
+    );
+
+    if (shouldReportProgress) {
+      onProgress({
+        current: processedCount,
+        total: totalDates,
+        percentage: Math.round((processedCount / totalDates) * 100),
+        currentDate: date,
+      });
     }
 
     const valueResult = await calculateValueAtDate(holdings, date, priceCache);
