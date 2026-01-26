@@ -270,6 +270,8 @@ npx playwright test tests/e2e/loading-state-regression.spec.ts --project=chromiu
 - IndexedDB via Dexie.js (privacy-first, browser-only) (004-grid-dense-packing)
 - TypeScript 5.3+ with Next.js 14.2 App Router + React 18, Zustand 4.5, Dexie.js 3.2, decimal.js, date-fns (005-live-market-data)
 - Browser IndexedDB via Dexie.js (userSettings table for preferences) (005-live-market-data)
+- TypeScript 5.3 with Next.js 14.2 (App Router) + Recharts 2.15, Dexie.js 3.2, decimal.js, date-fns, Zod, Zustand 4.5 (006-performance-analytics)
+- IndexedDB via Dexie.js (new `performanceSnapshots` table required) (006-performance-analytics)
 
 ## Recent Changes
 - 001-csv-transaction-import: Added papaparse for CSV parsing, date-parser utility, CSV import dialog and workflow

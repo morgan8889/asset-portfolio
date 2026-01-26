@@ -100,4 +100,5 @@ export type AssetType =
   | 'real_estate'
   | 'commodity'
   | 'cash'
+  | 'index'
   | 'other';

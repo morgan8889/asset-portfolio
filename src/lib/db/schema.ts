@@ -24,6 +24,12 @@ import {
 } from '@/types';
 
 import {
+  PerformanceSnapshot,
+  PerformanceSnapshotStorage,
+  PERFORMANCE_SNAPSHOT_DECIMAL_FIELDS,
+} from '@/types/performance';
+
+import {
   serializeDecimalFields,
   deserializeDecimalFields,
   HOLDING_DECIMAL_FIELDS,
@@ -54,11 +60,12 @@ export class PortfolioDatabase extends Dexie {
   priceSnapshots!: Table<PriceSnapshotStorage>;
   dividendRecords!: Table<DividendRecordStorage>;
   userSettings!: Table<UserSettings>;
+  performanceSnapshots!: Table<PerformanceSnapshotStorage>;
 
   constructor() {
     super('PortfolioTrackerDB');
 
-    // Define schema
+    // Define schema version 1
     this.version(1).stores({
       portfolios: '++id, name, type, createdAt, updatedAt',
       assets: '++id, symbol, name, type, exchange, currency',
@@ -73,6 +80,22 @@ export class PortfolioDatabase extends Dexie {
       userSettings: '++id, key',
     });
 
+    // Define schema version 2 - add performanceSnapshots table
+    this.version(2).stores({
+      portfolios: '++id, name, type, createdAt, updatedAt',
+      assets: '++id, symbol, name, type, exchange, currency',
+      holdings:
+        '++id, portfolioId, assetId, [portfolioId+assetId], lastUpdated',
+      transactions:
+        '++id, portfolioId, assetId, date, type, [portfolioId+date], [assetId+date], [portfolioId+assetId]',
+      priceHistory: '++id, assetId, date, [assetId+date], source',
+      priceSnapshots: '++id, assetId, timestamp, [assetId+timestamp], source',
+      dividendRecords:
+        '++id, assetId, portfolioId, paymentDate, [assetId+paymentDate]',
+      userSettings: '++id, key',
+      performanceSnapshots: '++id, portfolioId, date, [portfolioId+date]',
+    });
+
     // Add hooks for data transformation
     this.holdings.hook('creating', this.transformHolding);
     this.transactions.hook('creating', this.transformTransaction);
@@ -80,6 +103,7 @@ export class PortfolioDatabase extends Dexie {
     this.priceSnapshots.hook('creating', this.transformPriceSnapshot);
     this.dividendRecords.hook('creating', this.transformDividendRecord);
     this.assets.hook('creating', this.transformAsset);
+    this.performanceSnapshots.hook('creating', this.transformPerformanceSnapshot);
   }
 
   // Transform functions using generic serialization utility
@@ -178,6 +202,25 @@ export class PortfolioDatabase extends Dexie {
       const value = obj[field];
       if (value && !(value instanceof Date)) {
         (obj as DividendRecordStorage)[field] = new Date(value as unknown as string);
+      }
+    }
+  };
+
+  private transformPerformanceSnapshot = (
+    _primKey: unknown,
+    obj: PerformanceSnapshot | PerformanceSnapshotStorage,
+    _trans: unknown
+  ): void => {
+    // Serialize decimal fields
+    const serialized = serializeDecimalFields(obj, [...PERFORMANCE_SNAPSHOT_DECIMAL_FIELDS]);
+    Object.assign(obj, serialized);
+
+    // Ensure dates are Date objects
+    const dateFields = ['date', 'createdAt', 'updatedAt'] as const;
+    for (const field of dateFields) {
+      const value = obj[field];
+      if (value && !(value instanceof Date)) {
+        (obj as PerformanceSnapshotStorage)[field] = new Date(value as unknown as string);
       }
     }
   };
@@ -282,6 +325,26 @@ export class PortfolioDatabase extends Dexie {
     };
   }
 
+  convertPerformanceSnapshotDecimals(snapshot: PerformanceSnapshotStorage): PerformanceSnapshot {
+    const base = deserializeDecimalFields(snapshot, [...PERFORMANCE_SNAPSHOT_DECIMAL_FIELDS]);
+
+    return {
+      ...base,
+      id: snapshot.id,
+      portfolioId: snapshot.portfolioId,
+      date: snapshot.date instanceof Date ? snapshot.date : new Date(snapshot.date),
+      dayChangePercent: snapshot.dayChangePercent,
+      holdingCount: snapshot.holdingCount,
+      hasInterpolatedPrices: snapshot.hasInterpolatedPrices,
+      createdAt: snapshot.createdAt instanceof Date
+        ? snapshot.createdAt
+        : new Date(snapshot.createdAt),
+      updatedAt: snapshot.updatedAt instanceof Date
+        ? snapshot.updatedAt
+        : new Date(snapshot.updatedAt),
+    };
+  }
+
   // ==========================================================================
   // Helper Methods for Data Retrieval with Proper Decimal Conversion
   // ==========================================================================
@@ -380,6 +443,98 @@ export class PortfolioDatabase extends Dexie {
       .toArray();
 
     return records.map((r) => this.convertDividendRecordDecimals(r));
+  }
+
+  // ==========================================================================
+  // Performance Snapshot Helper Methods
+  // ==========================================================================
+
+  async getPerformanceSnapshotsByPortfolio(
+    portfolioId: string,
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<PerformanceSnapshot[]> {
+    const snapshots = await this.performanceSnapshots
+      .where('portfolioId')
+      .equals(portfolioId)
+      .toArray();
+
+    // Filter by date range if provided
+    let filtered = snapshots;
+    if (startDate) {
+      filtered = filtered.filter((s) => new Date(s.date) >= startDate);
+    }
+    if (endDate) {
+      filtered = filtered.filter((s) => new Date(s.date) <= endDate);
+    }
+
+    // Sort by date
+    filtered.sort((a, b) =>
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    return filtered.map((s) => this.convertPerformanceSnapshotDecimals(s));
+  }
+
+  async getLatestPerformanceSnapshot(portfolioId: string): Promise<PerformanceSnapshot | null> {
+    const snapshots = await this.performanceSnapshots
+      .where('portfolioId')
+      .equals(portfolioId)
+      .toArray();
+
+    if (snapshots.length === 0) return null;
+
+    // Sort by date descending and get the first
+    const latestSnapshot = snapshots.sort((a, b) =>
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    )[0];
+
+    return this.convertPerformanceSnapshotDecimals(latestSnapshot);
+  }
+
+  async upsertPerformanceSnapshot(snapshot: PerformanceSnapshotStorage): Promise<void> {
+    // Find existing snapshot by portfolioId + date
+    const existing = await this.performanceSnapshots
+      .where('[portfolioId+date]')
+      .equals([snapshot.portfolioId, snapshot.date])
+      .first();
+
+    if (existing) {
+      // Update existing
+      await this.performanceSnapshots.update(existing.id, {
+        ...snapshot,
+        id: existing.id,
+        updatedAt: new Date(),
+      });
+    } else {
+      // Add new
+      await this.performanceSnapshots.add({
+        ...snapshot,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+  }
+
+  async deletePerformanceSnapshotsByPortfolio(portfolioId: string): Promise<number> {
+    return this.performanceSnapshots
+      .where('portfolioId')
+      .equals(portfolioId)
+      .delete();
+  }
+
+  async deletePerformanceSnapshotsFromDate(portfolioId: string, fromDate: Date): Promise<number> {
+    const snapshots = await this.performanceSnapshots
+      .where('portfolioId')
+      .equals(portfolioId)
+      .toArray();
+
+    const toDelete = snapshots.filter(
+      (s) => new Date(s.date) >= fromDate
+    );
+
+    await this.performanceSnapshots.bulkDelete(toDelete.map((s) => s.id));
+    return toDelete.length;
   }
 }
 
