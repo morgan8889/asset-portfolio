@@ -79,7 +79,10 @@ interface CategoryRowProps {
   currency: string;
 }
 
-function CategoryRow({ allocation, currency }: CategoryRowProps) {
+const CategoryRow = memo(function CategoryRow({
+  allocation,
+  currency,
+}: CategoryRowProps) {
   const color =
     allocation.color ||
     CATEGORY_COLORS[allocation.category] ||
@@ -117,7 +120,7 @@ function CategoryRow({ allocation, currency }: CategoryRowProps) {
       </div>
     </div>
   );
-}
+});
 
 export const CategoryBreakdownWidget = memo(function CategoryBreakdownWidget({
   allocations,
