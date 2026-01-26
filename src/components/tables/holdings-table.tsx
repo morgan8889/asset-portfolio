@@ -14,9 +14,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, TrendingUp, TrendingDown, MoreHorizontal, DollarSign } from 'lucide-react';
-import { usePortfolioStore } from '@/lib/stores';
+import { usePortfolioStore, usePriceStore } from '@/lib/stores';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
-import { Holding } from '@/types';
+import { PriceDisplay } from '@/components/dashboard/price-display';
+import { Holding, LivePriceData, Exchange } from '@/types';
+import { getExchangeBadgeColor } from '@/lib/services/asset-search';
+import { isUKSymbol } from '@/lib/utils/market-utils';
 
 interface HoldingDisplayData {
   id: string;
@@ -29,6 +32,7 @@ interface HoldingDisplayData {
   gainLoss: number;
   gainLossPercent: number;
   type: string;
+  exchange?: string;
 }
 
 const HoldingsTableComponent = () => {
@@ -45,32 +49,53 @@ const HoldingsTableComponent = () => {
     clearError
   } = usePortfolioStore();
 
+  // Get live prices from the price store
+  const { prices: livePrices, loading: priceLoading, preferences } = usePriceStore();
+
   // Holdings are loaded by useDashboardData hook - no need to load here
+
+  // Get live price for a symbol
+  const getLivePrice = useCallback((symbol: string): LivePriceData | undefined => {
+    return livePrices.get(symbol.toUpperCase());
+  }, [livePrices]);
 
   // Transform real holdings data for display
   const displayHoldings = useMemo((): HoldingDisplayData[] => {
     return holdings.map((holding) => {
       const asset = assets.find((a) => a.id === holding.assetId);
-      const currentValue = parseFloat(holding.currentValue.toString());
+      const symbol = asset?.symbol || holding.assetId;
+
+      // Try to get live price from price store
+      const livePrice = getLivePrice(symbol);
+      const livePriceValue = livePrice ? parseFloat(livePrice.displayPrice) : undefined;
+
       const costBasis = parseFloat(holding.costBasis.toString());
-      const gainLoss = parseFloat(holding.unrealizedGain.toString());
       const quantity = parseFloat(holding.quantity.toString());
-      const currentPrice = quantity > 0 ? currentValue / quantity : 0;
+
+      // Use live price if available, otherwise fall back to stored price
+      const currentPrice = livePriceValue !== undefined
+        ? livePriceValue
+        : (quantity > 0 ? parseFloat(holding.currentValue.toString()) / quantity : 0);
+
+      const currentValue = quantity * currentPrice;
+      const gainLoss = currentValue - costBasis;
+      const gainLossPercent = costBasis > 0 ? ((gainLoss / costBasis) * 100) : 0;
 
       return {
         id: holding.id,
-        symbol: asset?.symbol || holding.assetId,
+        symbol,
         name: asset?.name || 'Unknown Asset',
         quantity,
         currentPrice,
         currentValue,
         costBasis,
         gainLoss,
-        gainLossPercent: holding.unrealizedGainPercent,
+        gainLossPercent,
         type: asset?.type || 'other',
+        exchange: asset?.exchange || livePrice?.exchange,
       };
     });
-  }, [holdings, assets]);
+  }, [holdings, assets, getLivePrice]);
 
   const filteredAndSortedHoldings = useMemo(() => {
     let filtered = displayHoldings.filter(
@@ -80,8 +105,8 @@ const HoldingsTableComponent = () => {
     );
 
     filtered.sort((a, b) => {
-      const aValue = a[sortField];
-      const bValue = b[sortField];
+      const aValue = a[sortField] ?? '';
+      const bValue = b[sortField] ?? '';
 
       if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
@@ -308,6 +333,24 @@ const HoldingsTableComponent = () => {
                         <Badge className={getTypeColor(holding.type)} variant="secondary">
                           {holding.type.toUpperCase()}
                         </Badge>
+                        {/* Show exchange badge for UK stocks */}
+                        {holding.exchange && holding.exchange !== 'UNKNOWN' && (
+                          <Badge
+                            className={getExchangeBadgeColor(holding.exchange as Exchange)}
+                            variant="outline"
+                          >
+                            {holding.exchange}
+                          </Badge>
+                        )}
+                        {/* Detect UK symbol if exchange not set */}
+                        {!holding.exchange && isUKSymbol(holding.symbol) && (
+                          <Badge
+                            className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                            variant="outline"
+                          >
+                            LSE
+                          </Badge>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -318,8 +361,25 @@ const HoldingsTableComponent = () => {
                     <TableCell className="text-right font-mono">
                       {holding.quantity.toFixed(holding.type === 'crypto' ? 4 : 0)}
                     </TableCell>
-                    <TableCell className="text-right font-mono">
-                      {formatCurrency(holding.currentPrice)}
+                    <TableCell className="text-right">
+                      {(() => {
+                        const livePrice = getLivePrice(holding.symbol);
+                        if (livePrice) {
+                          return (
+                            <PriceDisplay
+                              priceData={livePrice}
+                              loading={priceLoading}
+                              showTimestamp={preferences.showStalenessIndicator}
+                              showStaleness={preferences.showStalenessIndicator}
+                              showChange={false}
+                              size="sm"
+                            />
+                          );
+                        }
+                        return (
+                          <span className="font-mono">{formatCurrency(holding.currentPrice)}</span>
+                        );
+                      })()}
                     </TableCell>
                     <TableCell className="text-right font-mono font-medium">
                       {formatCurrency(holding.currentValue)}

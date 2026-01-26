@@ -11,3 +11,4 @@ export {
 } from './ui';
 export { useCsvImportStore } from './csv-import';
 export { useDashboardStore } from './dashboard';
+export { usePriceStore } from './price';
