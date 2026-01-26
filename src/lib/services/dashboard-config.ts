@@ -11,15 +11,19 @@ import { settingsQueries } from '@/lib/db';
 import {
   DashboardConfiguration,
   DashboardConfigurationV1,
+  DashboardConfigurationV2,
   DashboardConfigurationSchema,
   DashboardConfigurationSchemaV1,
+  DashboardConfigurationSchemaV2,
   WidgetId,
   TimePeriod,
   LayoutMode,
   GridColumns,
   WidgetSpan,
+  WidgetRowSpan,
   DEFAULT_DASHBOARD_CONFIG,
   DEFAULT_WIDGET_SPANS,
+  DEFAULT_WIDGET_ROW_SPANS,
 } from '@/types/dashboard';
 
 const STORAGE_KEY = 'dashboard-config';
@@ -28,7 +32,7 @@ const STORAGE_KEY = 'dashboard-config';
  * Migrate a v1 configuration to v2.
  * Adds default layout settings while preserving existing config.
  */
-function migrateV1ToV2(v1Config: DashboardConfigurationV1): DashboardConfiguration {
+function migrateV1ToV2(v1Config: DashboardConfigurationV1): DashboardConfigurationV2 {
   return {
     ...v1Config,
     version: 2,
@@ -38,10 +42,23 @@ function migrateV1ToV2(v1Config: DashboardConfigurationV1): DashboardConfigurati
   };
 }
 
+/**
+ * Migrate a v2 configuration to v3.
+ * Adds dense packing settings while preserving existing config.
+ */
+function migrateV2ToV3(v2Config: DashboardConfigurationV2): DashboardConfiguration {
+  return {
+    ...v2Config,
+    version: 3,
+    densePacking: false,
+    widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
+  };
+}
+
 export const dashboardConfigService = {
   /**
    * Load the current dashboard configuration.
-   * Handles migration from v1 to v2 automatically.
+   * Handles migration from v1 → v2 → v3 automatically.
    * Returns default configuration if none exists or validation fails.
    */
   async getConfig(): Promise<DashboardConfiguration> {
@@ -51,24 +68,35 @@ export const dashboardConfigService = {
       return { ...DEFAULT_DASHBOARD_CONFIG };
     }
 
-    // Check if it's a valid v2 config
-    const v2Result = DashboardConfigurationSchema.safeParse(stored);
-    if (v2Result.success) {
-      return v2Result.data;
+    // Check if it's a valid v3 config
+    const v3Result = DashboardConfigurationSchema.safeParse(stored);
+    if (v3Result.success) {
+      return v3Result.data;
     }
 
-    // Try to migrate from v1
-    const v1Result = DashboardConfigurationSchemaV1.safeParse(stored);
-    if (v1Result.success) {
-      console.info('Migrating dashboard config from v1 to v2');
-      const migrated = migrateV1ToV2(v1Result.data);
+    // Try to migrate from v2
+    const v2Result = DashboardConfigurationSchemaV2.safeParse(stored);
+    if (v2Result.success) {
+      console.info('Migrating dashboard config from v2 to v3');
+      const migrated = migrateV2ToV3(v2Result.data);
       // Persist the migrated config
       await settingsQueries.set(STORAGE_KEY, migrated);
       return migrated;
     }
 
-    // Neither v1 nor v2 valid - use defaults
-    console.warn('Invalid dashboard config, using default:', v2Result.error);
+    // Try to migrate from v1
+    const v1Result = DashboardConfigurationSchemaV1.safeParse(stored);
+    if (v1Result.success) {
+      console.info('Migrating dashboard config from v1 to v3');
+      const v2Config = migrateV1ToV2(v1Result.data);
+      const migrated = migrateV2ToV3(v2Config);
+      // Persist the migrated config
+      await settingsQueries.set(STORAGE_KEY, migrated);
+      return migrated;
+    }
+
+    // Neither v1, v2, nor v3 valid - use defaults
+    console.warn('Invalid dashboard config, using default:', v3Result.error);
     return { ...DEFAULT_DASHBOARD_CONFIG };
   },
 
@@ -159,6 +187,26 @@ export const dashboardConfigService = {
   async setWidgetSpan(widgetId: WidgetId, span: WidgetSpan): Promise<void> {
     const config = await this.getConfig();
     config.widgetSpans = { ...config.widgetSpans, [widgetId]: span };
+    await this.saveConfig(config);
+  },
+
+  /**
+   * Enable or disable dense packing mode.
+   * Only affects display when layoutMode is 'grid'.
+   */
+  async setDensePacking(enabled: boolean): Promise<void> {
+    const config = await this.getConfig();
+    config.densePacking = enabled;
+    await this.saveConfig(config);
+  },
+
+  /**
+   * Update the row span for a specific widget.
+   * Only affects display when densePacking is enabled.
+   */
+  async setWidgetRowSpan(widgetId: WidgetId, rowSpan: WidgetRowSpan): Promise<void> {
+    const config = await this.getConfig();
+    config.widgetRowSpans = { ...config.widgetRowSpans, [widgetId]: rowSpan };
     await this.saveConfig(config);
   },
 };

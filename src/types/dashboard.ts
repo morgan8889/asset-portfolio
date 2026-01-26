@@ -35,6 +35,12 @@ export type GridColumns = 2 | 3 | 4;
  */
 export type WidgetSpan = 1 | 2;
 
+/**
+ * Widget row span (1 = normal, 2 = double, 3 = triple height).
+ * Used for dense packing layout calculations.
+ */
+export type WidgetRowSpan = 1 | 2 | 3;
+
 // =============================================================================
 // Widget Types
 // =============================================================================
@@ -133,10 +139,10 @@ export interface DashboardConfigurationV1 {
 
 /**
  * User's personalized dashboard configuration (Version 2).
- * Stored in IndexedDB userSettings table with key 'dashboard-config'.
+ * Used for migration from older configurations.
  */
-export interface DashboardConfiguration {
-  /** Schema version for migrations (current: 2) */
+export interface DashboardConfigurationV2 {
+  /** Schema version for migrations */
   readonly version: 2;
 
   /** Ordered array of widget IDs determining display order */
@@ -162,6 +168,45 @@ export interface DashboardConfiguration {
 
   /** Per-widget column span overrides (1 or 2 columns) */
   widgetSpans: Partial<Record<WidgetId, WidgetSpan>>;
+}
+
+/**
+ * User's personalized dashboard configuration (Version 3).
+ * Stored in IndexedDB userSettings table with key 'dashboard-config'.
+ */
+export interface DashboardConfiguration {
+  /** Schema version for migrations (current: 3) */
+  readonly version: 3;
+
+  /** Ordered array of widget IDs determining display order */
+  widgetOrder: WidgetId[];
+
+  /** Visibility state for each widget */
+  widgetVisibility: Record<WidgetId, boolean>;
+
+  /** Default time period for gain/loss calculations */
+  timePeriod: TimePeriod;
+
+  /** Number of holdings to show in top/bottom performers (1-10) */
+  performerCount: number;
+
+  /** ISO 8601 timestamp of last configuration update */
+  lastUpdated: string;
+
+  /** Layout mode: 'grid' for multi-column, 'stacking' for single column */
+  layoutMode: LayoutMode;
+
+  /** Number of columns in grid mode (2, 3, or 4) */
+  gridColumns: GridColumns;
+
+  /** Per-widget column span overrides (1 or 2 columns) */
+  widgetSpans: Partial<Record<WidgetId, WidgetSpan>>;
+
+  /** Whether dense packing mode is enabled */
+  densePacking: boolean;
+
+  /** Per-widget row span overrides (1, 2, or 3 rows) */
+  widgetRowSpans: Partial<Record<WidgetId, WidgetRowSpan>>;
 }
 
 // =============================================================================
@@ -276,6 +321,14 @@ export const WidgetSpanSchema = z.union([z.literal(1), z.literal(2)]);
 
 export const WidgetSpansSchema = z.record(WidgetIdSchema, WidgetSpanSchema);
 
+export const WidgetRowSpanSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+]);
+
+export const WidgetRowSpansSchema = z.record(WidgetIdSchema, WidgetRowSpanSchema);
+
 /**
  * Version 1 schema for migration validation.
  */
@@ -308,8 +361,9 @@ export const DashboardConfigurationSchemaV1 = z.object({
 
 /**
  * Version 2 schema with layout configuration.
+ * Used for migration from v2 to v3.
  */
-export const DashboardConfigurationSchema = z.object({
+export const DashboardConfigurationSchemaV2 = z.object({
   version: z.literal(2),
   widgetOrder: z
     .array(WidgetIdSchema)
@@ -337,6 +391,41 @@ export const DashboardConfigurationSchema = z.object({
   layoutMode: LayoutModeSchema,
   gridColumns: GridColumnsSchema,
   widgetSpans: z.record(WidgetIdSchema, WidgetSpanSchema).optional().default({}),
+});
+
+/**
+ * Version 3 schema with dense packing configuration.
+ */
+export const DashboardConfigurationSchema = z.object({
+  version: z.literal(3),
+  widgetOrder: z
+    .array(WidgetIdSchema)
+    .min(1, 'At least one widget must be in the order')
+    .refine((arr) => new Set(arr).size === arr.length, {
+      message: 'Widget order must not contain duplicates',
+    }),
+  widgetVisibility: z.object({
+    'total-value': z.boolean(),
+    'gain-loss': z.boolean(),
+    'day-change': z.boolean(),
+    'category-breakdown': z.boolean(),
+    'growth-chart': z.boolean(),
+    'top-performers': z.boolean(),
+    'biggest-losers': z.boolean(),
+    'recent-activity': z.boolean(),
+  }),
+  timePeriod: TimePeriodSchema,
+  performerCount: z
+    .number()
+    .int('Performer count must be an integer')
+    .min(1, 'Must show at least 1 performer')
+    .max(10, 'Cannot show more than 10 performers'),
+  lastUpdated: z.string().datetime('Must be a valid ISO 8601 datetime'),
+  layoutMode: LayoutModeSchema,
+  gridColumns: GridColumnsSchema,
+  widgetSpans: z.record(WidgetIdSchema, WidgetSpanSchema).optional().default({}),
+  densePacking: z.boolean(),
+  widgetRowSpans: z.record(WidgetIdSchema, WidgetRowSpanSchema).optional().default({}),
 });
 
 // =============================================================================
@@ -466,8 +555,21 @@ export const DEFAULT_WIDGET_SPANS: Partial<Record<WidgetId, WidgetSpan>> = {
   'recent-activity': 2,
 };
 
+/**
+ * Default row spans based on widget type:
+ * - Charts: 2 rows (larger, needs vertical space)
+ * - Tables: 2 rows (needs space for data rows)
+ * - Metrics cards: 1 row (compact, implicit default)
+ */
+export const DEFAULT_WIDGET_ROW_SPANS: Partial<Record<WidgetId, WidgetRowSpan>> = {
+  'growth-chart': 2,
+  'recent-activity': 2,
+  'category-breakdown': 2,
+  // Metrics widgets default to 1 (not explicitly set)
+};
+
 export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
-  version: 2,
+  version: 3,
   widgetOrder: [
     'total-value',
     'gain-loss',
@@ -494,4 +596,6 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
   layoutMode: 'grid',
   gridColumns: 4,
   widgetSpans: { ...DEFAULT_WIDGET_SPANS },
+  densePacking: false,
+  widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
 };

@@ -266,6 +266,8 @@ npx playwright test tests/e2e/loading-state-regression.spec.ts --project=chromiu
 - Browser IndexedDB via Dexie.js 3.2 (privacy-first, local-only)
 - TypeScript 5.3+ with Next.js 14.2 (App Router) + @dnd-kit/core 6.3+, @dnd-kit/sortable 10.0+, Zustand 4.5+, Zod (003-dashboard-stacking-layout)
 - IndexedDB via Dexie.js (userSettings table) (003-dashboard-stacking-layout)
+- TypeScript 5.3 (strict mode) + Next.js 14.2, React 18, Tailwind CSS, dnd-kit, Zustand 4.5 (004-grid-dense-packing)
+- IndexedDB via Dexie.js (privacy-first, browser-only) (004-grid-dense-packing)
 - TypeScript 5.3+ with Next.js 14.2 App Router + React 18, Zustand 4.5, Dexie.js 3.2, decimal.js, date-fns (005-live-market-data)
 - Browser IndexedDB via Dexie.js (userSettings table for preferences) (005-live-market-data)
 - TypeScript 5.3 with Next.js 14.2 (App Router) + Recharts 2.15, Dexie.js 3.2, decimal.js, date-fns, Zod, Zustand 4.5 (006-performance-analytics)
