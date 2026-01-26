@@ -609,7 +609,7 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
   layoutMode: 'grid',
   gridColumns: 4,
   widgetSpans: { ...DEFAULT_WIDGET_SPANS },
-  densePacking: false,
+  densePacking: true,
   widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
 };
 

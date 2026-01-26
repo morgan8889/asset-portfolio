@@ -50,7 +50,7 @@ function migrateV2ToV3(v2Config: DashboardConfigurationV2): DashboardConfigurati
   return {
     ...v2Config,
     version: 3,
-    densePacking: false,
+    densePacking: true,
     widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
   };
 }
