@@ -283,16 +283,49 @@ async function createTransactionFromRow(
   let asset = await db.assets.where('symbol').equals(parsed.symbol).first();
 
   if (!asset) {
-    // Create a basic asset record
+    // Create a basic asset record with inferred type and currency
     const assetId = uuidv4();
-    // Note: Currently defaults all new assets to 'stock'. Consider inferring type
-    // from symbol patterns (e.g., BTC-USD → crypto) or add post-import review step.
+
+    // Infer asset type from symbol patterns
+    const symbol = parsed.symbol.toUpperCase();
+    let inferredType: 'stock' | 'etf' | 'crypto' | 'bond' | 'commodity' = 'stock';
+
+    // Crypto detection: symbols with -USD, -USDT, BTC, ETH, etc.
+    if (
+      symbol.includes('-USD') ||
+      symbol.includes('-USDT') ||
+      symbol.includes('-BUSD') ||
+      /^(BTC|ETH|ADA|SOL|DOGE|XRP|DOT|AVAX|MATIC|LINK)/.test(symbol)
+    ) {
+      inferredType = 'crypto';
+    }
+
+    // Infer currency from symbol and exchange
+    let inferredCurrency = 'USD';
+
+    // UK market detection: symbols ending in .L (London Stock Exchange)
+    if (symbol.endsWith('.L')) {
+      inferredCurrency = 'GBP';
+    }
+    // European markets
+    else if (symbol.endsWith('.PA') || symbol.endsWith('.DE')) {
+      inferredCurrency = 'EUR';
+    }
+    // Canadian markets
+    else if (symbol.endsWith('.TO') || symbol.endsWith('.V')) {
+      inferredCurrency = 'CAD';
+    }
+    // Australian markets
+    else if (symbol.endsWith('.AX')) {
+      inferredCurrency = 'AUD';
+    }
+
     const assetStorage = toAssetStorage({
       id: assetId,
       symbol: parsed.symbol,
       name: parsed.symbol, // Use symbol as name initially
-      type: 'stock', // Default to stock
-      currency: 'USD', // Default to USD
+      type: inferredType,
+      currency: inferredCurrency,
     });
     await db.assets.add(assetStorage);
     asset = await db.assets.get(assetId);
