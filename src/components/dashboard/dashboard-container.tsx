@@ -9,7 +9,9 @@
 import { useEffect, useMemo, useCallback, memo, useState } from 'react';
 import {
   DndContext,
-  closestCenter,
+    DndContext,
+  closestCorners,
+  DragEndEvent,,
   DragEndEvent,
   PointerSensor,
   KeyboardSensor,
@@ -389,7 +391,7 @@ const DashboardContainerComponent = ({
 
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={closestCorners}
         onDragEnd={handleDragEnd}
       >
         <SortableContext
