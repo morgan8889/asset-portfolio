@@ -22,8 +22,8 @@ describe('Staleness Utilities', () => {
       const now = new Date('2026-01-25T12:00:00Z');
       vi.setSystemTime(now);
 
-      // Data updated 2 minutes ago, standard interval is 5 minutes
-      const lastUpdate = new Date('2026-01-25T11:58:00Z');
+      // Data updated 30 seconds ago, standard interval is 60 seconds
+      const lastUpdate = new Date(now.getTime() - 30 * 1000);
       expect(calculateStaleness(lastUpdate, 'standard')).toBe('fresh');
     });
 
@@ -31,9 +31,9 @@ describe('Staleness Utilities', () => {
       const now = new Date('2026-01-25T12:00:00Z');
       vi.setSystemTime(now);
 
-      // Data updated 7 minutes ago, standard interval is 5 minutes
-      // 7 min > 5 min, but 7 min < 10 min (2x)
-      const lastUpdate = new Date('2026-01-25T11:53:00Z');
+      // Data updated 90 seconds ago, standard interval is 60 seconds
+      // 90s > 60s, but 90s < 120s (2x)
+      const lastUpdate = new Date(now.getTime() - 90 * 1000);
       expect(calculateStaleness(lastUpdate, 'standard')).toBe('aging');
     });
 
@@ -41,9 +41,9 @@ describe('Staleness Utilities', () => {
       const now = new Date('2026-01-25T12:00:00Z');
       vi.setSystemTime(now);
 
-      // Data updated 15 minutes ago, standard interval is 5 minutes
-      // 15 min > 10 min (2x)
-      const lastUpdate = new Date('2026-01-25T11:45:00Z');
+      // Data updated 3 minutes ago, standard interval is 60 seconds
+      // 180s > 120s (2x)
+      const lastUpdate = new Date(now.getTime() - 180 * 1000);
       expect(calculateStaleness(lastUpdate, 'standard')).toBe('stale');
     });
 
@@ -56,37 +56,37 @@ describe('Staleness Utilities', () => {
       expect(calculateStaleness(lastUpdate, 'manual')).toBe('fresh');
     });
 
-    it('should handle realtime interval (30 seconds)', () => {
+    it('should handle realtime interval (15 seconds)', () => {
       const now = new Date('2026-01-25T12:00:00Z');
       vi.setSystemTime(now);
 
-      // Data 20 seconds old - should be fresh
-      const freshUpdate = new Date(now.getTime() - 20 * 1000);
+      // Data 10 seconds old - should be fresh (< 15s)
+      const freshUpdate = new Date(now.getTime() - 10 * 1000);
       expect(calculateStaleness(freshUpdate, 'realtime')).toBe('fresh');
 
-      // Data 45 seconds old - should be aging (between 30s and 60s)
-      const agingUpdate = new Date(now.getTime() - 45 * 1000);
+      // Data 20 seconds old - should be aging (between 15s and 30s)
+      const agingUpdate = new Date(now.getTime() - 20 * 1000);
       expect(calculateStaleness(agingUpdate, 'realtime')).toBe('aging');
 
-      // Data 90 seconds old - should be stale (> 60s)
-      const staleUpdate = new Date(now.getTime() - 90 * 1000);
+      // Data 45 seconds old - should be stale (> 30s)
+      const staleUpdate = new Date(now.getTime() - 45 * 1000);
       expect(calculateStaleness(staleUpdate, 'realtime')).toBe('stale');
     });
 
-    it('should handle frequent interval (1 minute)', () => {
+    it('should handle frequent interval (30 seconds)', () => {
       const now = new Date('2026-01-25T12:00:00Z');
       vi.setSystemTime(now);
 
-      // Data 30 seconds old - should be fresh
-      const freshUpdate = new Date(now.getTime() - 30 * 1000);
+      // Data 15 seconds old - should be fresh (< 30s)
+      const freshUpdate = new Date(now.getTime() - 15 * 1000);
       expect(calculateStaleness(freshUpdate, 'frequent')).toBe('fresh');
 
-      // Data 90 seconds old - should be aging (between 60s and 120s)
-      const agingUpdate = new Date(now.getTime() - 90 * 1000);
+      // Data 45 seconds old - should be aging (between 30s and 60s)
+      const agingUpdate = new Date(now.getTime() - 45 * 1000);
       expect(calculateStaleness(agingUpdate, 'frequent')).toBe('aging');
 
-      // Data 3 minutes old - should be stale (> 120s)
-      const staleUpdate = new Date(now.getTime() - 180 * 1000);
+      // Data 90 seconds old - should be stale (> 60s)
+      const staleUpdate = new Date(now.getTime() - 90 * 1000);
       expect(calculateStaleness(staleUpdate, 'frequent')).toBe('stale');
     });
   });
@@ -179,7 +179,7 @@ describe('Staleness Utilities', () => {
       const now = new Date('2026-01-25T12:00:00Z');
       vi.setSystemTime(now);
 
-      const lastUpdate = new Date(now.getTime() - 2 * 60 * 1000); // 2 minutes ago
+      const lastUpdate = new Date(now.getTime() - 30 * 1000); // 30 seconds ago (< 60s standard)
       expect(shouldRefresh(lastUpdate, 'standard')).toBe(false);
     });
 
@@ -202,9 +202,9 @@ describe('Staleness Utilities', () => {
 
   describe('getStaleThreshold', () => {
     it('should return 2x the refresh interval', () => {
-      expect(getStaleThreshold('realtime')).toBe(60_000); // 2 * 30s = 60s
-      expect(getStaleThreshold('frequent')).toBe(120_000); // 2 * 60s = 120s
-      expect(getStaleThreshold('standard')).toBe(600_000); // 2 * 5min = 10min
+      expect(getStaleThreshold('realtime')).toBe(30_000); // 2 * 15s = 30s
+      expect(getStaleThreshold('frequent')).toBe(60_000); // 2 * 30s = 60s
+      expect(getStaleThreshold('standard')).toBe(120_000); // 2 * 60s = 120s
     });
 
     it('should return Infinity for manual mode', () => {

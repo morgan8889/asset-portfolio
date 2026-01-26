@@ -5,7 +5,7 @@ import { MetricsCards } from '../MetricsCards';
 import { DashboardProvider } from '../DashboardProvider';
 
 // Mock the stores
-const mockPortfolioStore = {
+const mockPortfolioStoreStateState = {
   currentPortfolio: {
     id: 'p1',
     name: 'Test Portfolio',
@@ -29,25 +29,44 @@ const mockPortfolioStore = {
   loading: false,
   error: null,
   loadPortfolios: vi.fn().mockResolvedValue(undefined),
+  loadHoldings: vi.fn().mockResolvedValue(undefined),
+  calculateMetrics: vi.fn(),
+  refreshData: vi.fn().mockResolvedValue(undefined),
   setCurrentPortfolio: vi.fn(),
 };
 
-const mockTransactionStore = {
+// Create a hook that also has getState
+const mockUsePortfolioStore = Object.assign(
+  () => mockPortfolioStoreStateState,
+  { getState: () => mockPortfolioStoreStateState }
+);
+
+const mockTransactionStoreState = {
   transactions: [],
   loading: false,
   loadTransactions: vi.fn().mockResolvedValue(undefined),
 };
 
-const mockAssetStore = {
+const mockUseTransactionStore = Object.assign(
+  () => mockTransactionStoreState,
+  { getState: () => mockTransactionStoreState }
+);
+
+const mockAssetStoreState = {
   assets: [],
   loading: false,
   loadAssets: vi.fn().mockResolvedValue(undefined),
 };
 
+const mockUseAssetStore = Object.assign(
+  () => mockAssetStoreState,
+  { getState: () => mockAssetStoreState }
+);
+
 vi.mock('@/lib/stores', () => ({
-  usePortfolioStore: () => mockPortfolioStore,
-  useTransactionStore: () => mockTransactionStore,
-  useAssetStore: () => mockAssetStore,
+  usePortfolioStore: mockUsePortfolioStore,
+  useTransactionStore: mockUseTransactionStore,
+  useAssetStore: mockUseAssetStore,
 }));
 
 describe('MetricsCards', () => {
@@ -118,7 +137,7 @@ describe('MetricsCards with negative values', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Override metrics for negative test (percentages as decimals)
-    mockPortfolioStore.metrics = {
+    mockPortfolioStoreState.metrics = {
       totalValue: new Decimal(80000),
       totalCost: new Decimal(100000),
       totalGain: new Decimal(-20000),
@@ -146,7 +165,7 @@ describe('MetricsCards with no metrics', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Override metrics to null (cast needed for test scenario)
-    mockPortfolioStore.metrics = null as unknown as typeof mockPortfolioStore.metrics;
+    mockPortfolioStoreState.metrics = null as unknown as typeof mockPortfolioStoreState.metrics;
   });
 
   it('should handle missing metrics gracefully', () => {
