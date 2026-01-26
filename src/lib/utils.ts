@@ -28,7 +28,7 @@ export function formatPercentage(
   decimals: number = 2,
   showSign: boolean = true
 ): string {
-  const formatted = (value * 100).toFixed(decimals);
+  const formatted = value.toFixed(decimals);
   const sign = showSign && value > 0 ? '+' : '';
   return `${sign}${formatted}%`;
 }

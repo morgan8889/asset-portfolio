@@ -77,7 +77,7 @@ const VARIANT_CONFIGS: Record<PerformanceVariant, VariantConfig> = {
     emptyMessage: 'No gainers in this period',
     valueColor: 'text-green-600',
     testId: 'top-performers-widget',
-    formatValue: (value) => `+${formatPercentage(value, 2)}`,
+    formatValue: (value) => formatPercentage(value, 2, true),
     fetchData: getTopPerformers,
     renderRankIcon: (rank) => {
       const medalColors: Record<number, string> = {
