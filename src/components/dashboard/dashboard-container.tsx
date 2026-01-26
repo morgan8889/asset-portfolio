@@ -25,7 +25,11 @@ import {
 import { Decimal } from 'decimal.js';
 import { PieChart } from 'lucide-react';
 
-import { useDashboardStore, usePortfolioStore, usePriceStore } from '@/lib/stores';
+import {
+  useDashboardStore,
+  usePortfolioStore,
+  usePriceStore,
+} from '@/lib/stores';
 import { useLivePriceMetrics, LiveHolding } from '@/hooks';
 import { WidgetId, WIDGET_DEFINITIONS, CategoryAllocation, LayoutMode, GridColumns, WidgetRowSpan, DEFAULT_WIDGET_ROW_SPANS } from '@/types/dashboard';
 import { Holding, Asset } from '@/types';
@@ -51,7 +55,7 @@ function DashboardSkeleton() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="h-32 bg-muted animate-pulse rounded-lg" />
+        <div key={i} className="h-32 animate-pulse rounded-lg bg-muted" />
       ))}
     </div>
   );
@@ -60,9 +64,9 @@ function DashboardSkeleton() {
 function EmptyDashboard() {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <PieChart className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
-      <h3 className="text-lg font-semibold mb-2">No Holdings Yet</h3>
-      <p className="text-muted-foreground max-w-md">
+      <PieChart className="mb-4 h-12 w-12 text-muted-foreground opacity-50" />
+      <h3 className="mb-2 text-lg font-semibold">No Holdings Yet</h3>
+      <p className="max-w-md text-muted-foreground">
         Add transactions to your portfolio to see your dashboard metrics.
       </p>
     </div>
@@ -80,7 +84,10 @@ function buildCategoryAllocations(
   if (holdings.length === 0) return [];
 
   const assetMap = new Map(assets.map((a) => [a.id, a]));
-  const categoryMap = new Map<string, { value: Decimal; count: number; label: string }>();
+  const categoryMap = new Map<
+    string,
+    { value: Decimal; count: number; label: string }
+  >();
 
   // Calculate totals by category
   let totalValue = new Decimal(0);
@@ -92,11 +99,12 @@ function buildCategoryAllocations(
     const current = categoryMap.get(category) || {
       value: new Decimal(0),
       count: 0,
-      label: formatCategoryLabel(category)
+      label: formatCategoryLabel(category),
     };
 
     // Use liveValue if available (LiveHolding), otherwise currentValue
-    const holdingValue = 'liveValue' in holding ? holding.liveValue : holding.currentValue;
+    const holdingValue =
+      'liveValue' in holding ? holding.liveValue : holding.currentValue;
     current.value = current.value.plus(holdingValue);
     current.count += 1;
     categoryMap.set(category, current);
@@ -137,7 +145,9 @@ function formatCategoryLabel(category: string): string {
     cash: 'Cash',
     other: 'Other',
   };
-  return labels[category] || category.charAt(0).toUpperCase() + category.slice(1);
+  return (
+    labels[category] || category.charAt(0).toUpperCase() + category.slice(1)
+  );
 }
 
 const MOBILE_BREAKPOINT = 768; // md breakpoint in Tailwind
@@ -153,10 +163,25 @@ const GRID_CLASSES: Record<GridColumns, string> = {
   4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
 };
 
-const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardContainerProps) => {
-  const { config, loading: configLoading, loadConfig, setWidgetOrder } = useDashboardStore();
-  const { metrics, holdings, assets, loading: portfolioLoading } = usePortfolioStore();
+const DashboardContainerComponent = ({
+  disableDragDrop = false,
+}: DashboardContainerProps) => {
+  const {
+    config,
+    loading: configLoading,
+    loadConfig,
+    setWidgetOrder,
+  } = useDashboardStore();
+  const {
+    metrics,
+    holdings,
+    assets,
+    loading: portfolioLoading,
+  } = usePortfolioStore();
   const { loading: priceLoading } = usePriceStore();
+  const setSymbolAssetMappings = usePriceStore(
+    (state) => state.setSymbolAssetMappings
+  );
 
   // Get live price metrics - recalculates when prices update
   const liveMetrics = useLivePriceMetrics(holdings || [], assets || []);
@@ -182,6 +207,18 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
     loadConfig();
   }, [loadConfig]);
 
+  // Set up symbol-to-assetId mappings for price snapshot persistence
+  // This enables the Growth Chart to access historical price data
+  useEffect(() => {
+    if (assets && assets.length > 0) {
+      const mappings: Record<string, string> = {};
+      assets.forEach((asset) => {
+        mappings[asset.symbol] = asset.id;
+      });
+      setSymbolAssetMappings(mappings);
+    }
+  }, [assets, setSymbolAssetMappings]);
+
   // Disable drag-drop on mobile or when explicitly disabled
   const isDragDropDisabled = disableDragDrop || isMobile;
 
@@ -190,38 +227,45 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id || !config) return;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id || !config) return;
 
-    const oldIndex = config.widgetOrder.indexOf(active.id as WidgetId);
-    const newIndex = config.widgetOrder.indexOf(over.id as WidgetId);
-    setWidgetOrder(arrayMove(config.widgetOrder, oldIndex, newIndex));
-  }, [config, setWidgetOrder]);
+      const oldIndex = config.widgetOrder.indexOf(active.id as WidgetId);
+      const newIndex = config.widgetOrder.indexOf(over.id as WidgetId);
+      setWidgetOrder(arrayMove(config.widgetOrder, oldIndex, newIndex));
+    },
+    [config, setWidgetOrder]
+  );
 
   // Use live holdings for category allocations when live prices are available
   const categoryAllocations = useMemo(
-    () => buildCategoryAllocations(
-      liveMetrics.hasLivePrices ? liveMetrics.liveHoldings : (holdings || []),
-      assets || []
-    ),
+    () =>
+      buildCategoryAllocations(
+        liveMetrics.hasLivePrices ? liveMetrics.liveHoldings : holdings || [],
+        assets || []
+      ),
     [holdings, assets, liveMetrics.hasLivePrices, liveMetrics.liveHoldings]
   );
 
   // Extract metrics with defaults - prefer live metrics when available
-  const derivedMetrics = useMemo(() => ({
-    totalValue: liveMetrics.hasLivePrices
-      ? liveMetrics.totalValue
-      : (metrics?.totalValue || new Decimal(0)),
-    totalGain: liveMetrics.hasLivePrices
-      ? liveMetrics.totalGain
-      : (metrics?.totalGain || new Decimal(0)),
-    totalGainPercent: liveMetrics.hasLivePrices
-      ? liveMetrics.totalGainPercent
-      : (metrics?.totalGainPercent || 0),
-    dayChange: liveMetrics.dayChange,
-    dayChangePercent: liveMetrics.dayChangePercent,
-  }), [metrics, liveMetrics]);
+  const derivedMetrics = useMemo(
+    () => ({
+      totalValue: liveMetrics.hasLivePrices
+        ? liveMetrics.totalValue
+        : metrics?.totalValue || new Decimal(0),
+      totalGain: liveMetrics.hasLivePrices
+        ? liveMetrics.totalGain
+        : metrics?.totalGain || new Decimal(0),
+      totalGainPercent: liveMetrics.hasLivePrices
+        ? liveMetrics.totalGainPercent
+        : metrics?.totalGainPercent || 0,
+      dayChange: liveMetrics.dayChange,
+      dayChangePercent: liveMetrics.dayChangePercent,
+    }),
+    [metrics, liveMetrics]
+  );
 
   // Compute effective layout mode (force stacking on mobile)
   const effectiveLayoutMode: LayoutMode = isMobile
@@ -258,49 +302,65 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
   }, [config?.widgetRowSpans, effectiveDensePacking, effectiveLayoutMode]);
 
   // renderWidget must be defined before early returns (React hooks rules)
-  const renderWidget = useCallback((widgetId: WidgetId) => {
-    switch (widgetId) {
-      case 'total-value':
-        return <TotalValueWidget value={derivedMetrics.totalValue} />;
-      case 'gain-loss':
-        return (
-          <GainLossWidget
-            gain={derivedMetrics.totalGain}
-            gainPercent={derivedMetrics.totalGainPercent}
-            period={config?.timePeriod || 'ALL'}
-          />
-        );
-      case 'day-change':
-        return <DayChangeWidget change={derivedMetrics.dayChange} changePercent={derivedMetrics.dayChangePercent} />;
-      case 'category-breakdown':
-        return <CategoryBreakdownWidget allocations={categoryAllocations} />;
-      case 'growth-chart':
-        return <GrowthChartWidget />;
-      case 'top-performers':
-        return (
-          <TopPerformersWidget
-            performers={liveMetrics.hasLivePrices ? liveMetrics.topPerformers : undefined}
-          />
-        );
-      case 'biggest-losers':
-        return (
-          <BiggestLosersWidget
-            losers={liveMetrics.hasLivePrices ? liveMetrics.biggestLosers : undefined}
-          />
-        );
-      case 'recent-activity':
-        return <RecentActivityWidget />;
-      default: {
-        // Exhaustive check - all widget types should be handled above
-        const _exhaustiveCheck: never = widgetId;
-        return (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            Unknown widget
-          </div>
-        );
+  const renderWidget = useCallback(
+    (widgetId: WidgetId) => {
+      switch (widgetId) {
+        case 'total-value':
+          return <TotalValueWidget value={derivedMetrics.totalValue} />;
+        case 'gain-loss':
+          return (
+            <GainLossWidget
+              gain={derivedMetrics.totalGain}
+              gainPercent={derivedMetrics.totalGainPercent}
+              period={config?.timePeriod || 'ALL'}
+            />
+          );
+        case 'day-change':
+          return (
+            <DayChangeWidget
+              change={derivedMetrics.dayChange}
+              changePercent={derivedMetrics.dayChangePercent}
+            />
+          );
+        case 'category-breakdown':
+          return <CategoryBreakdownWidget allocations={categoryAllocations} />;
+        case 'growth-chart':
+          return <GrowthChartWidget />;
+        case 'top-performers':
+          return (
+            <TopPerformersWidget
+              performers={
+                liveMetrics.hasLivePrices
+                  ? liveMetrics.topPerformers
+                  : undefined
+              }
+            />
+          );
+        case 'biggest-losers':
+          return (
+            <BiggestLosersWidget
+              losers={
+                liveMetrics.hasLivePrices
+                  ? liveMetrics.biggestLosers
+                  : undefined
+              }
+            />
+          );
+        case 'recent-activity':
+          return <RecentActivityWidget />;
+        default: {
+          // Exhaustive check - all widget types should be handled above
+          const _exhaustiveCheck: never = widgetId;
+          return (
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              Unknown widget
+            </div>
+          );
+        }
       }
-    }
-  }, [derivedMetrics, categoryAllocations, config?.timePeriod, liveMetrics]);
+    },
+    [derivedMetrics, categoryAllocations, config?.timePeriod, liveMetrics]
+  );
 
   // Early returns for loading/empty states (after all hooks)
   if (configLoading || portfolioLoading || !config) {
@@ -311,7 +371,9 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
     return <EmptyDashboard />;
   }
 
-  const visibleWidgets = config.widgetOrder.filter((id) => config.widgetVisibility[id]);
+  const visibleWidgets = config.widgetOrder.filter(
+    (id) => config.widgetVisibility[id]
+  );
 
   return (
     <div className="space-y-4">
@@ -319,8 +381,8 @@ const DashboardContainerComponent = ({ disableDragDrop = false }: DashboardConta
 
       {/* Loading indicator for price updates */}
       {priceLoading && (
-        <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-700 dark:text-blue-300">
-          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
           <span>Updating prices...</span>
         </div>
       )}

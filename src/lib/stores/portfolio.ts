@@ -54,7 +54,9 @@ export const usePortfolioStore = create<PortfolioState>()(
 
             // Verify persisted portfolio still exists, clear if not
             if (currentPortfolio) {
-              const stillExists = portfolios.some((p) => p.id === currentPortfolio.id);
+              const stillExists = portfolios.some(
+                (p) => p.id === currentPortfolio.id
+              );
               if (!stillExists) {
                 // Portfolio was deleted, clear the stale reference
                 set({ currentPortfolio: portfolios[0] || null });
@@ -64,7 +66,10 @@ export const usePortfolioStore = create<PortfolioState>()(
             set({ portfolios, loading: false });
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Failed to load portfolios',
+              error:
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to load portfolios',
               loading: false,
             });
           }
@@ -87,7 +92,10 @@ export const usePortfolioStore = create<PortfolioState>()(
             set({ loading: false });
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Failed to create portfolio',
+              error:
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to create portfolio',
               loading: false,
             });
           }
@@ -110,7 +118,10 @@ export const usePortfolioStore = create<PortfolioState>()(
             set({ loading: false });
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Failed to update portfolio',
+              error:
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to update portfolio',
               loading: false,
             });
           }
@@ -133,7 +144,10 @@ export const usePortfolioStore = create<PortfolioState>()(
             set({ loading: false });
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Failed to delete portfolio',
+              error:
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to delete portfolio',
               loading: false,
             });
           }
@@ -146,14 +160,26 @@ export const usePortfolioStore = create<PortfolioState>()(
             return;
           }
 
-          set({ loading: true, error: null, _loadingHoldingsForId: portfolioId });
+          set({
+            loading: true,
+            error: null,
+            _loadingHoldingsForId: portfolioId,
+          });
           try {
             const holdings = await holdingQueries.getByPortfolio(portfolioId);
             const assets = await assetQueries.getAll();
-            set({ holdings, assets, loading: false, _loadingHoldingsForId: null });
+            set({
+              holdings,
+              assets,
+              loading: false,
+              _loadingHoldingsForId: null,
+            });
           } catch (error) {
             set({
-              error: error instanceof Error ? error.message : 'Failed to load holdings',
+              error:
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to load holdings',
               loading: false,
               _loadingHoldingsForId: null,
             });
@@ -172,7 +198,9 @@ export const usePortfolioStore = create<PortfolioState>()(
           } catch (error) {
             set({
               error:
-                error instanceof Error ? error.message : 'Failed to calculate metrics',
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to calculate metrics',
             });
           }
         },
