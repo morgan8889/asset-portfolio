@@ -59,15 +59,12 @@ describe('Price Store', () => {
       watchedSymbols: new Set(),
       isOnline: true,
       pollingLock: false,
-      eventHandlers: {
-        visibilityHandler: null,
-        onlineHandler: null,
-        offlineHandler: null,
-      },
+      pollingService: null,
     });
 
-    // Clear all mocks
+    // Clear all mocks (call history) and reset implementations
     vi.clearAllMocks();
+    mockFetch.mockReset();
   });
 
   afterEach(() => {
@@ -113,7 +110,6 @@ describe('Price Store', () => {
 
       // Wait for microtask
       await new Promise<void>((resolve) => queueMicrotask(resolve));
-
 
       // Re-read state after mutation
       const state = usePriceStore.getState();
@@ -302,7 +298,6 @@ describe('Price Store', () => {
       const firstPoll = usePriceStore.getState().isPolling;
       usePriceStore.getState().startPolling();
 
-
       expect(firstPoll).toBe(true);
       expect(usePriceStore.getState().isPolling).toBe(true);
     });
@@ -371,15 +366,23 @@ describe('Price Store', () => {
     it('should resume polling when coming online', async () => {
       usePriceStore.getState().setWatchedSymbols(['AAPL']);
 
-      // Mock successful fetch
+      // Mock successful batch fetch (refreshAllPrices uses batch endpoint)
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          symbol: 'AAPL',
-          price: 150,
-          source: 'yahoo',
+          successful: [
+            {
+              symbol: 'AAPL',
+              price: 150,
+              source: 'yahoo',
+              timestamp: new Date().toISOString(),
+              metadata: { currency: 'USD', change: 1.5, changePercent: 1.0 },
+              cached: false,
+            },
+          ],
+          failed: [],
+          total: 1,
           timestamp: new Date().toISOString(),
-          metadata: { currency: 'USD', change: 1.5, changePercent: 1.0 },
         }),
       });
 
@@ -426,7 +429,6 @@ describe('Price Store', () => {
       const store = usePriceStore.getState();
 
       mockFetch.mockRejectedValueOnce(new Error('API error'));
-
 
       await usePriceStore.getState().refreshPrice('AAPL');
 
@@ -642,7 +644,6 @@ describe('Price Store', () => {
       const state = usePriceStore.getState();
       // Should still have cached data
       expect(state.getPrice('AAPL')).toBeDefined();
-
     });
   });
 });
