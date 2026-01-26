@@ -17,8 +17,9 @@ export function sanitizeInput(input: string): string {
 
 // Symbol validation (stocks, ETFs, crypto)
 export function validateSymbol(symbol: string): boolean {
-  // Symbol should be 1-10 characters, alphanumeric only
-  const symbolRegex = /^[A-Z0-9]{1,10}$/;
+  // Symbol should be 1-10 characters, alphanumeric
+  // Also allows .L suffix for UK market symbols (e.g., VOD.L, HSBA.L)
+  const symbolRegex = /^[A-Z0-9]{1,10}(\.[A-Z])?$/;
   return symbolRegex.test(symbol);
 }
 
