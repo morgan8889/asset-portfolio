@@ -40,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { generateRGLLayoutsFromConfig } from '@/lib/services/dashboard-config';
 
 interface DashboardSettingsProps {
   trigger?: React.ReactNode;
@@ -57,7 +58,8 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     setWidgetSpan,
     setDensePacking,
     setWidgetRowSpan,
-toggleUseReactGridLayout,
+    setRGLLayouts,
+    toggleUseReactGridLayout,
     setCategoryBreakdownPieChart,
     resetToDefault,
   } = useDashboardStore();
@@ -123,33 +125,80 @@ toggleUseReactGridLayout,
 
   const handleGridColumnsChange = useCallback(
     async (columns: string) => {
-      await setGridColumns(Number(columns) as GridColumns);
+      const newColumns = Number(columns) as GridColumns;
+      await setGridColumns(newColumns);
+
+      // Regenerate RGL layouts to fit new column count
+      // Note: This results in two IndexedDB writes (setGridColumns + setRGLLayouts).
+      // Future optimization: Add batch update support to dashboardConfigService.
+      if (config && config.useReactGridLayout) {
+        const newLayouts = generateRGLLayoutsFromConfig({
+          ...config,
+          gridColumns: newColumns,
+        });
+        await setRGLLayouts(newLayouts, config.widgetOrder);
+      }
     },
-    [setGridColumns]
+    [config, setGridColumns, setRGLLayouts]
   );
 
   const handleWidgetSpanChange = useCallback(
     async (widgetId: WidgetId, span: string) => {
-      await setWidgetSpan(widgetId, Number(span) as WidgetSpan);
+      const newSpan = Number(span) as WidgetSpan;
+      await setWidgetSpan(widgetId, newSpan);
+
+      // Regenerate RGL layouts to reflect new span
+      if (config && config.useReactGridLayout) {
+        const newLayouts = generateRGLLayoutsFromConfig({
+          ...config,
+          widgetSpans: {
+            ...config.widgetSpans,
+            [widgetId]: newSpan,
+          },
+        });
+        await setRGLLayouts(newLayouts, config.widgetOrder);
+      }
     },
-    [setWidgetSpan]
+    [config, setWidgetSpan, setRGLLayouts]
   );
 
   const handleDensePackingChange = useCallback(
     async (enabled: boolean) => {
       await setDensePacking(enabled);
+
+      // Regenerate RGL layouts to apply new packing mode
+      if (config && config.useReactGridLayout) {
+        const newLayouts = generateRGLLayoutsFromConfig({
+          ...config,
+          densePacking: enabled,
+        });
+        await setRGLLayouts(newLayouts, config.widgetOrder);
+      }
     },
-    [setDensePacking]
+    [config, setDensePacking, setRGLLayouts]
   );
 
   const handleWidgetRowSpanChange = useCallback(
     async (widgetId: WidgetId, rowSpan: string) => {
-      await setWidgetRowSpan(widgetId, Number(rowSpan) as WidgetRowSpan);
+      const newRowSpan = Number(rowSpan) as WidgetRowSpan;
+      await setWidgetRowSpan(widgetId, newRowSpan);
+
+      // Regenerate RGL layouts to reflect new row span
+      if (config && config.useReactGridLayout) {
+        const newLayouts = generateRGLLayoutsFromConfig({
+          ...config,
+          widgetRowSpans: {
+            ...config.widgetRowSpans,
+            [widgetId]: newRowSpan,
+          },
+        });
+        await setRGLLayouts(newLayouts, config.widgetOrder);
+      }
     },
-    [setWidgetRowSpan]
+    [config, setWidgetRowSpan, setRGLLayouts]
   );
 
-const handleUseReactGridLayoutChange = useCallback(
+  const handleUseReactGridLayoutChange = useCallback(
     async (enabled: boolean) => {
       await toggleUseReactGridLayout(enabled);
     },
@@ -226,9 +275,15 @@ const handleUseReactGridLayoutChange = useCallback(
           {config.layoutMode === 'grid' && (
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="dense-packing" className="text-sm font-medium flex items-center gap-2">
+                <Label
+                  htmlFor="dense-packing"
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
                   Dense Packing
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-100 text-green-700 border-green-200">
+                  <Badge
+                    variant="secondary"
+                    className="border-green-200 bg-green-100 px-1.5 py-0 text-[10px] text-green-700"
+                  >
                     New
                   </Badge>
                 </Label>
@@ -247,9 +302,15 @@ const handleUseReactGridLayoutChange = useCallback(
 
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="use-rgl" className="text-sm font-medium flex items-center gap-2">
+              <Label
+                htmlFor="use-rgl"
+                className="flex items-center gap-2 text-sm font-medium"
+              >
                 New Layout System
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-blue-100 text-blue-700 border-blue-200">
+                <Badge
+                  variant="secondary"
+                  className="border-blue-200 bg-blue-100 px-1.5 py-0 text-[10px] text-blue-700"
+                >
                   Beta
                 </Badge>
               </Label>
@@ -271,7 +332,10 @@ const handleUseReactGridLayoutChange = useCallback(
           <Label className="text-sm font-medium">Widget Settings</Label>
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="category-pie-chart" className="text-sm font-medium">
+              <Label
+                htmlFor="category-pie-chart"
+                className="text-sm font-medium"
+              >
                 Category Breakdown Pie Chart
               </Label>
               <p className="text-xs text-muted-foreground">
@@ -280,7 +344,10 @@ const handleUseReactGridLayoutChange = useCallback(
             </div>
             <Switch
               id="category-pie-chart"
-              checked={config.widgetSettings?.['category-breakdown']?.showPieChart ?? false}
+              checked={
+                config.widgetSettings?.['category-breakdown']?.showPieChart ??
+                false
+              }
               onCheckedChange={handleCategoryPieChartChange}
               aria-label="Toggle category breakdown pie chart"
             />
@@ -330,7 +397,11 @@ const handleUseReactGridLayoutChange = useCallback(
                   {/* Widget column span selector - only shown in grid mode */}
                   {config.layoutMode === 'grid' && (
                     <Select
-                      value={String(config.widgetSpans?.[widgetId] ?? DEFAULT_WIDGET_SPANS[widgetId] ?? 1)}
+                      value={String(
+                        config.widgetSpans?.[widgetId] ??
+                          DEFAULT_WIDGET_SPANS[widgetId] ??
+                          1
+                      )}
                       onValueChange={(value) =>
                         handleWidgetSpanChange(widgetId, value)
                       }
@@ -351,7 +422,11 @@ const handleUseReactGridLayoutChange = useCallback(
                   {/* Widget row span selector - only shown when dense packing is enabled */}
                   {config.layoutMode === 'grid' && config.densePacking && (
                     <Select
-                      value={String(config.widgetRowSpans?.[widgetId] ?? DEFAULT_WIDGET_ROW_SPANS[widgetId] ?? 1)}
+                      value={String(
+                        config.widgetRowSpans?.[widgetId] ??
+                          DEFAULT_WIDGET_ROW_SPANS[widgetId] ??
+                          1
+                      )}
                       onValueChange={(value) =>
                         handleWidgetRowSpanChange(widgetId, value)
                       }

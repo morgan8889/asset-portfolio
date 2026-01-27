@@ -102,13 +102,13 @@ export function Sidebar() {
                         <span className="truncate">{item.name}</span>
                         {item.badge === 'beta' && (
                           <Badge variant="beta" className="ml-auto">
-<FlaskConical className="mr-1 h-3 w-3 text-amber-700 dark:text-amber-400" />
+                            <FlaskConical className="mr-1 h-3 w-3 text-amber-700 dark:text-amber-400" />
                             Beta
                           </Badge>
                         )}
                         {item.badge === 'coming-soon' && (
                           <Badge variant="comingSoon" className="ml-auto">
-<Clock className="mr-1 h-3 w-3 text-gray-500 dark:text-gray-400" />
+                            <Clock className="mr-1 h-3 w-3 text-gray-500 dark:text-gray-400" />
                             Coming Soon
                           </Badge>
                         )}
