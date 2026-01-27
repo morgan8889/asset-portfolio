@@ -73,6 +73,17 @@ export {
 // Historical value tracking
 export { getHistoricalValues, getValueAtDate } from './historical-value';
 
+// Performance analytics (Feature 006, 007)
+export {
+  getSummary,
+  getChartData,
+  getHoldingPerformance,
+  exportToCSV,
+  getAggregationLevel,
+  getMaxDataPoints,
+  getYoYMetrics,
+} from './performance-analytics';
+
 // Market hours service
 export {
   getMarketState,
