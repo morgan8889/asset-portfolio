@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Settings, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useDashboardStore } from '@/lib/stores';
 import {
   WidgetId,
@@ -27,6 +28,8 @@ import {
   GridColumns,
   WidgetSpan,
   WidgetRowSpan,
+  DEFAULT_WIDGET_SPANS,
+  DEFAULT_WIDGET_ROW_SPANS,
 } from '@/types/dashboard';
 import { cn } from '@/lib/utils';
 import { LayoutModeSelector } from './layout-mode-selector';
@@ -54,6 +57,8 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     setWidgetSpan,
     setDensePacking,
     setWidgetRowSpan,
+toggleUseReactGridLayout,
+    setCategoryBreakdownPieChart,
     resetToDefault,
   } = useDashboardStore();
 
@@ -144,6 +149,20 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     [setWidgetRowSpan]
   );
 
+const handleUseReactGridLayoutChange = useCallback(
+    async (enabled: boolean) => {
+      await toggleUseReactGridLayout(enabled);
+    },
+    [toggleUseReactGridLayout]
+  );
+
+  const handleCategoryPieChartChange = useCallback(
+    async (enabled: boolean) => {
+      await setCategoryBreakdownPieChart(enabled);
+    },
+    [setCategoryBreakdownPieChart]
+  );
+
   if (!config) {
     return null;
   }
@@ -207,8 +226,11 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
           {config.layoutMode === 'grid' && (
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="dense-packing" className="text-sm font-medium">
+                <Label htmlFor="dense-packing" className="text-sm font-medium flex items-center gap-2">
                   Dense Packing
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-100 text-green-700 border-green-200">
+                    New
+                  </Badge>
                 </Label>
                 <p className="text-xs text-muted-foreground">
                   Fill gaps with smaller widgets
@@ -222,6 +244,47 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
               />
             </div>
           )}
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="use-rgl" className="text-sm font-medium flex items-center gap-2">
+                New Layout System
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-blue-100 text-blue-700 border-blue-200">
+                  Beta
+                </Badge>
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Enable drag-and-drop resizing
+              </p>
+            </div>
+            <Switch
+              id="use-rgl"
+              checked={config.useReactGridLayout ?? false}
+              onCheckedChange={handleUseReactGridLayoutChange}
+              aria-label="Toggle new layout system"
+            />
+          </div>
+        </div>
+
+        {/* Widget-Specific Settings Section */}
+        <div className="space-y-4 border-b py-4">
+          <Label className="text-sm font-medium">Widget Settings</Label>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="category-pie-chart" className="text-sm font-medium">
+                Category Breakdown Pie Chart
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Show pie chart visualization (requires 2x width and 2h+ height)
+              </p>
+            </div>
+            <Switch
+              id="category-pie-chart"
+              checked={config.widgetSettings?.['category-breakdown']?.showPieChart ?? false}
+              onCheckedChange={handleCategoryPieChartChange}
+              aria-label="Toggle category breakdown pie chart"
+            />
+          </div>
         </div>
 
         {/* Widget Settings Section */}
@@ -267,7 +330,7 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
                   {/* Widget column span selector - only shown in grid mode */}
                   {config.layoutMode === 'grid' && (
                     <Select
-                      value={String(config.widgetSpans?.[widgetId] ?? 1)}
+                      value={String(config.widgetSpans?.[widgetId] ?? DEFAULT_WIDGET_SPANS[widgetId] ?? 1)}
                       onValueChange={(value) =>
                         handleWidgetSpanChange(widgetId, value)
                       }
@@ -288,7 +351,7 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
                   {/* Widget row span selector - only shown when dense packing is enabled */}
                   {config.layoutMode === 'grid' && config.densePacking && (
                     <Select
-                      value={String(config.widgetRowSpans?.[widgetId] ?? 1)}
+                      value={String(config.widgetRowSpans?.[widgetId] ?? DEFAULT_WIDGET_ROW_SPANS[widgetId] ?? 1)}
                       onValueChange={(value) =>
                         handleWidgetRowSpanChange(widgetId, value)
                       }
@@ -304,6 +367,9 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
                         <SelectItem value="1">1h</SelectItem>
                         <SelectItem value="2">2h</SelectItem>
                         <SelectItem value="3">3h</SelectItem>
+                        {widgetId === 'growth-chart' && (
+                          <SelectItem value="4">4h</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   )}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Decimal from 'decimal.js';
 import { rateLimit } from '@/lib/utils/rate-limit';
-import { validateSymbol, sanitizeInput } from '@/lib/utils/validation';
+import { validateSymbol, sanitizeSymbol } from '@/lib/utils/validation';
 import { logger } from '@/lib/utils/logger';
 import { convertPenceToPounds } from '@/lib/utils/market-utils';
 
@@ -307,7 +307,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return NextResponse.json(
+        { error: 'Invalid JSON body' },
+        { status: 400 }
+      );
+    }
+
     const { symbols } = body;
 
     if (!Array.isArray(symbols) || symbols.length === 0) {
@@ -326,7 +335,8 @@ export async function POST(request: NextRequest) {
 
     // Validate all symbols
     const validSymbols = symbols
-      .map((s) => sanitizeInput(s).toUpperCase())
+      .filter((s): s is string => typeof s === 'string')
+      .map((s) => sanitizeSymbol(s))
       .filter((s) => validateSymbol(s));
 
     if (validSymbols.length === 0) {
@@ -401,8 +411,11 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     logger.error('Error in batch price request:', error);
+    if (error instanceof Error) {
+      console.error(error.stack);
+    }
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
