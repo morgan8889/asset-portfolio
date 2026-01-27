@@ -11,7 +11,6 @@ import type ReactGridLayout from 'react-grid-layout';
 import { Decimal } from 'decimal.js';
 
 // In v2.x, use ResponsiveGridLayout directly with useContainerWidth hook
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const RGL = require('react-grid-layout');
 const { ResponsiveGridLayout, useContainerWidth } = RGL;
 import { PieChart } from 'lucide-react';

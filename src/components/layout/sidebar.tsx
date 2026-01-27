@@ -13,13 +13,10 @@ import {
   TrendingUp,
   Wallet,
   FileText,
-  FlaskConical,
-  Clock,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useUIStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 

@@ -51,7 +51,7 @@ function migrateV1ToV2(
 
 /**
  * Migrate a v2 configuration to v3.
- * Adds dense packing settings while preserving existing config.
+ * Adds dense packing settings and widget settings while preserving existing config.
  */
 function migrateV2ToV3(v2Config: DashboardConfigurationV2): DashboardConfigurationV3 {
   return {
@@ -59,6 +59,11 @@ function migrateV2ToV3(v2Config: DashboardConfigurationV2): DashboardConfigurati
     version: 3,
     densePacking: true,
     widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
+    widgetSettings: {
+      'category-breakdown': {
+        showPieChart: false,
+      },
+    },
   };
 }
 
@@ -202,6 +207,11 @@ function migrateV3ToV4(v3Config: DashboardConfigurationV3): DashboardConfigurati
       v3Config.widgetRowSpans,
       v3Config.gridColumns
     ),
+    widgetSettings: {
+      'category-breakdown': {
+        showPieChart: false, // Pie chart disabled by default
+      },
+    },
   };
 }
 
@@ -422,6 +432,21 @@ export const dashboardConfigService = {
       );
     }
 
+    await this.saveConfig(config);
+  },
+
+  /**
+   * Enable or disable the pie chart for category breakdown widget.
+   */
+  async setCategoryBreakdownPieChart(enabled: boolean): Promise<void> {
+    const config = await this.getConfig();
+    config.widgetSettings = {
+      ...config.widgetSettings,
+      'category-breakdown': {
+        ...config.widgetSettings['category-breakdown'],
+        showPieChart: enabled,
+      },
+    };
     await this.saveConfig(config);
   },
 };

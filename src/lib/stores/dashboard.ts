@@ -17,7 +17,8 @@ import {
   GridColumns,
   WidgetSpan,
   WidgetRowSpan,
-  RGLLayouts,
+RGLLayouts,
+  WidgetSettings,
   DEFAULT_DASHBOARD_CONFIG,
 } from '@/types/dashboard';
 import { dashboardConfigService } from '@/lib/services/dashboard-config';
@@ -39,6 +40,7 @@ interface DashboardState {
 setWidgetRowSpan: (widgetId: WidgetId, rowSpan: WidgetRowSpan) => Promise<void>;
   setRGLLayouts: (layouts: RGLLayouts, newOrder: WidgetId[]) => Promise<void>;
   toggleUseReactGridLayout: (enabled: boolean) => Promise<void>;
+  setCategoryBreakdownPieChart: (enabled: boolean) => Promise<void>;
   resetToDefault: () => Promise<void>;
   clearError: () => void;
 }
@@ -216,7 +218,7 @@ export const useDashboardStore = create<DashboardState>()(
         );
       },
 
-      setRGLLayouts: async (layouts, newOrder) => {
+setRGLLayouts: async (layouts, newOrder) => {
         const { config } = get();
         if (!config) return;
 
@@ -265,6 +267,27 @@ export const useDashboardStore = create<DashboardState>()(
           console.error('Failed to toggle layout system:', error);
           set({ config, error: 'Failed to toggle layout system' });
         }
+      },
+
+      setCategoryBreakdownPieChart: async (enabled) => {
+        const { config } = get();
+        if (!config) return;
+
+        const updatedSettings: WidgetSettings = {
+          ...config.widgetSettings,
+          'category-breakdown': {
+            ...config.widgetSettings['category-breakdown'],
+            showPieChart: enabled,
+          },
+        };
+        await optimisticUpdate(
+          get,
+          set,
+          'widgetSettings',
+          updatedSettings,
+          () => dashboardConfigService.setCategoryBreakdownPieChart(enabled),
+          'Failed to update pie chart setting'
+        );
       },
 
       resetToDefault: async () => {
