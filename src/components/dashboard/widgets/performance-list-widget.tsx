@@ -129,12 +129,12 @@ interface SkeletonProps {
 function PerformanceListSkeleton({ config }: SkeletonProps) {
   const Icon = config.icon;
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{config.title}</CardTitle>
         <Icon className={`h-4 w-4 ${config.iconColor}`} />
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="flex-1 min-h-0 overflow-y-auto space-y-3">
         {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -157,13 +157,13 @@ function PerformanceListEmpty({ config }: EmptyProps) {
   const Icon = config.icon;
   const EmptyIcon = config.emptyIcon;
   return (
-    <Card data-testid={config.testId}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card data-testid={config.testId} className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{config.title}</CardTitle>
         <Icon className={`h-4 w-4 ${config.iconColor}`} />
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col items-center justify-center py-6 text-center">
+      <CardContent className="flex-1 min-h-0">
+        <div className="flex h-full flex-col items-center justify-center text-center">
           <EmptyIcon className="mb-2 h-8 w-8 text-muted-foreground opacity-50" />
           <p className="text-sm text-muted-foreground">{config.emptyMessage}</p>
         </div>
@@ -320,15 +320,15 @@ export const PerformanceListWidget = memo(function PerformanceListWidget({
   const periodLabel = TIME_PERIOD_CONFIGS[period].label;
 
   return (
-    <Card data-testid={variantConfig.testId}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card data-testid={variantConfig.testId} className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">
           {variantConfig.title}
         </CardTitle>
         <Icon className={`h-4 w-4 ${variantConfig.iconColor}`} />
       </CardHeader>
-      <CardContent>
-        <div className="space-y-1">
+      <CardContent className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-1">
           {displayData.map((holding, index) => (
             <PerformanceRow
               key={holding.holdingId}
@@ -340,7 +340,7 @@ export const PerformanceListWidget = memo(function PerformanceListWidget({
             />
           ))}
         </div>
-        <div className="mt-3 border-t pt-2 text-center text-xs text-muted-foreground">
+        <div className="flex-shrink-0 mt-3 border-t pt-2 text-center text-xs text-muted-foreground">
           {periodLabel} performance
         </div>
       </CardContent>
