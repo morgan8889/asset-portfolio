@@ -28,6 +28,8 @@ import {
   GridColumns,
   WidgetSpan,
   WidgetRowSpan,
+  DEFAULT_WIDGET_SPANS,
+  DEFAULT_WIDGET_ROW_SPANS,
 } from '@/types/dashboard';
 import { cn } from '@/lib/utils';
 import { LayoutModeSelector } from './layout-mode-selector';
@@ -273,7 +275,7 @@ const handleUseReactGridLayoutChange = useCallback(
                 Category Breakdown Pie Chart
               </Label>
               <p className="text-xs text-muted-foreground">
-                Show pie chart visualization (requires 2h+ height)
+                Show pie chart visualization (requires 2x width and 2h+ height)
               </p>
             </div>
             <Switch
@@ -328,7 +330,7 @@ const handleUseReactGridLayoutChange = useCallback(
                   {/* Widget column span selector - only shown in grid mode */}
                   {config.layoutMode === 'grid' && (
                     <Select
-                      value={String(config.widgetSpans?.[widgetId] ?? 1)}
+                      value={String(config.widgetSpans?.[widgetId] ?? DEFAULT_WIDGET_SPANS[widgetId] ?? 1)}
                       onValueChange={(value) =>
                         handleWidgetSpanChange(widgetId, value)
                       }
@@ -349,7 +351,7 @@ const handleUseReactGridLayoutChange = useCallback(
                   {/* Widget row span selector - only shown when dense packing is enabled */}
                   {config.layoutMode === 'grid' && config.densePacking && (
                     <Select
-                      value={String(config.widgetRowSpans?.[widgetId] ?? 1)}
+                      value={String(config.widgetRowSpans?.[widgetId] ?? DEFAULT_WIDGET_ROW_SPANS[widgetId] ?? 1)}
                       onValueChange={(value) =>
                         handleWidgetRowSpanChange(widgetId, value)
                       }

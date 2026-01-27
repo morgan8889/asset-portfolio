@@ -91,8 +91,8 @@ function generateRGLLayoutsFromSpans(
 
   // Generate desktop layout with proper bin-packing
   widgetOrder.forEach((widgetId) => {
-    const w = widgetSpans[widgetId] || 1;
-    const h = widgetRowSpans[widgetId] || 1;
+    const w = widgetSpans[widgetId] ?? DEFAULT_WIDGET_SPANS[widgetId] ?? 1;
+    const h = widgetRowSpans[widgetId] ?? DEFAULT_WIDGET_ROW_SPANS[widgetId] ?? 1;
     const constraints = WIDGET_SIZE_CONSTRAINTS[widgetId];
 
     // Find the best position: leftmost x where all needed columns have minimum y
@@ -230,6 +230,32 @@ export function generateRGLLayoutsFromConfig(
   );
 }
 
+/**
+ * Sync RGL layout constraints with current WIDGET_SIZE_CONSTRAINTS.
+ * This ensures existing stored layouts pick up constraint changes (e.g., maxH updates).
+ */
+function syncLayoutConstraints(layouts: RGLLayouts): RGLLayouts {
+  const syncBreakpoint = (items: RGLLayout[]): RGLLayout[] =>
+    items.map((item) => {
+      const widgetId = item.i as WidgetId;
+      const constraints = WIDGET_SIZE_CONSTRAINTS[widgetId];
+      if (!constraints) return item;
+      return {
+        ...item,
+        minW: constraints.minW,
+        maxW: constraints.maxW,
+        minH: constraints.minH,
+        maxH: constraints.maxH,
+      };
+    });
+
+  return {
+    lg: syncBreakpoint(layouts.lg),
+    md: syncBreakpoint(layouts.md),
+    sm: syncBreakpoint(layouts.sm),
+  };
+}
+
 export const dashboardConfigService = {
   /**
    * Load the current dashboard configuration.
@@ -246,7 +272,13 @@ export const dashboardConfigService = {
     // Check if it's a valid v4 config
     const v4Result = DashboardConfigurationSchema.safeParse(stored);
     if (v4Result.success) {
-      return v4Result.data;
+      const config = v4Result.data;
+      // Sync constraints with current WIDGET_SIZE_CONSTRAINTS
+      // This ensures existing layouts pick up constraint changes (e.g., maxH updates)
+      if (config.rglLayouts) {
+        config.rglLayouts = syncLayoutConstraints(config.rglLayouts);
+      }
+      return config;
     }
 
     // Try to migrate from v3

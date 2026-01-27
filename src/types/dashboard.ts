@@ -64,7 +64,7 @@ export const WIDGET_SIZE_CONSTRAINTS: Record<WidgetId, WidgetSizeConstraints> = 
   'total-value': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
   'gain-loss': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
   'day-change': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
-  'category-breakdown': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
+  'category-breakdown': { minW: 1, maxW: 2, minH: 2, maxH: 4 },
   'growth-chart': { minW: 2, maxW: 2, minH: 2, maxH: 4 },
   'top-performers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
   'biggest-losers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },

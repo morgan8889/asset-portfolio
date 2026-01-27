@@ -134,6 +134,8 @@ const DashboardContainerRGLComponent = ({
   const {
     config,
     setRGLLayouts,
+    setWidgetSpan,
+    setWidgetRowSpan,
   } = useDashboardStore();
   const {
     metrics,
@@ -208,6 +210,41 @@ const DashboardContainerRGLComponent = ({
       );
     },
     [config, setRGLLayouts]
+  );
+
+  /**
+   * Sync RGL layout dimensions to widgetSpans and widgetRowSpans.
+   * Called after resize completes to update span settings.
+   */
+  const syncLayoutToSpans = useCallback(
+    async (widgetId: WidgetId, w: number, h: number) => {
+      // Clamp to valid span values (WidgetSpan: 1|2, WidgetRowSpan: 1|2|3|4)
+      const colSpan = Math.max(1, Math.min(2, w)) as 1 | 2;
+      const rowSpan = Math.max(1, Math.min(4, h)) as 1 | 2 | 3 | 4;
+
+      // Update store (persists to IndexedDB)
+      await setWidgetSpan(widgetId, colSpan);
+      await setWidgetRowSpan(widgetId, rowSpan);
+    },
+    [setWidgetSpan, setWidgetRowSpan]
+  );
+
+  /**
+   * Handle resize stop - sync final dimensions to span settings.
+   * onResizeStop provides: (layout, oldItem, newItem, placeholder, e, element)
+   */
+  const handleResizeStop = useCallback(
+    (
+      layout: RGLLayoutType[],
+      oldItem: RGLLayoutType,
+      newItem: RGLLayoutType
+    ) => {
+      if (!config) return;
+
+      const widgetId = newItem.i as WidgetId;
+      syncLayoutToSpans(widgetId, newItem.w, newItem.h);
+    },
+    [config, syncLayoutToSpans]
   );
 
   const categoryAllocations = useMemo(
@@ -327,7 +364,9 @@ const DashboardContainerRGLComponent = ({
             isDraggable: !disableDragDrop,
             isResizable: !disableDragDrop,
             compactType: config.densePacking ? 'vertical' : null,
+            preventCollision: true,
             onLayoutChange: handleLayoutChange,
+            onResizeStop: handleResizeStop,
             margin: [16, 16],
             draggableHandle: '.drag-handle',
             className: cn('transition-all duration-300'),
