@@ -6,7 +6,6 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { dashboardConfigService, generateRGLLayoutsFromConfig } from '../dashboard-config';
 import type {
   DashboardConfiguration,
   DashboardConfigurationV1,
@@ -17,16 +16,21 @@ import type {
 } from '@/types/dashboard';
 import { DEFAULT_WIDGET_SPANS, DEFAULT_WIDGET_ROW_SPANS } from '@/types/dashboard';
 
-// Mock the settings queries
-const mockSettingsQueries = {
-  get: vi.fn(),
-  set: vi.fn(),
-  delete: vi.fn(),
-};
+// Use vi.hoisted to define mocks that can be referenced by hoisted vi.mock
+const { mockSettingsQueries } = vi.hoisted(() => ({
+  mockSettingsQueries: {
+    get: vi.fn(),
+    set: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
 
 vi.mock('@/lib/db', () => ({
   settingsQueries: mockSettingsQueries,
 }));
+
+// Import after mock is set up
+import { dashboardConfigService, generateRGLLayoutsFromConfig } from '../dashboard-config';
 
 describe('Dashboard Configuration Service', () => {
   beforeEach(() => {
@@ -46,23 +50,23 @@ describe('Dashboard Configuration Service', () => {
             'total-value': true,
             'gain-loss': true,
             'day-change': true,
-            allocation: true,
+            'category-breakdown': true,
             'growth-chart': true,
             'top-performers': true,
-            'bottom-performers': true,
+            'biggest-losers': true,
             'recent-activity': true,
           },
           widgetOrder: [
             'total-value',
             'gain-loss',
             'day-change',
-            'allocation',
+            'category-breakdown',
             'growth-chart',
             'top-performers',
-            'bottom-performers',
+            'biggest-losers',
             'recent-activity',
           ],
-          timePeriod: '1M',
+          timePeriod: 'MONTH',
           performerCount: 5,
           lastUpdated: '2025-01-01T00:00:00Z',
         };
@@ -108,23 +112,23 @@ describe('Dashboard Configuration Service', () => {
             'total-value': true,
             'gain-loss': true,
             'day-change': true,
-            allocation: true,
+            'category-breakdown': true,
             'growth-chart': true,
             'top-performers': true,
-            'bottom-performers': true,
+            'biggest-losers': true,
             'recent-activity': true,
           },
           widgetOrder: [
             'total-value',
             'gain-loss',
             'day-change',
-            'allocation',
+            'category-breakdown',
             'growth-chart',
             'top-performers',
-            'bottom-performers',
+            'biggest-losers',
             'recent-activity',
           ],
-          timePeriod: '1M',
+          timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
@@ -167,23 +171,23 @@ describe('Dashboard Configuration Service', () => {
             'total-value': true,
             'gain-loss': true,
             'day-change': true,
-            allocation: true,
+            'category-breakdown': true,
             'growth-chart': true,
             'top-performers': true,
-            'bottom-performers': true,
+            'biggest-losers': true,
             'recent-activity': true,
           },
           widgetOrder: [
             'total-value',
             'gain-loss',
             'day-change',
-            'allocation',
+            'category-breakdown',
             'growth-chart',
             'top-performers',
-            'bottom-performers',
+            'biggest-losers',
             'recent-activity',
           ],
-          timePeriod: '1M',
+          timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
@@ -226,20 +230,20 @@ describe('Dashboard Configuration Service', () => {
             'total-value': true,
             'gain-loss': true,
             'day-change': false,
-            allocation: true,
+            'category-breakdown': true,
             'growth-chart': true,
             'top-performers': false,
-            'bottom-performers': false,
+            'biggest-losers': false,
             'recent-activity': true,
           },
-          widgetOrder: ['total-value', 'gain-loss', 'allocation', 'growth-chart', 'recent-activity'],
-          timePeriod: '1M',
+          widgetOrder: ['total-value', 'gain-loss', 'category-breakdown', 'growth-chart', 'recent-activity'],
+          timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
-          widgetSpans: { 'growth-chart': 2, allocation: 2 },
+          widgetSpans: { 'growth-chart': 2, 'category-breakdown': 2 },
           densePacking: true,
-          widgetRowSpans: { 'growth-chart': 3, allocation: 2 },
+          widgetRowSpans: { 'growth-chart': 3, 'category-breakdown': 2 },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -256,9 +260,9 @@ describe('Dashboard Configuration Service', () => {
         expect(growthChartLg?.w).toBe(2);
         expect(growthChartLg?.h).toBe(3);
 
-        const allocationLg = config.rglLayouts?.lg.find((item) => item.i === 'allocation');
-        expect(allocationLg?.w).toBe(2);
-        expect(allocationLg?.h).toBe(2);
+        const categoryBreakdownLg = config.rglLayouts?.lg.find((item) => item.i === 'category-breakdown');
+        expect(categoryBreakdownLg?.w).toBe(2);
+        expect(categoryBreakdownLg?.h).toBe(2);
 
         // Check 1-column widgets
         const totalValueLg = config.rglLayouts?.lg.find((item) => item.i === 'total-value');
@@ -277,23 +281,23 @@ describe('Dashboard Configuration Service', () => {
             'total-value': true,
             'gain-loss': true,
             'day-change': true,
-            allocation: true,
+            'category-breakdown': true,
             'growth-chart': true,
             'top-performers': true,
-            'bottom-performers': true,
+            'biggest-losers': true,
             'recent-activity': true,
           },
           widgetOrder: [
             'total-value',
             'gain-loss',
             'day-change',
-            'allocation',
+            'category-breakdown',
             'growth-chart',
             'top-performers',
-            'bottom-performers',
+            'biggest-losers',
             'recent-activity',
           ],
-          timePeriod: '1M',
+          timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
@@ -328,18 +332,18 @@ describe('Dashboard Configuration Service', () => {
             'total-value': true,
             'gain-loss': true,
             'growth-chart': true,
-            allocation: true,
+            'category-breakdown': true,
             'top-performers': false,
-            'bottom-performers': false,
+            'biggest-losers': false,
             'recent-activity': false,
             'day-change': false,
           },
-          widgetOrder: ['total-value', 'gain-loss', 'growth-chart', 'allocation'],
-          timePeriod: '1M',
+          widgetOrder: ['total-value', 'gain-loss', 'growth-chart', 'category-breakdown'],
+          timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
-          widgetSpans: { 'growth-chart': 2, allocation: 2 },
+          widgetSpans: { 'growth-chart': 2, 'category-breakdown': 2 },
           densePacking: false,
           widgetRowSpans: {},
           lastUpdated: '2025-01-01T00:00:00Z',
@@ -354,8 +358,8 @@ describe('Dashboard Configuration Service', () => {
         const growthChart = layouts.lg.find((item) => item.i === 'growth-chart');
         expect(growthChart?.w).toBe(2);
 
-        const allocationWidget = layouts.lg.find((item) => item.i === 'allocation');
-        expect(allocationWidget?.w).toBe(2);
+        const categoryBreakdownWidget = layouts.lg.find((item) => item.i === 'category-breakdown');
+        expect(categoryBreakdownWidget?.w).toBe(2);
 
         // Total value and gain-loss should be 1 column each
         const totalValue = layouts.lg.find((item) => item.i === 'total-value');
@@ -380,19 +384,19 @@ describe('Dashboard Configuration Service', () => {
             'gain-loss': true,
             'day-change': true,
             'growth-chart': true,
-            allocation: true,
+            'category-breakdown': true,
             'top-performers': false,
-            'bottom-performers': false,
+            'biggest-losers': false,
             'recent-activity': false,
           },
-          widgetOrder: ['total-value', 'gain-loss', 'day-change', 'growth-chart', 'allocation'],
-          timePeriod: '1M',
+          widgetOrder: ['total-value', 'gain-loss', 'day-change', 'growth-chart', 'category-breakdown'],
+          timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
           widgetSpans: { 'growth-chart': 2 },
           densePacking: true,
-          widgetRowSpans: { 'growth-chart': 3, allocation: 2 },
+          widgetRowSpans: { 'growth-chart': 3, 'category-breakdown': 2 },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -402,8 +406,8 @@ describe('Dashboard Configuration Service', () => {
         const growthChart = layouts.lg.find((item) => item.i === 'growth-chart');
         expect(growthChart?.h).toBe(3); // 3 rows high
 
-        const allocationWidget = layouts.lg.find((item) => item.i === 'allocation');
-        expect(allocationWidget?.h).toBe(2); // 2 rows high
+        const categoryBreakdownWidget = layouts.lg.find((item) => item.i === 'category-breakdown');
+        expect(categoryBreakdownWidget?.h).toBe(2); // 2 rows high
 
         // Metric widgets should be 1 row high
         const totalValue = layouts.lg.find((item) => item.i === 'total-value');
@@ -418,13 +422,13 @@ describe('Dashboard Configuration Service', () => {
             'gain-loss': true,
             'growth-chart': true,
             'recent-activity': true,
-            allocation: false,
+            'category-breakdown': false,
             'top-performers': false,
-            'bottom-performers': false,
+            'biggest-losers': false,
             'day-change': false,
           },
           widgetOrder: ['growth-chart', 'total-value', 'gain-loss', 'recent-activity'],
-          timePeriod: '1M',
+          timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
@@ -467,14 +471,14 @@ describe('Dashboard Configuration Service', () => {
             'total-value': true,
             'gain-loss': true,
             'growth-chart': true,
-            allocation: false,
+            'category-breakdown': false,
             'top-performers': false,
-            'bottom-performers': false,
+            'biggest-losers': false,
             'recent-activity': false,
             'day-change': false,
           },
           widgetOrder: ['total-value', 'gain-loss', 'growth-chart'],
-          timePeriod: '1M',
+          timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
@@ -501,20 +505,20 @@ describe('Dashboard Configuration Service', () => {
           version: 3,
           widgetVisibility: {
             'growth-chart': true,
-            allocation: true,
+            'category-breakdown': true,
             'total-value': false,
             'gain-loss': false,
             'top-performers': false,
-            'bottom-performers': false,
+            'biggest-losers': false,
             'recent-activity': false,
             'day-change': false,
           },
-          widgetOrder: ['growth-chart', 'allocation'],
-          timePeriod: '1M',
+          widgetOrder: ['growth-chart', 'category-breakdown'],
+          timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
-          widgetSpans: { 'growth-chart': 2, allocation: 2 },
+          widgetSpans: { 'growth-chart': 2, 'category-breakdown': 2 },
           densePacking: false,
           widgetRowSpans: {},
           lastUpdated: '2025-01-01T00:00:00Z',
@@ -539,14 +543,14 @@ describe('Dashboard Configuration Service', () => {
             'growth-chart': true,
             'total-value': true,
             'gain-loss': false,
-            allocation: false,
+            'category-breakdown': false,
             'top-performers': false,
-            'bottom-performers': false,
+            'biggest-losers': false,
             'recent-activity': false,
             'day-change': false,
           },
           widgetOrder: ['growth-chart', 'total-value'],
-          timePeriod: '1M',
+          timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
@@ -583,22 +587,22 @@ describe('Dashboard Configuration Service', () => {
           version: 3,
           widgetVisibility: {
             'growth-chart': true,
-            allocation: true,
+            'category-breakdown': true,
             'total-value': false,
             'gain-loss': false,
             'top-performers': false,
-            'bottom-performers': false,
+            'biggest-losers': false,
             'recent-activity': false,
             'day-change': false,
           },
-          widgetOrder: ['growth-chart', 'allocation'],
-          timePeriod: '1M',
+          widgetOrder: ['growth-chart', 'category-breakdown'],
+          timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
           widgetSpans: { 'growth-chart': 2 },
           densePacking: true,
-          widgetRowSpans: { 'growth-chart': 3, allocation: 2 },
+          widgetRowSpans: { 'growth-chart': 3, 'category-breakdown': 2 },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -613,13 +617,13 @@ describe('Dashboard Configuration Service', () => {
         expect(growthChartMd?.h).toBe(3);
         expect(growthChartSm?.h).toBe(3);
 
-        const allocationLg = layouts.lg.find((item) => item.i === 'allocation');
-        const allocationMd = layouts.md.find((item) => item.i === 'allocation');
-        const allocationSm = layouts.sm.find((item) => item.i === 'allocation');
+        const categoryBreakdownLg = layouts.lg.find((item) => item.i === 'category-breakdown');
+        const categoryBreakdownMd = layouts.md.find((item) => item.i === 'category-breakdown');
+        const categoryBreakdownSm = layouts.sm.find((item) => item.i === 'category-breakdown');
 
-        expect(allocationLg?.h).toBe(2);
-        expect(allocationMd?.h).toBe(2);
-        expect(allocationSm?.h).toBe(2);
+        expect(categoryBreakdownLg?.h).toBe(2);
+        expect(categoryBreakdownMd?.h).toBe(2);
+        expect(categoryBreakdownSm?.h).toBe(2);
       });
     });
 
@@ -631,14 +635,14 @@ describe('Dashboard Configuration Service', () => {
             'growth-chart': true,
             'total-value': false,
             'gain-loss': false,
-            allocation: false,
+            'category-breakdown': false,
             'top-performers': false,
-            'bottom-performers': false,
+            'biggest-losers': false,
             'recent-activity': false,
             'day-change': false,
           },
           widgetOrder: ['growth-chart'],
-          timePeriod: '1M',
+          timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
@@ -658,8 +662,8 @@ describe('Dashboard Configuration Service', () => {
         expect(growthChart?.maxH).toBeDefined();
 
         // Constraints should be sensible
-        expect(growthChart?.minW).toBeLessThanOrEqual(growthChart!.maxW);
-        expect(growthChart?.minH).toBeLessThanOrEqual(growthChart!.maxH);
+        expect(growthChart!.minW!).toBeLessThanOrEqual(growthChart!.maxW!);
+        expect(growthChart!.minH!).toBeLessThanOrEqual(growthChart!.maxH!);
       });
     });
   });
@@ -672,23 +676,23 @@ describe('Dashboard Configuration Service', () => {
           'total-value': true,
           'gain-loss': true,
           'day-change': true,
-          allocation: true,
+          'category-breakdown': true,
           'growth-chart': true,
           'top-performers': true,
-          'bottom-performers': true,
+          'biggest-losers': true,
           'recent-activity': true,
         },
         widgetOrder: [
           'total-value',
           'gain-loss',
           'day-change',
-          'allocation',
+          'category-breakdown',
           'growth-chart',
           'top-performers',
-          'bottom-performers',
+          'biggest-losers',
           'recent-activity',
         ],
-        timePeriod: '1M',
+        timePeriod: 'MONTH',
         performerCount: 5,
         layoutMode: 'grid',
         gridColumns: 4,
@@ -737,14 +741,14 @@ describe('Dashboard Configuration Service', () => {
           'total-value': true,
           'gain-loss': false,
           'day-change': false,
-          allocation: false,
+          'category-breakdown': false,
           'growth-chart': false,
           'top-performers': false,
-          'bottom-performers': false,
+          'biggest-losers': false,
           'recent-activity': false,
         },
         widgetOrder: ['total-value'],
-        timePeriod: '1M',
+        timePeriod: 'MONTH',
         performerCount: 5,
         layoutMode: 'grid',
         gridColumns: 4,
@@ -790,14 +794,14 @@ describe('Dashboard Configuration Service', () => {
           'total-value': true,
           'gain-loss': false,
           'day-change': false,
-          allocation: false,
+          'category-breakdown': false,
           'growth-chart': false,
           'top-performers': false,
-          'bottom-performers': false,
+          'biggest-losers': false,
           'recent-activity': false,
         },
         widgetOrder: ['total-value'],
-        timePeriod: '1M',
+        timePeriod: 'MONTH',
         performerCount: 5,
         layoutMode: 'grid',
         gridColumns: 4,
@@ -833,14 +837,14 @@ describe('Dashboard Configuration Service', () => {
           'total-value': false,
           'gain-loss': false,
           'day-change': false,
-          allocation: false,
+          'category-breakdown': false,
           'growth-chart': false,
           'top-performers': false,
-          'bottom-performers': false,
+          'biggest-losers': false,
           'recent-activity': false,
         },
         widgetOrder: [],
-        timePeriod: '1M',
+        timePeriod: 'MONTH',
         performerCount: 5,
         layoutMode: 'grid',
         gridColumns: 4,
@@ -864,14 +868,14 @@ describe('Dashboard Configuration Service', () => {
           'total-value': true,
           'gain-loss': false,
           'day-change': false,
-          allocation: false,
+          'category-breakdown': false,
           'growth-chart': false,
           'top-performers': false,
-          'bottom-performers': false,
+          'biggest-losers': false,
           'recent-activity': false,
         },
         widgetOrder: ['total-value'],
-        timePeriod: '1M',
+        timePeriod: 'MONTH',
         performerCount: 5,
         layoutMode: 'grid',
         gridColumns: 4,

@@ -22,8 +22,8 @@ describe('Validation Utilities', () => {
     it('should remove dangerous characters', () => {
       const input = 'Hello<script>alert("xss")</script>World';
       const result = sanitizeInput(input);
-      // Output is truncated to 20 chars max
-      expect(result).toBe('Helloscriptalertxsss');
+      // Removes HTML/XML characters and non-alphanumeric except spaces, hyphens, dots, underscores
+      expect(result).toBe('HelloscriptalertxssscriptWorld');
     });
 
     it('should remove non-alphanumeric characters except spaces, hyphens, underscores, and dots', () => {
@@ -34,16 +34,17 @@ describe('Validation Utilities', () => {
 
     it('should trim whitespace and limit length', () => {
       const input =
-        '  Very long portfolio name that exceeds twenty characters  ';
+        '  Very long portfolio name that exceeds fifty characters and keeps going  ';
       const result = sanitizeInput(input);
-      // Length is capped at 20, may be less after final trim
-      expect(result.length).toBeLessThanOrEqual(20);
+      // Length is capped at 50, may be less after final trim
+      expect(result.length).toBeLessThanOrEqual(50);
       expect(result.length).toBeGreaterThan(0);
       expect(result).not.toMatch(/^\s|\s$/);
     });
 
-    it('should throw error for non-string input', () => {
-      expect(() => sanitizeInput(123 as any)).toThrow('Input must be a string');
+    it('should return empty string for non-string input', () => {
+      // Implementation returns empty string to prevent 500s in batch processing
+      expect(sanitizeInput(123 as any)).toBe('');
     });
   });
 

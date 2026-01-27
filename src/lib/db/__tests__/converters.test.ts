@@ -457,8 +457,8 @@ describe('Database Converters', () => {
         source: 'yahoo',
         marketState: 'REGULAR',
         volume: 1000000,
-        bid: 150.45,
-        ask: 150.55,
+        bid: new Decimal('150.45'),
+        ask: new Decimal('150.55'),
       };
 
       const result = priceSnapshotToStorage(snapshot);
@@ -513,10 +513,10 @@ describe('Database Converters', () => {
         paymentDate: new Date('2026-01-26'),
         recordDate: new Date('2026-01-20'),
         exDividendDate: new Date('2026-01-15'),
-        type: 'cash',
+        type: 'ordinary',
         reinvested: false,
-        shares: 100,
-        price: 150.5,
+        shares: new Decimal('100'),
+        price: new Decimal('150.5'),
       };
 
       const result = dividendRecordToStorage(record);
@@ -524,7 +524,7 @@ describe('Database Converters', () => {
       expect(result.id).toBe('div-123');
       expect(result.amount).toBe('100');
       expect(result.perShare).toBe('1');
-      expect(result.type).toBe('cash');
+      expect(result.type).toBe('ordinary');
       expect(result.reinvested).toBe(false);
       expect(result.shares).toBe('100');
       expect(result.price).toBe('150.5');

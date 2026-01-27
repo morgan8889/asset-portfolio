@@ -53,7 +53,6 @@ describe('PricePollingService', () => {
   describe('start()', () => {
     const preferences: PriceUpdatePreferences = {
       refreshInterval: 'standard',
-      showLastUpdated: true,
       showStalenessIndicator: true,
       pauseWhenHidden: false,
     };
@@ -82,7 +81,8 @@ describe('PricePollingService', () => {
 
     it('should not start if already polling', async () => {
       await service.start(preferences);
-      const firstCallCount = mockCallbacks.onLoadCache.mock.calls.length;
+      const mockFn = mockCallbacks.onLoadCache as ReturnType<typeof vi.fn>;
+      const firstCallCount = mockFn.mock.calls.length;
 
       await service.start(preferences);
 
@@ -149,7 +149,6 @@ describe('PricePollingService', () => {
   describe('stop()', () => {
     const preferences: PriceUpdatePreferences = {
       refreshInterval: 'standard',
-      showLastUpdated: true,
       showStalenessIndicator: true,
       pauseWhenHidden: false,
     };
@@ -250,7 +249,6 @@ describe('PricePollingService', () => {
   describe('restart()', () => {
     const preferences: PriceUpdatePreferences = {
       refreshInterval: 'standard',
-      showLastUpdated: true,
       showStalenessIndicator: true,
       pauseWhenHidden: false,
     };
@@ -316,8 +314,7 @@ describe('PricePollingService', () => {
 
       await service.start({
         refreshInterval: 'standard',
-        showLastUpdated: true,
-        showStalenessIndicator: true,
+          showStalenessIndicator: true,
         pauseWhenHidden: true,
       });
 
@@ -335,8 +332,7 @@ describe('PricePollingService', () => {
 
       await service.start({
         refreshInterval: 'standard',
-        showLastUpdated: true,
-        showStalenessIndicator: true,
+          showStalenessIndicator: true,
         pauseWhenHidden: true,
       });
 
@@ -353,8 +349,7 @@ describe('PricePollingService', () => {
 
       await service.start({
         refreshInterval: 'standard',
-        showLastUpdated: true,
-        showStalenessIndicator: true,
+          showStalenessIndicator: true,
         pauseWhenHidden: false, // Don't pause when hidden
       });
 
@@ -367,7 +362,6 @@ describe('PricePollingService', () => {
   describe('Offline Resilience', () => {
     const preferences: PriceUpdatePreferences = {
       refreshInterval: 'standard',
-      showLastUpdated: true,
       showStalenessIndicator: true,
       pauseWhenHidden: false,
     };
@@ -379,7 +373,7 @@ describe('PricePollingService', () => {
       service.setOnline(false);
 
       // Reset only the onRefresh call count after setting offline
-      mockCallbacks.onRefresh.mockClear();
+      (mockCallbacks.onRefresh as ReturnType<typeof vi.fn>).mockClear();
 
       vi.advanceTimersByTime(60000);
 
@@ -412,8 +406,7 @@ describe('PricePollingService', () => {
 
       await service.start({
         refreshInterval: 'standard',
-        showLastUpdated: true,
-        showStalenessIndicator: true,
+          showStalenessIndicator: true,
         pauseWhenHidden: false,
       });
 
@@ -438,8 +431,7 @@ describe('PricePollingService', () => {
     it('should return true after starting with pauseWhenHidden', async () => {
       await service.start({
         refreshInterval: 'standard',
-        showLastUpdated: true,
-        showStalenessIndicator: true,
+          showStalenessIndicator: true,
         pauseWhenHidden: true,
       });
 
@@ -449,8 +441,7 @@ describe('PricePollingService', () => {
     it('should return false after stopping', async () => {
       await service.start({
         refreshInterval: 'standard',
-        showLastUpdated: true,
-        showStalenessIndicator: true,
+          showStalenessIndicator: true,
         pauseWhenHidden: true,
       });
 

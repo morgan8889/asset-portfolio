@@ -309,12 +309,12 @@ describe('executeImport', () => {
         }) as any
     );
 
-    vi.mocked(db.assets.add).mockImplementation(async (asset: any) => {
+    (vi.mocked(db.assets.add) as any).mockImplementation(async (asset: any) => {
       createdAssets.set(asset.symbol, asset);
       return asset.id;
     });
 
-    vi.mocked(db.assets.get).mockImplementation(async (id: string) => {
+    (vi.mocked(db.assets.get) as any).mockImplementation(async (id: string) => {
       for (const asset of createdAssets.values()) {
         if (asset.id === id) return asset;
       }
