@@ -129,6 +129,8 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
       await setGridColumns(newColumns);
 
       // Regenerate RGL layouts to fit new column count
+      // Note: This results in two IndexedDB writes (setGridColumns + setRGLLayouts).
+      // Future optimization: Add batch update support to dashboardConfigService.
       if (config && config.useReactGridLayout) {
         const newLayouts = generateRGLLayoutsFromConfig({
           ...config,

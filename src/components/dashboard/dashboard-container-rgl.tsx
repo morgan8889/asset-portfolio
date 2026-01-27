@@ -6,17 +6,10 @@
  * Dashboard implementation using react-grid-layout for drag-drop and resizing.
  */
 
-import React, { useEffect, useMemo, useCallback, memo } from 'react';
+import React, { useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { Responsive as ResponsiveGridLayout, WidthProvider } from 'react-grid-layout';
 import type ReactGridLayout from 'react-grid-layout';
 import { Decimal } from 'decimal.js';
-<<<<<<< HEAD
-
-// In v2.x, use ResponsiveGridLayout directly with useContainerWidth hook
-const RGL = require('react-grid-layout');
-const { ResponsiveGridLayout, useContainerWidth } = RGL;
-=======
->>>>>>> origin/main
 import { PieChart } from 'lucide-react';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -181,15 +174,17 @@ const DashboardContainerRGLComponent = ({
   }, [config, visibleWidgets]);
 
   // Track current breakpoint for layout changes
+  // Note: Currently unused but maintained for potential future breakpoint-specific logic
   const currentBreakpointRef = useRef<'lg' | 'md' | 'sm'>('lg');
 
   /**
    * Handle breakpoint changes to track which layout is currently active.
-   * This ensures we save changes to the correct breakpoint layout.
+   * RGL's onLayoutChange provides allLayouts with all breakpoints, so we save
+   * all layouts together. This ref is maintained for potential future use if
+   * breakpoint-specific logic is needed (e.g., selective persistence).
    */
   const handleBreakpointChange = useCallback(
     (newBreakpoint: 'lg' | 'md' | 'sm', newCols: number) => {
-      console.log('Breakpoint changed:', newBreakpoint, 'columns:', newCols);
       currentBreakpointRef.current = newBreakpoint;
     },
     []
@@ -199,18 +194,8 @@ const DashboardContainerRGLComponent = ({
     (currentLayout: RGLLayoutType[], allLayouts: RGLLayoutsType) => {
       if (!config) return;
 
-<<<<<<< HEAD
-      // currentLayout could be a single layout or an array depending on the API version
-      const layoutArray = Array.isArray(currentLayout)
-        ? currentLayout
-        : [currentLayout];
-
-      // Sort by position to get new order
-      const sorted = [...layoutArray].sort((a, b) =>
-=======
       // Sort by position to get new order (top-to-bottom, left-to-right)
       const sorted = [...currentLayout].sort((a, b) =>
->>>>>>> origin/main
         a.y !== b.y ? a.y - b.y : a.x - b.x
       );
       const newOrder = sorted.map((item) => item.i as WidgetId);
@@ -368,37 +353,6 @@ const DashboardContainerRGLComponent = ({
         </div>
       )}
 
-<<<<<<< HEAD
-      {/* Only render grid when width is available */}
-      {width > 0 &&
-        React.createElement(
-          ResponsiveGridLayout as any,
-          {
-            layouts,
-            breakpoints: { lg: 1024, md: 768, sm: 0 },
-            cols: { lg: config.gridColumns, md: 2, sm: 1 },
-            rowHeight: 120,
-            width: width,
-            isDraggable: !disableDragDrop,
-            isResizable: !disableDragDrop,
-            compactType: config.densePacking ? 'vertical' : null,
-            preventCollision: true,
-            onLayoutChange: handleLayoutChange,
-            onBreakpointChange: handleBreakpointChange,
-            onResizeStop: handleResizeStop,
-            margin: [16, 16],
-            draggableHandle: '.drag-handle',
-            className: cn('transition-all duration-300'),
-          },
-          visibleWidgets.map((widgetId) => (
-            <div key={widgetId} className="h-full">
-              <WidgetWrapperRGL id={widgetId} disabled={disableDragDrop}>
-                {renderWidget(widgetId)}
-              </WidgetWrapperRGL>
-            </div>
-          ))
-        )}
-=======
       <ResponsiveGridLayoutWithWidth
         layouts={layouts}
         breakpoints={{ lg: 1024, md: 768, sm: 0 }}
@@ -408,6 +362,8 @@ const DashboardContainerRGLComponent = ({
         isResizable={!disableDragDrop}
         compactType={config.densePacking ? 'vertical' : null}
         onLayoutChange={handleLayoutChange}
+        onBreakpointChange={handleBreakpointChange}
+        onResizeStop={handleResizeStop}
         margin={[16, 16]}
         draggableHandle=".drag-handle"
         className={cn('transition-all duration-300')}
@@ -420,7 +376,6 @@ const DashboardContainerRGLComponent = ({
           </div>
         ))}
       </ResponsiveGridLayoutWithWidth>
->>>>>>> origin/main
     </div>
   );
 };
