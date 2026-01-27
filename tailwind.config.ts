@@ -117,6 +117,9 @@ const config: Config = {
           },
         },
       },
+      gridRow: {
+        'span-4': 'span 4 / span 4',
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],
