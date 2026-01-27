@@ -64,12 +64,12 @@ export const WidgetCard = memo(function WidgetCard({
 }: WidgetCardProps) {
   return (
     <Card
-      className="h-full flex flex-col"
+      className="flex h-full flex-col"
       data-testid={testId}
       role="region"
       aria-label={ariaDescription ? `${title}: ${ariaDescription}` : title}
     >
-      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardHeader className="flex flex-shrink-0 flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon
           className={cn('h-4 w-4', iconColorClass || 'text-muted-foreground')}
@@ -129,7 +129,8 @@ export const MetricValue = memo(function MetricValue({
   const sign = showSign && value >= 0 ? '+' : '';
 
   const computedAriaLabel =
-    ariaLabel ?? `${formatCurrency(Math.abs(value), currency)} ${TREND_LABELS[direction]}`;
+    ariaLabel ??
+    `${formatCurrency(Math.abs(value), currency)} ${TREND_LABELS[direction]}`;
 
   return (
     <div

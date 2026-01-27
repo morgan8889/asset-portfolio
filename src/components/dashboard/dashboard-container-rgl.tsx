@@ -6,19 +6,26 @@
  * Dashboard implementation using react-grid-layout for drag-drop and resizing.
  */
 
-import React, { useEffect, useMemo, useCallback, memo, useRef } from 'react';
+import React, { useEffect, useMemo, useCallback, memo } from 'react';
+import { Responsive as ResponsiveGridLayout, WidthProvider } from 'react-grid-layout';
 import type ReactGridLayout from 'react-grid-layout';
 import { Decimal } from 'decimal.js';
+<<<<<<< HEAD
 
 // In v2.x, use ResponsiveGridLayout directly with useContainerWidth hook
 const RGL = require('react-grid-layout');
 const { ResponsiveGridLayout, useContainerWidth } = RGL;
+=======
+>>>>>>> origin/main
 import { PieChart } from 'lucide-react';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
 type RGLLayoutType = ReactGridLayout.Layout;
 type RGLLayoutsType = ReactGridLayout.Layouts;
+
+// Create width-aware responsive grid layout
+const ResponsiveGridLayoutWithWidth = WidthProvider(ResponsiveGridLayout);
 
 import {
   useDashboardStore,
@@ -189,9 +196,10 @@ const DashboardContainerRGLComponent = ({
   );
 
   const handleLayoutChange = useCallback(
-    (currentLayout: any, allLayouts: any) => {
+    (currentLayout: RGLLayoutType[], allLayouts: RGLLayoutsType) => {
       if (!config) return;
 
+<<<<<<< HEAD
       // currentLayout could be a single layout or an array depending on the API version
       const layoutArray = Array.isArray(currentLayout)
         ? currentLayout
@@ -199,21 +207,25 @@ const DashboardContainerRGLComponent = ({
 
       // Sort by position to get new order
       const sorted = [...layoutArray].sort((a, b) =>
+=======
+      // Sort by position to get new order (top-to-bottom, left-to-right)
+      const sorted = [...currentLayout].sort((a, b) =>
+>>>>>>> origin/main
         a.y !== b.y ? a.y - b.y : a.x - b.x
       );
       const newOrder = sorted.map((item) => item.i as WidgetId);
 
-      // Extract layouts for each breakpoint
-      const lg = allLayouts?.lg || allLayouts || [];
-      const md = allLayouts?.md || allLayouts || [];
-      const sm = allLayouts?.sm || allLayouts || [];
+      // Extract layouts for each breakpoint, defaulting to empty arrays
+      const lg = allLayouts?.lg || [];
+      const md = allLayouts?.md || [];
+      const sm = allLayouts?.sm || [];
 
       // Persist changes
       setRGLLayouts(
         {
-          lg: Array.isArray(lg) ? lg : [],
-          md: Array.isArray(md) ? md : [],
-          sm: Array.isArray(sm) ? sm : [],
+          lg,
+          md,
+          sm,
         },
         newOrder
       );
@@ -341,16 +353,12 @@ const DashboardContainerRGLComponent = ({
     [derivedMetrics, categoryAllocations, config?.timePeriod, liveMetrics]
   );
 
-  // Use useContainerWidth hook to calculate container width for RGL
-  // The hook returns { width, containerRef } - attach containerRef to the container div
-  const { width, containerRef } = useContainerWidth({ initialWidth: 1280 });
-
   if (!config || !holdings || holdings.length === 0) {
     return <EmptyDashboard />;
   }
 
   return (
-    <div className="space-y-4" ref={containerRef}>
+    <div className="space-y-4">
       <StaleDataBanner lastUpdated={null} thresholdMinutes={15} />
 
       {priceLoading && (
@@ -360,6 +368,7 @@ const DashboardContainerRGLComponent = ({
         </div>
       )}
 
+<<<<<<< HEAD
       {/* Only render grid when width is available */}
       {width > 0 &&
         React.createElement(
@@ -389,6 +398,29 @@ const DashboardContainerRGLComponent = ({
             </div>
           ))
         )}
+=======
+      <ResponsiveGridLayoutWithWidth
+        layouts={layouts}
+        breakpoints={{ lg: 1024, md: 768, sm: 0 }}
+        cols={{ lg: config.gridColumns, md: 2, sm: 1 }}
+        rowHeight={120}
+        isDraggable={!disableDragDrop}
+        isResizable={!disableDragDrop}
+        compactType={config.densePacking ? 'vertical' : null}
+        onLayoutChange={handleLayoutChange}
+        margin={[16, 16]}
+        draggableHandle=".drag-handle"
+        className={cn('transition-all duration-300')}
+      >
+        {visibleWidgets.map((widgetId) => (
+          <div key={widgetId} className="h-full">
+            <WidgetWrapperRGL id={widgetId} disabled={disableDragDrop}>
+              {renderWidget(widgetId)}
+            </WidgetWrapperRGL>
+          </div>
+        ))}
+      </ResponsiveGridLayoutWithWidth>
+>>>>>>> origin/main
     </div>
   );
 };

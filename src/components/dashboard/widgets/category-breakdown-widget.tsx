@@ -55,14 +55,14 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 function CategorySkeleton() {
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="flex h-full flex-col">
+      <CardHeader className="flex flex-shrink-0 flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">
           Category Breakdown
         </CardTitle>
         <PieChartIcon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
-      <CardContent className="flex-1 min-h-0 overflow-y-auto space-y-3">
+      <CardContent className="min-h-0 flex-1 space-y-3 overflow-y-auto">
         {[1, 2, 3].map((i) => (
           <div key={i} className="space-y-1">
             <div className="flex justify-between">
@@ -79,14 +79,17 @@ function CategorySkeleton() {
 
 function CategoryEmpty() {
   return (
-    <Card data-testid="category-breakdown-widget" className="h-full flex flex-col">
-      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card
+      data-testid="category-breakdown-widget"
+      className="flex h-full flex-col"
+    >
+      <CardHeader className="flex flex-shrink-0 flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">
           Category Breakdown
         </CardTitle>
         <PieChartIcon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
-<CardContent>
+      <CardContent>
         <div className="py-4 text-center text-muted-foreground">
           <PieChartIcon className="mx-auto mb-2 h-8 w-8 opacity-50" />
           <p className="text-sm">No holdings to display</p>
@@ -250,17 +253,21 @@ export const CategoryBreakdownWidget = memo(function CategoryBreakdownWidget({
   );
 
   return (
-<Card data-testid="category-breakdown-widget" ref={containerRef} className="h-full flex flex-col">
-      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card
+      data-testid="category-breakdown-widget"
+      ref={containerRef}
+      className="flex h-full flex-col"
+    >
+      <CardHeader className="flex flex-shrink-0 flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">
           Category Breakdown
         </CardTitle>
         <PieChartIcon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
-<CardContent className="flex-1 min-h-0 overflow-hidden">
+      <CardContent className="min-h-0 flex-1 overflow-hidden">
         {showPieChart ? (
           <div
-            className={`h-full flex ${useSideBySideLayout ? 'flex-row gap-4 items-center' : 'flex-col gap-4'}`}
+            className={`flex h-full ${useSideBySideLayout ? 'flex-row items-center gap-4' : 'flex-col gap-4'}`}
           >
             {/* Progress Bars Section */}
             <div
@@ -276,7 +283,7 @@ export const CategoryBreakdownWidget = memo(function CategoryBreakdownWidget({
             </div>
             {/* Pie Chart Section */}
             <div
-              className={`flex items-center justify-center ${useSideBySideLayout ? 'w-[45%] h-[120px]' : 'w-full flex-1 min-h-[200px]'}`}
+              className={`flex items-center justify-center ${useSideBySideLayout ? 'h-[120px] w-[45%]' : 'min-h-[200px] w-full flex-1'}`}
             >
               <PieChartVisualization
                 allocations={sortedAllocations}
