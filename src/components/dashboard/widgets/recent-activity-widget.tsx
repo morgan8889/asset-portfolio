@@ -62,14 +62,14 @@ function getTransactionBadge(type: string) {
 
 function ActivitySkeleton() {
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="flex h-full flex-col">
+      <CardHeader className="flex flex-shrink-0 flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="flex items-center gap-2 text-sm font-medium">
           <Activity className="h-4 w-4" />
           Recent Activity
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 min-h-0 overflow-y-auto space-y-3">
+      <CardContent className="min-h-0 flex-1 space-y-3 overflow-y-auto">
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
@@ -95,14 +95,14 @@ function ActivitySkeleton() {
 
 function ActivityEmpty() {
   return (
-    <Card data-testid="recent-activity-widget" className="h-full flex flex-col">
-      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card data-testid="recent-activity-widget" className="flex h-full flex-col">
+      <CardHeader className="flex flex-shrink-0 flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="flex items-center gap-2 text-sm font-medium">
           <Activity className="h-4 w-4" />
           Recent Activity
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 min-h-0">
+      <CardContent className="min-h-0 flex-1">
         <div className="flex h-full flex-col items-center justify-center text-center">
           <Activity className="mb-4 h-12 w-12 text-muted-foreground opacity-50" />
           <p className="text-muted-foreground">No recent activity</p>
@@ -224,15 +224,15 @@ export const RecentActivityWidget = memo(function RecentActivityWidget({
   }
 
   return (
-    <Card data-testid="recent-activity-widget" className="h-full flex flex-col">
-      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card data-testid="recent-activity-widget" className="flex h-full flex-col">
+      <CardHeader className="flex flex-shrink-0 flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="flex items-center gap-2 text-sm font-medium">
           <Activity className="h-4 w-4" />
           Recent Activity
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 min-h-0 flex flex-col">
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
+      <CardContent className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
           {transactions.map((transaction) => (
             <TransactionRow
               key={transaction.id}

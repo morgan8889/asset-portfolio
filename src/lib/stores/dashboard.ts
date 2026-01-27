@@ -17,7 +17,7 @@ import {
   GridColumns,
   WidgetSpan,
   WidgetRowSpan,
-RGLLayouts,
+  RGLLayouts,
   WidgetSettings,
   DEFAULT_DASHBOARD_CONFIG,
 } from '@/types/dashboard';
@@ -37,7 +37,10 @@ interface DashboardState {
   setGridColumns: (columns: GridColumns) => Promise<void>;
   setWidgetSpan: (widgetId: WidgetId, span: WidgetSpan) => Promise<void>;
   setDensePacking: (enabled: boolean) => Promise<void>;
-setWidgetRowSpan: (widgetId: WidgetId, rowSpan: WidgetRowSpan) => Promise<void>;
+  setWidgetRowSpan: (
+    widgetId: WidgetId,
+    rowSpan: WidgetRowSpan
+  ) => Promise<void>;
   setRGLLayouts: (layouts: RGLLayouts, newOrder: WidgetId[]) => Promise<void>;
   toggleUseReactGridLayout: (enabled: boolean) => Promise<void>;
   setCategoryBreakdownPieChart: (enabled: boolean) => Promise<void>;
@@ -218,7 +221,7 @@ export const useDashboardStore = create<DashboardState>()(
         );
       },
 
-setRGLLayouts: async (layouts, newOrder) => {
+      setRGLLayouts: async (layouts, newOrder) => {
         const { config } = get();
         if (!config) return;
 

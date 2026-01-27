@@ -139,7 +139,9 @@ describe('CategoryBreakdownWidget', () => {
         />
       );
 
-      expect(screen.getByTestId('category-breakdown-widget')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('category-breakdown-widget')
+      ).toBeInTheDocument();
       expect(screen.getByText('No holdings to display')).toBeInTheDocument();
     });
 
@@ -161,7 +163,11 @@ describe('CategoryBreakdownWidget', () => {
     });
 
     it('sorts allocations by percentage descending', () => {
-      const unsortedAllocations = [mockAllocations[2], mockAllocations[0], mockAllocations[1]];
+      const unsortedAllocations = [
+        mockAllocations[2],
+        mockAllocations[0],
+        mockAllocations[1],
+      ];
 
       render(
         <CategoryBreakdownWidget
