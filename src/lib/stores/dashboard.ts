@@ -17,6 +17,8 @@ import {
   GridColumns,
   WidgetSpan,
   WidgetRowSpan,
+RGLLayouts,
+  WidgetSettings,
   DEFAULT_DASHBOARD_CONFIG,
 } from '@/types/dashboard';
 import { dashboardConfigService } from '@/lib/services/dashboard-config';
@@ -35,10 +37,10 @@ interface DashboardState {
   setGridColumns: (columns: GridColumns) => Promise<void>;
   setWidgetSpan: (widgetId: WidgetId, span: WidgetSpan) => Promise<void>;
   setDensePacking: (enabled: boolean) => Promise<void>;
-  setWidgetRowSpan: (
-    widgetId: WidgetId,
-    rowSpan: WidgetRowSpan
-  ) => Promise<void>;
+setWidgetRowSpan: (widgetId: WidgetId, rowSpan: WidgetRowSpan) => Promise<void>;
+  setRGLLayouts: (layouts: RGLLayouts, newOrder: WidgetId[]) => Promise<void>;
+  toggleUseReactGridLayout: (enabled: boolean) => Promise<void>;
+  setCategoryBreakdownPieChart: (enabled: boolean) => Promise<void>;
   resetToDefault: () => Promise<void>;
   clearError: () => void;
 }
@@ -196,9 +198,9 @@ export const useDashboardStore = create<DashboardState>()(
         const { config } = get();
         if (!config) return;
 
-        // Validate rowSpan is 1, 2, or 3
-        if (![1, 2, 3].includes(rowSpan)) {
-          set({ error: 'Row span must be 1, 2, or 3' });
+        // Validate rowSpan is 1, 2, 3, or 4 (matches WidgetRowSpan type)
+        if (![1, 2, 3, 4].includes(rowSpan)) {
+          set({ error: 'Row span must be 1, 2, 3, or 4' });
           return;
         }
 
@@ -213,6 +215,78 @@ export const useDashboardStore = create<DashboardState>()(
           updatedRowSpans,
           () => dashboardConfigService.setWidgetRowSpan(widgetId, rowSpan),
           'Failed to update widget row span'
+        );
+      },
+
+setRGLLayouts: async (layouts, newOrder) => {
+        const { config } = get();
+        if (!config) return;
+
+        const updatedConfig = {
+          ...config,
+          rglLayouts: layouts,
+          widgetOrder: newOrder,
+        };
+
+        set({ config: updatedConfig });
+
+        try {
+          await dashboardConfigService.setRGLLayouts(layouts, newOrder);
+        } catch (error) {
+          console.error('Failed to save RGL layouts:', error);
+          set({ config, error: 'Failed to save layout changes' });
+        }
+      },
+
+      toggleUseReactGridLayout: async (enabled) => {
+        const { config } = get();
+        if (!config) return;
+
+        // When enabling RGL, we need to generate layouts if they don't exist
+        // and sync them to the store (not just to the service)
+        let rglLayouts = config.rglLayouts;
+        if (enabled && !rglLayouts) {
+          // Import the layout generation function dynamically to avoid circular deps
+          const { generateRGLLayoutsFromConfig } = await import(
+            '@/lib/services/dashboard-config'
+          );
+          rglLayouts = generateRGLLayoutsFromConfig(config);
+        }
+
+        const updatedConfig = {
+          ...config,
+          useReactGridLayout: enabled,
+          rglLayouts,
+        };
+
+        set({ config: updatedConfig });
+
+        try {
+          await dashboardConfigService.setUseReactGridLayout(enabled);
+        } catch (error) {
+          console.error('Failed to toggle layout system:', error);
+          set({ config, error: 'Failed to toggle layout system' });
+        }
+      },
+
+      setCategoryBreakdownPieChart: async (enabled) => {
+        const { config } = get();
+        if (!config) return;
+
+        const updatedSettings: WidgetSettings = {
+          ...config.widgetSettings,
+          'category-breakdown': {
+            ...config.widgetSettings['category-breakdown'],
+            showPieChart: enabled,
+          },
+        };
+        await optimisticUpdate(
+          get,
+          set,
+          'widgetSettings',
+          updatedSettings,
+          () => dashboardConfigService.setCategoryBreakdownPieChart(enabled),
+          'Failed to update pie chart setting'
         );
       },
 

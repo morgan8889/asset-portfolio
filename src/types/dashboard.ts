@@ -37,10 +37,56 @@ export type GridColumns = 2 | 3 | 4;
 export type WidgetSpan = 1 | 2;
 
 /**
- * Widget row span (1 = normal, 2 = double, 3 = triple height).
+ * Widget row span (1 = normal, 2 = double, 3 = triple, 4 = quadruple height).
  * Used for dense packing layout calculations.
  */
-export type WidgetRowSpan = 1 | 2 | 3;
+export type WidgetRowSpan = 1 | 2 | 3 | 4;
+
+/**
+ * Size constraints for a widget in react-grid-layout.
+ * Defines min/max column and row spans for discrete snapping.
+ */
+export interface WidgetSizeConstraints {
+  /** Minimum column span */
+  minW: WidgetSpan;
+  /** Maximum column span */
+  maxW: WidgetSpan;
+  /** Minimum row span */
+  minH: WidgetRowSpan;
+  /** Maximum row span */
+  maxH: WidgetRowSpan;
+}
+
+/**
+ * Per-widget size constraints for discrete grid snapping.
+ * Prevents infinite free-form resizing by enforcing discrete sizes.
+ */
+export const WIDGET_SIZE_CONSTRAINTS: Record<WidgetId, WidgetSizeConstraints> = {
+  'total-value': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
+  'gain-loss': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
+  'day-change': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
+  'category-breakdown': { minW: 1, maxW: 2, minH: 2, maxH: 4 },
+  'growth-chart': { minW: 2, maxW: 2, minH: 2, maxH: 4 },
+  'top-performers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
+  'biggest-losers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
+  'recent-activity': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
+};
+
+/**
+ * Settings for the Category Breakdown widget.
+ */
+export interface CategoryBreakdownSettings {
+  /** Whether to show the pie chart visualization */
+  showPieChart: boolean;
+}
+
+/**
+ * Per-widget settings configuration.
+ * Each widget can have its own specific settings.
+ */
+export interface WidgetSettings {
+  'category-breakdown': CategoryBreakdownSettings;
+}
 
 // =============================================================================
 // Widget Types
@@ -179,10 +225,10 @@ export interface DashboardConfigurationV2 {
 
 /**
  * User's personalized dashboard configuration (Version 3).
- * Stored in IndexedDB userSettings table with key 'dashboard-config'.
+ * Legacy configuration for migration to V4.
  */
-export interface DashboardConfiguration {
-  /** Schema version for migrations (current: 3) */
+export interface DashboardConfigurationV3 {
+  /** Schema version for migrations */
   readonly version: 3;
 
   /** Ordered array of widget IDs determining display order */
@@ -214,6 +260,114 @@ export interface DashboardConfiguration {
 
   /** Per-widget row span overrides (1, 2, or 3 rows) */
   widgetRowSpans: Partial<Record<WidgetId, WidgetRowSpan>>;
+
+  /** Per-widget specific settings (e.g., pie chart toggle for category breakdown) */
+  widgetSettings: WidgetSettings;
+}
+
+// =============================================================================
+// React-Grid-Layout Types (Version 4)
+// =============================================================================
+
+/**
+ * React-Grid-Layout item configuration.
+ * Defines position and size of a widget in the grid.
+ */
+export interface RGLLayout {
+  /** Widget identifier */
+  i: WidgetId;
+
+  /** Column position (0-based) */
+  x: number;
+
+  /** Row position (0-based) */
+  y: number;
+
+  /** Width in columns */
+  w: number;
+
+  /** Height in rows */
+  h: number;
+
+  /** Minimum width constraint */
+  minW?: number;
+
+  /** Maximum width constraint */
+  maxW?: number;
+
+  /** Minimum height constraint */
+  minH?: number;
+
+  /** Maximum height constraint */
+  maxH?: number;
+
+  /** Whether item is locked from dragging/resizing */
+  static?: boolean;
+}
+
+/**
+ * Responsive layouts for different breakpoints.
+ */
+export interface RGLLayouts {
+  /** Desktop layout (>1024px) */
+  lg: RGLLayout[];
+
+  /** Tablet layout (768-1024px) */
+  md: RGLLayout[];
+
+  /** Mobile layout (<768px) */
+  sm: RGLLayout[];
+}
+
+/**
+ * User's personalized dashboard configuration (Version 4).
+ * Stored in IndexedDB userSettings table with key 'dashboard-config'.
+ * Adds react-grid-layout support while maintaining backward compatibility.
+ */
+export interface DashboardConfiguration {
+  /** Schema version for migrations (current: 4) */
+  readonly version: 4;
+
+  // All V3 fields preserved for backward compatibility
+  /** Ordered array of widget IDs determining display order */
+  widgetOrder: WidgetId[];
+
+  /** Visibility state for each widget */
+  widgetVisibility: Record<WidgetId, boolean>;
+
+  /** Default time period for gain/loss calculations */
+  timePeriod: TimePeriod;
+
+  /** Number of holdings to show in top/bottom performers (1-10) */
+  performerCount: number;
+
+  /** ISO 8601 timestamp of last configuration update */
+  lastUpdated: string;
+
+  /** Layout mode: 'grid' for multi-column, 'stacking' for single column */
+  layoutMode: LayoutMode;
+
+  /** Number of columns in grid mode (2, 3, or 4) */
+  gridColumns: GridColumns;
+
+  /** Per-widget column span overrides (1 or 2 columns) */
+  widgetSpans: Partial<Record<WidgetId, WidgetSpan>>;
+
+  /** Whether dense packing mode is enabled */
+  densePacking: boolean;
+
+  /** Per-widget row span overrides (1, 2, or 3 rows) */
+  widgetRowSpans: Partial<Record<WidgetId, WidgetRowSpan>>;
+
+  // NEW: React-Grid-Layout layouts (optional for backward compatibility)
+  /** React-Grid-Layout layouts for responsive breakpoints */
+  rglLayouts?: RGLLayouts;
+
+  /** Whether to use react-grid-layout (false = legacy CSS Grid + dnd-kit) */
+  useReactGridLayout?: boolean;
+
+  /** Per-widget specific settings (e.g., pie chart toggle for category breakdown) */
+  widgetSettings: WidgetSettings;
 }
 
 // =============================================================================
@@ -336,12 +490,21 @@ export const WidgetRowSpanSchema = z.union([
   z.literal(1),
   z.literal(2),
   z.literal(3),
+  z.literal(4),
 ]);
 
 export const WidgetRowSpansSchema = z.record(
   WidgetIdSchema,
   WidgetRowSpanSchema
 );
+
+export const CategoryBreakdownSettingsSchema = z.object({
+  showPieChart: z.boolean(),
+});
+
+export const WidgetSettingsSchema = z.object({
+  'category-breakdown': CategoryBreakdownSettingsSchema,
+});
 
 /**
  * Version 1 schema for migration validation.
@@ -412,8 +575,9 @@ export const DashboardConfigurationSchemaV2 = z.object({
 
 /**
  * Version 3 schema with dense packing configuration.
+ * Used for migration from v3 to v4.
  */
-export const DashboardConfigurationSchema = z.object({
+export const DashboardConfigurationSchemaV3 = z.object({
   version: z.literal(3),
   widgetOrder: z
     .array(WidgetIdSchema)
@@ -449,6 +613,70 @@ export const DashboardConfigurationSchema = z.object({
     .record(WidgetIdSchema, WidgetRowSpanSchema)
     .optional()
     .default({}),
+  widgetSettings: WidgetSettingsSchema,
+});
+
+/**
+ * React-Grid-Layout item schema.
+ */
+export const RGLLayoutSchema = z.object({
+  i: WidgetIdSchema,
+  x: z.number().int().min(0),
+  y: z.number().int().min(0),
+  w: z.number().int().min(1),
+  h: z.number().int().min(1),
+  minW: z.number().int().min(1).optional(),
+  maxW: z.number().int().min(1).optional(),
+  minH: z.number().int().min(1).optional(),
+  maxH: z.number().int().min(1).optional(),
+  static: z.boolean().optional(),
+});
+
+/**
+ * Responsive layouts schema.
+ */
+export const RGLLayoutsSchema = z.object({
+  lg: z.array(RGLLayoutSchema),
+  md: z.array(RGLLayoutSchema),
+  sm: z.array(RGLLayoutSchema),
+});
+
+/**
+ * Version 4 schema with react-grid-layout support.
+ */
+export const DashboardConfigurationSchema = z.object({
+  version: z.literal(4),
+  widgetOrder: z
+    .array(WidgetIdSchema)
+    .min(1, 'At least one widget must be in the order')
+    .refine((arr) => new Set(arr).size === arr.length, {
+      message: 'Widget order must not contain duplicates',
+    }),
+  widgetVisibility: z.object({
+    'total-value': z.boolean(),
+    'gain-loss': z.boolean(),
+    'day-change': z.boolean(),
+    'category-breakdown': z.boolean(),
+    'growth-chart': z.boolean(),
+    'top-performers': z.boolean(),
+    'biggest-losers': z.boolean(),
+    'recent-activity': z.boolean(),
+  }),
+  timePeriod: TimePeriodSchema,
+  performerCount: z
+    .number()
+    .int('Performer count must be an integer')
+    .min(1, 'Must show at least 1 performer')
+    .max(10, 'Cannot show more than 10 performers'),
+  lastUpdated: z.string().datetime('Must be a valid ISO 8601 datetime'),
+  layoutMode: LayoutModeSchema,
+  gridColumns: GridColumnsSchema,
+  widgetSpans: z.record(WidgetIdSchema, WidgetSpanSchema).optional().default({}),
+  densePacking: z.boolean(),
+  widgetRowSpans: z.record(WidgetIdSchema, WidgetRowSpanSchema).optional().default({}),
+  rglLayouts: RGLLayoutsSchema.optional(),
+  useReactGridLayout: z.boolean().optional().default(false),
+  widgetSettings: WidgetSettingsSchema,
 });
 
 // =============================================================================
@@ -580,21 +808,21 @@ export const DEFAULT_WIDGET_SPANS: Partial<Record<WidgetId, WidgetSpan>> = {
 
 /**
  * Default row spans based on widget type:
- * - Charts: 2 rows (larger, needs vertical space)
- * - Tables: 2 rows (needs space for data rows)
+ * - Growth chart: 4 rows (has header + stats + chart + footer)
+ * - Tables/Lists: 3 rows (has header + rows + footer)
  * - Metrics cards: 1 row (compact, implicit default)
  */
-export const DEFAULT_WIDGET_ROW_SPANS: Partial<
-  Record<WidgetId, WidgetRowSpan>
-> = {
-  'growth-chart': 2,
-  'recent-activity': 2,
-  'category-breakdown': 2,
+export const DEFAULT_WIDGET_ROW_SPANS: Partial<Record<WidgetId, WidgetRowSpan>> = {
+  'growth-chart': 4,
+  'recent-activity': 3,
+  'category-breakdown': 3,
+  'top-performers': 3,
+  'biggest-losers': 3,
   // Metrics widgets default to 1 (not explicitly set)
 };
 
 export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
-  version: 3,
+  version: 4,
   widgetOrder: [
     'total-value',
     'gain-loss',
@@ -621,8 +849,15 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
   layoutMode: 'grid',
   gridColumns: 4,
   widgetSpans: { ...DEFAULT_WIDGET_SPANS },
-  densePacking: false,
+  densePacking: true,
   widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
+rglLayouts: undefined, // Generated on demand during migration
+  useReactGridLayout: false, // Disabled by default, opt-in
+  widgetSettings: {
+    'category-breakdown': {
+      showPieChart: false, // Pie chart disabled by default
+    },
+  },
 };
 
 // =============================================================================

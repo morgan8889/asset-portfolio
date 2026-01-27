@@ -3,7 +3,8 @@ import { z } from 'zod';
 // Input sanitization
 export function sanitizeInput(input: string): string {
   if (typeof input !== 'string') {
-    throw new Error('Input must be a string');
+    // Return empty string instead of throwing to prevent 500s in batch processing
+    return '';
   }
 
   // Remove potentially dangerous characters
@@ -11,8 +12,15 @@ export function sanitizeInput(input: string): string {
     .replace(/[<>\"'&]/g, '') // Remove HTML/XML characters
     .replace(/[^a-zA-Z0-9\s\-\._]/g, '') // Allow only letters, numbers, spaces, hyphens, dots, and underscores
     .trim() // Trim leading/trailing whitespace
-    .slice(0, 20) // Limit length
+    .slice(0, 50) // Limit length (increased from 20 to allow for longer descriptions)
     .trim(); // Clean up any trailing space from truncation
+}
+
+export function sanitizeSymbol(input: string): string {
+  if (typeof input !== 'string') return '';
+  // Allow alphanumeric, dots, and caret (for indices)
+  // Remove everything else
+  return input.replace(/[^a-zA-Z0-9.\^]/g, '').trim().toUpperCase().slice(0, 15);
 }
 
 // Symbol validation (stocks, ETFs, crypto, indices)

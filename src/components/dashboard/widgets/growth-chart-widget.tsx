@@ -53,8 +53,8 @@ const AVAILABLE_PERIODS: TimePeriod[] = [
 
 function GrowthChartSkeleton() {
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <LineChart className="h-5 w-5" />
@@ -70,8 +70,8 @@ function GrowthChartSkeleton() {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="h-[300px] animate-pulse rounded bg-muted" />
+      <CardContent className="flex-1 min-h-0">
+        <div className="h-full min-h-[120px] animate-pulse rounded bg-muted" />
       </CardContent>
     </Card>
   );
@@ -79,15 +79,15 @@ function GrowthChartSkeleton() {
 
 function GrowthChartEmpty() {
   return (
-    <Card data-testid="growth-chart-widget">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card data-testid="growth-chart-widget" className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="flex items-center gap-2 text-sm font-medium">
           <LineChart className="h-4 w-4" />
           Portfolio Growth
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="flex h-[300px] flex-col items-center justify-center text-center">
+      <CardContent className="flex-1 min-h-0">
+        <div className="flex h-full min-h-[120px] flex-col items-center justify-center text-center">
           <LineChart className="mb-4 h-12 w-12 text-muted-foreground opacity-50" />
           <p className="text-muted-foreground">No historical data available</p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -243,7 +243,11 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
     const firstValue = data[0].value;
     const lastValue = data[data.length - 1].value;
     const totalChange = lastValue - firstValue;
-    const percentChange = firstValue > 0 ? (totalChange / firstValue) * 100 : 0;
+
+    // Calculate percentage change, handling edge cases
+    // If firstValue is 0 or very small, percentage is not meaningful
+    const percentChange =
+      firstValue > 0.01 ? (totalChange / firstValue) * 100 : 0;
 
     const highValue = Math.max(...data.map((d) => d.value));
     const lowValue = Math.min(...data.map((d) => d.value));
@@ -278,8 +282,8 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
   const chartColor = chartStats?.isPositive ? '#10b981' : '#ef4444';
 
   return (
-    <Card data-testid="growth-chart-widget">
-      <CardHeader>
+    <Card data-testid="growth-chart-widget" className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 pb-2">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <CardTitle className="flex items-center gap-2">
@@ -322,7 +326,7 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
         </div>
 
         {chartStats && (
-          <div className="grid grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-2 gap-2 pt-1">
             <div className="space-y-1">
               <div className="text-xs text-muted-foreground">Period High</div>
               <div className="text-sm font-medium text-green-600">
@@ -339,8 +343,8 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
         )}
       </CardHeader>
 
-      <CardContent>
-        <div className="h-[300px] w-full">
+      <CardContent className="flex-1 flex flex-col min-h-0 pt-0">
+        <div className="flex-1 min-h-[120px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
@@ -412,7 +416,7 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
           </ResponsiveContainer>
         </div>
 
-        <div className="mt-4 text-center text-xs text-muted-foreground">
+        <div className="flex-shrink-0 mt-2 text-center text-xs text-muted-foreground">
           {TIME_PERIOD_CONFIGS[period].label} performance
         </div>
       </CardContent>
