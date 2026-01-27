@@ -53,7 +53,9 @@ function migrateV1ToV2(
  * Migrate a v2 configuration to v3.
  * Adds dense packing settings and widget settings while preserving existing config.
  */
-function migrateV2ToV3(v2Config: DashboardConfigurationV2): DashboardConfigurationV3 {
+function migrateV2ToV3(
+  v2Config: DashboardConfigurationV2
+): DashboardConfigurationV3 {
   return {
     ...v2Config,
     version: 3,
@@ -92,7 +94,8 @@ function generateRGLLayoutsFromSpans(
   // Generate desktop layout with proper bin-packing
   widgetOrder.forEach((widgetId) => {
     const w = widgetSpans[widgetId] ?? DEFAULT_WIDGET_SPANS[widgetId] ?? 1;
-    const h = widgetRowSpans[widgetId] ?? DEFAULT_WIDGET_ROW_SPANS[widgetId] ?? 1;
+    const h =
+      widgetRowSpans[widgetId] ?? DEFAULT_WIDGET_ROW_SPANS[widgetId] ?? 1;
     const constraints = WIDGET_SIZE_CONSTRAINTS[widgetId];
 
     // Find the best position: leftmost x where all needed columns have minimum y
@@ -196,7 +199,9 @@ function generateRGLLayoutsFromSpans(
  * Migrate a v3 configuration to v4.
  * Adds react-grid-layout support while preserving existing config.
  */
-function migrateV3ToV4(v3Config: DashboardConfigurationV3): DashboardConfiguration {
+function migrateV3ToV4(
+  v3Config: DashboardConfigurationV3
+): DashboardConfiguration {
   return {
     ...v3Config,
     version: 4,
@@ -439,7 +444,10 @@ export const dashboardConfigService = {
    * Update react-grid-layout layouts and widget order.
    * Called when RGL layout changes (drag/drop or resize).
    */
-  async setRGLLayouts(layouts: RGLLayouts, newOrder: WidgetId[]): Promise<void> {
+  async setRGLLayouts(
+    layouts: RGLLayouts,
+    newOrder: WidgetId[]
+  ): Promise<void> {
     const config = await this.getConfig();
     config.rglLayouts = layouts;
     config.widgetOrder = newOrder;

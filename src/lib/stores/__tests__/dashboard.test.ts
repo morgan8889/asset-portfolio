@@ -143,7 +143,9 @@ describe('Dashboard Store', () => {
 
     it('should disable dense packing', async () => {
       // Start with dense packing enabled
-useDashboardStore.setState({ config: { ...defaultV4Config, densePacking: true } });
+      useDashboardStore.setState({
+        config: { ...defaultV4Config, densePacking: true },
+      });
 
       await useDashboardStore.getState().setDensePacking(false);
 
@@ -213,7 +215,10 @@ useDashboardStore.setState({ config: { ...defaultV4Config, densePacking: true } 
 
     it('should rollback on persistence error', async () => {
       const initialRowSpans = { 'growth-chart': 2 as const };
-const initialConfig = { ...defaultV4Config, widgetRowSpans: initialRowSpans };
+      const initialConfig = {
+        ...defaultV4Config,
+        widgetRowSpans: initialRowSpans,
+      };
       useDashboardStore.setState({ config: initialConfig });
 
       mockDashboardConfigService.setWidgetRowSpan.mockRejectedValue(

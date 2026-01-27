@@ -26,7 +26,7 @@ export function DashboardHeader() {
           {config?.useReactGridLayout && (
             <Badge
               variant="secondary"
-              className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-700 border-blue-200"
+              className="border-blue-200 bg-blue-100 px-1.5 py-0.5 text-[10px] text-blue-700"
             >
               Beta Layout
             </Badge>
