@@ -33,14 +33,14 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 function CategorySkeleton() {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">
           Category Breakdown
         </CardTitle>
         <PieChart className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="flex-1 min-h-0 overflow-y-auto space-y-3">
         {[1, 2, 3].map((i) => (
           <div key={i} className="space-y-1">
             <div className="flex justify-between">
@@ -57,16 +57,16 @@ function CategorySkeleton() {
 
 function CategoryEmpty() {
   return (
-    <Card data-testid="category-breakdown-widget">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card data-testid="category-breakdown-widget" className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">
           Category Breakdown
         </CardTitle>
         <PieChart className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
-      <CardContent>
-        <div className="py-4 text-center text-muted-foreground">
-          <PieChart className="mx-auto mb-2 h-8 w-8 opacity-50" />
+      <CardContent className="flex-1 min-h-0">
+        <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground">
+          <PieChart className="mb-2 h-8 w-8 opacity-50" />
           <p className="text-sm">No holdings to display</p>
         </div>
       </CardContent>
@@ -135,14 +135,14 @@ export const CategoryBreakdownWidget = memo(function CategoryBreakdownWidget({
   );
 
   return (
-    <Card data-testid="category-breakdown-widget">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card data-testid="category-breakdown-widget" className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">
           Category Breakdown
         </CardTitle>
         <PieChart className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="flex-1 min-h-0 overflow-y-auto space-y-3">
         {sortedAllocations.map((allocation) => (
           <CategoryRow
             key={allocation.category}
