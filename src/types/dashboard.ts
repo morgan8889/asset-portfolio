@@ -71,6 +71,22 @@ export const WIDGET_SIZE_CONSTRAINTS: Record<WidgetId, WidgetSizeConstraints> = 
   'recent-activity': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
 };
 
+/**
+ * Settings for the Category Breakdown widget.
+ */
+export interface CategoryBreakdownSettings {
+  /** Whether to show the pie chart visualization */
+  showPieChart: boolean;
+}
+
+/**
+ * Per-widget settings configuration.
+ * Each widget can have its own specific settings.
+ */
+export interface WidgetSettings {
+  'category-breakdown': CategoryBreakdownSettings;
+}
+
 // =============================================================================
 // Widget Types
 // =============================================================================
@@ -243,6 +259,9 @@ export interface DashboardConfigurationV3 {
 
   /** Per-widget row span overrides (1, 2, or 3 rows) */
   widgetRowSpans: Partial<Record<WidgetId, WidgetRowSpan>>;
+
+  /** Per-widget specific settings (e.g., pie chart toggle for category breakdown) */
+  widgetSettings: WidgetSettings;
 }
 
 // =============================================================================
@@ -345,6 +364,9 @@ export interface DashboardConfiguration {
 
   /** Whether to use react-grid-layout (false = legacy CSS Grid + dnd-kit) */
   useReactGridLayout?: boolean;
+
+  /** Per-widget specific settings (e.g., pie chart toggle for category breakdown) */
+  widgetSettings: WidgetSettings;
 }
 
 // =============================================================================
@@ -475,6 +497,14 @@ export const WidgetRowSpansSchema = z.record(
   WidgetRowSpanSchema
 );
 
+export const CategoryBreakdownSettingsSchema = z.object({
+  showPieChart: z.boolean(),
+});
+
+export const WidgetSettingsSchema = z.object({
+  'category-breakdown': CategoryBreakdownSettingsSchema,
+});
+
 /**
  * Version 1 schema for migration validation.
  */
@@ -582,6 +612,7 @@ export const DashboardConfigurationSchemaV3 = z.object({
     .record(WidgetIdSchema, WidgetRowSpanSchema)
     .optional()
     .default({}),
+  widgetSettings: WidgetSettingsSchema,
 });
 
 /**
@@ -644,6 +675,7 @@ export const DashboardConfigurationSchema = z.object({
   widgetRowSpans: z.record(WidgetIdSchema, WidgetRowSpanSchema).optional().default({}),
   rglLayouts: RGLLayoutsSchema.optional(),
   useReactGridLayout: z.boolean().optional().default(false),
+  widgetSettings: WidgetSettingsSchema,
 });
 
 // =============================================================================
@@ -818,8 +850,13 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
   widgetSpans: { ...DEFAULT_WIDGET_SPANS },
   densePacking: true,
   widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
-  rglLayouts: undefined, // Generated on demand during migration
+rglLayouts: undefined, // Generated on demand during migration
   useReactGridLayout: false, // Disabled by default, opt-in
+  widgetSettings: {
+    'category-breakdown': {
+      showPieChart: false, // Pie chart disabled by default
+    },
+  },
 };
 
 // =============================================================================

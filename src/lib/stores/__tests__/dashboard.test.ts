@@ -68,8 +68,12 @@ describe('Dashboard Store', () => {
       expect(WidgetRowSpanSchema.safeParse(3).success).toBe(true);
     });
 
-    it('should reject invalid WidgetRowSpan value 4', () => {
-      expect(WidgetRowSpanSchema.safeParse(4).success).toBe(false);
+    it('should validate WidgetRowSpan type for value 4', () => {
+      expect(WidgetRowSpanSchema.safeParse(4).success).toBe(true);
+    });
+
+    it('should reject invalid WidgetRowSpan value 5', () => {
+      expect(WidgetRowSpanSchema.safeParse(5).success).toBe(false);
     });
 
     it('should reject invalid WidgetRowSpan value 0', () => {
@@ -225,12 +229,12 @@ const initialConfig = { ...defaultV4Config, widgetRowSpans: initialRowSpans };
     });
   });
 
-  describe('Migration v2 to v3', () => {
-    it('should migrate v2 config to v3 with defaults', async () => {
-      // The service handles migration, so we mock it returning an already-migrated v3 config
+  describe('Migration v2 to v4', () => {
+    it('should migrate v2 config to v4 with defaults', async () => {
+      // The service handles migration, so we mock it returning an already-migrated v4 config
       const migratedConfig = {
         ...defaultV4Config,
-        version: 3,
+        version: 4,
         densePacking: false,
         widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
       };
@@ -240,14 +244,14 @@ const initialConfig = { ...defaultV4Config, widgetRowSpans: initialRowSpans };
       await useDashboardStore.getState().loadConfig();
 
       const state = useDashboardStore.getState();
-      expect(state.config?.version).toBe(3);
+      expect(state.config?.version).toBe(4);
       expect(state.config?.densePacking).toBe(false);
       expect(state.config?.widgetRowSpans).toEqual(DEFAULT_WIDGET_ROW_SPANS);
     });
   });
 
   describe('resetToDefault', () => {
-    it('should reset to default v3 config including densePacking and widgetRowSpans', async () => {
+    it('should reset to default v4 config including densePacking and widgetRowSpans', async () => {
       useDashboardStore.setState({
         config: {
           ...defaultV4Config,
@@ -263,8 +267,8 @@ const initialConfig = { ...defaultV4Config, widgetRowSpans: initialRowSpans };
       await useDashboardStore.getState().resetToDefault();
 
       const state = useDashboardStore.getState();
-      expect(state.config?.version).toBe(3);
-      expect(state.config?.densePacking).toBe(false);
+      expect(state.config?.version).toBe(4);
+      expect(state.config?.densePacking).toBe(true); // v4 default is true
       expect(state.config?.widgetRowSpans).toEqual(DEFAULT_WIDGET_ROW_SPANS);
       expect(state.loading).toBe(false);
     });

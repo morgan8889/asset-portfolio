@@ -55,7 +55,8 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     setWidgetSpan,
     setDensePacking,
     setWidgetRowSpan,
-    toggleUseReactGridLayout,
+toggleUseReactGridLayout,
+    setCategoryBreakdownPieChart,
     resetToDefault,
   } = useDashboardStore();
 
@@ -146,11 +147,18 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     [setWidgetRowSpan]
   );
 
-  const handleUseReactGridLayoutChange = useCallback(
+const handleUseReactGridLayoutChange = useCallback(
     async (enabled: boolean) => {
       await toggleUseReactGridLayout(enabled);
     },
     [toggleUseReactGridLayout]
+  );
+
+  const handleCategoryPieChartChange = useCallback(
+    async (enabled: boolean) => {
+      await setCategoryBreakdownPieChart(enabled);
+    },
+    [setCategoryBreakdownPieChart]
   );
 
   if (!config) {
@@ -252,6 +260,27 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
               checked={config.useReactGridLayout ?? false}
               onCheckedChange={handleUseReactGridLayoutChange}
               aria-label="Toggle new layout system"
+            />
+          </div>
+        </div>
+
+        {/* Widget-Specific Settings Section */}
+        <div className="space-y-4 border-b py-4">
+          <Label className="text-sm font-medium">Widget Settings</Label>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="category-pie-chart" className="text-sm font-medium">
+                Category Breakdown Pie Chart
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Show pie chart visualization (requires 2h+ height)
+              </p>
+            </div>
+            <Switch
+              id="category-pie-chart"
+              checked={config.widgetSettings?.['category-breakdown']?.showPieChart ?? false}
+              onCheckedChange={handleCategoryPieChartChange}
+              aria-label="Toggle category breakdown pie chart"
             />
           </div>
         </div>
