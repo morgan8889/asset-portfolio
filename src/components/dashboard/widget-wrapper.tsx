@@ -41,12 +41,13 @@ interface WidgetWrapperProps {
 
 /**
  * Row span class mapping for dense packing layout.
- * Responsive: larger row spans reduce on smaller viewports to maintain aspect ratios.
+ * Consistent across breakpoints for predictable grid alignment.
  */
 const ROW_SPAN_CLASSES: Record<WidgetRowSpan, string> = {
   1: 'row-span-1',
-  2: 'row-span-1 md:row-span-2',
-  3: 'row-span-1 md:row-span-2 lg:row-span-3',
+  2: 'row-span-2',
+  3: 'row-span-3',
+  4: 'row-span-4',
 };
 
 export const WidgetWrapper = memo(function WidgetWrapper({

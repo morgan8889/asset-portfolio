@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Settings, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { useDashboardStore } from '@/lib/stores';
 import {
   WidgetId,
@@ -54,6 +55,7 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     setWidgetSpan,
     setDensePacking,
     setWidgetRowSpan,
+    toggleUseReactGridLayout,
     resetToDefault,
   } = useDashboardStore();
 
@@ -144,6 +146,13 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     [setWidgetRowSpan]
   );
 
+  const handleUseReactGridLayoutChange = useCallback(
+    async (enabled: boolean) => {
+      await toggleUseReactGridLayout(enabled);
+    },
+    [toggleUseReactGridLayout]
+  );
+
   if (!config) {
     return null;
   }
@@ -207,8 +216,11 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
           {config.layoutMode === 'grid' && (
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="dense-packing" className="text-sm font-medium">
+                <Label htmlFor="dense-packing" className="text-sm font-medium flex items-center gap-2">
                   Dense Packing
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-100 text-green-700 border-green-200">
+                    New
+                  </Badge>
                 </Label>
                 <p className="text-xs text-muted-foreground">
                   Fill gaps with smaller widgets
@@ -222,6 +234,26 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
               />
             </div>
           )}
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="use-rgl" className="text-sm font-medium flex items-center gap-2">
+                New Layout System
+                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-blue-100 text-blue-700 border-blue-200">
+                  Beta
+                </Badge>
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Enable drag-and-drop resizing
+              </p>
+            </div>
+            <Switch
+              id="use-rgl"
+              checked={config.useReactGridLayout ?? false}
+              onCheckedChange={handleUseReactGridLayoutChange}
+              aria-label="Toggle new layout system"
+            />
+          </div>
         </div>
 
         {/* Widget Settings Section */}
@@ -304,6 +336,9 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
                         <SelectItem value="1">1h</SelectItem>
                         <SelectItem value="2">2h</SelectItem>
                         <SelectItem value="3">3h</SelectItem>
+                        {widgetId === 'growth-chart' && (
+                          <SelectItem value="4">4h</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   )}

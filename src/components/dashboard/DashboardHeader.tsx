@@ -9,9 +9,11 @@ import { Download, FileSpreadsheet, Settings } from 'lucide-react';
 import { useDashboardContext } from './DashboardProvider';
 import { DashboardSettings } from './dashboard-settings';
 import { TimePeriodSelector } from './time-period-selector';
+import { useDashboardStore } from '@/lib/stores';
 
 export function DashboardHeader() {
   const { currentPortfolio } = useDashboardContext();
+  const { config } = useDashboardStore();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   if (!currentPortfolio) return null;
@@ -19,7 +21,17 @@ export function DashboardHeader() {
   return (
     <div className="flex items-center justify-between">
       <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          {config?.useReactGridLayout && (
+            <Badge
+              variant="secondary"
+              className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-700 border-blue-200"
+            >
+              Beta Layout
+            </Badge>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <p className="text-muted-foreground">Portfolio:</p>
           <Badge variant="outline" className="font-medium">
