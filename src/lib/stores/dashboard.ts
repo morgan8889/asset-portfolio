@@ -17,6 +17,7 @@ import {
   GridColumns,
   WidgetSpan,
   WidgetRowSpan,
+  RGLLayouts,
   DEFAULT_DASHBOARD_CONFIG,
 } from '@/types/dashboard';
 import { dashboardConfigService } from '@/lib/services/dashboard-config';
@@ -36,6 +37,8 @@ interface DashboardState {
   setWidgetSpan: (widgetId: WidgetId, span: WidgetSpan) => Promise<void>;
   setDensePacking: (enabled: boolean) => Promise<void>;
   setWidgetRowSpan: (widgetId: WidgetId, rowSpan: WidgetRowSpan) => Promise<void>;
+  setRGLLayouts: (layouts: RGLLayouts, newOrder: WidgetId[]) => Promise<void>;
+  toggleUseReactGridLayout: (enabled: boolean) => Promise<void>;
   resetToDefault: () => Promise<void>;
   clearError: () => void;
 }
@@ -208,6 +211,57 @@ export const useDashboardStore = create<DashboardState>()(
           () => dashboardConfigService.setWidgetRowSpan(widgetId, rowSpan),
           'Failed to update widget row span'
         );
+      },
+
+      setRGLLayouts: async (layouts, newOrder) => {
+        const { config } = get();
+        if (!config) return;
+
+        const updatedConfig = {
+          ...config,
+          rglLayouts: layouts,
+          widgetOrder: newOrder,
+        };
+
+        set({ config: updatedConfig });
+
+        try {
+          await dashboardConfigService.setRGLLayouts(layouts, newOrder);
+        } catch (error) {
+          console.error('Failed to save RGL layouts:', error);
+          set({ config, error: 'Failed to save layout changes' });
+        }
+      },
+
+      toggleUseReactGridLayout: async (enabled) => {
+        const { config } = get();
+        if (!config) return;
+
+        // When enabling RGL, we need to generate layouts if they don't exist
+        // and sync them to the store (not just to the service)
+        let rglLayouts = config.rglLayouts;
+        if (enabled && !rglLayouts) {
+          // Import the layout generation function dynamically to avoid circular deps
+          const { generateRGLLayoutsFromConfig } = await import(
+            '@/lib/services/dashboard-config'
+          );
+          rglLayouts = generateRGLLayoutsFromConfig(config);
+        }
+
+        const updatedConfig = {
+          ...config,
+          useReactGridLayout: enabled,
+          rglLayouts,
+        };
+
+        set({ config: updatedConfig });
+
+        try {
+          await dashboardConfigService.setUseReactGridLayout(enabled);
+        } catch (error) {
+          console.error('Failed to toggle layout system:', error);
+          set({ config, error: 'Failed to toggle layout system' });
+        }
       },
 
       resetToDefault: async () => {

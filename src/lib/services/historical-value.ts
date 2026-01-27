@@ -163,10 +163,24 @@ export async function getHistoricalValues(
   const dates = getDateIntervals(startDate, endDate, effectiveResolution);
   const priceCache = createPriceCache();
 
+  // Find the earliest transaction date to avoid calculating empty data points
+  const earliestTxDate =
+    transactions.length > 0
+      ? transactions.reduce((min, tx) => {
+          const txDate = new Date(tx.date);
+          return txDate < min ? txDate : min;
+        }, new Date(transactions[0].date))
+      : new Date();
+
   const points: HistoricalValuePoint[] = [];
   let previousValue = new Decimal(0);
 
   for (const date of dates) {
+    // Skip dates before the earliest transaction to avoid $0 data points
+    if (date < earliestTxDate) {
+      continue;
+    }
+
     try {
       const holdingsAtDate = calculateHoldingsAtDate(transactions, date);
       const { totalValue, hasInterpolatedPrices } = await calculateValueAtDate(
