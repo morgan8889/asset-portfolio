@@ -21,7 +21,10 @@ vi.mock('@/lib/utils/logger', () => ({
 
 // Mock validation functions
 vi.mock('@/lib/utils/validation', () => ({
-  validateSymbol: vi.fn((symbol: string) => /^[A-Z0-9]{1,10}$/.test(symbol)),
+  validateSymbol: vi.fn((symbol: string) => /^[\^]?[A-Z0-9.]{1,10}$/.test(symbol)),
+  sanitizeSymbol: vi.fn((input: string) =>
+    input.replace(/[^a-zA-Z0-9.\^]/g, '').trim().toUpperCase().slice(0, 15)
+  ),
   sanitizeInput: vi.fn((input: string) =>
     input.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20)
   ),
@@ -441,5 +444,311 @@ describe('API Routes Integration Tests', () => {
         expect(response.status).toBe(200);
       });
     });
+  });
+
+  describe('Batch Price API Route', () => {
+    it('should fetch prices for multiple symbols', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            chart: {
+              result: [
+                {
+                  meta: {
+                    regularMarketPrice: 150.25,
+                    currency: 'USD',
+                    marketState: 'REGULAR',
+                    regularMarketTime: 1701446400,
+                    previousClose: 148.5,
+                  },
+                },
+              ],
+            },
+          }),
+      });
+
+      global.fetch = mockFetch;
+
+      const { POST } = await import('@/app/api/prices/batch/route');
+
+      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
+        method: 'POST',
+        body: JSON.stringify({ symbols: ['AAPL', 'GOOGL', 'MSFT'] }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(200);
+
+      const data = await response.json();
+      expect(data).toMatchObject({
+        successful: expect.any(Array),
+        failed: expect.any(Array),
+        total: 3,
+        timestamp: expect.any(String),
+      });
+    }, 15000);
+
+    it('should reject empty symbols array', async () => {
+      const { POST } = await import('@/app/api/prices/batch/route');
+
+      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
+        method: 'POST',
+        body: JSON.stringify({ symbols: [] }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(400);
+
+      const data = await response.json();
+      expect(data.error).toBe('Symbols array is required');
+    });
+
+    it('should reject request without symbols', async () => {
+      const { POST } = await import('@/app/api/prices/batch/route');
+
+      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(400);
+
+      const data = await response.json();
+      expect(data.error).toBe('Symbols array is required');
+    });
+
+    it('should reject request with non-array symbols', async () => {
+      const { POST } = await import('@/app/api/prices/batch/route');
+
+      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
+        method: 'POST',
+        body: JSON.stringify({ symbols: 'AAPL' }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(400);
+
+      const data = await response.json();
+      expect(data.error).toBe('Symbols array is required');
+    });
+
+    it('should reject request with too many symbols', async () => {
+      const { POST } = await import('@/app/api/prices/batch/route');
+
+      // Create array with 21 symbols (exceeds max of 20)
+      const symbols = Array.from({ length: 21 }, (_, i) => `SYM${i}`);
+
+      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
+        method: 'POST',
+        body: JSON.stringify({ symbols }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(400);
+
+      const data = await response.json();
+      expect(data.error).toBe('Maximum 20 symbols allowed per batch request');
+    });
+
+    it('should reject invalid JSON body', async () => {
+      const { POST } = await import('@/app/api/prices/batch/route');
+
+      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
+        method: 'POST',
+        body: 'invalid json',
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(400);
+
+      const data = await response.json();
+      expect(data.error).toBe('Invalid JSON body');
+    });
+
+    it('should filter out invalid symbols', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            chart: {
+              result: [
+                {
+                  meta: {
+                    regularMarketPrice: 150.25,
+                    currency: 'USD',
+                    marketState: 'REGULAR',
+                    regularMarketTime: 1701446400,
+                    previousClose: 148.5,
+                  },
+                },
+              ],
+            },
+          }),
+      });
+
+      global.fetch = mockFetch;
+
+      const { POST } = await import('@/app/api/prices/batch/route');
+
+      // Mix of valid and invalid symbols
+      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
+        method: 'POST',
+        body: JSON.stringify({
+          symbols: ['AAPL', 'INVALID!!!', 'GOOGL', '', 123],
+        }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(200);
+
+      const data = await response.json();
+      // Should only process valid symbols (AAPL, GOOGL)
+      expect(data.total).toBeGreaterThan(0);
+      expect(data.total).toBeLessThan(5); // Should filter out invalid ones
+    }, 15000);
+
+    it('should return error when no valid symbols provided', async () => {
+      const { POST } = await import('@/app/api/prices/batch/route');
+
+      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
+        method: 'POST',
+        body: JSON.stringify({
+          symbols: ['!!!', '???', ''],
+        }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(400);
+
+      const data = await response.json();
+      expect(data.error).toBe('No valid symbols provided');
+    });
+
+    it('should apply rate limiting to batch requests', async () => {
+      // Mock rate limiter to simulate exceeded limit
+      mockRateLimitCheck.mockResolvedValue({
+        success: false,
+        remaining: 0,
+      });
+
+      const { POST } = await import('@/app/api/prices/batch/route');
+
+      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
+        method: 'POST',
+        body: JSON.stringify({ symbols: ['AAPL', 'GOOGL'] }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(429);
+
+      const data = await response.json();
+      expect(data.error).toMatch(/rate limit/i);
+    });
+
+    it('should cache batch price results', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            chart: {
+              result: [
+                {
+                  meta: {
+                    regularMarketPrice: 150.25,
+                    currency: 'USD',
+                    marketState: 'REGULAR',
+                    regularMarketTime: 1701446400,
+                    previousClose: 148.5,
+                  },
+                },
+              ],
+            },
+          }),
+      });
+
+      global.fetch = mockFetch;
+
+      const { POST } = await import('@/app/api/prices/batch/route');
+
+      // First request
+      const request1 = new NextRequest('http://localhost:3000/api/prices/batch', {
+        method: 'POST',
+        body: JSON.stringify({ symbols: ['AAPL'] }),
+      });
+
+      const response1 = await POST(request1);
+      expect(response1.status).toBe(200);
+
+      // Second request (should be cached)
+      const request2 = new NextRequest('http://localhost:3000/api/prices/batch', {
+        method: 'POST',
+        body: JSON.stringify({ symbols: ['AAPL'] }),
+      });
+
+      const response2 = await POST(request2);
+      expect(response2.status).toBe(200);
+
+      const data2 = await response2.json();
+      // At least one result should be cached
+      const cachedResults = data2.successful.filter((r: any) => r.cached === true);
+      expect(cachedResults.length).toBeGreaterThan(0);
+    }, 15000);
+
+    it('should handle mixed success and failure in batch', async () => {
+      let callCount = 0;
+      const mockFetch = vi.fn().mockImplementation(() => {
+        callCount++;
+        // First symbol succeeds, second fails
+        if (callCount % 2 === 1) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                chart: {
+                  result: [
+                    {
+                      meta: {
+                        regularMarketPrice: 150.25,
+                        currency: 'USD',
+                        marketState: 'REGULAR',
+                        regularMarketTime: 1701446400,
+                        previousClose: 148.5,
+                      },
+                    },
+                  ],
+                },
+              }),
+          });
+        } else {
+          return Promise.resolve({
+            ok: false,
+            status: 404,
+          });
+        }
+      });
+
+      global.fetch = mockFetch;
+
+      const { POST } = await import('@/app/api/prices/batch/route');
+
+      // Use unique symbols to avoid cache
+      const symbol1 = getUniqueSymbol();
+      const symbol2 = getUniqueSymbol();
+
+      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
+        method: 'POST',
+        body: JSON.stringify({ symbols: [symbol1, symbol2] }),
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(200);
+
+      const data = await response.json();
+      expect(data.total).toBe(2);
+      expect(data.successful.length).toBeGreaterThan(0);
+      expect(data.failed.length).toBeGreaterThan(0);
+    }, 15000);
   });
 });

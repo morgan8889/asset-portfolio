@@ -62,14 +62,14 @@ function getTransactionBadge(type: string) {
 
 function ActivitySkeleton() {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="flex items-center gap-2 text-sm font-medium">
           <Activity className="h-4 w-4" />
           Recent Activity
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="flex-1 min-h-0 overflow-y-auto space-y-3">
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
@@ -95,15 +95,15 @@ function ActivitySkeleton() {
 
 function ActivityEmpty() {
   return (
-    <Card data-testid="recent-activity-widget">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card data-testid="recent-activity-widget" className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="flex items-center gap-2 text-sm font-medium">
           <Activity className="h-4 w-4" />
           Recent Activity
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col items-center justify-center py-8 text-center">
+      <CardContent className="flex-1 min-h-0">
+        <div className="flex h-full flex-col items-center justify-center text-center">
           <Activity className="mb-4 h-12 w-12 text-muted-foreground opacity-50" />
           <p className="text-muted-foreground">No recent activity</p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -224,15 +224,15 @@ export const RecentActivityWidget = memo(function RecentActivityWidget({
   }
 
   return (
-    <Card data-testid="recent-activity-widget">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card data-testid="recent-activity-widget" className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="flex items-center gap-2 text-sm font-medium">
           <Activity className="h-4 w-4" />
           Recent Activity
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
+      <CardContent className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
           {transactions.map((transaction) => (
             <TransactionRow
               key={transaction.id}
@@ -243,7 +243,7 @@ export const RecentActivityWidget = memo(function RecentActivityWidget({
           ))}
         </div>
         {totalCount > limit && (
-          <div className="pt-4 text-center">
+          <div className="flex-shrink-0 pt-4 text-center">
             <Button variant="outline" size="sm">
               View All {totalCount} Transactions
             </Button>
