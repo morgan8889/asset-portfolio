@@ -1,0 +1,108 @@
+[ERROR] DEBUG: v3 validation failed: {
+  "_errors": [],
+  "version": {
+    "_errors": [
+      "Invalid literal value, expected 3"
+    ]
+  },
+  "widgetRowSpans": {
+    "_errors": [],
+    "growth-chart": {
+      "_errors": [
+        "Invalid literal value, expected 1",
+        "Invalid literal value, expected 2",
+        "Invalid literal value, expected 3"
+      ]
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[ERROR] DEBUG: v3 validation failed: {
+  "_errors": [],
+  "version": {
+    "_errors": [
+      "Invalid literal value, expected 3"
+    ]
+  },
+  "widgetRowSpans": {
+    "_errors": [],
+    "growth-chart": {
+      "_errors": [
+        "Invalid literal value, expected 1",
+        "Invalid literal value, expected 2",
+        "Invalid literal value, expected 3"
+      ]
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[ERROR] DEBUG: v3 validation failed: {
+  "_errors": [],
+  "version": {
+    "_errors": [
+      "Invalid literal value, expected 3"
+    ]
+  },
+  "widgetRowSpans": {
+    "_errors": [],
+    "growth-chart": {
+      "_errors": [
+        "Invalid literal value, expected 1",
+        "Invalid literal value, expected 2",
+        "Invalid literal value, expected 3"
+      ]
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[ERROR] DEBUG: v3 validation failed: {
+  "_errors": [],
+  "version": {
+    "_errors": [
+      "Invalid literal value, expected 3"
+    ]
+  },
+  "widgetRowSpans": {
+    "_errors": [],
+    "growth-chart": {
+      "_errors": [
+        "Invalid literal value, expected 1",
+        "Invalid literal value, expected 2",
+        "Invalid literal value, expected 3"
+      ]
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[ERROR] DEBUG: v3 validation failed: {
+  "_errors": [],
+  "version": {
+    "_errors": [
+      "Invalid literal value, expected 3"
+    ]
+  },
+  "widgetRowSpans": {
+    "_errors": [],
+    "growth-chart": {
+      "_errors": [
+        "Invalid literal value, expected 1",
+        "Invalid literal value, expected 2",
+        "Invalid literal value, expected 3"
+      ]
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[ERROR] DEBUG: v3 validation failed: {
+  "_errors": [],
+  "version": {
+    "_errors": [
+      "Invalid literal value, expected 3"
+    ]
+  },
+  "widgetRowSpans": {
+    "_errors": [],
+    "growth-chart": {
+      "_errors": [
+        "Invalid literal value, expected 1",
+        "Invalid literal value, expected 2",
+        "Invalid literal value, expected 3"
+      ]
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32

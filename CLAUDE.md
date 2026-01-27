@@ -246,6 +246,39 @@ npx playwright test tests/e2e/loading-state-regression.spec.ts --project=chromiu
 - **Verify real data**: Check for $X.XX format, not $0.00 or empty state
 - **Test page reload**: Exercises persist middleware rehydration path
 
+### UI Feature Development Workflow
+
+**CRITICAL**: For any UI feature with multiple visual states/modes, use this workflow:
+
+```
+Make change → Build → Screenshot ALL modes → Self-verify → Fix if broken → THEN present to user
+```
+
+**Before telling user "done" on UI features:**
+1. Start dev server if not running
+2. Use MCP Playwright to navigate to affected page
+3. Screenshot each visual state/configuration
+4. Verify no visual regressions or cutoffs
+5. Check browser console for errors
+6. Only then present results to user
+
+**For features with conditional display logic** (e.g., widget sizes, responsive layouts):
+- Create explicit decision matrix during planning:
+  ```
+  | Condition | Expected Visual Result |
+  |-----------|----------------------|
+  | 1×1       | Compact, no chart    |
+  | 1×4+      | Stacked with chart   |
+  | 2×2+      | Side-by-side         |
+  ```
+- Screenshot EACH configuration before claiming completion
+- If user introduces new terminology (e.g., "compact view"), immediately ask for precise definition
+
+**Anti-pattern to avoid:**
+```
+Make change → Tell user "done" → User finds visual issue → Repeat
+```
+
 ## Common Debugging Scenarios
 
 ### IndexedDB Issues

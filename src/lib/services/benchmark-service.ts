@@ -31,7 +31,7 @@ export const SUPPORTED_BENCHMARKS: BenchmarkInfo[] = [
   {
     symbol: '^GSPC',
     name: 'S&P 500',
-    description: 'Standard & Poor\'s 500 Index - Large-cap US equities',
+    description: "Standard & Poor's 500 Index - Large-cap US equities",
   },
   {
     symbol: '^DJI',
@@ -68,7 +68,9 @@ async function fetchBenchmarkPrice(symbol: string): Promise<{
     const response = await fetch(`/api/prices/${encodeURIComponent(symbol)}`);
 
     if (!response.ok) {
-      console.warn(`Failed to fetch benchmark price for ${symbol}: ${response.status}`);
+      console.warn(
+        `Failed to fetch benchmark price for ${symbol}: ${response.status}`
+      );
       return null;
     }
 
@@ -109,7 +111,9 @@ async function fetchHistoricalBenchmarkData(
     const response = await fetch(url);
 
     if (!response.ok) {
-      console.warn(`Failed to fetch historical benchmark data for ${symbol}: ${response.status}`);
+      console.warn(
+        `Failed to fetch historical benchmark data for ${symbol}: ${response.status}`
+      );
       return [];
     }
 
@@ -131,9 +135,8 @@ async function fetchHistoricalBenchmarkData(
       if (close === null) continue;
 
       const date = new Date(timestamps[i] * 1000);
-      const changePercent = prevValue !== null
-        ? ((close - prevValue) / prevValue) * 100
-        : 0;
+      const changePercent =
+        prevValue !== null ? ((close - prevValue) / prevValue) * 100 : 0;
 
       dataPoints.push({
         date: startOfDay(date),
@@ -149,7 +152,10 @@ async function fetchHistoricalBenchmarkData(
 
     return dataPoints;
   } catch (error) {
-    console.error(`Error fetching historical benchmark data for ${symbol}:`, error);
+    console.error(
+      `Error fetching historical benchmark data for ${symbol}:`,
+      error
+    );
     // Return cached data as fallback
     return getCachedBenchmarkData(symbol, startDate, endDate);
   }
@@ -189,9 +195,10 @@ async function getCachedBenchmarkData(
     for (const price of prices) {
       // price.close is stored as string in PriceHistoryStorage
       const closeValue = new Decimal(price.close);
-      const changePercent = prevClose !== null
-        ? closeValue.minus(prevClose).div(prevClose).mul(100).toNumber()
-        : 0;
+      const changePercent =
+        prevClose !== null
+          ? closeValue.minus(prevClose).div(prevClose).mul(100).toNumber()
+          : 0;
 
       dataPoints.push({
         date: price.date,
@@ -222,7 +229,9 @@ async function cacheBenchmarkData(
     // Ensure benchmark asset exists
     const existingAsset = await db.assets.get(benchmarkAssetId);
     if (!existingAsset) {
-      const benchmarkInfo = SUPPORTED_BENCHMARKS.find(b => b.symbol === symbol);
+      const benchmarkInfo = SUPPORTED_BENCHMARKS.find(
+        (b) => b.symbol === symbol
+      );
       await db.assets.put({
         id: benchmarkAssetId,
         symbol,
@@ -236,7 +245,9 @@ async function cacheBenchmarkData(
 
     // Store price data
     const priceRecords = dataPoints.map((dp) => ({
-      id: createPriceHistoryId(`${benchmarkAssetId}-${format(dp.date, 'yyyy-MM-dd')}`),
+      id: createPriceHistoryId(
+        `${benchmarkAssetId}-${format(dp.date, 'yyyy-MM-dd')}`
+      ),
       assetId: createAssetId(benchmarkAssetId),
       date: dp.date,
       open: dp.value.toString(),
@@ -317,7 +328,11 @@ export async function compareWithBenchmark(
   const portfolioEndValue = snapshots[snapshots.length - 1].totalValue;
   const portfolioReturn = portfolioStartValue.isZero()
     ? 0
-    : portfolioEndValue.minus(portfolioStartValue).div(portfolioStartValue).mul(100).toNumber();
+    : portfolioEndValue
+        .minus(portfolioStartValue)
+        .div(portfolioStartValue)
+        .mul(100)
+        .toNumber();
 
   // Get benchmark return
   const benchmarkReturn = await calculateBenchmarkReturn(
@@ -369,7 +384,11 @@ async function calculateCorrelation(
 ): Promise<number> {
   try {
     const snapshots = await getSnapshots(portfolioId, startDate, endDate);
-    const benchmarkData = await getBenchmarkData(benchmarkSymbol, startDate, endDate);
+    const benchmarkData = await getBenchmarkData(
+      benchmarkSymbol,
+      startDate,
+      endDate
+    );
 
     if (snapshots.length < 10 || benchmarkData.length < 10) {
       return 0; // Not enough data for meaningful correlation
@@ -388,7 +407,10 @@ async function calculateCorrelation(
     }
 
     // Align arrays (use minimum length)
-    const minLength = Math.min(portfolioReturns.length, benchmarkReturns.length);
+    const minLength = Math.min(
+      portfolioReturns.length,
+      benchmarkReturns.length
+    );
     const pReturns = portfolioReturns.slice(0, minLength);
     const bReturns = benchmarkReturns.slice(0, minLength);
 
@@ -434,7 +456,11 @@ export async function getBenchmarkChartData(
   }
 
   // Get benchmark data
-  const benchmarkData = await getBenchmarkData(benchmarkSymbol, startDate, endDate);
+  const benchmarkData = await getBenchmarkData(
+    benchmarkSymbol,
+    startDate,
+    endDate
+  );
 
   if (benchmarkData.length === 0) {
     return [];
@@ -443,20 +469,19 @@ export async function getBenchmarkChartData(
   // Normalize benchmark to portfolio starting value for visual comparison
   const portfolioStartValue = snapshots[0].totalValue.toNumber();
   const benchmarkStartValue = benchmarkData[0].value.toNumber();
-  const normalizationFactor = benchmarkStartValue > 0
-    ? portfolioStartValue / benchmarkStartValue
-    : 1;
+  const normalizationFactor =
+    benchmarkStartValue > 0 ? portfolioStartValue / benchmarkStartValue : 1;
 
   // Create benchmark data points aligned with portfolio dates
   const benchmarkMap = new Map(
-    benchmarkData.map(bp => [
+    benchmarkData.map((bp) => [
       format(bp.date, 'yyyy-MM-dd'),
       bp.value.toNumber(),
     ])
   );
 
   return snapshots
-    .map(snap => {
+    .map((snap) => {
       const dateKey = format(snap.date, 'yyyy-MM-dd');
       const benchmarkValue = benchmarkMap.get(dateKey);
 

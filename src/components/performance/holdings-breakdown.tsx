@@ -10,7 +10,13 @@
  */
 
 import { useState, useMemo } from 'react';
-import { ArrowUpDown, ArrowUp, ArrowDown, TrendingUp, TrendingDown } from 'lucide-react';
+import {
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  TrendingUp,
+  TrendingDown,
+} from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -51,11 +57,11 @@ function TableSkeleton() {
     <div className="space-y-2">
       {[...Array(5)].map((_, i) => (
         <div key={i} className="flex gap-4">
-          <div className="h-4 w-16 bg-muted animate-pulse rounded" />
-          <div className="h-4 w-32 bg-muted animate-pulse rounded flex-1" />
-          <div className="h-4 w-20 bg-muted animate-pulse rounded" />
-          <div className="h-4 w-20 bg-muted animate-pulse rounded" />
-          <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+          <div className="h-4 w-16 animate-pulse rounded bg-muted" />
+          <div className="h-4 w-32 flex-1 animate-pulse rounded bg-muted" />
+          <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+          <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+          <div className="h-4 w-16 animate-pulse rounded bg-muted" />
         </div>
       ))}
     </div>
@@ -69,9 +75,9 @@ function TableSkeleton() {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-8 text-center">
-      <TrendingUp className="h-12 w-12 text-muted-foreground mb-4" />
+      <TrendingUp className="mb-4 h-12 w-12 text-muted-foreground" />
       <p className="text-sm text-muted-foreground">No holdings to display</p>
-      <p className="text-xs text-muted-foreground mt-1">
+      <p className="mt-1 text-xs text-muted-foreground">
         Add transactions to see holding performance
       </p>
     </div>
@@ -90,14 +96,20 @@ interface SortButtonProps {
   className?: string;
 }
 
-function SortButton({ field, label, currentSort, onSort, className }: SortButtonProps) {
+function SortButton({
+  field,
+  label,
+  currentSort,
+  onSort,
+  className,
+}: SortButtonProps) {
   const isActive = currentSort.field === field;
 
   return (
     <Button
       variant="ghost"
       size="sm"
-      className={cn('h-8 px-2 -ml-2', className)}
+      className={cn('-ml-2 h-8 px-2', className)}
       onClick={() => onSort(field)}
     >
       {label}
@@ -133,7 +145,9 @@ export function HoldingsBreakdown({
     setSortConfig((current) => ({
       field,
       direction:
-        current.field === field && current.direction === 'desc' ? 'asc' : 'desc',
+        current.field === field && current.direction === 'desc'
+          ? 'asc'
+          : 'desc',
     }));
   };
 
@@ -210,7 +224,7 @@ export function HoldingsBreakdown({
                       label="Value"
                       currentSort={sortConfig}
                       onSort={handleSort}
-                      className="justify-end ml-auto"
+                      className="ml-auto justify-end"
                     />
                   </TableHead>
                   <TableHead className="text-right">
@@ -219,7 +233,7 @@ export function HoldingsBreakdown({
                       label="Gain/Loss"
                       currentSort={sortConfig}
                       onSort={handleSort}
-                      className="justify-end ml-auto"
+                      className="ml-auto justify-end"
                     />
                   </TableHead>
                   <TableHead className="text-right">
@@ -228,7 +242,7 @@ export function HoldingsBreakdown({
                       label="Return %"
                       currentSort={sortConfig}
                       onSort={handleSort}
-                      className="justify-end ml-auto"
+                      className="ml-auto justify-end"
                     />
                   </TableHead>
                   <TableHead className="text-right">
@@ -237,7 +251,7 @@ export function HoldingsBreakdown({
                       label="Weight"
                       currentSort={sortConfig}
                       onSort={handleSort}
-                      className="justify-end ml-auto"
+                      className="ml-auto justify-end"
                     />
                   </TableHead>
                 </TableRow>
@@ -245,7 +259,9 @@ export function HoldingsBreakdown({
               <TableBody>
                 {sortedHoldings.map((holding) => {
                   const isPositive = holding.percentGain >= 0;
-                  const gainColor = isPositive ? 'text-green-600' : 'text-red-600';
+                  const gainColor = isPositive
+                    ? 'text-green-600'
+                    : 'text-red-600';
                   const GainIcon = isPositive ? TrendingUp : TrendingDown;
 
                   return (
@@ -256,7 +272,9 @@ export function HoldingsBreakdown({
                       <TableCell className="max-w-[200px] truncate">
                         {holding.name}
                         {holding.isInterpolated && (
-                          <span className="ml-1 text-xs text-muted-foreground">*</span>
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            *
+                          </span>
                         )}
                       </TableCell>
                       <TableCell className="text-right font-medium">
@@ -269,7 +287,9 @@ export function HoldingsBreakdown({
                           {formatCurrency(holding.absoluteGain.toNumber())}
                         </span>
                       </TableCell>
-                      <TableCell className={cn('text-right font-medium', gainColor)}>
+                      <TableCell
+                        className={cn('text-right font-medium', gainColor)}
+                      >
                         {isPositive ? '+' : ''}
                         {holding.percentGain.toFixed(2)}%
                       </TableCell>
@@ -282,7 +302,7 @@ export function HoldingsBreakdown({
               </TableBody>
             </Table>
             {sortedHoldings.some((h) => h.isInterpolated) && (
-              <p className="text-xs text-muted-foreground mt-2">
+              <p className="mt-2 text-xs text-muted-foreground">
                 * Holdings marked with asterisk have estimated prices
               </p>
             )}

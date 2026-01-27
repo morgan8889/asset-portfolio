@@ -83,7 +83,9 @@ describe('Snapshot Service', () => {
         },
       ];
 
-      vi.mocked(db.getPerformanceSnapshotsByPortfolio).mockResolvedValue(mockSnapshots);
+      vi.mocked(db.getPerformanceSnapshotsByPortfolio).mockResolvedValue(
+        mockSnapshots
+      );
 
       const result = await getSnapshots(
         mockPortfolioId,
@@ -118,7 +120,9 @@ describe('Snapshot Service', () => {
         updatedAt: new Date(),
       };
 
-      vi.mocked(db.getLatestPerformanceSnapshot).mockResolvedValue(mockSnapshot);
+      vi.mocked(db.getLatestPerformanceSnapshot).mockResolvedValue(
+        mockSnapshot
+      );
 
       const result = await getLatestSnapshot(mockPortfolioId);
 
@@ -140,7 +144,9 @@ describe('Snapshot Service', () => {
 
       await computeSnapshots(mockPortfolioId, subDays(today, 7), today);
 
-      expect(db.deletePerformanceSnapshotsByPortfolio).toHaveBeenCalledWith(mockPortfolioId);
+      expect(db.deletePerformanceSnapshotsByPortfolio).toHaveBeenCalledWith(
+        mockPortfolioId
+      );
       expect(db.upsertPerformanceSnapshot).not.toHaveBeenCalled();
     });
 
@@ -160,7 +166,9 @@ describe('Snapshot Service', () => {
         },
       ];
 
-      vi.mocked(transactionQueries.getByPortfolio).mockResolvedValue(mockTransactions);
+      vi.mocked(transactionQueries.getByPortfolio).mockResolvedValue(
+        mockTransactions
+      );
       vi.mocked(db.getPerformanceSnapshotsByPortfolio).mockResolvedValue([]);
       vi.mocked(getPriceAtDate).mockResolvedValue({
         price: new Decimal(110),
@@ -201,7 +209,9 @@ describe('Snapshot Service', () => {
         },
       ];
 
-      vi.mocked(transactionQueries.getByPortfolio).mockResolvedValue(mockTransactions);
+      vi.mocked(transactionQueries.getByPortfolio).mockResolvedValue(
+        mockTransactions
+      );
       vi.mocked(db.getPerformanceSnapshotsByPortfolio).mockResolvedValue([]);
       vi.mocked(getPriceAtDate).mockImplementation(async (assetId) => ({
         price: assetId === 'asset-1' ? new Decimal(110) : new Decimal(220),
@@ -231,7 +241,9 @@ describe('Snapshot Service', () => {
         },
       ];
 
-      vi.mocked(transactionQueries.getByPortfolio).mockResolvedValue(mockTransactions);
+      vi.mocked(transactionQueries.getByPortfolio).mockResolvedValue(
+        mockTransactions
+      );
       vi.mocked(db.getPerformanceSnapshotsByPortfolio).mockResolvedValue([]);
       vi.mocked(getPriceAtDate).mockResolvedValue({
         price: new Decimal(110),
@@ -240,7 +252,9 @@ describe('Snapshot Service', () => {
 
       await recomputeAll(mockPortfolioId);
 
-      expect(db.deletePerformanceSnapshotsByPortfolio).toHaveBeenCalledWith(mockPortfolioId);
+      expect(db.deletePerformanceSnapshotsByPortfolio).toHaveBeenCalledWith(
+        mockPortfolioId
+      );
       expect(db.upsertPerformanceSnapshot).toHaveBeenCalled();
     });
 
@@ -249,7 +263,9 @@ describe('Snapshot Service', () => {
 
       await recomputeAll(mockPortfolioId);
 
-      expect(db.deletePerformanceSnapshotsByPortfolio).toHaveBeenCalledWith(mockPortfolioId);
+      expect(db.deletePerformanceSnapshotsByPortfolio).toHaveBeenCalledWith(
+        mockPortfolioId
+      );
       expect(db.upsertPerformanceSnapshot).not.toHaveBeenCalled();
     });
   });
@@ -258,7 +274,9 @@ describe('Snapshot Service', () => {
     it('should delete all snapshots for portfolio', async () => {
       await deleteSnapshots(mockPortfolioId);
 
-      expect(db.deletePerformanceSnapshotsByPortfolio).toHaveBeenCalledWith(mockPortfolioId);
+      expect(db.deletePerformanceSnapshotsByPortfolio).toHaveBeenCalledWith(
+        mockPortfolioId
+      );
     });
   });
 
@@ -322,7 +340,9 @@ describe('Snapshot Service', () => {
         portfolioId: mockPortfolioId,
       });
 
-      expect(db.deletePerformanceSnapshotsByPortfolio).toHaveBeenCalledWith(mockPortfolioId);
+      expect(db.deletePerformanceSnapshotsByPortfolio).toHaveBeenCalledWith(
+        mockPortfolioId
+      );
     });
   });
 
@@ -432,23 +452,28 @@ describe('Snapshot Service', () => {
 
   describe('getAggregatedSnapshots', () => {
     it('should return daily snapshots for short periods', async () => {
-      const mockSnapshots: PerformanceSnapshot[] = Array.from({ length: 30 }, (_, i) => ({
-        id: `snap-${i}`,
-        portfolioId: mockPortfolioId,
-        date: subDays(today, 29 - i),
-        totalValue: new Decimal(10000 + i * 100),
-        totalCost: new Decimal(9000),
-        dayChange: new Decimal(100),
-        dayChangePercent: 1,
-        cumulativeReturn: new Decimal(0.1 + i * 0.01),
-        twrReturn: new Decimal(0.1),
-        holdingCount: 5,
-        hasInterpolatedPrices: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }));
+      const mockSnapshots: PerformanceSnapshot[] = Array.from(
+        { length: 30 },
+        (_, i) => ({
+          id: `snap-${i}`,
+          portfolioId: mockPortfolioId,
+          date: subDays(today, 29 - i),
+          totalValue: new Decimal(10000 + i * 100),
+          totalCost: new Decimal(9000),
+          dayChange: new Decimal(100),
+          dayChangePercent: 1,
+          cumulativeReturn: new Decimal(0.1 + i * 0.01),
+          twrReturn: new Decimal(0.1),
+          holdingCount: 5,
+          hasInterpolatedPrices: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
 
-      vi.mocked(db.getPerformanceSnapshotsByPortfolio).mockResolvedValue(mockSnapshots);
+      vi.mocked(db.getPerformanceSnapshotsByPortfolio).mockResolvedValue(
+        mockSnapshots
+      );
 
       const result = await getAggregatedSnapshots(
         mockPortfolioId,
@@ -461,23 +486,28 @@ describe('Snapshot Service', () => {
     });
 
     it('should aggregate to weekly for medium periods', async () => {
-      const mockSnapshots: PerformanceSnapshot[] = Array.from({ length: 180 }, (_, i) => ({
-        id: `snap-${i}`,
-        portfolioId: mockPortfolioId,
-        date: subDays(today, 179 - i),
-        totalValue: new Decimal(10000 + i * 50),
-        totalCost: new Decimal(9000),
-        dayChange: new Decimal(50),
-        dayChangePercent: 0.5,
-        cumulativeReturn: new Decimal(0.1 + i * 0.005),
-        twrReturn: new Decimal(0.1),
-        holdingCount: 5,
-        hasInterpolatedPrices: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }));
+      const mockSnapshots: PerformanceSnapshot[] = Array.from(
+        { length: 180 },
+        (_, i) => ({
+          id: `snap-${i}`,
+          portfolioId: mockPortfolioId,
+          date: subDays(today, 179 - i),
+          totalValue: new Decimal(10000 + i * 50),
+          totalCost: new Decimal(9000),
+          dayChange: new Decimal(50),
+          dayChangePercent: 0.5,
+          cumulativeReturn: new Decimal(0.1 + i * 0.005),
+          twrReturn: new Decimal(0.1),
+          holdingCount: 5,
+          hasInterpolatedPrices: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
 
-      vi.mocked(db.getPerformanceSnapshotsByPortfolio).mockResolvedValue(mockSnapshots);
+      vi.mocked(db.getPerformanceSnapshotsByPortfolio).mockResolvedValue(
+        mockSnapshots
+      );
 
       const result = await getAggregatedSnapshots(
         mockPortfolioId,
@@ -491,23 +521,28 @@ describe('Snapshot Service', () => {
     });
 
     it('should aggregate to monthly for long periods', async () => {
-      const mockSnapshots: PerformanceSnapshot[] = Array.from({ length: 400 }, (_, i) => ({
-        id: `snap-${i}`,
-        portfolioId: mockPortfolioId,
-        date: subDays(today, 399 - i),
-        totalValue: new Decimal(10000 + i * 25),
-        totalCost: new Decimal(9000),
-        dayChange: new Decimal(25),
-        dayChangePercent: 0.25,
-        cumulativeReturn: new Decimal(0.1 + i * 0.0025),
-        twrReturn: new Decimal(0.1),
-        holdingCount: 5,
-        hasInterpolatedPrices: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }));
+      const mockSnapshots: PerformanceSnapshot[] = Array.from(
+        { length: 400 },
+        (_, i) => ({
+          id: `snap-${i}`,
+          portfolioId: mockPortfolioId,
+          date: subDays(today, 399 - i),
+          totalValue: new Decimal(10000 + i * 25),
+          totalCost: new Decimal(9000),
+          dayChange: new Decimal(25),
+          dayChangePercent: 0.25,
+          cumulativeReturn: new Decimal(0.1 + i * 0.0025),
+          twrReturn: new Decimal(0.1),
+          holdingCount: 5,
+          hasInterpolatedPrices: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+      );
 
-      vi.mocked(db.getPerformanceSnapshotsByPortfolio).mockResolvedValue(mockSnapshots);
+      vi.mocked(db.getPerformanceSnapshotsByPortfolio).mockResolvedValue(
+        mockSnapshots
+      );
 
       const result = await getAggregatedSnapshots(
         mockPortfolioId,

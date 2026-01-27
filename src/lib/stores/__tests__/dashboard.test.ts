@@ -68,8 +68,12 @@ describe('Dashboard Store', () => {
       expect(WidgetRowSpanSchema.safeParse(3).success).toBe(true);
     });
 
-    it('should reject invalid WidgetRowSpan value 4', () => {
-      expect(WidgetRowSpanSchema.safeParse(4).success).toBe(false);
+    it('should validate WidgetRowSpan type for value 4', () => {
+      expect(WidgetRowSpanSchema.safeParse(4).success).toBe(true);
+    });
+
+    it('should reject invalid WidgetRowSpan value 5', () => {
+      expect(WidgetRowSpanSchema.safeParse(5).success).toBe(false);
     });
 
     it('should reject invalid WidgetRowSpan value 0', () => {
@@ -110,7 +114,9 @@ describe('Dashboard Store', () => {
     });
 
     it('should return default config if service returns default', async () => {
-      mockDashboardConfigService.getConfig.mockResolvedValue({ ...DEFAULT_DASHBOARD_CONFIG });
+      mockDashboardConfigService.getConfig.mockResolvedValue({
+        ...DEFAULT_DASHBOARD_CONFIG,
+      });
 
       await useDashboardStore.getState().loadConfig();
 
@@ -137,7 +143,9 @@ describe('Dashboard Store', () => {
 
     it('should disable dense packing', async () => {
       // Start with dense packing enabled
-      useDashboardStore.setState({ config: { ...defaultV4Config, densePacking: true } });
+      useDashboardStore.setState({
+        config: { ...defaultV4Config, densePacking: true },
+      });
 
       await useDashboardStore.getState().setDensePacking(false);
 
@@ -150,7 +158,9 @@ describe('Dashboard Store', () => {
       const initialConfig = { ...defaultV4Config, densePacking: false };
       useDashboardStore.setState({ config: initialConfig });
 
-      mockDashboardConfigService.setDensePacking.mockRejectedValue(new Error('DB error'));
+      mockDashboardConfigService.setDensePacking.mockRejectedValue(
+        new Error('DB error')
+      );
 
       await useDashboardStore.getState().setDensePacking(true);
 
@@ -195,7 +205,9 @@ describe('Dashboard Store', () => {
     });
 
     it('should reject invalid row span value', async () => {
-      await useDashboardStore.getState().setWidgetRowSpan('growth-chart', 4 as any);
+      await useDashboardStore
+        .getState()
+        .setWidgetRowSpan('growth-chart', 4 as any);
 
       const state = useDashboardStore.getState();
       expect(state.error).toContain('Row span must be 1, 2, or 3');
@@ -203,10 +215,15 @@ describe('Dashboard Store', () => {
 
     it('should rollback on persistence error', async () => {
       const initialRowSpans = { 'growth-chart': 2 as const };
-      const initialConfig = { ...defaultV4Config, widgetRowSpans: initialRowSpans };
+      const initialConfig = {
+        ...defaultV4Config,
+        widgetRowSpans: initialRowSpans,
+      };
       useDashboardStore.setState({ config: initialConfig });
 
-      mockDashboardConfigService.setWidgetRowSpan.mockRejectedValue(new Error('DB error'));
+      mockDashboardConfigService.setWidgetRowSpan.mockRejectedValue(
+        new Error('DB error')
+      );
 
       await useDashboardStore.getState().setWidgetRowSpan('growth-chart', 3);
 
@@ -217,12 +234,12 @@ describe('Dashboard Store', () => {
     });
   });
 
-  describe('Migration v2 to v3', () => {
-    it('should migrate v2 config to v3 with defaults', async () => {
-      // The service handles migration, so we mock it returning an already-migrated v3 config
+  describe('Migration v2 to v4', () => {
+    it('should migrate v2 config to v4 with defaults', async () => {
+      // The service handles migration, so we mock it returning an already-migrated v4 config
       const migratedConfig = {
         ...defaultV4Config,
-        version: 3,
+        version: 4,
         densePacking: false,
         widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
       };
@@ -232,14 +249,14 @@ describe('Dashboard Store', () => {
       await useDashboardStore.getState().loadConfig();
 
       const state = useDashboardStore.getState();
-      expect(state.config?.version).toBe(3);
+      expect(state.config?.version).toBe(4);
       expect(state.config?.densePacking).toBe(false);
       expect(state.config?.widgetRowSpans).toEqual(DEFAULT_WIDGET_ROW_SPANS);
     });
   });
 
   describe('resetToDefault', () => {
-    it('should reset to default v3 config including densePacking and widgetRowSpans', async () => {
+    it('should reset to default v4 config including densePacking and widgetRowSpans', async () => {
       useDashboardStore.setState({
         config: {
           ...defaultV4Config,
@@ -248,13 +265,15 @@ describe('Dashboard Store', () => {
         },
       });
 
-      mockDashboardConfigService.resetToDefault.mockResolvedValue({ ...DEFAULT_DASHBOARD_CONFIG });
+      mockDashboardConfigService.resetToDefault.mockResolvedValue({
+        ...DEFAULT_DASHBOARD_CONFIG,
+      });
 
       await useDashboardStore.getState().resetToDefault();
 
       const state = useDashboardStore.getState();
-      expect(state.config?.version).toBe(3);
-      expect(state.config?.densePacking).toBe(false);
+      expect(state.config?.version).toBe(4);
+      expect(state.config?.densePacking).toBe(true); // v4 default is true
       expect(state.config?.widgetRowSpans).toEqual(DEFAULT_WIDGET_ROW_SPANS);
       expect(state.loading).toBe(false);
     });

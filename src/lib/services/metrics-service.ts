@@ -348,7 +348,10 @@ export function calculateSharpeRatio(
   const dailyRiskFreeRate = riskFreeRate / TRADING_DAYS_PER_YEAR;
 
   // Annualized Sharpe ratio
-  return ((avgReturn - dailyRiskFreeRate) / stdDev) * Math.sqrt(TRADING_DAYS_PER_YEAR);
+  return (
+    ((avgReturn - dailyRiskFreeRate) / stdDev) *
+    Math.sqrt(TRADING_DAYS_PER_YEAR)
+  );
 }
 
 /**

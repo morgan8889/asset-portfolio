@@ -150,7 +150,11 @@ describe('benchmark-service', () => {
           }),
       });
 
-      const result = await calculateBenchmarkReturn('^GSPC', startDate, endDate);
+      const result = await calculateBenchmarkReturn(
+        '^GSPC',
+        startDate,
+        endDate
+      );
 
       expect(result).toBeCloseTo(10, 1); // 10% return
     });
@@ -172,7 +176,11 @@ describe('benchmark-service', () => {
           }),
       });
 
-      const result = await calculateBenchmarkReturn('^GSPC', startDate, endDate);
+      const result = await calculateBenchmarkReturn(
+        '^GSPC',
+        startDate,
+        endDate
+      );
 
       expect(result).toBeCloseTo(-10, 1); // -10% return
     });

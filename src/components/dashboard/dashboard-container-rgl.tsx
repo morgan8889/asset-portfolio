@@ -6,7 +6,7 @@
  * Dashboard implementation using react-grid-layout for drag-drop and resizing.
  */
 
-import React, { useEffect, useMemo, useCallback, memo } from 'react';
+import React, { useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { Responsive as ResponsiveGridLayout, WidthProvider } from 'react-grid-layout';
 import type ReactGridLayout from 'react-grid-layout';
 import { Decimal } from 'decimal.js';
@@ -131,15 +131,9 @@ function formatCategoryLabel(category: string): string {
 const DashboardContainerRGLComponent = ({
   disableDragDrop = false,
 }: DashboardContainerRGLProps) => {
-  const {
-    config,
-    setRGLLayouts,
-  } = useDashboardStore();
-  const {
-    metrics,
-    holdings,
-    assets,
-  } = usePortfolioStore();
+  const { config, setRGLLayouts, setWidgetSpan, setWidgetRowSpan } =
+    useDashboardStore();
+  const { metrics, holdings, assets } = usePortfolioStore();
   const { loading: priceLoading } = usePriceStore();
   const setSymbolAssetMappings = usePriceStore(
     (state) => state.setSymbolAssetMappings
@@ -179,6 +173,23 @@ const DashboardContainerRGLComponent = ({
     };
   }, [config, visibleWidgets]);
 
+  // Track current breakpoint for layout changes
+  // Note: Currently unused but maintained for potential future breakpoint-specific logic
+  const currentBreakpointRef = useRef<'lg' | 'md' | 'sm'>('lg');
+
+  /**
+   * Handle breakpoint changes to track which layout is currently active.
+   * RGL's onLayoutChange provides allLayouts with all breakpoints, so we save
+   * all layouts together. This ref is maintained for potential future use if
+   * breakpoint-specific logic is needed (e.g., selective persistence).
+   */
+  const handleBreakpointChange = useCallback(
+    (newBreakpoint: 'lg' | 'md' | 'sm', newCols: number) => {
+      currentBreakpointRef.current = newBreakpoint;
+    },
+    []
+  );
+
   const handleLayoutChange = useCallback(
     (currentLayout: RGLLayoutType[], allLayouts: RGLLayoutsType) => {
       if (!config) return;
@@ -205,6 +216,41 @@ const DashboardContainerRGLComponent = ({
       );
     },
     [config, setRGLLayouts]
+  );
+
+  /**
+   * Sync RGL layout dimensions to widgetSpans and widgetRowSpans.
+   * Called after resize completes to update span settings.
+   */
+  const syncLayoutToSpans = useCallback(
+    async (widgetId: WidgetId, w: number, h: number) => {
+      // Clamp to valid span values (WidgetSpan: 1|2, WidgetRowSpan: 1|2|3|4)
+      const colSpan = Math.max(1, Math.min(2, w)) as 1 | 2;
+      const rowSpan = Math.max(1, Math.min(4, h)) as 1 | 2 | 3 | 4;
+
+      // Update store (persists to IndexedDB)
+      await setWidgetSpan(widgetId, colSpan);
+      await setWidgetRowSpan(widgetId, rowSpan);
+    },
+    [setWidgetSpan, setWidgetRowSpan]
+  );
+
+  /**
+   * Handle resize stop - sync final dimensions to span settings.
+   * onResizeStop provides: (layout, oldItem, newItem, placeholder, e, element)
+   */
+  const handleResizeStop = useCallback(
+    (
+      layout: RGLLayoutType[],
+      oldItem: RGLLayoutType,
+      newItem: RGLLayoutType
+    ) => {
+      if (!config) return;
+
+      const widgetId = newItem.i as WidgetId;
+      syncLayoutToSpans(widgetId, newItem.w, newItem.h);
+    },
+    [config, syncLayoutToSpans]
   );
 
   const categoryAllocations = useMemo(
@@ -316,6 +362,8 @@ const DashboardContainerRGLComponent = ({
         isResizable={!disableDragDrop}
         compactType={config.densePacking ? 'vertical' : null}
         onLayoutChange={handleLayoutChange}
+        onBreakpointChange={handleBreakpointChange}
+        onResizeStop={handleResizeStop}
         margin={[16, 16]}
         draggableHandle=".drag-handle"
         className={cn('transition-all duration-300')}

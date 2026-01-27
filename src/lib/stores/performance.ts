@@ -68,7 +68,10 @@ interface PerformanceState {
   setPeriod: (period: TimePeriod) => void;
   toggleBenchmark: () => void;
   setBenchmark: (symbol: string) => void;
-  setSorting: (by: 'gain' | 'percent' | 'value' | 'name', direction: 'asc' | 'desc') => void;
+  setSorting: (
+    by: 'gain' | 'percent' | 'value' | 'name',
+    direction: 'asc' | 'desc'
+  ) => void;
   loadPerformanceData: (portfolioId: string) => Promise<void>;
   loadBenchmarkData: (portfolioId: string) => Promise<void>;
   exportData: (portfolioId: string) => Promise<string>;
@@ -84,10 +87,9 @@ function calculateVolatility(dailyReturns: number[]): number {
   if (dailyReturns.length < 2) return 0;
 
   const mean = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
-  const variance = dailyReturns.reduce(
-    (sum, r) => sum + Math.pow(r - mean, 2),
-    0
-  ) / (dailyReturns.length - 1);
+  const variance =
+    dailyReturns.reduce((sum, r) => sum + Math.pow(r - mean, 2), 0) /
+    (dailyReturns.length - 1);
   const stdDev = Math.sqrt(variance);
 
   // Annualize: multiply by sqrt(TRADING_DAYS_PER_YEAR)
@@ -175,7 +177,11 @@ export const usePerformanceStore = create<PerformanceState>()(
           }
 
           // Get aggregated snapshots for chart
-          const snapshots = await getAggregatedSnapshots(portfolioId, startDate, endDate);
+          const snapshots = await getAggregatedSnapshots(
+            portfolioId,
+            startDate,
+            endDate
+          );
 
           if (snapshots.length === 0) {
             set({
@@ -210,14 +216,18 @@ export const usePerformanceStore = create<PerformanceState>()(
           for (const snap of snapshots) {
             if (snap.totalValue.gt(periodHigh.totalValue)) periodHigh = snap;
             if (snap.totalValue.lt(periodLow.totalValue)) periodLow = snap;
-            if (snap.dayChangePercent > bestDay.dayChangePercent) bestDay = snap;
-            if (snap.dayChangePercent < worstDay.dayChangePercent) worstDay = snap;
+            if (snap.dayChangePercent > bestDay.dayChangePercent)
+              bestDay = snap;
+            if (snap.dayChangePercent < worstDay.dayChangePercent)
+              worstDay = snap;
             if (snap.dayChangePercent !== 0) {
               dailyReturns.push(snap.dayChangePercent / 100);
             }
           }
 
-          const totalReturn = lastSnapshot.totalValue.minus(firstSnapshot.totalValue);
+          const totalReturn = lastSnapshot.totalValue.minus(
+            firstSnapshot.totalValue
+          );
           const totalReturnPercent = firstSnapshot.totalValue.isZero()
             ? 0
             : totalReturn.div(firstSnapshot.totalValue).mul(100).toNumber();
@@ -257,7 +267,10 @@ export const usePerformanceStore = create<PerformanceState>()(
         } catch (error) {
           console.error('Failed to load performance data:', error);
           set({
-            error: error instanceof Error ? error.message : 'Failed to load performance data',
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to load performance data',
             isLoading: false,
           });
         }
@@ -274,7 +287,13 @@ export const usePerformanceStore = create<PerformanceState>()(
           }
 
           // Generate CSV content
-          const headers = ['Date', 'Portfolio Value', 'Daily Change', 'Daily Change %', 'Cumulative Return %'];
+          const headers = [
+            'Date',
+            'Portfolio Value',
+            'Daily Change',
+            'Daily Change %',
+            'Cumulative Return %',
+          ];
           const rows = chartData.map((point) => {
             const dateStr = point.date.toISOString().split('T')[0];
             return [
@@ -282,7 +301,12 @@ export const usePerformanceStore = create<PerformanceState>()(
               point.value.toFixed(2),
               point.change.toFixed(2),
               point.changePercent.toFixed(2),
-              summary ? ((point.value / summary.startValue.toNumber() - 1) * 100).toFixed(2) : '0.00',
+              summary
+                ? (
+                    (point.value / summary.startValue.toNumber() - 1) *
+                    100
+                  ).toFixed(2)
+                : '0.00',
             ].join(',');
           });
 
@@ -292,7 +316,8 @@ export const usePerformanceStore = create<PerformanceState>()(
           return csv;
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to export data',
+            error:
+              error instanceof Error ? error.message : 'Failed to export data',
             isExporting: false,
           });
           throw error;
@@ -306,7 +331,8 @@ export const usePerformanceStore = create<PerformanceState>()(
           await get().loadPerformanceData(portfolioId);
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to refresh data',
+            error:
+              error instanceof Error ? error.message : 'Failed to refresh data',
             isLoading: false,
           });
         }
