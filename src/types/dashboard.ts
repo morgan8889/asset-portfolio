@@ -11,6 +11,7 @@
 import { z } from 'zod';
 import { Decimal } from 'decimal.js';
 import { subDays, startOfDay } from 'date-fns';
+import type { YearOverYearMetric } from './performance';
 
 // =============================================================================
 // Layout Types
@@ -875,7 +876,7 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
 /**
  * Time periods for Performance page chart selection.
  */
-export type ChartTimePeriod = '1M' | '3M' | 'YTD' | '1Y' | 'ALL';
+export type ChartTimePeriod = '1M' | '3M' | 'YTD' | '1Y' | '3Y' | 'ALL';
 
 /**
  * Historical portfolio value data point for performance chart.
@@ -930,6 +931,8 @@ export interface PerformancePageData {
   // Calculated metrics (from historical data)
   /** Portfolio performance metrics (CAGR, Sharpe, Drawdown) */
   metrics: PerformancePageMetrics;
+  /** Year-over-Year CAGR metrics */
+  yoyMetrics: YearOverYearMetric[];
 
   // Chart data
   /** Historical portfolio values for chart */

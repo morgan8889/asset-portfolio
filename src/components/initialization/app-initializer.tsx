@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { initializePortfolioApp } from '@/lib/db';
 
 interface AppInitializerProps {
@@ -9,19 +9,20 @@ interface AppInitializerProps {
 
 // Keep track of initialization globally to prevent multiple initializations
 let globalInitializationPromise: Promise<void> | null = null;
+let globalInitializationComplete = false;
 
 export function AppInitializer({ children }: AppInitializerProps) {
-  const [isInitialized, setIsInitialized] = useState(false);
+  // Start as initialized if global initialization already completed
+  const [isInitialized, setIsInitialized] = useState(globalInitializationComplete);
   const [error, setError] = useState<string | null>(null);
-  const initializationStarted = useRef(false);
 
   useEffect(() => {
     const initialize = async () => {
-      // Prevent multiple initializations
-      if (initializationStarted.current) {
+      // If already initialized globally, just update local state
+      if (globalInitializationComplete) {
+        setIsInitialized(true);
         return;
       }
-      initializationStarted.current = true;
 
       try {
         // Use global promise to ensure only one initialization happens
@@ -29,11 +30,13 @@ export function AppInitializer({ children }: AppInitializerProps) {
           globalInitializationPromise = initializePortfolioApp();
         }
         await globalInitializationPromise;
+        globalInitializationComplete = true;
         setIsInitialized(true);
       } catch (err) {
         console.error('Failed to initialize app:', err);
         setError(err instanceof Error ? err.message : 'Initialization failed');
         // Still allow the app to load even if initialization fails
+        globalInitializationComplete = true;
         setIsInitialized(true);
       }
     };

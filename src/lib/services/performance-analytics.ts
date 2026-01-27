@@ -8,7 +8,15 @@
  */
 
 import { Decimal } from 'decimal.js';
-import { format, differenceInDays } from 'date-fns';
+import {
+  format,
+  differenceInDays,
+  startOfYear,
+  endOfYear,
+  subYears,
+  isAfter,
+  isBefore,
+} from 'date-fns';
 
 import { TimePeriod, TIME_PERIOD_CONFIGS } from '@/types/dashboard';
 import {
@@ -18,10 +26,15 @@ import {
   PerformanceSnapshot,
   ExportOptions,
   DayPerformance,
+  YearOverYearMetric,
 } from '@/types/performance';
 import { db } from '@/lib/db/schema';
 import { getSnapshots, getAggregatedSnapshots } from './snapshot-service';
-import { calculateVolatility, calculateSharpeRatio } from './twr-calculator';
+import {
+  calculateVolatility,
+  calculateSharpeRatio,
+  annualizeReturn,
+} from './twr-calculator';
 
 // =============================================================================
 // Summary Statistics
@@ -311,6 +324,7 @@ export function getAggregationLevel(
 
   if (days <= 90) return 'daily';
   if (days <= 365) return 'weekly';
+  if (days <= 1095) return 'monthly'; // 3 years = ~1095 days
   return 'monthly';
 }
 
@@ -334,4 +348,135 @@ export function getMaxDataPoints(period: TimePeriod): number {
     default:
       return 100;
   }
+}
+
+// =============================================================================
+// Year-over-Year Growth
+// =============================================================================
+
+/**
+ * Calculate Year-over-Year CAGR metrics for the portfolio.
+ * Returns metrics for each complete calendar year plus current YTD.
+ *
+ * @param portfolioId Portfolio ID to calculate metrics for
+ * @returns Array of YearOverYearMetric objects, one per year
+ */
+export async function getYoYMetrics(
+  portfolioId: string
+): Promise<YearOverYearMetric[]> {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+
+  // Get all available snapshots
+  const allSnapshots = await getSnapshots(
+    portfolioId,
+    new Date(0), // From beginning
+    now
+  );
+
+  if (allSnapshots.length === 0) {
+    return [];
+  }
+
+  const firstSnapshot = allSnapshots[0];
+  const firstYear = firstSnapshot.date.getFullYear();
+
+  // If portfolio has less than 1 year of data, return empty
+  const portfolioAgeDays = differenceInDays(now, firstSnapshot.date);
+  if (portfolioAgeDays < 365) {
+    return [];
+  }
+
+  const metrics: YearOverYearMetric[] = [];
+
+  // Calculate metrics for each complete calendar year
+  for (let year = firstYear; year <= currentYear; year++) {
+    const yearStart = startOfYear(new Date(year, 0, 1));
+    const yearEnd = endOfYear(new Date(year, 11, 31));
+
+    // Adjust boundaries if portfolio started mid-year or we're in current year
+    const actualStart = isBefore(yearStart, firstSnapshot.date)
+      ? firstSnapshot.date
+      : yearStart;
+    const actualEnd = isAfter(yearEnd, now) ? now : yearEnd;
+
+    // Find snapshots closest to the start and end dates
+    const startSnapshot = findClosestSnapshot(allSnapshots, actualStart);
+    const endSnapshot = findClosestSnapshot(allSnapshots, actualEnd);
+
+    if (!startSnapshot || !endSnapshot) {
+      continue;
+    }
+
+    // Skip if start and end are the same day
+    if (startSnapshot.date.getTime() === endSnapshot.date.getTime()) {
+      continue;
+    }
+
+    const daysInPeriod = differenceInDays(endSnapshot.date, startSnapshot.date);
+    const isPartialYear = daysInPeriod < 365 || year === currentYear;
+
+    // Calculate simple return
+    const simpleReturn = startSnapshot.totalValue.isZero()
+      ? new Decimal(0)
+      : endSnapshot.totalValue
+          .minus(startSnapshot.totalValue)
+          .div(startSnapshot.totalValue);
+
+    // Annualize the return to get CAGR
+    const cagr = annualizeReturn(simpleReturn, daysInPeriod);
+
+    // Determine label
+    let label: string;
+    if (year === currentYear) {
+      label = 'Current Year (YTD)';
+    } else {
+      label = year.toString();
+    }
+
+    metrics.push({
+      label,
+      startDate: startSnapshot.date,
+      endDate: endSnapshot.date,
+      startValue: startSnapshot.totalValue,
+      endValue: endSnapshot.totalValue,
+      cagr,
+      daysInPeriod,
+      isPartialYear,
+    });
+  }
+
+  return metrics;
+}
+
+/**
+ * Find the snapshot closest to a target date.
+ * Prefers snapshots on or before the target date when possible.
+ */
+function findClosestSnapshot(
+  snapshots: PerformanceSnapshot[],
+  targetDate: Date
+): PerformanceSnapshot | null {
+  if (snapshots.length === 0) return null;
+
+  // Find the closest snapshot on or before the target date
+  let closest: PerformanceSnapshot | null = null;
+  let minDiff = Infinity;
+
+  for (const snap of snapshots) {
+    const diff = Math.abs(differenceInDays(targetDate, snap.date));
+
+    // Prefer snapshots on or before the target
+    if (snap.date <= targetDate && diff < minDiff) {
+      closest = snap;
+      minDiff = diff;
+    }
+  }
+
+  // If no snapshot before target, take the first one after
+  if (!closest) {
+    closest = snapshots.find((s) => s.date >= targetDate) || snapshots[0];
+  }
+
+  return closest;
 }
