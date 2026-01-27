@@ -19,6 +19,7 @@ import {
   calculateMaxDrawdown,
   calculateSharpeRatio,
   calculateDailyReturns,
+  getYoYMetrics,
 } from '@/lib/services';
 import {
   PerformancePageData,
@@ -26,6 +27,7 @@ import {
   HistoricalPortfolioValue,
   ChartTimePeriod,
 } from '@/types/dashboard';
+import type { YearOverYearMetric } from '@/types/performance';
 
 /**
  * Map ChartTimePeriod to the TimePeriod used by getHistoricalValues.
@@ -41,6 +43,8 @@ function mapToTimePeriod(
     case 'YTD':
     case '1Y':
       return 'YEAR';
+    case '3Y':
+      return 'ALL'; // Use ALL for 3Y, will be filtered later
     case 'ALL':
       return 'ALL';
   }
@@ -72,6 +76,7 @@ export function usePerformanceData(): PerformancePageData {
       sharpeRatio: 0,
       maxDrawdown: 0,
     });
+  const [yoyMetrics, setYoyMetrics] = useState<YearOverYearMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -102,6 +107,7 @@ export function usePerformanceData(): PerformancePageData {
             sharpeRatio: 0,
             maxDrawdown: 0,
           });
+          setYoyMetrics([]);
           setLoading(false);
           return;
         }
@@ -156,6 +162,10 @@ export function usePerformanceData(): PerformancePageData {
           sharpeRatio,
           maxDrawdown,
         });
+
+        // Calculate Year-over-Year metrics (independent of selected period)
+        const yoyData = await getYoYMetrics(portfolioId);
+        setYoyMetrics(yoyData);
       } catch (err) {
         console.error('Error calculating performance metrics:', err);
         setError(
@@ -184,6 +194,7 @@ export function usePerformanceData(): PerformancePageData {
         sharpeRatio: 0,
         maxDrawdown: 0,
       });
+      setYoyMetrics([]);
     }
 
     return () => {
@@ -216,6 +227,7 @@ export function usePerformanceData(): PerformancePageData {
 
       // Calculated metrics from historical data
       metrics: advancedMetrics,
+      yoyMetrics,
 
       // Chart data
       historicalData,
@@ -232,6 +244,7 @@ export function usePerformanceData(): PerformancePageData {
       liveMetrics,
       metrics,
       advancedMetrics,
+      yoyMetrics,
       historicalData,
       selectedPeriod,
       loading,

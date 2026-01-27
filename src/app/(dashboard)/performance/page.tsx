@@ -36,6 +36,7 @@ import {
   HoldingPerformance,
 } from '@/types/dashboard';
 import Decimal from 'decimal.js';
+import { YoYGrowthTable } from '@/components/performance';
 
 // Period configuration for chart display
 const periodConfigs: Record<
@@ -46,6 +47,7 @@ const periodConfigs: Record<
   '3M': { label: '3M', description: 'Past 3 Months' },
   YTD: { label: 'YTD', description: 'Year to Date' },
   '1Y': { label: '1Y', description: 'Past Year' },
+  '3Y': { label: '3Y', description: 'Past 3 Years' },
   ALL: { label: 'ALL', description: 'All Time' },
 };
 
@@ -90,6 +92,7 @@ function formatXAxisLabel(tickItem: string, period: ChartTimePeriod): string {
         day: 'numeric',
       });
     case '1Y':
+    case '3Y':
     case 'ALL':
       return date.toLocaleDateString('en-US', {
         month: 'short',
@@ -122,7 +125,10 @@ const ChartTooltip = memo(function ChartTooltip({
             weekday: 'short',
             month: 'short',
             day: 'numeric',
-            year: period === 'ALL' || period === '1Y' ? 'numeric' : undefined,
+            year:
+              period === 'ALL' || period === '1Y' || period === '3Y'
+                ? 'numeric'
+                : undefined,
           })}
         </p>
         <p className="mb-1 text-lg font-bold">{formatCurrency(value)}</p>
@@ -345,6 +351,7 @@ export default function PerformancePage() {
     topPerformers,
     biggestLosers,
     metrics,
+    yoyMetrics,
     historicalData,
     selectedPeriod,
     loading,
@@ -641,6 +648,9 @@ export default function PerformancePage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Year-over-Year Growth */}
+      {!loading && <YoYGrowthTable metrics={yoyMetrics} />}
 
       {/* Top Performers / Biggest Losers */}
       <div className="grid gap-6 md:grid-cols-2">
