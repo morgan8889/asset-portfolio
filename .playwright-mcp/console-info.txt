@@ -1,0 +1,3965 @@
+[INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:38559
+[LOG] Initializing database... @ webpack-internal:///(app-pages-browser)/./src/lib/db/migrations.ts:147
+[LOG] Initializing database... @ webpack-internal:///(app-pages-browser)/./src/lib/db/migrations.ts:147
+[LOG] Database validation passed @ webpack-internal:///(app-pages-browser)/./src/lib/db/migrations.ts:135
+[LOG] Database validation passed @ webpack-internal:///(app-pages-browser)/./src/lib/db/migrations.ts:135
+[LOG] Database is up to date @ webpack-internal:///(app-pages-browser)/./src/lib/db/migrations.ts:61
+[LOG] Database initialization completed @ webpack-internal:///(app-pages-browser)/./src/lib/db/migrations.ts:157
+[LOG] Database is up to date @ webpack-internal:///(app-pages-browser)/./src/lib/db/migrations.ts:61
+[LOG] Database initialization completed @ webpack-internal:///(app-pages-browser)/./src/lib/db/migrations.ts:157
+[LOG] Portfolio app initialized successfully @ webpack-internal:///(app-pages-browser)/./src/lib/db/initialization.ts:20
+[LOG] DEBUG: Stored config from IndexedDB: {
+  "version": 4,
+  "widgetOrder": [
+    "day-change",
+    "gain-loss",
+    "total-value",
+    "category-breakdown",
+    "growth-chart",
+    "recent-activity",
+    "top-performers",
+    "biggest-losers"
+  ],
+  "widgetVisibility": {
+    "total-value": true,
+    "gain-loss": true,
+    "day-change": true,
+    "category-breakdown": true,
+    "growth-chart": true,
+    "top-performers": true,
+    "biggest-losers": true,
+    "recent-activity": true
+  },
+  "timePeriod": "ALL",
+  "performerCount": 5,
+  "lastUpdated": "2026-01-27T13:46:46.015Z",
+  "layoutMode": "grid",
+  "gridColumns": 4,
+  "widgetSpans": {
+    "growth-chart": 2,
+    "recent-activity": 2
+  },
+  "densePacking": true,
+  "widgetRowSpans": {
+    "growth-chart": 4,
+    "recent-activity": 3,
+    "category-breakdown": 3,
+    "top-performers": 3,
+    "biggest-losers": 3
+  },
+  "rglLayouts": {
+    "lg": [
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "total-value",
+        "x": 2,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 3,
+        "y": 0,
+        "w": 1,
+        "h": 5,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 1,
+        "w": 3,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 2,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 3,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "md": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "day-change",
+        "x": 1,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 1,
+        "y": 9,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 1,
+        "y": 12,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 15,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "sm": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "gain-loss",
+        "x": 0,
+        "y": 1,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 2,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "category-breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "top-performers",
+        "x": 0,
+        "y": 5,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "biggest-losers",
+        "x": 0,
+        "y": 6,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 7,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      }
+    ]
+  },
+  "useReactGridLayout": true,
+  "widgetSettings": {
+    "category-breakdown": {
+      "showPieChart": true
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:56
+[ERROR] DEBUG: v3 validation failed: {
+  "_errors": [],
+  "version": {
+    "_errors": [
+      "Invalid literal value, expected 3"
+    ]
+  },
+  "widgetRowSpans": {
+    "_errors": [],
+    "growth-chart": {
+      "_errors": [
+        "Invalid literal value, expected 1",
+        "Invalid literal value, expected 2",
+        "Invalid literal value, expected 3"
+      ]
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[WARNING] Invalid dashboard config, using default. V3 error: ZodError: [
+  {
+    "received": 4,
+    "code": "invalid_literal",
+    "expected": 3,
+    "path": [
+      "version"
+    ],
+    "message": "Invalid literal value, expected 3"
+  },
+  {
+    "code": "invalid_union",
+    "unionErrors": [
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 1,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 1"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 2,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 2"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 3,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 3"
+          }
+        ],
+        "name": "ZodError"
+      }
+    ],
+    "path": [
+      "widgetRowSpans",
+      "growth-chart"
+    ],
+    "message": "Invalid input"
+  }
+]
+    at get error (webpack-internal:///(app-pages-browser)/./node_modules/zod/v3/types.js:134:31)
+    at Object.getConfig (webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:64:79)
+    at async loadConfig (webpack-internal:///(app-pages-browser)/./src/lib/stores/dashboard.ts:53:32) @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:86
+[LOG] DEBUG: Stored data that failed all validations: {
+  "version": 4,
+  "widgetOrder": [
+    "day-change",
+    "gain-loss",
+    "total-value",
+    "category-breakdown",
+    "growth-chart",
+    "recent-activity",
+    "top-performers",
+    "biggest-losers"
+  ],
+  "widgetVisibility": {
+    "total-value": true,
+    "gain-loss": true,
+    "day-change": true,
+    "category-breakdown": true,
+    "growth-chart": true,
+    "top-performers": true,
+    "biggest-losers": true,
+    "recent-activity": true
+  },
+  "timePeriod": "ALL",
+  "performerCount": 5,
+  "lastUpdated": "2026-01-27T13:46:46.015Z",
+  "layoutMode": "grid",
+  "gridColumns": 4,
+  "widgetSpans": {
+    "growth-chart": 2,
+    "recent-activity": 2
+  },
+  "densePacking": true,
+  "widgetRowSpans": {
+    "growth-chart": 4,
+    "recent-activity": 3,
+    "category-breakdown": 3,
+    "top-performers": 3,
+    "biggest-losers": 3
+  },
+  "rglLayouts": {
+    "lg": [
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "total-value",
+        "x": 2,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 3,
+        "y": 0,
+        "w": 1,
+        "h": 5,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 1,
+        "w": 3,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 2,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 3,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "md": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "day-change",
+        "x": 1,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 1,
+        "y": 9,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 1,
+        "y": 12,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 15,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "sm": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "gain-loss",
+        "x": 0,
+        "y": 1,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 2,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "category-breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "top-performers",
+        "x": 0,
+        "y": 5,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "biggest-losers",
+        "x": 0,
+        "y": 6,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 7,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      }
+    ]
+  },
+  "useReactGridLayout": true,
+  "widgetSettings": {
+    "category-breakdown": {
+      "showPieChart": true
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:87
+[LOG] DEBUG: Stored config from IndexedDB: {
+  "version": 4,
+  "widgetOrder": [
+    "day-change",
+    "gain-loss",
+    "total-value",
+    "category-breakdown",
+    "growth-chart",
+    "recent-activity",
+    "top-performers",
+    "biggest-losers"
+  ],
+  "widgetVisibility": {
+    "total-value": true,
+    "gain-loss": true,
+    "day-change": true,
+    "category-breakdown": true,
+    "growth-chart": true,
+    "top-performers": true,
+    "biggest-losers": true,
+    "recent-activity": true
+  },
+  "timePeriod": "ALL",
+  "performerCount": 5,
+  "lastUpdated": "2026-01-27T13:46:46.015Z",
+  "layoutMode": "grid",
+  "gridColumns": 4,
+  "widgetSpans": {
+    "growth-chart": 2,
+    "recent-activity": 2
+  },
+  "densePacking": true,
+  "widgetRowSpans": {
+    "growth-chart": 4,
+    "recent-activity": 3,
+    "category-breakdown": 3,
+    "top-performers": 3,
+    "biggest-losers": 3
+  },
+  "rglLayouts": {
+    "lg": [
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "total-value",
+        "x": 2,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 3,
+        "y": 0,
+        "w": 1,
+        "h": 5,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 1,
+        "w": 3,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 2,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 3,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "md": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "day-change",
+        "x": 1,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 1,
+        "y": 9,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 1,
+        "y": 12,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 15,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "sm": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "gain-loss",
+        "x": 0,
+        "y": 1,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 2,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "category-breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "top-performers",
+        "x": 0,
+        "y": 5,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "biggest-losers",
+        "x": 0,
+        "y": 6,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 7,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      }
+    ]
+  },
+  "useReactGridLayout": true,
+  "widgetSettings": {
+    "category-breakdown": {
+      "showPieChart": true
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:56
+[ERROR] DEBUG: v3 validation failed: {
+  "_errors": [],
+  "version": {
+    "_errors": [
+      "Invalid literal value, expected 3"
+    ]
+  },
+  "widgetRowSpans": {
+    "_errors": [],
+    "growth-chart": {
+      "_errors": [
+        "Invalid literal value, expected 1",
+        "Invalid literal value, expected 2",
+        "Invalid literal value, expected 3"
+      ]
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[WARNING] Invalid dashboard config, using default. V3 error: ZodError: [
+  {
+    "received": 4,
+    "code": "invalid_literal",
+    "expected": 3,
+    "path": [
+      "version"
+    ],
+    "message": "Invalid literal value, expected 3"
+  },
+  {
+    "code": "invalid_union",
+    "unionErrors": [
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 1,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 1"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 2,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 2"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 3,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 3"
+          }
+        ],
+        "name": "ZodError"
+      }
+    ],
+    "path": [
+      "widgetRowSpans",
+      "growth-chart"
+    ],
+    "message": "Invalid input"
+  }
+]
+    at get error (webpack-internal:///(app-pages-browser)/./node_modules/zod/v3/types.js:134:31)
+    at Object.getConfig (webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:64:79)
+    at async loadConfig (webpack-internal:///(app-pages-browser)/./src/lib/stores/dashboard.ts:53:32) @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:86
+[LOG] DEBUG: Stored data that failed all validations: {
+  "version": 4,
+  "widgetOrder": [
+    "day-change",
+    "gain-loss",
+    "total-value",
+    "category-breakdown",
+    "growth-chart",
+    "recent-activity",
+    "top-performers",
+    "biggest-losers"
+  ],
+  "widgetVisibility": {
+    "total-value": true,
+    "gain-loss": true,
+    "day-change": true,
+    "category-breakdown": true,
+    "growth-chart": true,
+    "top-performers": true,
+    "biggest-losers": true,
+    "recent-activity": true
+  },
+  "timePeriod": "ALL",
+  "performerCount": 5,
+  "lastUpdated": "2026-01-27T13:46:46.015Z",
+  "layoutMode": "grid",
+  "gridColumns": 4,
+  "widgetSpans": {
+    "growth-chart": 2,
+    "recent-activity": 2
+  },
+  "densePacking": true,
+  "widgetRowSpans": {
+    "growth-chart": 4,
+    "recent-activity": 3,
+    "category-breakdown": 3,
+    "top-performers": 3,
+    "biggest-losers": 3
+  },
+  "rglLayouts": {
+    "lg": [
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "total-value",
+        "x": 2,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 3,
+        "y": 0,
+        "w": 1,
+        "h": 5,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 1,
+        "w": 3,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 2,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 3,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "md": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "day-change",
+        "x": 1,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 1,
+        "y": 9,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 1,
+        "y": 12,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 15,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "sm": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "gain-loss",
+        "x": 0,
+        "y": 1,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 2,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "category-breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "top-performers",
+        "x": 0,
+        "y": 5,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "biggest-losers",
+        "x": 0,
+        "y": 6,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 7,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      }
+    ]
+  },
+  "useReactGridLayout": true,
+  "widgetSettings": {
+    "category-breakdown": {
+      "showPieChart": true
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:87
+[LOG] DEBUG: Stored config from IndexedDB: {
+  "version": 4,
+  "widgetOrder": [
+    "day-change",
+    "gain-loss",
+    "total-value",
+    "category-breakdown",
+    "growth-chart",
+    "recent-activity",
+    "top-performers",
+    "biggest-losers"
+  ],
+  "widgetVisibility": {
+    "total-value": true,
+    "gain-loss": true,
+    "day-change": true,
+    "category-breakdown": true,
+    "growth-chart": true,
+    "top-performers": true,
+    "biggest-losers": true,
+    "recent-activity": true
+  },
+  "timePeriod": "ALL",
+  "performerCount": 5,
+  "lastUpdated": "2026-01-27T13:46:46.015Z",
+  "layoutMode": "grid",
+  "gridColumns": 4,
+  "widgetSpans": {
+    "growth-chart": 2,
+    "recent-activity": 2
+  },
+  "densePacking": true,
+  "widgetRowSpans": {
+    "growth-chart": 4,
+    "recent-activity": 3,
+    "category-breakdown": 3,
+    "top-performers": 3,
+    "biggest-losers": 3
+  },
+  "rglLayouts": {
+    "lg": [
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "total-value",
+        "x": 2,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 3,
+        "y": 0,
+        "w": 1,
+        "h": 5,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 1,
+        "w": 3,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 2,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 3,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "md": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "day-change",
+        "x": 1,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 1,
+        "y": 9,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 1,
+        "y": 12,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 15,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "sm": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "gain-loss",
+        "x": 0,
+        "y": 1,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 2,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "category-breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "top-performers",
+        "x": 0,
+        "y": 5,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "biggest-losers",
+        "x": 0,
+        "y": 6,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 7,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      }
+    ]
+  },
+  "useReactGridLayout": true,
+  "widgetSettings": {
+    "category-breakdown": {
+      "showPieChart": true
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:56
+[ERROR] DEBUG: v3 validation failed: {
+  "_errors": [],
+  "version": {
+    "_errors": [
+      "Invalid literal value, expected 3"
+    ]
+  },
+  "widgetRowSpans": {
+    "_errors": [],
+    "growth-chart": {
+      "_errors": [
+        "Invalid literal value, expected 1",
+        "Invalid literal value, expected 2",
+        "Invalid literal value, expected 3"
+      ]
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[WARNING] Invalid dashboard config, using default. V3 error: ZodError: [
+  {
+    "received": 4,
+    "code": "invalid_literal",
+    "expected": 3,
+    "path": [
+      "version"
+    ],
+    "message": "Invalid literal value, expected 3"
+  },
+  {
+    "code": "invalid_union",
+    "unionErrors": [
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 1,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 1"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 2,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 2"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 3,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 3"
+          }
+        ],
+        "name": "ZodError"
+      }
+    ],
+    "path": [
+      "widgetRowSpans",
+      "growth-chart"
+    ],
+    "message": "Invalid input"
+  }
+]
+    at get error (webpack-internal:///(app-pages-browser)/./node_modules/zod/v3/types.js:134:31)
+    at Object.getConfig (webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:64:79)
+    at async loadConfig (webpack-internal:///(app-pages-browser)/./src/lib/stores/dashboard.ts:53:32) @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:86
+[LOG] DEBUG: Stored data that failed all validations: {
+  "version": 4,
+  "widgetOrder": [
+    "day-change",
+    "gain-loss",
+    "total-value",
+    "category-breakdown",
+    "growth-chart",
+    "recent-activity",
+    "top-performers",
+    "biggest-losers"
+  ],
+  "widgetVisibility": {
+    "total-value": true,
+    "gain-loss": true,
+    "day-change": true,
+    "category-breakdown": true,
+    "growth-chart": true,
+    "top-performers": true,
+    "biggest-losers": true,
+    "recent-activity": true
+  },
+  "timePeriod": "ALL",
+  "performerCount": 5,
+  "lastUpdated": "2026-01-27T13:46:46.015Z",
+  "layoutMode": "grid",
+  "gridColumns": 4,
+  "widgetSpans": {
+    "growth-chart": 2,
+    "recent-activity": 2
+  },
+  "densePacking": true,
+  "widgetRowSpans": {
+    "growth-chart": 4,
+    "recent-activity": 3,
+    "category-breakdown": 3,
+    "top-performers": 3,
+    "biggest-losers": 3
+  },
+  "rglLayouts": {
+    "lg": [
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "total-value",
+        "x": 2,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 3,
+        "y": 0,
+        "w": 1,
+        "h": 5,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 1,
+        "w": 3,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 2,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 3,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "md": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "day-change",
+        "x": 1,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 1,
+        "y": 9,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 1,
+        "y": 12,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 15,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "sm": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "gain-loss",
+        "x": 0,
+        "y": 1,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 2,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "category-breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "top-performers",
+        "x": 0,
+        "y": 5,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "biggest-losers",
+        "x": 0,
+        "y": 6,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 7,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      }
+    ]
+  },
+  "useReactGridLayout": true,
+  "widgetSettings": {
+    "category-breakdown": {
+      "showPieChart": true
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:87
+[LOG] DEBUG: Stored config from IndexedDB: {
+  "version": 4,
+  "widgetOrder": [
+    "day-change",
+    "gain-loss",
+    "total-value",
+    "category-breakdown",
+    "growth-chart",
+    "recent-activity",
+    "top-performers",
+    "biggest-losers"
+  ],
+  "widgetVisibility": {
+    "total-value": true,
+    "gain-loss": true,
+    "day-change": true,
+    "category-breakdown": true,
+    "growth-chart": true,
+    "top-performers": true,
+    "biggest-losers": true,
+    "recent-activity": true
+  },
+  "timePeriod": "ALL",
+  "performerCount": 5,
+  "lastUpdated": "2026-01-27T13:46:46.015Z",
+  "layoutMode": "grid",
+  "gridColumns": 4,
+  "widgetSpans": {
+    "growth-chart": 2,
+    "recent-activity": 2
+  },
+  "densePacking": true,
+  "widgetRowSpans": {
+    "growth-chart": 4,
+    "recent-activity": 3,
+    "category-breakdown": 3,
+    "top-performers": 3,
+    "biggest-losers": 3
+  },
+  "rglLayouts": {
+    "lg": [
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "total-value",
+        "x": 2,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 3,
+        "y": 0,
+        "w": 1,
+        "h": 5,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 1,
+        "w": 3,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 2,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 3,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "md": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "day-change",
+        "x": 1,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 1,
+        "y": 9,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 1,
+        "y": 12,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 15,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "sm": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "gain-loss",
+        "x": 0,
+        "y": 1,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 2,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "category-breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "top-performers",
+        "x": 0,
+        "y": 5,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "biggest-losers",
+        "x": 0,
+        "y": 6,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 7,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      }
+    ]
+  },
+  "useReactGridLayout": true,
+  "widgetSettings": {
+    "category-breakdown": {
+      "showPieChart": true
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:56
+[ERROR] DEBUG: v3 validation failed: {
+  "_errors": [],
+  "version": {
+    "_errors": [
+      "Invalid literal value, expected 3"
+    ]
+  },
+  "widgetRowSpans": {
+    "_errors": [],
+    "growth-chart": {
+      "_errors": [
+        "Invalid literal value, expected 1",
+        "Invalid literal value, expected 2",
+        "Invalid literal value, expected 3"
+      ]
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[WARNING] Invalid dashboard config, using default. V3 error: ZodError: [
+  {
+    "received": 4,
+    "code": "invalid_literal",
+    "expected": 3,
+    "path": [
+      "version"
+    ],
+    "message": "Invalid literal value, expected 3"
+  },
+  {
+    "code": "invalid_union",
+    "unionErrors": [
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 1,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 1"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 2,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 2"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 3,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 3"
+          }
+        ],
+        "name": "ZodError"
+      }
+    ],
+    "path": [
+      "widgetRowSpans",
+      "growth-chart"
+    ],
+    "message": "Invalid input"
+  }
+]
+    at get error (webpack-internal:///(app-pages-browser)/./node_modules/zod/v3/types.js:134:31)
+    at Object.getConfig (webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:64:79)
+    at async loadConfig (webpack-internal:///(app-pages-browser)/./src/lib/stores/dashboard.ts:53:32) @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:86
+[LOG] DEBUG: Stored data that failed all validations: {
+  "version": 4,
+  "widgetOrder": [
+    "day-change",
+    "gain-loss",
+    "total-value",
+    "category-breakdown",
+    "growth-chart",
+    "recent-activity",
+    "top-performers",
+    "biggest-losers"
+  ],
+  "widgetVisibility": {
+    "total-value": true,
+    "gain-loss": true,
+    "day-change": true,
+    "category-breakdown": true,
+    "growth-chart": true,
+    "top-performers": true,
+    "biggest-losers": true,
+    "recent-activity": true
+  },
+  "timePeriod": "ALL",
+  "performerCount": 5,
+  "lastUpdated": "2026-01-27T13:46:46.015Z",
+  "layoutMode": "grid",
+  "gridColumns": 4,
+  "widgetSpans": {
+    "growth-chart": 2,
+    "recent-activity": 2
+  },
+  "densePacking": true,
+  "widgetRowSpans": {
+    "growth-chart": 4,
+    "recent-activity": 3,
+    "category-breakdown": 3,
+    "top-performers": 3,
+    "biggest-losers": 3
+  },
+  "rglLayouts": {
+    "lg": [
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "total-value",
+        "x": 2,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 3,
+        "y": 0,
+        "w": 1,
+        "h": 5,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 1,
+        "w": 3,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 2,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 3,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "md": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "day-change",
+        "x": 1,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 1,
+        "y": 9,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 1,
+        "y": 12,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 15,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "sm": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "gain-loss",
+        "x": 0,
+        "y": 1,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 2,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "category-breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "top-performers",
+        "x": 0,
+        "y": 5,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "biggest-losers",
+        "x": 0,
+        "y": 6,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 7,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      }
+    ]
+  },
+  "useReactGridLayout": true,
+  "widgetSettings": {
+    "category-breakdown": {
+      "showPieChart": true
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:87
+[LOG] DEBUG: Stored config from IndexedDB: {
+  "version": 4,
+  "widgetOrder": [
+    "day-change",
+    "gain-loss",
+    "total-value",
+    "category-breakdown",
+    "growth-chart",
+    "recent-activity",
+    "top-performers",
+    "biggest-losers"
+  ],
+  "widgetVisibility": {
+    "total-value": true,
+    "gain-loss": true,
+    "day-change": true,
+    "category-breakdown": true,
+    "growth-chart": true,
+    "top-performers": true,
+    "biggest-losers": true,
+    "recent-activity": true
+  },
+  "timePeriod": "ALL",
+  "performerCount": 5,
+  "lastUpdated": "2026-01-27T13:46:46.015Z",
+  "layoutMode": "grid",
+  "gridColumns": 4,
+  "widgetSpans": {
+    "growth-chart": 2,
+    "recent-activity": 2
+  },
+  "densePacking": true,
+  "widgetRowSpans": {
+    "growth-chart": 4,
+    "recent-activity": 3,
+    "category-breakdown": 3,
+    "top-performers": 3,
+    "biggest-losers": 3
+  },
+  "rglLayouts": {
+    "lg": [
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "total-value",
+        "x": 2,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 3,
+        "y": 0,
+        "w": 1,
+        "h": 5,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 1,
+        "w": 3,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 2,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 3,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "md": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "day-change",
+        "x": 1,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 1,
+        "y": 9,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 1,
+        "y": 12,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 15,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "sm": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "gain-loss",
+        "x": 0,
+        "y": 1,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 2,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "category-breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "top-performers",
+        "x": 0,
+        "y": 5,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "biggest-losers",
+        "x": 0,
+        "y": 6,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 7,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      }
+    ]
+  },
+  "useReactGridLayout": true,
+  "widgetSettings": {
+    "category-breakdown": {
+      "showPieChart": true
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:56
+[ERROR] DEBUG: v3 validation failed: {
+  "_errors": [],
+  "version": {
+    "_errors": [
+      "Invalid literal value, expected 3"
+    ]
+  },
+  "widgetRowSpans": {
+    "_errors": [],
+    "growth-chart": {
+      "_errors": [
+        "Invalid literal value, expected 1",
+        "Invalid literal value, expected 2",
+        "Invalid literal value, expected 3"
+      ]
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[WARNING] Invalid dashboard config, using default. V3 error: ZodError: [
+  {
+    "received": 4,
+    "code": "invalid_literal",
+    "expected": 3,
+    "path": [
+      "version"
+    ],
+    "message": "Invalid literal value, expected 3"
+  },
+  {
+    "code": "invalid_union",
+    "unionErrors": [
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 1,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 1"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 2,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 2"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 3,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 3"
+          }
+        ],
+        "name": "ZodError"
+      }
+    ],
+    "path": [
+      "widgetRowSpans",
+      "growth-chart"
+    ],
+    "message": "Invalid input"
+  }
+]
+    at get error (webpack-internal:///(app-pages-browser)/./node_modules/zod/v3/types.js:134:31)
+    at Object.getConfig (webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:64:79)
+    at async loadConfig (webpack-internal:///(app-pages-browser)/./src/lib/stores/dashboard.ts:53:32) @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:86
+[LOG] DEBUG: Stored data that failed all validations: {
+  "version": 4,
+  "widgetOrder": [
+    "day-change",
+    "gain-loss",
+    "total-value",
+    "category-breakdown",
+    "growth-chart",
+    "recent-activity",
+    "top-performers",
+    "biggest-losers"
+  ],
+  "widgetVisibility": {
+    "total-value": true,
+    "gain-loss": true,
+    "day-change": true,
+    "category-breakdown": true,
+    "growth-chart": true,
+    "top-performers": true,
+    "biggest-losers": true,
+    "recent-activity": true
+  },
+  "timePeriod": "ALL",
+  "performerCount": 5,
+  "lastUpdated": "2026-01-27T13:46:46.015Z",
+  "layoutMode": "grid",
+  "gridColumns": 4,
+  "widgetSpans": {
+    "growth-chart": 2,
+    "recent-activity": 2
+  },
+  "densePacking": true,
+  "widgetRowSpans": {
+    "growth-chart": 4,
+    "recent-activity": 3,
+    "category-breakdown": 3,
+    "top-performers": 3,
+    "biggest-losers": 3
+  },
+  "rglLayouts": {
+    "lg": [
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "total-value",
+        "x": 2,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 3,
+        "y": 0,
+        "w": 1,
+        "h": 5,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 1,
+        "w": 3,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 2,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 3,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "md": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "day-change",
+        "x": 1,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 1,
+        "y": 9,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 1,
+        "y": 12,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 15,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "sm": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "gain-loss",
+        "x": 0,
+        "y": 1,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 2,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "category-breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "top-performers",
+        "x": 0,
+        "y": 5,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "biggest-losers",
+        "x": 0,
+        "y": 6,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 7,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      }
+    ]
+  },
+  "useReactGridLayout": true,
+  "widgetSettings": {
+    "category-breakdown": {
+      "showPieChart": true
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:87
+[LOG] DEBUG: Stored config from IndexedDB: {
+  "version": 4,
+  "widgetOrder": [
+    "day-change",
+    "gain-loss",
+    "total-value",
+    "category-breakdown",
+    "growth-chart",
+    "recent-activity",
+    "top-performers",
+    "biggest-losers"
+  ],
+  "widgetVisibility": {
+    "total-value": true,
+    "gain-loss": true,
+    "day-change": true,
+    "category-breakdown": true,
+    "growth-chart": true,
+    "top-performers": true,
+    "biggest-losers": true,
+    "recent-activity": true
+  },
+  "timePeriod": "ALL",
+  "performerCount": 5,
+  "lastUpdated": "2026-01-27T13:46:46.015Z",
+  "layoutMode": "grid",
+  "gridColumns": 4,
+  "widgetSpans": {
+    "growth-chart": 2,
+    "recent-activity": 2
+  },
+  "densePacking": true,
+  "widgetRowSpans": {
+    "growth-chart": 4,
+    "recent-activity": 3,
+    "category-breakdown": 3,
+    "top-performers": 3,
+    "biggest-losers": 3
+  },
+  "rglLayouts": {
+    "lg": [
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "total-value",
+        "x": 2,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 3,
+        "y": 0,
+        "w": 1,
+        "h": 5,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 1,
+        "w": 3,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 2,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 3,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "md": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "day-change",
+        "x": 1,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 1,
+        "y": 9,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 1,
+        "y": 12,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 15,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "sm": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "gain-loss",
+        "x": 0,
+        "y": 1,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 2,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "category-breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "top-performers",
+        "x": 0,
+        "y": 5,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "biggest-losers",
+        "x": 0,
+        "y": 6,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 7,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      }
+    ]
+  },
+  "useReactGridLayout": true,
+  "widgetSettings": {
+    "category-breakdown": {
+      "showPieChart": true
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:56
+[ERROR] DEBUG: v3 validation failed: {
+  "_errors": [],
+  "version": {
+    "_errors": [
+      "Invalid literal value, expected 3"
+    ]
+  },
+  "widgetRowSpans": {
+    "_errors": [],
+    "growth-chart": {
+      "_errors": [
+        "Invalid literal value, expected 1",
+        "Invalid literal value, expected 2",
+        "Invalid literal value, expected 3"
+      ]
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/app-index.js:32
+[WARNING] Invalid dashboard config, using default. V3 error: ZodError: [
+  {
+    "received": 4,
+    "code": "invalid_literal",
+    "expected": 3,
+    "path": [
+      "version"
+    ],
+    "message": "Invalid literal value, expected 3"
+  },
+  {
+    "code": "invalid_union",
+    "unionErrors": [
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 1,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 1"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 2,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 2"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "received": 4,
+            "code": "invalid_literal",
+            "expected": 3,
+            "path": [
+              "widgetRowSpans",
+              "growth-chart"
+            ],
+            "message": "Invalid literal value, expected 3"
+          }
+        ],
+        "name": "ZodError"
+      }
+    ],
+    "path": [
+      "widgetRowSpans",
+      "growth-chart"
+    ],
+    "message": "Invalid input"
+  }
+]
+    at get error (webpack-internal:///(app-pages-browser)/./node_modules/zod/v3/types.js:134:31)
+    at Object.getConfig (webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:64:79)
+    at async loadConfig (webpack-internal:///(app-pages-browser)/./src/lib/stores/dashboard.ts:53:32) @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:86
+[LOG] DEBUG: Stored data that failed all validations: {
+  "version": 4,
+  "widgetOrder": [
+    "day-change",
+    "gain-loss",
+    "total-value",
+    "category-breakdown",
+    "growth-chart",
+    "recent-activity",
+    "top-performers",
+    "biggest-losers"
+  ],
+  "widgetVisibility": {
+    "total-value": true,
+    "gain-loss": true,
+    "day-change": true,
+    "category-breakdown": true,
+    "growth-chart": true,
+    "top-performers": true,
+    "biggest-losers": true,
+    "recent-activity": true
+  },
+  "timePeriod": "ALL",
+  "performerCount": 5,
+  "lastUpdated": "2026-01-27T13:46:46.015Z",
+  "layoutMode": "grid",
+  "gridColumns": 4,
+  "widgetSpans": {
+    "growth-chart": 2,
+    "recent-activity": 2
+  },
+  "densePacking": true,
+  "widgetRowSpans": {
+    "growth-chart": 4,
+    "recent-activity": 3,
+    "category-breakdown": 3,
+    "top-performers": 3,
+    "biggest-losers": 3
+  },
+  "rglLayouts": {
+    "lg": [
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "total-value",
+        "x": 2,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 3,
+        "y": 0,
+        "w": 1,
+        "h": 5,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 1,
+        "w": 3,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 2,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 3,
+        "y": 5,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "md": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "gain-loss",
+        "x": 1,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "category-breakdown",
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "day-change",
+        "x": 1,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 5,
+        "w": 2,
+        "h": 4,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "top-performers",
+        "x": 1,
+        "y": 9,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "biggest-losers",
+        "x": 1,
+        "y": 12,
+        "w": 1,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 15,
+        "w": 2,
+        "h": 3,
+        "minW": 1,
+        "minH": 1,
+        "static": false
+      }
+    ],
+    "sm": [
+      {
+        "i": "total-value",
+        "x": 0,
+        "y": 0,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "gain-loss",
+        "x": 0,
+        "y": 1,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "day-change",
+        "x": 0,
+        "y": 2,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "category-breakdown",
+        "x": 0,
+        "y": 3,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "growth-chart",
+        "x": 0,
+        "y": 4,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "top-performers",
+        "x": 0,
+        "y": 5,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "biggest-losers",
+        "x": 0,
+        "y": 6,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      },
+      {
+        "i": "recent-activity",
+        "x": 0,
+        "y": 7,
+        "w": 1,
+        "h": 1,
+        "minW": 1,
+        "minH": 1
+      }
+    ]
+  },
+  "useReactGridLayout": true,
+  "widgetSettings": {
+    "category-breakdown": {
+      "showPieChart": true
+    }
+  }
+} @ webpack-internal:///(app-pages-browser)/./src/lib/services/dashboard-config.ts:87
+[LOG] Loaded 6 cached prices from IndexedDB @ webpack-internal:///(app-pages-browser)/./src/lib/stores/price.ts:492

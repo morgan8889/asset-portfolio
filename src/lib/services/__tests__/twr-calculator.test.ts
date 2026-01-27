@@ -147,7 +147,7 @@ describe('TWR Calculator', () => {
   describe('compoundReturns', () => {
     it('should compound multiple positive returns', () => {
       const returns = [
-        new Decimal(0.1),  // 10%
+        new Decimal(0.1), // 10%
         new Decimal(0.05), // 5%
         new Decimal(0.02), // 2%
       ];
@@ -160,7 +160,7 @@ describe('TWR Calculator', () => {
 
     it('should compound mixed positive and negative returns', () => {
       const returns = [
-        new Decimal(0.1),   // +10%
+        new Decimal(0.1), // +10%
         new Decimal(-0.05), // -5%
       ];
 
@@ -327,20 +327,14 @@ describe('TWR Calculator', () => {
 
   describe('calculateDayChange', () => {
     it('should calculate positive day change', () => {
-      const result = calculateDayChange(
-        new Decimal(10000),
-        new Decimal(10100)
-      );
+      const result = calculateDayChange(new Decimal(10000), new Decimal(10100));
 
       expect(result.change.toNumber()).toBe(100);
       expect(result.changePercent).toBeCloseTo(1, 2);
     });
 
     it('should calculate negative day change', () => {
-      const result = calculateDayChange(
-        new Decimal(10000),
-        new Decimal(9900)
-      );
+      const result = calculateDayChange(new Decimal(10000), new Decimal(9900));
 
       expect(result.change.toNumber()).toBe(-100);
       expect(result.changePercent).toBeCloseTo(-1, 2);

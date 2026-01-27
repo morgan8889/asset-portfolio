@@ -231,8 +231,12 @@ describe('PricePollingService', () => {
     });
 
     it('should handle refresh errors gracefully', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      mockCallbacks.onRefresh = vi.fn().mockRejectedValue(new Error('Network error'));
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      mockCallbacks.onRefresh = vi
+        .fn()
+        .mockRejectedValue(new Error('Network error'));
 
       service.setOnline(false);
       service.setOnline(true);
@@ -399,8 +403,12 @@ describe('PricePollingService', () => {
 
   describe('Error Handling', () => {
     it('should handle refresh errors gracefully during polling', async () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      mockCallbacks.onRefresh = vi.fn().mockRejectedValue(new Error('API Error'));
+      const consoleSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      mockCallbacks.onRefresh = vi
+        .fn()
+        .mockRejectedValue(new Error('API Error'));
 
       await service.start({
         refreshInterval: 'standard',
@@ -412,7 +420,10 @@ describe('PricePollingService', () => {
       vi.advanceTimersByTime(60000);
       await vi.runOnlyPendingTimersAsync();
 
-      expect(consoleSpy).toHaveBeenCalledWith('Polling error:', expect.any(Error));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Polling error:',
+        expect.any(Error)
+      );
       expect(service.isPolling).toBe(true); // Should continue polling
 
       consoleSpy.mockRestore();

@@ -21,10 +21,7 @@ import {
 } from '@/types/performance';
 import { db } from '@/lib/db/schema';
 import { getSnapshots, getAggregatedSnapshots } from './snapshot-service';
-import {
-  calculateVolatility,
-  calculateSharpeRatio,
-} from './twr-calculator';
+import { calculateVolatility, calculateSharpeRatio } from './twr-calculator';
 
 // =============================================================================
 // Summary Statistics
@@ -123,7 +120,11 @@ export async function getChartData(
   const startDate = periodConfig.getStartDate();
   const endDate = new Date();
 
-  const snapshots = await getAggregatedSnapshots(portfolioId, startDate, endDate);
+  const snapshots = await getAggregatedSnapshots(
+    portfolioId,
+    startDate,
+    endDate
+  );
 
   return snapshots.map((snap) => ({
     date: snap.date,
@@ -163,7 +164,9 @@ export async function getHoldingPerformance(
     if (!asset) continue;
 
     // Calculate performance based on cost basis and current value
-    const currentValue = holding.quantity.mul(holding.averageCost || new Decimal(0));
+    const currentValue = holding.quantity.mul(
+      holding.averageCost || new Decimal(0)
+    );
     const costBasis = holding.costBasis;
     const absoluteGain = currentValue.minus(costBasis);
     const percentGain = costBasis.isZero()
@@ -270,7 +273,8 @@ export async function exportToCSV(
 
     if (holdings.length > 0) {
       holdingsSection = '\n\nHoldings Performance\n';
-      holdingsSection += 'Symbol,Name,Quantity,Cost Basis,Current Value,Gain/Loss,Gain %,Weight %\n';
+      holdingsSection +=
+        'Symbol,Name,Quantity,Cost Basis,Current Value,Gain/Loss,Gain %,Weight %\n';
       holdingsSection += holdings
         .map((h) =>
           [

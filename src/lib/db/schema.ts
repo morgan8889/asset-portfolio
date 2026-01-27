@@ -103,7 +103,10 @@ export class PortfolioDatabase extends Dexie {
     this.priceSnapshots.hook('creating', this.transformPriceSnapshot);
     this.dividendRecords.hook('creating', this.transformDividendRecord);
     this.assets.hook('creating', this.transformAsset);
-    this.performanceSnapshots.hook('creating', this.transformPerformanceSnapshot);
+    this.performanceSnapshots.hook(
+      'creating',
+      this.transformPerformanceSnapshot
+    );
   }
 
   // Transform functions using generic serialization utility
@@ -227,7 +230,9 @@ export class PortfolioDatabase extends Dexie {
     _trans: unknown
   ): void => {
     // Serialize decimal fields
-    const serialized = serializeDecimalFields(obj, [...PERFORMANCE_SNAPSHOT_DECIMAL_FIELDS]);
+    const serialized = serializeDecimalFields(obj, [
+      ...PERFORMANCE_SNAPSHOT_DECIMAL_FIELDS,
+    ]);
     Object.assign(obj, serialized);
 
     // Ensure dates are Date objects
@@ -235,7 +240,9 @@ export class PortfolioDatabase extends Dexie {
     for (const field of dateFields) {
       const value = obj[field];
       if (value && !(value instanceof Date)) {
-        (obj as PerformanceSnapshotStorage)[field] = new Date(value as unknown as string);
+        (obj as PerformanceSnapshotStorage)[field] = new Date(
+          value as unknown as string
+        );
       }
     }
   };
@@ -358,23 +365,30 @@ export class PortfolioDatabase extends Dexie {
     };
   }
 
-  convertPerformanceSnapshotDecimals(snapshot: PerformanceSnapshotStorage): PerformanceSnapshot {
-    const base = deserializeDecimalFields(snapshot, [...PERFORMANCE_SNAPSHOT_DECIMAL_FIELDS]);
+  convertPerformanceSnapshotDecimals(
+    snapshot: PerformanceSnapshotStorage
+  ): PerformanceSnapshot {
+    const base = deserializeDecimalFields(snapshot, [
+      ...PERFORMANCE_SNAPSHOT_DECIMAL_FIELDS,
+    ]);
 
     return {
       ...base,
       id: snapshot.id,
       portfolioId: snapshot.portfolioId,
-      date: snapshot.date instanceof Date ? snapshot.date : new Date(snapshot.date),
+      date:
+        snapshot.date instanceof Date ? snapshot.date : new Date(snapshot.date),
       dayChangePercent: snapshot.dayChangePercent,
       holdingCount: snapshot.holdingCount,
       hasInterpolatedPrices: snapshot.hasInterpolatedPrices,
-      createdAt: snapshot.createdAt instanceof Date
-        ? snapshot.createdAt
-        : new Date(snapshot.createdAt),
-      updatedAt: snapshot.updatedAt instanceof Date
-        ? snapshot.updatedAt
-        : new Date(snapshot.updatedAt),
+      createdAt:
+        snapshot.createdAt instanceof Date
+          ? snapshot.createdAt
+          : new Date(snapshot.createdAt),
+      updatedAt:
+        snapshot.updatedAt instanceof Date
+          ? snapshot.updatedAt
+          : new Date(snapshot.updatedAt),
     };
   }
 
@@ -509,14 +523,16 @@ export class PortfolioDatabase extends Dexie {
     }
 
     // Sort by date
-    filtered.sort((a, b) =>
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+    filtered.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
     return filtered.map((s) => this.convertPerformanceSnapshotDecimals(s));
   }
 
-  async getLatestPerformanceSnapshot(portfolioId: string): Promise<PerformanceSnapshot | null> {
+  async getLatestPerformanceSnapshot(
+    portfolioId: string
+  ): Promise<PerformanceSnapshot | null> {
     const snapshots = await this.performanceSnapshots
       .where('portfolioId')
       .equals(portfolioId)
@@ -525,14 +541,16 @@ export class PortfolioDatabase extends Dexie {
     if (snapshots.length === 0) return null;
 
     // Sort by date descending and get the first
-    const latestSnapshot = snapshots.sort((a, b) =>
-      new Date(b.date).getTime() - new Date(a.date).getTime()
+    const latestSnapshot = snapshots.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     )[0];
 
     return this.convertPerformanceSnapshotDecimals(latestSnapshot);
   }
 
-  async upsertPerformanceSnapshot(snapshot: PerformanceSnapshotStorage): Promise<void> {
+  async upsertPerformanceSnapshot(
+    snapshot: PerformanceSnapshotStorage
+  ): Promise<void> {
     // Find existing snapshot by portfolioId + date
     const existing = await this.performanceSnapshots
       .where('[portfolioId+date]')
@@ -556,22 +574,25 @@ export class PortfolioDatabase extends Dexie {
     }
   }
 
-  async deletePerformanceSnapshotsByPortfolio(portfolioId: string): Promise<number> {
+  async deletePerformanceSnapshotsByPortfolio(
+    portfolioId: string
+  ): Promise<number> {
     return this.performanceSnapshots
       .where('portfolioId')
       .equals(portfolioId)
       .delete();
   }
 
-  async deletePerformanceSnapshotsFromDate(portfolioId: string, fromDate: Date): Promise<number> {
+  async deletePerformanceSnapshotsFromDate(
+    portfolioId: string,
+    fromDate: Date
+  ): Promise<number> {
     const snapshots = await this.performanceSnapshots
       .where('portfolioId')
       .equals(portfolioId)
       .toArray();
 
-    const toDelete = snapshots.filter(
-      (s) => new Date(s.date) >= fromDate
-    );
+    const toDelete = snapshots.filter((s) => new Date(s.date) >= fromDate);
 
     await this.performanceSnapshots.bulkDelete(toDelete.map((s) => s.id));
     return toDelete.length;

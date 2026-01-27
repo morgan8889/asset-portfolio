@@ -99,7 +99,6 @@ const defaultMetrics = {
   allocation: [],
 };
 
-
 describe('MetricsCards', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -200,7 +199,6 @@ describe('MetricsCards with no metrics', () => {
     // Override metrics to null (cast needed for test scenario)
     mockPortfolioStore.metrics =
       null as unknown as typeof mockPortfolioStore.metrics;
-
   });
 
   it('should handle missing metrics gracefully', () => {

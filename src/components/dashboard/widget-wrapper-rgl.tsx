@@ -36,7 +36,7 @@ const WidgetWrapperRGLComponent = ({
       {/* Drag handle (only visible when not disabled) */}
       {!disabled && (
         <div
-          className="drag-handle absolute left-2 top-2 z-10 cursor-grab rounded p-1 opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100 active:cursor-grabbing"
+          className="drag-handle absolute left-2 top-2 z-10 cursor-grab rounded p-1 opacity-0 transition-opacity hover:bg-accent active:cursor-grabbing group-hover:opacity-100"
           title="Drag to reorder"
         >
           <GripVertical className="h-4 w-4 text-muted-foreground" />
@@ -44,7 +44,7 @@ const WidgetWrapperRGLComponent = ({
       )}
 
       {/* Widget content - widgets have their own Card with borders */}
-      <div className="flex-1 min-h-0">{children}</div>
+      <div className="min-h-0 flex-1">{children}</div>
     </div>
   );
 };

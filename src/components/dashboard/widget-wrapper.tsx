@@ -14,7 +14,13 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { WidgetId, WIDGET_DEFINITIONS, WidgetSpan, WidgetRowSpan, LayoutMode } from '@/types/dashboard';
+import {
+  WidgetId,
+  WIDGET_DEFINITIONS,
+  WidgetSpan,
+  WidgetRowSpan,
+  LayoutMode,
+} from '@/types/dashboard';
 
 interface WidgetWrapperProps {
   /** Unique widget identifier */
@@ -76,17 +82,17 @@ export const WidgetWrapper = memo(function WidgetWrapper({
   // Compute column span class
   // In stacking mode, all widgets are full width (span is ignored)
   // In grid mode, span 2 widgets stretch across 2 columns on md+ screens
-  const spanClass = layoutMode === 'stacking'
-    ? 'col-span-1'
-    : span === 2
-      ? 'md:col-span-2'
-      : 'col-span-1';
+  const spanClass =
+    layoutMode === 'stacking'
+      ? 'col-span-1'
+      : span === 2
+        ? 'md:col-span-2'
+        : 'col-span-1';
 
   // Compute row span class for dense packing
   // In stacking mode, row spans are ignored
-  const rowSpanClass = layoutMode === 'stacking'
-    ? ''
-    : ROW_SPAN_CLASSES[rowSpan];
+  const rowSpanClass =
+    layoutMode === 'stacking' ? '' : ROW_SPAN_CLASSES[rowSpan];
 
   return (
     <div
@@ -99,7 +105,7 @@ export const WidgetWrapper = memo(function WidgetWrapper({
         rowSpanClass,
         // Drag state styling
         isDragging && 'z-50 opacity-90 shadow-xl',
-        'relative group',
+        'group relative',
         className
       )}
       data-widget={id}
@@ -112,7 +118,7 @@ export const WidgetWrapper = memo(function WidgetWrapper({
           {...listeners}
           className={cn(
             'absolute left-2 top-2 z-10 cursor-grab p-1',
-            'opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity',
+            'opacity-0 transition-opacity focus:opacity-100 group-hover:opacity-100',
             'rounded hover:bg-muted focus:bg-muted',
             'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
             isDragging && 'cursor-grabbing opacity-100'
@@ -121,12 +127,16 @@ export const WidgetWrapper = memo(function WidgetWrapper({
           aria-describedby={`widget-${id}-instructions`}
           tabIndex={0}
         >
-          <GripVertical className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          <GripVertical
+            className="h-4 w-4 text-muted-foreground"
+            aria-hidden="true"
+          />
         </button>
       )}
       {/* Screen reader instructions */}
       <span id={`widget-${id}-instructions`} className="sr-only">
-        Use Space to pick up this widget, arrow keys to move it, Space to place it, or Escape to cancel reordering.
+        Use Space to pick up this widget, arrow keys to move it, Space to place
+        it, or Escape to cancel reordering.
       </span>
       {children}
     </div>

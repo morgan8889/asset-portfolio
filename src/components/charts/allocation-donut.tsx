@@ -1,7 +1,14 @@
 'use client';
 
 import { useMemo, memo } from 'react';
-import { Cell, PieChart, Pie, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import {
+  Cell,
+  PieChart,
+  Pie,
+  ResponsiveContainer,
+  Tooltip,
+  Legend,
+} from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PieChart as PieChartIcon, TrendingUp, DollarSign } from 'lucide-react';
@@ -88,10 +95,10 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload[0]) {
     const data = payload[0].payload;
     return (
-      <div className="bg-background border rounded-lg shadow-lg p-3 min-w-[180px]">
-        <div className="flex items-center gap-2 mb-2">
+      <div className="min-w-[180px] rounded-lg border bg-background p-3 shadow-lg">
+        <div className="mb-2 flex items-center gap-2">
           <div
-            className="w-3 h-3 rounded-full"
+            className="h-3 w-3 rounded-full"
             style={{ backgroundColor: data.color }}
           />
           <p className="font-medium">{data.name}</p>
@@ -151,10 +158,12 @@ const AllocationDonutComponent = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center text-muted-foreground py-8">
-            <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium mb-2">No allocation data</p>
-            <p className="text-sm">Add holdings to see asset allocation breakdown.</p>
+          <div className="py-8 text-center text-muted-foreground">
+            <DollarSign className="mx-auto mb-4 h-12 w-12 opacity-50" />
+            <p className="mb-2 text-lg font-medium">No allocation data</p>
+            <p className="text-sm">
+              Add holdings to see asset allocation breakdown.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -180,7 +189,7 @@ const AllocationDonutComponent = () => {
 
       <CardContent className="space-y-6">
         {/* Donut Chart */}
-        <div className="h-[300px] w-full relative">
+        <div className="relative h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -205,7 +214,7 @@ const AllocationDonutComponent = () => {
           </ResponsiveContainer>
 
           {/* Center Text */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
             <div className="text-2xl font-bold">
               {formatCurrency(totalValue)}
             </div>
@@ -223,25 +232,30 @@ const AllocationDonutComponent = () => {
           {allocationData
             .sort((a, b) => b.percentage - a.percentage)
             .map((item, index) => (
-              <div key={item.name} className="flex items-center justify-between group hover:bg-muted/50 rounded-lg p-2 -m-2 transition-colors">
+              <div
+                key={item.name}
+                className="group -m-2 flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-muted/50"
+              >
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
                     <div
-                      className="w-3 h-3 rounded-full"
+                      className="h-3 w-3 rounded-full"
                       style={{ backgroundColor: item.color }}
                     />
                     <span className="font-medium">{item.name}</span>
                   </div>
                   {index === 0 && (
                     <Badge variant="secondary" className="text-xs">
-                      <TrendingUp className="h-3 w-3 mr-1" />
+                      <TrendingUp className="mr-1 h-3 w-3" />
                       Largest
                     </Badge>
                   )}
                 </div>
 
                 <div className="text-right">
-                  <div className="font-medium">{formatCurrency(item.value)}</div>
+                  <div className="font-medium">
+                    {formatCurrency(item.value)}
+                  </div>
                   <div className="text-xs text-muted-foreground">
                     {item.percentage.toFixed(1)}%
                   </div>
@@ -251,16 +265,18 @@ const AllocationDonutComponent = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+        <div className="grid grid-cols-2 gap-4 border-t pt-4">
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground">Top Allocation</div>
             {topAllocation ? (
               <div className="flex items-center gap-2">
                 <div
-                  className="w-2 h-2 rounded-full"
+                  className="h-2 w-2 rounded-full"
                   style={{ backgroundColor: topAllocation.color }}
                 />
-                <span className="text-sm font-medium">{topAllocation.name}</span>
+                <span className="text-sm font-medium">
+                  {topAllocation.name}
+                </span>
                 <span className="text-xs text-muted-foreground">
                   ({topAllocation.percentage.toFixed(1)}%)
                 </span>
@@ -273,7 +289,8 @@ const AllocationDonutComponent = () => {
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground">Diversification</div>
             <div className="text-sm font-medium">
-              {allocationData.length} asset {allocationData.length === 1 ? 'type' : 'types'}
+              {allocationData.length} asset{' '}
+              {allocationData.length === 1 ? 'type' : 'types'}
             </div>
           </div>
         </div>

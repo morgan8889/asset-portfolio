@@ -416,6 +416,7 @@ const HoldingsTableComponent = () => {
                               showStaleness={preferences.showStalenessIndicator}
                               showChange={false}
                               size="sm"
+                              className="ml-auto items-end"
                             />
                           );
                         }

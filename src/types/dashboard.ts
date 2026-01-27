@@ -60,16 +60,33 @@ export interface WidgetSizeConstraints {
  * Per-widget size constraints for discrete grid snapping.
  * Prevents infinite free-form resizing by enforcing discrete sizes.
  */
-export const WIDGET_SIZE_CONSTRAINTS: Record<WidgetId, WidgetSizeConstraints> = {
-  'total-value': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
-  'gain-loss': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
-  'day-change': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
-  'category-breakdown': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
-  'growth-chart': { minW: 2, maxW: 2, minH: 2, maxH: 4 },
-  'top-performers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
-  'biggest-losers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
-  'recent-activity': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
-};
+export const WIDGET_SIZE_CONSTRAINTS: Record<WidgetId, WidgetSizeConstraints> =
+  {
+    'total-value': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
+    'gain-loss': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
+    'day-change': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
+    'category-breakdown': { minW: 1, maxW: 2, minH: 2, maxH: 4 },
+    'growth-chart': { minW: 2, maxW: 2, minH: 2, maxH: 4 },
+    'top-performers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
+    'biggest-losers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
+    'recent-activity': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
+  };
+
+/**
+ * Settings for the Category Breakdown widget.
+ */
+export interface CategoryBreakdownSettings {
+  /** Whether to show the pie chart visualization */
+  showPieChart: boolean;
+}
+
+/**
+ * Per-widget settings configuration.
+ * Each widget can have its own specific settings.
+ */
+export interface WidgetSettings {
+  'category-breakdown': CategoryBreakdownSettings;
+}
 
 // =============================================================================
 // Widget Types
@@ -243,6 +260,9 @@ export interface DashboardConfigurationV3 {
 
   /** Per-widget row span overrides (1, 2, or 3 rows) */
   widgetRowSpans: Partial<Record<WidgetId, WidgetRowSpan>>;
+
+  /** Per-widget specific settings (e.g., pie chart toggle for category breakdown) */
+  widgetSettings: WidgetSettings;
 }
 
 // =============================================================================
@@ -345,6 +365,9 @@ export interface DashboardConfiguration {
 
   /** Whether to use react-grid-layout (false = legacy CSS Grid + dnd-kit) */
   useReactGridLayout?: boolean;
+
+  /** Per-widget specific settings (e.g., pie chart toggle for category breakdown) */
+  widgetSettings: WidgetSettings;
 }
 
 // =============================================================================
@@ -470,7 +493,18 @@ export const WidgetRowSpanSchema = z.union([
   z.literal(4),
 ]);
 
-export const WidgetRowSpansSchema = z.record(WidgetIdSchema, WidgetRowSpanSchema);
+export const WidgetRowSpansSchema = z.record(
+  WidgetIdSchema,
+  WidgetRowSpanSchema
+);
+
+export const CategoryBreakdownSettingsSchema = z.object({
+  showPieChart: z.boolean(),
+});
+
+export const WidgetSettingsSchema = z.object({
+  'category-breakdown': CategoryBreakdownSettingsSchema,
+});
 
 /**
  * Version 1 schema for migration validation.
@@ -570,9 +604,16 @@ export const DashboardConfigurationSchemaV3 = z.object({
   lastUpdated: z.string().datetime('Must be a valid ISO 8601 datetime'),
   layoutMode: LayoutModeSchema,
   gridColumns: GridColumnsSchema,
-  widgetSpans: z.record(WidgetIdSchema, WidgetSpanSchema).optional().default({}),
+  widgetSpans: z
+    .record(WidgetIdSchema, WidgetSpanSchema)
+    .optional()
+    .default({}),
   densePacking: z.boolean(),
-  widgetRowSpans: z.record(WidgetIdSchema, WidgetRowSpanSchema).optional().default({}),
+  widgetRowSpans: z
+    .record(WidgetIdSchema, WidgetRowSpanSchema)
+    .optional()
+    .default({}),
+  widgetSettings: WidgetSettingsSchema,
 });
 
 /**
@@ -630,11 +671,18 @@ export const DashboardConfigurationSchema = z.object({
   lastUpdated: z.string().datetime('Must be a valid ISO 8601 datetime'),
   layoutMode: LayoutModeSchema,
   gridColumns: GridColumnsSchema,
-  widgetSpans: z.record(WidgetIdSchema, WidgetSpanSchema).optional().default({}),
+  widgetSpans: z
+    .record(WidgetIdSchema, WidgetSpanSchema)
+    .optional()
+    .default({}),
   densePacking: z.boolean(),
-  widgetRowSpans: z.record(WidgetIdSchema, WidgetRowSpanSchema).optional().default({}),
+  widgetRowSpans: z
+    .record(WidgetIdSchema, WidgetRowSpanSchema)
+    .optional()
+    .default({}),
   rglLayouts: RGLLayoutsSchema.optional(),
   useReactGridLayout: z.boolean().optional().default(false),
+  widgetSettings: WidgetSettingsSchema,
 });
 
 // =============================================================================
@@ -770,7 +818,9 @@ export const DEFAULT_WIDGET_SPANS: Partial<Record<WidgetId, WidgetSpan>> = {
  * - Tables/Lists: 3 rows (has header + rows + footer)
  * - Metrics cards: 1 row (compact, implicit default)
  */
-export const DEFAULT_WIDGET_ROW_SPANS: Partial<Record<WidgetId, WidgetRowSpan>> = {
+export const DEFAULT_WIDGET_ROW_SPANS: Partial<
+  Record<WidgetId, WidgetRowSpan>
+> = {
   'growth-chart': 4,
   'recent-activity': 3,
   'category-breakdown': 3,
@@ -811,6 +861,11 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
   widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
   rglLayouts: undefined, // Generated on demand during migration
   useReactGridLayout: false, // Disabled by default, opt-in
+  widgetSettings: {
+    'category-breakdown': {
+      showPieChart: false, // Pie chart disabled by default
+    },
+  },
 };
 
 // =============================================================================

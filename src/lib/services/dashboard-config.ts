@@ -37,7 +37,9 @@ const STORAGE_KEY = 'dashboard-config';
  * Migrate a v1 configuration to v2.
  * Adds default layout settings while preserving existing config.
  */
-function migrateV1ToV2(v1Config: DashboardConfigurationV1): DashboardConfigurationV2 {
+function migrateV1ToV2(
+  v1Config: DashboardConfigurationV1
+): DashboardConfigurationV2 {
   return {
     ...v1Config,
     version: 2,
@@ -49,14 +51,21 @@ function migrateV1ToV2(v1Config: DashboardConfigurationV1): DashboardConfigurati
 
 /**
  * Migrate a v2 configuration to v3.
- * Adds dense packing settings while preserving existing config.
+ * Adds dense packing settings and widget settings while preserving existing config.
  */
-function migrateV2ToV3(v2Config: DashboardConfigurationV2): DashboardConfigurationV3 {
+function migrateV2ToV3(
+  v2Config: DashboardConfigurationV2
+): DashboardConfigurationV3 {
   return {
     ...v2Config,
     version: 3,
     densePacking: true,
     widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
+    widgetSettings: {
+      'category-breakdown': {
+        showPieChart: false,
+      },
+    },
   };
 }
 
@@ -84,8 +93,9 @@ function generateRGLLayoutsFromSpans(
 
   // Generate desktop layout with proper bin-packing
   widgetOrder.forEach((widgetId) => {
-    const w = widgetSpans[widgetId] || 1;
-    const h = widgetRowSpans[widgetId] || 1;
+    const w = widgetSpans[widgetId] ?? DEFAULT_WIDGET_SPANS[widgetId] ?? 1;
+    const h =
+      widgetRowSpans[widgetId] ?? DEFAULT_WIDGET_ROW_SPANS[widgetId] ?? 1;
     const constraints = WIDGET_SIZE_CONSTRAINTS[widgetId];
 
     // Find the best position: leftmost x where all needed columns have minimum y
@@ -189,7 +199,9 @@ function generateRGLLayoutsFromSpans(
  * Migrate a v3 configuration to v4.
  * Adds react-grid-layout support while preserving existing config.
  */
-function migrateV3ToV4(v3Config: DashboardConfigurationV3): DashboardConfiguration {
+function migrateV3ToV4(
+  v3Config: DashboardConfigurationV3
+): DashboardConfiguration {
   return {
     ...v3Config,
     version: 4,
@@ -200,6 +212,11 @@ function migrateV3ToV4(v3Config: DashboardConfigurationV3): DashboardConfigurati
       v3Config.widgetRowSpans,
       v3Config.gridColumns
     ),
+    widgetSettings: {
+      'category-breakdown': {
+        showPieChart: false, // Pie chart disabled by default
+      },
+    },
   };
 }
 
@@ -218,6 +235,32 @@ export function generateRGLLayoutsFromConfig(
   );
 }
 
+/**
+ * Sync RGL layout constraints with current WIDGET_SIZE_CONSTRAINTS.
+ * This ensures existing stored layouts pick up constraint changes (e.g., maxH updates).
+ */
+function syncLayoutConstraints(layouts: RGLLayouts): RGLLayouts {
+  const syncBreakpoint = (items: RGLLayout[]): RGLLayout[] =>
+    items.map((item) => {
+      const widgetId = item.i as WidgetId;
+      const constraints = WIDGET_SIZE_CONSTRAINTS[widgetId];
+      if (!constraints) return item;
+      return {
+        ...item,
+        minW: constraints.minW,
+        maxW: constraints.maxW,
+        minH: constraints.minH,
+        maxH: constraints.maxH,
+      };
+    });
+
+  return {
+    lg: syncBreakpoint(layouts.lg),
+    md: syncBreakpoint(layouts.md),
+    sm: syncBreakpoint(layouts.sm),
+  };
+}
+
 export const dashboardConfigService = {
   /**
    * Load the current dashboard configuration.
@@ -234,7 +277,13 @@ export const dashboardConfigService = {
     // Check if it's a valid v4 config
     const v4Result = DashboardConfigurationSchema.safeParse(stored);
     if (v4Result.success) {
-      return v4Result.data;
+      const config = v4Result.data;
+      // Sync constraints with current WIDGET_SIZE_CONSTRAINTS
+      // This ensures existing layouts pick up constraint changes (e.g., maxH updates)
+      if (config.rglLayouts) {
+        config.rglLayouts = syncLayoutConstraints(config.rglLayouts);
+      }
+      return config;
     }
 
     // Try to migrate from v3
@@ -302,7 +351,10 @@ export const dashboardConfigService = {
    * Update widget visibility.
    * Convenience method for toggling a single widget.
    */
-  async setWidgetVisibility(widgetId: WidgetId, visible: boolean): Promise<void> {
+  async setWidgetVisibility(
+    widgetId: WidgetId,
+    visible: boolean
+  ): Promise<void> {
     const config = await this.getConfig();
     config.widgetVisibility[widgetId] = visible;
     await this.saveConfig(config);
@@ -379,7 +431,10 @@ export const dashboardConfigService = {
    * Update the row span for a specific widget.
    * Only affects display when densePacking is enabled.
    */
-  async setWidgetRowSpan(widgetId: WidgetId, rowSpan: WidgetRowSpan): Promise<void> {
+  async setWidgetRowSpan(
+    widgetId: WidgetId,
+    rowSpan: WidgetRowSpan
+  ): Promise<void> {
     const config = await this.getConfig();
     config.widgetRowSpans = { ...config.widgetRowSpans, [widgetId]: rowSpan };
     await this.saveConfig(config);
@@ -389,7 +444,10 @@ export const dashboardConfigService = {
    * Update react-grid-layout layouts and widget order.
    * Called when RGL layout changes (drag/drop or resize).
    */
-  async setRGLLayouts(layouts: RGLLayouts, newOrder: WidgetId[]): Promise<void> {
+  async setRGLLayouts(
+    layouts: RGLLayouts,
+    newOrder: WidgetId[]
+  ): Promise<void> {
     const config = await this.getConfig();
     config.rglLayouts = layouts;
     config.widgetOrder = newOrder;
@@ -414,6 +472,21 @@ export const dashboardConfigService = {
       );
     }
 
+    await this.saveConfig(config);
+  },
+
+  /**
+   * Enable or disable the pie chart for category breakdown widget.
+   */
+  async setCategoryBreakdownPieChart(enabled: boolean): Promise<void> {
+    const config = await this.getConfig();
+    config.widgetSettings = {
+      ...config.widgetSettings,
+      'category-breakdown': {
+        ...config.widgetSettings['category-breakdown'],
+        showPieChart: enabled,
+      },
+    };
     await this.saveConfig(config);
   },
 };

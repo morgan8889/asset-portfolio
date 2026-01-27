@@ -59,7 +59,9 @@ interface PriceState {
   symbolToAssetId: Map<string, string>; // Maps symbol -> assetId for snapshot persistence
 
   // Actions
-  setPreferences: (preferences: Partial<PriceUpdatePreferences>) => Promise<void>;
+  setPreferences: (
+    preferences: Partial<PriceUpdatePreferences>
+  ) => Promise<void>;
   loadPreferences: () => Promise<void>;
   savePreferences: () => Promise<void>;
 

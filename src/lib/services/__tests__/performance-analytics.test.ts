@@ -253,7 +253,9 @@ describe('Performance Analytics Service', () => {
       vi.mocked(db.getHoldingsByPortfolio).mockResolvedValue([]);
       vi.mocked(db.assets.toArray).mockResolvedValue([]);
 
-      const { getHoldingPerformance } = await import('../performance-analytics');
+      const { getHoldingPerformance } = await import(
+        '../performance-analytics'
+      );
       const result = await getHoldingPerformance(mockPortfolioId, 'MONTH');
 
       expect(result).toEqual([]);
@@ -291,13 +293,20 @@ describe('Performance Analytics Service', () => {
 
       const mockAssets = [
         { id: 'asset-1', symbol: 'AAPL', name: 'Apple Inc.', type: 'stock' },
-        { id: 'asset-2', symbol: 'GOOGL', name: 'Alphabet Inc.', type: 'stock' },
+        {
+          id: 'asset-2',
+          symbol: 'GOOGL',
+          name: 'Alphabet Inc.',
+          type: 'stock',
+        },
       ];
 
       vi.mocked(db.getHoldingsByPortfolio).mockResolvedValue(mockHoldings);
       vi.mocked(db.assets.toArray).mockResolvedValue(mockAssets);
 
-      const { getHoldingPerformance } = await import('../performance-analytics');
+      const { getHoldingPerformance } = await import(
+        '../performance-analytics'
+      );
       const result = await getHoldingPerformance(mockPortfolioId, 'MONTH');
 
       expect(result).toHaveLength(2);
@@ -421,7 +430,9 @@ describe('Performance Analytics Service', () => {
       vi.mocked(db.assets.toArray).mockResolvedValue(mockAssets);
 
       const { exportToCSV } = await import('../performance-analytics');
-      const result = await exportToCSV(mockPortfolioId, 'MONTH', { includeHoldings: true });
+      const result = await exportToCSV(mockPortfolioId, 'MONTH', {
+        includeHoldings: true,
+      });
 
       expect(result).toContain('Holdings Performance');
       expect(result).toContain('AAPL');

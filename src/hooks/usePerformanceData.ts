@@ -189,7 +189,12 @@ export function usePerformanceData(): PerformancePageData {
     return () => {
       abortController.abort();
     };
-  }, [currentPortfolio?.id, selectedPeriod, liveMetrics.totalValue.toString(), calculateMetrics]);
+  }, [
+    currentPortfolio?.id,
+    selectedPeriod,
+    liveMetrics.totalValue.toString(),
+    calculateMetrics,
+  ]);
 
   // Combine live metrics with calculated metrics
   const result = useMemo(

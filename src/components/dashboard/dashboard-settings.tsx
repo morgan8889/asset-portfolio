@@ -22,7 +22,15 @@ import { Label } from '@/components/ui/label';
 import { Settings, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useDashboardStore } from '@/lib/stores';
-import { WidgetId, WIDGET_DEFINITIONS, GridColumns, WidgetSpan, WidgetRowSpan } from '@/types/dashboard';
+import {
+  WidgetId,
+  WIDGET_DEFINITIONS,
+  GridColumns,
+  WidgetSpan,
+  WidgetRowSpan,
+  DEFAULT_WIDGET_SPANS,
+  DEFAULT_WIDGET_ROW_SPANS,
+} from '@/types/dashboard';
 import { cn } from '@/lib/utils';
 import { LayoutModeSelector } from './layout-mode-selector';
 import {
@@ -32,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { generateRGLLayoutsFromConfig } from '@/lib/services/dashboard-config';
 
 interface DashboardSettingsProps {
   trigger?: React.ReactNode;
@@ -49,7 +58,9 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     setWidgetSpan,
     setDensePacking,
     setWidgetRowSpan,
+    setRGLLayouts,
     toggleUseReactGridLayout,
+    setCategoryBreakdownPieChart,
     resetToDefault,
   } = useDashboardStore();
 
@@ -114,30 +125,77 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
 
   const handleGridColumnsChange = useCallback(
     async (columns: string) => {
-      await setGridColumns(Number(columns) as GridColumns);
+      const newColumns = Number(columns) as GridColumns;
+      await setGridColumns(newColumns);
+
+      // Regenerate RGL layouts to fit new column count
+      // Note: This results in two IndexedDB writes (setGridColumns + setRGLLayouts).
+      // Future optimization: Add batch update support to dashboardConfigService.
+      if (config && config.useReactGridLayout) {
+        const newLayouts = generateRGLLayoutsFromConfig({
+          ...config,
+          gridColumns: newColumns,
+        });
+        await setRGLLayouts(newLayouts, config.widgetOrder);
+      }
     },
-    [setGridColumns]
+    [config, setGridColumns, setRGLLayouts]
   );
 
   const handleWidgetSpanChange = useCallback(
     async (widgetId: WidgetId, span: string) => {
-      await setWidgetSpan(widgetId, Number(span) as WidgetSpan);
+      const newSpan = Number(span) as WidgetSpan;
+      await setWidgetSpan(widgetId, newSpan);
+
+      // Regenerate RGL layouts to reflect new span
+      if (config && config.useReactGridLayout) {
+        const newLayouts = generateRGLLayoutsFromConfig({
+          ...config,
+          widgetSpans: {
+            ...config.widgetSpans,
+            [widgetId]: newSpan,
+          },
+        });
+        await setRGLLayouts(newLayouts, config.widgetOrder);
+      }
     },
-    [setWidgetSpan]
+    [config, setWidgetSpan, setRGLLayouts]
   );
 
   const handleDensePackingChange = useCallback(
     async (enabled: boolean) => {
       await setDensePacking(enabled);
+
+      // Regenerate RGL layouts to apply new packing mode
+      if (config && config.useReactGridLayout) {
+        const newLayouts = generateRGLLayoutsFromConfig({
+          ...config,
+          densePacking: enabled,
+        });
+        await setRGLLayouts(newLayouts, config.widgetOrder);
+      }
     },
-    [setDensePacking]
+    [config, setDensePacking, setRGLLayouts]
   );
 
   const handleWidgetRowSpanChange = useCallback(
     async (widgetId: WidgetId, rowSpan: string) => {
-      await setWidgetRowSpan(widgetId, Number(rowSpan) as WidgetRowSpan);
+      const newRowSpan = Number(rowSpan) as WidgetRowSpan;
+      await setWidgetRowSpan(widgetId, newRowSpan);
+
+      // Regenerate RGL layouts to reflect new row span
+      if (config && config.useReactGridLayout) {
+        const newLayouts = generateRGLLayoutsFromConfig({
+          ...config,
+          widgetRowSpans: {
+            ...config.widgetRowSpans,
+            [widgetId]: newRowSpan,
+          },
+        });
+        await setRGLLayouts(newLayouts, config.widgetOrder);
+      }
     },
-    [setWidgetRowSpan]
+    [config, setWidgetRowSpan, setRGLLayouts]
   );
 
   const handleUseReactGridLayoutChange = useCallback(
@@ -147,33 +205,44 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     [toggleUseReactGridLayout]
   );
 
+  const handleCategoryPieChartChange = useCallback(
+    async (enabled: boolean) => {
+      await setCategoryBreakdownPieChart(enabled);
+    },
+    [setCategoryBreakdownPieChart]
+  );
+
   if (!config) {
     return null;
   }
 
   const defaultTrigger = (
     <Button variant="outline" size="sm">
-      <Settings className="h-4 w-4 mr-2" />
+      <Settings className="mr-2 h-4 w-4" />
       Settings
     </Button>
   );
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-      setOpen(isOpen);
-      if (!isOpen) setShowResetConfirm(false);
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen) setShowResetConfirm(false);
+      }}
+    >
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Dashboard Settings</DialogTitle>
           <DialogDescription>
-            Customize which widgets are visible and their order on your dashboard.
+            Customize which widgets are visible and their order on your
+            dashboard.
           </DialogDescription>
         </DialogHeader>
 
         {/* Layout Settings Section */}
-        <div className="space-y-4 py-4 border-b">
+        <div className="space-y-4 border-b py-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">Layout Mode</Label>
             <LayoutModeSelector
@@ -206,9 +275,15 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
           {config.layoutMode === 'grid' && (
             <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="dense-packing" className="text-sm font-medium flex items-center gap-2">
+                <Label
+                  htmlFor="dense-packing"
+                  className="flex items-center gap-2 text-sm font-medium"
+                >
                   Dense Packing
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-green-100 text-green-700 border-green-200">
+                  <Badge
+                    variant="secondary"
+                    className="border-green-200 bg-green-100 px-1.5 py-0 text-[10px] text-green-700"
+                  >
                     New
                   </Badge>
                 </Label>
@@ -227,9 +302,15 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
 
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="use-rgl" className="text-sm font-medium flex items-center gap-2">
+              <Label
+                htmlFor="use-rgl"
+                className="flex items-center gap-2 text-sm font-medium"
+              >
                 New Layout System
-                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-blue-100 text-blue-700 border-blue-200">
+                <Badge
+                  variant="secondary"
+                  className="border-blue-200 bg-blue-100 px-1.5 py-0 text-[10px] text-blue-700"
+                >
                   Beta
                 </Badge>
               </Label>
@@ -246,8 +327,35 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
           </div>
         </div>
 
+        {/* Widget-Specific Settings Section */}
+        <div className="space-y-4 border-b py-4">
+          <Label className="text-sm font-medium">Widget Settings</Label>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label
+                htmlFor="category-pie-chart"
+                className="text-sm font-medium"
+              >
+                Category Breakdown Pie Chart
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Show pie chart visualization (requires 2x width and 2h+ height)
+              </p>
+            </div>
+            <Switch
+              id="category-pie-chart"
+              checked={
+                config.widgetSettings?.['category-breakdown']?.showPieChart ??
+                false
+              }
+              onCheckedChange={handleCategoryPieChartChange}
+              aria-label="Toggle category breakdown pie chart"
+            />
+          </div>
+        </div>
+
         {/* Widget Settings Section */}
-        <div className="space-y-4 py-4 max-h-[300px] overflow-y-auto">
+        <div className="max-h-[300px] space-y-4 overflow-y-auto py-4">
           {config.widgetOrder.map((widgetId, index) => {
             const definition = WIDGET_DEFINITIONS[widgetId];
             const isVisible = config.widgetVisibility[widgetId];
@@ -258,41 +366,49 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
               <div
                 key={widgetId}
                 className={cn(
-                  'flex items-center justify-between p-3 rounded-lg border',
+                  'flex items-center justify-between rounded-lg border p-3',
                   !isVisible && 'opacity-60'
                 )}
               >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
                   <Switch
                     id={`widget-${widgetId}`}
                     checked={isVisible}
-                    onCheckedChange={(checked) => handleVisibilityChange(widgetId, checked)}
+                    onCheckedChange={(checked) =>
+                      handleVisibilityChange(widgetId, checked)
+                    }
                     disabled={!definition.canHide}
                     aria-label={`Toggle ${definition.displayName} visibility`}
                   />
                   <div className="min-w-0">
                     <Label
                       htmlFor={`widget-${widgetId}`}
-                      className="font-medium cursor-pointer"
+                      className="cursor-pointer font-medium"
                     >
                       {definition.displayName}
                     </Label>
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p className="truncate text-xs text-muted-foreground">
                       {definition.description}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                <div className="ml-2 flex flex-shrink-0 items-center gap-1">
                   {/* Widget column span selector - only shown in grid mode */}
                   {config.layoutMode === 'grid' && (
                     <Select
-                      value={String(config.widgetSpans?.[widgetId] ?? 1)}
-                      onValueChange={(value) => handleWidgetSpanChange(widgetId, value)}
+                      value={String(
+                        config.widgetSpans?.[widgetId] ??
+                          DEFAULT_WIDGET_SPANS[widgetId] ??
+                          1
+                      )}
+                      onValueChange={(value) =>
+                        handleWidgetSpanChange(widgetId, value)
+                      }
                       disabled={!isVisible}
                     >
                       <SelectTrigger
-                        className="w-16 h-8"
+                        className="h-8 w-16"
                         aria-label={`Column span for ${definition.displayName}`}
                       >
                         <SelectValue />
@@ -306,12 +422,18 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
                   {/* Widget row span selector - only shown when dense packing is enabled */}
                   {config.layoutMode === 'grid' && config.densePacking && (
                     <Select
-                      value={String(config.widgetRowSpans?.[widgetId] ?? 1)}
-                      onValueChange={(value) => handleWidgetRowSpanChange(widgetId, value)}
+                      value={String(
+                        config.widgetRowSpans?.[widgetId] ??
+                          DEFAULT_WIDGET_ROW_SPANS[widgetId] ??
+                          1
+                      )}
+                      onValueChange={(value) =>
+                        handleWidgetRowSpanChange(widgetId, value)
+                      }
                       disabled={!isVisible}
                     >
                       <SelectTrigger
-                        className="w-16 h-8"
+                        className="h-8 w-16"
                         aria-label={`Row span for ${definition.displayName}`}
                       >
                         <SelectValue />
@@ -352,10 +474,10 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
           })}
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
           {showResetConfirm ? (
             <>
-              <p className="text-sm text-muted-foreground w-full sm:w-auto">
+              <p className="w-full text-sm text-muted-foreground sm:w-auto">
                 Reset all settings to default?
               </p>
               <Button
@@ -380,10 +502,13 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
                 onClick={handleResetClick}
                 className="w-full sm:w-auto"
               >
-                <RotateCcw className="h-4 w-4 mr-2" />
+                <RotateCcw className="mr-2 h-4 w-4" />
                 Reset to Default
               </Button>
-              <Button onClick={() => setOpen(false)} className="w-full sm:w-auto">
+              <Button
+                onClick={() => setOpen(false)}
+                className="w-full sm:w-auto"
+              >
                 Done
               </Button>
             </>

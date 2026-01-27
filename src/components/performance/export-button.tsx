@@ -19,7 +19,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { usePerformanceStore } from '@/lib/stores/performance';
-import { showSuccessNotification, showErrorNotification } from '@/lib/stores/ui';
+import {
+  showSuccessNotification,
+  showErrorNotification,
+} from '@/lib/stores/ui';
 
 interface ExportButtonProps {
   portfolioId: string;
@@ -57,7 +60,10 @@ export function ExportButton({
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      showSuccessNotification('Export Complete', `Performance data saved to ${filename}`);
+      showSuccessNotification(
+        'Export Complete',
+        `Performance data saved to ${filename}`
+      );
     } catch (error) {
       showErrorNotification(
         'Export Failed',
@@ -80,12 +86,12 @@ export function ExportButton({
         >
           {isExporting ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Exporting...
             </>
           ) : (
             <>
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="mr-2 h-4 w-4" />
               Export
             </>
           )}

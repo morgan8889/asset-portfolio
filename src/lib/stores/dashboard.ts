@@ -18,6 +18,7 @@ import {
   WidgetSpan,
   WidgetRowSpan,
   RGLLayouts,
+  WidgetSettings,
   DEFAULT_DASHBOARD_CONFIG,
 } from '@/types/dashboard';
 import { dashboardConfigService } from '@/lib/services/dashboard-config';
@@ -36,9 +37,13 @@ interface DashboardState {
   setGridColumns: (columns: GridColumns) => Promise<void>;
   setWidgetSpan: (widgetId: WidgetId, span: WidgetSpan) => Promise<void>;
   setDensePacking: (enabled: boolean) => Promise<void>;
-  setWidgetRowSpan: (widgetId: WidgetId, rowSpan: WidgetRowSpan) => Promise<void>;
+  setWidgetRowSpan: (
+    widgetId: WidgetId,
+    rowSpan: WidgetRowSpan
+  ) => Promise<void>;
   setRGLLayouts: (layouts: RGLLayouts, newOrder: WidgetId[]) => Promise<void>;
   toggleUseReactGridLayout: (enabled: boolean) => Promise<void>;
+  setCategoryBreakdownPieChart: (enabled: boolean) => Promise<void>;
   resetToDefault: () => Promise<void>;
   clearError: () => void;
 }
@@ -196,13 +201,16 @@ export const useDashboardStore = create<DashboardState>()(
         const { config } = get();
         if (!config) return;
 
-        // Validate rowSpan is 1, 2, or 3
-        if (![1, 2, 3].includes(rowSpan)) {
-          set({ error: 'Row span must be 1, 2, or 3' });
+        // Validate rowSpan is 1, 2, 3, or 4 (matches WidgetRowSpan type)
+        if (![1, 2, 3, 4].includes(rowSpan)) {
+          set({ error: 'Row span must be 1, 2, 3, or 4' });
           return;
         }
 
-        const updatedRowSpans = { ...config.widgetRowSpans, [widgetId]: rowSpan };
+        const updatedRowSpans = {
+          ...config.widgetRowSpans,
+          [widgetId]: rowSpan,
+        };
         await optimisticUpdate(
           get,
           set,
@@ -262,6 +270,27 @@ export const useDashboardStore = create<DashboardState>()(
           console.error('Failed to toggle layout system:', error);
           set({ config, error: 'Failed to toggle layout system' });
         }
+      },
+
+      setCategoryBreakdownPieChart: async (enabled) => {
+        const { config } = get();
+        if (!config) return;
+
+        const updatedSettings: WidgetSettings = {
+          ...config.widgetSettings,
+          'category-breakdown': {
+            ...config.widgetSettings['category-breakdown'],
+            showPieChart: enabled,
+          },
+        };
+        await optimisticUpdate(
+          get,
+          set,
+          'widgetSettings',
+          updatedSettings,
+          () => dashboardConfigService.setCategoryBreakdownPieChart(enabled),
+          'Failed to update pie chart setting'
+        );
       },
 
       resetToDefault: async () => {

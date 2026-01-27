@@ -20,7 +20,11 @@ export function sanitizeSymbol(input: string): string {
   if (typeof input !== 'string') return '';
   // Allow alphanumeric, dots, and caret (for indices)
   // Remove everything else
-  return input.replace(/[^a-zA-Z0-9.\^]/g, '').trim().toUpperCase().slice(0, 15);
+  return input
+    .replace(/[^a-zA-Z0-9.\^]/g, '')
+    .trim()
+    .toUpperCase()
+    .slice(0, 15);
 }
 
 // Symbol validation (stocks, ETFs, crypto, indices)
@@ -101,7 +105,17 @@ export const assetSchema = z.object({
     .string()
     .min(1, 'Asset name is required')
     .max(200, 'Asset name too long'),
-  type: z.enum(['stock', 'etf', 'crypto', 'bond', 'real_estate', 'commodity', 'index', 'cash', 'other']),
+  type: z.enum([
+    'stock',
+    'etf',
+    'crypto',
+    'bond',
+    'real_estate',
+    'commodity',
+    'index',
+    'cash',
+    'other',
+  ]),
   exchange: z.string().max(50, 'Exchange name too long').optional(),
   currency: z
     .string()
