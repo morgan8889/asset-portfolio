@@ -303,6 +303,33 @@ export const SUPPORTED_BENCHMARKS: BenchmarkInfo[] = [
 ];
 
 // =============================================================================
+// Year-over-Year Growth Types
+// =============================================================================
+
+/**
+ * Year-over-Year CAGR metric for a single calendar year or YTD period.
+ * Used for displaying annual growth rates on the Performance page.
+ */
+export interface YearOverYearMetric {
+  /** Year label (e.g., "2023", "2024", "Current Year (YTD)") */
+  label: string;
+  /** Start date of the period (January 1 or portfolio inception) */
+  startDate: Date;
+  /** End date of the period (December 31 or current date for YTD) */
+  endDate: Date;
+  /** Portfolio value at start of period */
+  startValue: Decimal;
+  /** Portfolio value at end of period */
+  endValue: Decimal;
+  /** Compound Annual Growth Rate (CAGR) percentage */
+  cagr: number;
+  /** Number of days in the period */
+  daysInPeriod: number;
+  /** True if this is a partial year (YTD or less than 365 days) */
+  isPartialYear: boolean;
+}
+
+// =============================================================================
 // Decimal Fields for Serialization
 // =============================================================================
 
