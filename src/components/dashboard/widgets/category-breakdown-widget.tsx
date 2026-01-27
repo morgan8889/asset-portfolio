@@ -6,12 +6,13 @@
  * Displays portfolio allocation by asset category with progress bars.
  * Optionally shows a pie chart visualization when:
  * - showPieChart setting is enabled
- * - Widget rowSpan >= 2 (2h or taller)
+ * - NOT in compact view
  * - Widget width >= 150px
  *
- * Layout is determined by columnSpan:
- * - 1x: Stacked layout (pie chart below progress bars)
- * - 2x: Side-by-side layout (45%/55% split)
+ * View modes:
+ * - Compact (1-col < 4 rows, or 2-col < 2 rows): Progress bars only
+ * - Stacked (1-col, 4+ rows): Pie chart below progress bars, with legend
+ * - Side-by-side (2+ cols, 2+ rows): Progress bars left, pie chart right, no legend
  */
 
 import { memo, useRef } from 'react';
@@ -145,10 +146,16 @@ const CategoryRow = memo(function CategoryRow({
 
 interface PieChartVisualizationProps {
   allocations: CategoryAllocation[];
+  /** Whether to show legend (hide in side-by-side mode since categories shown in progress bars) */
+  showLegend?: boolean;
+  /** Use smaller radii for constrained layouts */
+  compact?: boolean;
 }
 
 const PieChartVisualization = memo(function PieChartVisualization({
   allocations,
+  showLegend = true,
+  compact = false,
 }: PieChartVisualizationProps) {
   const chartData = allocations.map((allocation) => ({
     name: allocation.label,
@@ -159,15 +166,19 @@ const PieChartVisualization = memo(function PieChartVisualization({
       CATEGORY_COLORS.other,
   }));
 
+  // Use smaller radii for side-by-side layout where space is constrained
+  const innerRadius = compact ? 30 : 45;
+  const outerRadius = compact ? 55 : 75;
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <PieChart data-testid="pie-chart">
         <Pie
           data={chartData}
           cx="50%"
-          cy="50%"
-          innerRadius={40}
-          outerRadius={70}
+          cy={showLegend ? '42%' : '50%'}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius}
           paddingAngle={2}
           dataKey="value"
           nameKey="name"
@@ -179,13 +190,16 @@ const PieChartVisualization = memo(function PieChartVisualization({
         <Tooltip
           formatter={(value: number) => [`${value.toFixed(1)}%`, 'Allocation']}
         />
-        <Legend
-          layout="horizontal"
-          verticalAlign="bottom"
-          align="center"
-          iconType="circle"
-          iconSize={8}
-        />
+        {showLegend && (
+          <Legend
+            layout="horizontal"
+            verticalAlign="bottom"
+            align="center"
+            iconType="circle"
+            iconSize={8}
+            wrapperStyle={{ paddingTop: '8px' }}
+          />
+        )}
       </PieChart>
     </ResponsiveContainer>
   );
@@ -205,14 +219,22 @@ export const CategoryBreakdownWidget = memo(function CategoryBreakdownWidget({
   // Extract settings with defaults
   const showPieChartSetting =
     config?.widgetSettings?.['category-breakdown']?.showPieChart ?? false;
+
+  // Use widgetSpans/widgetRowSpans as source of truth
+  // These are synced from RGL on every resize via handleResizeStop -> syncLayoutToSpans
   const rowSpan = config?.widgetRowSpans?.['category-breakdown'] ?? 1;
   const columnSpan = config?.widgetSpans?.['category-breakdown'] ?? 1;
 
+  // Compact view: not enough space for pie chart
+  // - 1-column widgets need 4+ rows for stacked layout
+  // - 2+ column widgets need 2+ rows for side-by-side layout
+  const isCompactView = columnSpan === 1 ? rowSpan < 4 : rowSpan < 2;
+
   // Determine if pie chart should be shown
-  // Requirements: setting enabled, rowSpan >= 2, and width >= minWidthForChart
+  // Requirements: setting enabled, NOT compact view, and enough width for chart
   const showPieChart =
     showPieChartSetting &&
-    rowSpan >= 2 &&
+    !isCompactView &&
     width >= CATEGORY_BREAKDOWN_THRESHOLDS.minWidthForChart;
 
   // Determine layout mode based on column span
@@ -228,21 +250,21 @@ export const CategoryBreakdownWidget = memo(function CategoryBreakdownWidget({
   );
 
   return (
-<Card data-testid="category-breakdown-widget" ref={containerRef}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+<Card data-testid="category-breakdown-widget" ref={containerRef} className="h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">
           Category Breakdown
         </CardTitle>
         <PieChartIcon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
-<CardContent>
+<CardContent className="flex-1 min-h-0 overflow-hidden">
         {showPieChart ? (
           <div
-            className={`flex ${useSideBySideLayout ? 'flex-row gap-4' : 'flex-col gap-4'}`}
+            className={`h-full flex ${useSideBySideLayout ? 'flex-row gap-4 items-center' : 'flex-col gap-4'}`}
           >
             {/* Progress Bars Section */}
             <div
-              className={`space-y-3 ${useSideBySideLayout ? 'w-[55%]' : 'w-full'}`}
+              className={`space-y-3 overflow-y-auto ${useSideBySideLayout ? 'w-[55%]' : 'w-full flex-shrink-0'}`}
             >
               {sortedAllocations.map((allocation) => (
                 <CategoryRow
@@ -254,9 +276,13 @@ export const CategoryBreakdownWidget = memo(function CategoryBreakdownWidget({
             </div>
             {/* Pie Chart Section */}
             <div
-              className={`${useSideBySideLayout ? 'w-[45%]' : 'w-full'} min-h-[200px]`}
+              className={`flex items-center justify-center ${useSideBySideLayout ? 'w-[45%] h-[120px]' : 'w-full flex-1 min-h-[200px]'}`}
             >
-              <PieChartVisualization allocations={sortedAllocations} />
+              <PieChartVisualization
+                allocations={sortedAllocations}
+                showLegend={!useSideBySideLayout}
+                compact={useSideBySideLayout}
+              />
             </div>
           </div>
         ) : (

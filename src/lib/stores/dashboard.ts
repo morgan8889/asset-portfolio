@@ -198,9 +198,9 @@ export const useDashboardStore = create<DashboardState>()(
         const { config } = get();
         if (!config) return;
 
-        // Validate rowSpan is 1, 2, or 3
-        if (![1, 2, 3].includes(rowSpan)) {
-          set({ error: 'Row span must be 1, 2, or 3' });
+        // Validate rowSpan is 1, 2, 3, or 4 (matches WidgetRowSpan type)
+        if (![1, 2, 3, 4].includes(rowSpan)) {
+          set({ error: 'Row span must be 1, 2, 3, or 4' });
           return;
         }
 
