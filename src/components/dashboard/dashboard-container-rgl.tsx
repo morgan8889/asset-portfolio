@@ -7,7 +7,7 @@
  */
 
 import React, { useEffect, useMemo, useCallback, memo } from 'react';
-import { Responsive as ResponsiveGridLayout, WidthProvider } from 'react-grid-layout';
+import { Responsive as ResponsiveGridLayout, useContainerWidth } from 'react-grid-layout';
 import type ReactGridLayout from 'react-grid-layout';
 import { Decimal } from 'decimal.js';
 import { PieChart } from 'lucide-react';
@@ -16,9 +16,6 @@ import 'react-resizable/css/styles.css';
 
 type RGLLayoutType = ReactGridLayout.Layout;
 type RGLLayoutsType = ReactGridLayout.Layouts;
-
-// Create width-aware responsive grid layout
-const ResponsiveGridLayoutWithWidth = WidthProvider(ResponsiveGridLayout);
 
 import {
   useDashboardStore,
@@ -131,12 +128,30 @@ function formatCategoryLabel(category: string): string {
 const DashboardContainerRGLComponent = ({
   disableDragDrop = false,
 }: DashboardContainerRGLProps) => {
+  // Get container width for react-grid-layout v2.x
+  const { ref, width: measuredWidth } = useContainerWidth();
+
   const {
     config,
     setRGLLayouts,
     setWidgetSpan,
     setWidgetRowSpan,
   } = useDashboardStore();
+
+  // Account for RGL horizontal margins to prevent overflow
+  // RGL applies margins between and around grid items
+  // For N columns with margin=16px: (N+1) * 16px total horizontal margins
+  // lg breakpoint (4 cols): 5 * 16 = 80px, md (2 cols): 3 * 16 = 48px, sm (1 col): 2 * 16 = 32px
+  const determineColumnCount = (viewportWidth: number) => {
+    if (viewportWidth >= 1024) return config?.gridColumns || 4; // lg
+    if (viewportWidth >= 768) return 2; // md
+    return 1; // sm
+  };
+
+  const MARGIN_SIZE = 16;
+  const cols = determineColumnCount(measuredWidth);
+  const totalHorizontalMargins = (cols + 1) * MARGIN_SIZE;
+  const width = Math.max(0, measuredWidth - totalHorizontalMargins);
   const {
     metrics,
     holdings,
@@ -334,7 +349,7 @@ const DashboardContainerRGLComponent = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div ref={ref} className="space-y-4">
       <StaleDataBanner lastUpdated={null} thresholdMinutes={15} />
 
       {priceLoading && (
@@ -344,28 +359,32 @@ const DashboardContainerRGLComponent = ({
         </div>
       )}
 
-      <ResponsiveGridLayoutWithWidth
-        layouts={layouts}
-        breakpoints={{ lg: 1024, md: 768, sm: 0 }}
-        cols={{ lg: config.gridColumns, md: 2, sm: 1 }}
-        rowHeight={120}
-        isDraggable={!disableDragDrop}
-        isResizable={!disableDragDrop}
-        compactType={config.densePacking ? 'vertical' : null}
-        onLayoutChange={handleLayoutChange}
-        onResizeStop={handleResizeStop}
-        margin={[16, 16]}
-        draggableHandle=".drag-handle"
-        className={cn('transition-all duration-300')}
-      >
-        {visibleWidgets.map((widgetId) => (
-          <div key={widgetId} className="h-full">
-            <WidgetWrapperRGL id={widgetId} disabled={disableDragDrop}>
-              {renderWidget(widgetId)}
-            </WidgetWrapperRGL>
-          </div>
-        ))}
-      </ResponsiveGridLayoutWithWidth>
+      {/* Only render grid when width is available (v2.x requirement) */}
+      {width > 0 && (
+        <ResponsiveGridLayout
+          layouts={layouts}
+          breakpoints={{ lg: 1024, md: 768, sm: 0 }}
+          cols={{ lg: config.gridColumns, md: 2, sm: 1 }}
+          rowHeight={120}
+          width={width}
+          isDraggable={!disableDragDrop}
+          isResizable={!disableDragDrop}
+          compactType={config.densePacking ? 'vertical' : null}
+          onLayoutChange={handleLayoutChange}
+          onResizeStop={handleResizeStop}
+          margin={[16, 16]}
+          draggableHandle=".drag-handle"
+          className={cn('transition-all duration-300')}
+        >
+          {visibleWidgets.map((widgetId) => (
+            <div key={widgetId} className="h-full">
+              <WidgetWrapperRGL id={widgetId} disabled={disableDragDrop}>
+                {renderWidget(widgetId)}
+              </WidgetWrapperRGL>
+            </div>
+          ))}
+        </ResponsiveGridLayout>
+      )}
     </div>
   );
 };
