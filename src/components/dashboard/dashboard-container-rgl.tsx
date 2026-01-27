@@ -131,17 +131,9 @@ function formatCategoryLabel(category: string): string {
 const DashboardContainerRGLComponent = ({
   disableDragDrop = false,
 }: DashboardContainerRGLProps) => {
-  const {
-    config,
-    setRGLLayouts,
-    setWidgetSpan,
-    setWidgetRowSpan,
-  } = useDashboardStore();
-  const {
-    metrics,
-    holdings,
-    assets,
-  } = usePortfolioStore();
+  const { config, setRGLLayouts, setWidgetSpan, setWidgetRowSpan } =
+    useDashboardStore();
+  const { metrics, holdings, assets } = usePortfolioStore();
   const { loading: priceLoading } = usePriceStore();
   const setSymbolAssetMappings = usePriceStore(
     (state) => state.setSymbolAssetMappings
@@ -181,12 +173,29 @@ const DashboardContainerRGLComponent = ({
     };
   }, [config, visibleWidgets]);
 
+  // Track current breakpoint for layout changes
+  const currentBreakpointRef = useRef<'lg' | 'md' | 'sm'>('lg');
+
+  /**
+   * Handle breakpoint changes to track which layout is currently active.
+   * This ensures we save changes to the correct breakpoint layout.
+   */
+  const handleBreakpointChange = useCallback(
+    (newBreakpoint: 'lg' | 'md' | 'sm', newCols: number) => {
+      console.log('Breakpoint changed:', newBreakpoint, 'columns:', newCols);
+      currentBreakpointRef.current = newBreakpoint;
+    },
+    []
+  );
+
   const handleLayoutChange = useCallback(
     (currentLayout: any, allLayouts: any) => {
       if (!config) return;
 
       // currentLayout could be a single layout or an array depending on the API version
-      const layoutArray = Array.isArray(currentLayout) ? currentLayout : [currentLayout];
+      const layoutArray = Array.isArray(currentLayout)
+        ? currentLayout
+        : [currentLayout];
 
       // Sort by position to get new order
       const sorted = [...layoutArray].sort((a, b) =>
@@ -366,6 +375,7 @@ const DashboardContainerRGLComponent = ({
             compactType: config.densePacking ? 'vertical' : null,
             preventCollision: true,
             onLayoutChange: handleLayoutChange,
+            onBreakpointChange: handleBreakpointChange,
             onResizeStop: handleResizeStop,
             margin: [16, 16],
             draggableHandle: '.drag-handle',
