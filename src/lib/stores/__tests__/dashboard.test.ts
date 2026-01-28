@@ -207,10 +207,10 @@ describe('Dashboard Store', () => {
     it('should reject invalid row span value', async () => {
       await useDashboardStore
         .getState()
-        .setWidgetRowSpan('growth-chart', 4 as any);
+        .setWidgetRowSpan('growth-chart', 5 as any);
 
       const state = useDashboardStore.getState();
-      expect(state.error).toContain('Row span must be 1, 2, or 3');
+      expect(state.error).toContain('Row span must be 1, 2, 3, or 4');
     });
 
     it('should rollback on persistence error', async () => {
