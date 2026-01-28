@@ -78,7 +78,7 @@ function formatCAGR(cagr: number): {
  */
 export function YoYGrowthTable({ metrics, className }: YoYGrowthTableProps) {
   // If no metrics, show informational message
-  if (metrics.length === 0) {
+  if (!metrics || metrics.length === 0) {
     return (
       <Card className={className}>
         <CardHeader>
