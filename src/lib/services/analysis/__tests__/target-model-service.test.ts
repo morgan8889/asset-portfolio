@@ -86,7 +86,7 @@ describe('Target Model Service', () => {
 
       await cloneTargetModel(sourceModel, 'Cloned Model');
 
-      const stored = await db.userSettings.get({ key: 'target_models' });
+      const stored = await db.userSettings.where('key').equals('target_models').first();
       expect(stored).toBeDefined();
       expect(stored?.value).toHaveLength(1);
       expect((stored?.value as TargetModel[])[0].name).toBe('Cloned Model');
@@ -137,7 +137,7 @@ describe('Target Model Service', () => {
 
       await cloneTargetModel(sourceModel, 'Cloned Model');
 
-      const stored = await db.userSettings.get({ key: 'target_models' });
+      const stored = await db.userSettings.where('key').equals('target_models').first();
       expect(stored?.value).toHaveLength(2);
       const models = stored?.value as TargetModel[];
       expect(models.map((m) => m.name)).toEqual(['Existing Model', 'Cloned Model']);
@@ -208,7 +208,7 @@ describe('Target Model Service', () => {
         },
       });
 
-      const stored = await db.userSettings.get({ key: 'target_models' });
+      const stored = await db.userSettings.where('key').equals('target_models').first();
       const models = stored?.value as TargetModel[];
       const updated = models.find((m) => m.id === 'user-model-1');
 
@@ -242,7 +242,7 @@ describe('Target Model Service', () => {
         isSystem: true as any,
       });
 
-      const stored = await db.userSettings.get({ key: 'target_models' });
+      const stored = await db.userSettings.where('key').equals('target_models').first();
       const models = stored?.value as TargetModel[];
       const updated = models.find((m) => m.id === 'user-model-1');
 
@@ -314,7 +314,7 @@ describe('Target Model Service', () => {
     it('should delete a non-system model', async () => {
       await deleteTargetModel('user-model-1');
 
-      const stored = await db.userSettings.get({ key: 'target_models' });
+      const stored = await db.userSettings.where('key').equals('target_models').first();
       const models = stored?.value as TargetModel[];
 
       expect(models).toHaveLength(2);
@@ -383,7 +383,7 @@ describe('Target Model Service', () => {
 
       await createTargetModel(modelData);
 
-      const stored = await db.userSettings.get({ key: 'target_models' });
+      const stored = await db.userSettings.where('key').equals('target_models').first();
       expect(stored).toBeDefined();
       expect(stored?.value).toHaveLength(1);
       expect((stored?.value as TargetModel[])[0].name).toBe('My Custom Model');
@@ -432,7 +432,7 @@ describe('Target Model Service', () => {
 
       await createTargetModel(modelData);
 
-      const stored = await db.userSettings.get({ key: 'target_models' });
+      const stored = await db.userSettings.where('key').equals('target_models').first();
       expect(stored?.value).toHaveLength(2);
       const models = stored?.value as TargetModel[];
       expect(models.map((m) => m.name)).toEqual(['Existing Model', 'New Model']);
@@ -441,11 +441,13 @@ describe('Target Model Service', () => {
 
   describe('IndexedDB error handling', () => {
     it('should handle IndexedDB errors gracefully in cloneTargetModel', async () => {
-      // Mock db.userSettings.get to throw an error
-      const originalGet = db.userSettings.get;
-      vi.spyOn(db.userSettings, 'get').mockRejectedValueOnce(
-        new Error('Database error')
-      );
+      // Mock db.userSettings.where().equals().first() chain to throw an error
+      const originalWhere = db.userSettings.where;
+      vi.spyOn(db.userSettings, 'where').mockReturnValueOnce({
+        equals: () => ({
+          first: () => Promise.reject(new Error('Database error')),
+        }),
+      } as any);
 
       const sourceModel: TargetModel = {
         id: 'source-model',
@@ -469,7 +471,7 @@ describe('Target Model Service', () => {
       );
 
       // Restore original function
-      db.userSettings.get = originalGet;
+      db.userSettings.where = originalWhere;
     });
 
     it('should handle IndexedDB put errors in createTargetModel', async () => {

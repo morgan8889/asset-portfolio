@@ -35,6 +35,7 @@ function getDefaultResolution(period: TimePeriod): Resolution {
     case 'QUARTER':
       return 'daily';
     case 'YEAR':
+    case 'THREE_YEAR':
       return 'weekly';
     case 'ALL':
       return 'monthly';

@@ -39,6 +39,15 @@ describe('getHistoricalValues', () => {
     expect(result).toEqual([]);
   });
 
+  it('handles THREE_YEAR period without errors', async () => {
+    vi.mocked(transactionQueries.getByPortfolio).mockResolvedValue([]);
+
+    // Should not throw - regression test for missing THREE_YEAR case
+    const result = await getHistoricalValues('portfolio-1', 'THREE_YEAR');
+
+    expect(result).toEqual([]);
+  });
+
   it('calculates value points for a period with transactions', async () => {
     const mockTransactions = [
       {
