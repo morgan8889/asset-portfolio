@@ -286,4 +286,34 @@ describe('usePerformanceData', () => {
     // ROI should be positive for our mock data
     expect(metrics.roi).toBeGreaterThan(0);
   });
+
+  describe('period mapping', () => {
+    it.each([
+      ['1M', 'MONTH'],
+      ['3M', 'QUARTER'],
+      ['YTD', 'YEAR'],
+      ['1Y', 'YEAR'],
+      ['3Y', 'THREE_YEAR'],
+      ['ALL', 'ALL'],
+    ] as const)(
+      'should map %s period to %s TimePeriod',
+      async (chartPeriod, expectedTimePeriod) => {
+        const { result } = renderHook(() => usePerformanceData());
+
+        await waitFor(() => {
+          expect(result.current.loading).toBe(false);
+        });
+
+        // Change period
+        result.current.setSelectedPeriod(chartPeriod);
+
+        await waitFor(() => {
+          expect(metricsService.getHistoricalValues).toHaveBeenCalledWith(
+            mockPortfolio.id,
+            expectedTimePeriod
+          );
+        });
+      }
+    );
+  });
 });

@@ -34,11 +34,12 @@ export async function cloneTargetModel(
 
   // Save to userSettings using transaction
   await db.transaction('rw', db.userSettings, async () => {
-    const existing = await db.userSettings.get({ key: 'target_models' });
+    const existing = await db.userSettings.where('key').equals('target_models').first();
     const models = (existing?.value as TargetModel[]) || [];
     models.push(clonedModel);
 
     await db.userSettings.put({
+      id: existing?.id, // Preserve existing record id to update, not create new
       key: 'target_models',
       value: models,
       updatedAt: new Date(),
@@ -60,7 +61,7 @@ export async function updateTargetModel(
   updates: Partial<Omit<TargetModel, 'id' | 'isSystem'>>
 ): Promise<void> {
   await db.transaction('rw', db.userSettings, async () => {
-    const existing = await db.userSettings.get({ key: 'target_models' });
+    const existing = await db.userSettings.where('key').equals('target_models').first();
     const models = (existing?.value as TargetModel[]) || [];
 
     const modelIndex = models.findIndex((m) => m.id === modelId);
@@ -83,6 +84,7 @@ export async function updateTargetModel(
     };
 
     await db.userSettings.put({
+      id: existing?.id, // Preserve existing record id to update, not create new
       key: 'target_models',
       value: models,
       updatedAt: new Date(),
@@ -98,7 +100,7 @@ export async function updateTargetModel(
  */
 export async function deleteTargetModel(modelId: string): Promise<void> {
   await db.transaction('rw', db.userSettings, async () => {
-    const existing = await db.userSettings.get({ key: 'target_models' });
+    const existing = await db.userSettings.where('key').equals('target_models').first();
     const models = (existing?.value as TargetModel[]) || [];
 
     const model = models.find((m) => m.id === modelId);
@@ -113,6 +115,7 @@ export async function deleteTargetModel(modelId: string): Promise<void> {
     const updatedModels = models.filter((m) => m.id !== modelId);
 
     await db.userSettings.put({
+      id: existing?.id, // Preserve existing record id to update, not create new
       key: 'target_models',
       value: updatedModels,
       updatedAt: new Date(),
@@ -138,11 +141,12 @@ export async function createTargetModel(
   };
 
   await db.transaction('rw', db.userSettings, async () => {
-    const existing = await db.userSettings.get({ key: 'target_models' });
+    const existing = await db.userSettings.where('key').equals('target_models').first();
     const models = (existing?.value as TargetModel[]) || [];
     models.push(newModel);
 
     await db.userSettings.put({
+      id: existing?.id, // Preserve existing record id to update, not create new
       key: 'target_models',
       value: models,
       updatedAt: new Date(),
