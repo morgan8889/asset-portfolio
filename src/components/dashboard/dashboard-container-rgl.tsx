@@ -129,7 +129,7 @@ const DashboardContainerRGLComponent = ({
   disableDragDrop = false,
 }: DashboardContainerRGLProps) => {
   // Get container width for react-grid-layout v2.x
-  const { ref, width: measuredWidth } = useContainerWidth();
+  const { containerRef, width: measuredWidth } = useContainerWidth();
 
   const {
     config,
@@ -349,7 +349,7 @@ const DashboardContainerRGLComponent = ({
   }
 
   return (
-    <div ref={ref} className="space-y-4">
+    <div ref={containerRef} className="space-y-4">
       <StaleDataBanner lastUpdated={null} thresholdMinutes={15} />
 
       {priceLoading && (
