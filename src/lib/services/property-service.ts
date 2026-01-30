@@ -2,7 +2,7 @@ import { Decimal } from 'decimal.js';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '@/lib/db/schema';
 import { Asset, Holding, Transaction, RentalInfo } from '@/types';
-import type { AssetId, HoldingId, TransactionId, PriceHistoryId } from '@/types/storage';
+import type { AssetId, HoldingId, TransactionId, PriceHistoryId, HoldingStorage, TransactionStorage } from '@/types/storage';
 
 /**
  * Property Service
@@ -43,20 +43,43 @@ export function calculateNetValue(
  *
  * @param monthlyRent - Monthly rental income as Decimal
  * @param currentValue - Current property value as Decimal
- * @returns Annual yield as percentage number
+ * @returns Annual yield as percentage number, or undefined if cannot calculate
  */
 export function calculateYield(
   monthlyRent: Decimal,
   currentValue: Decimal
-): number {
+): number | undefined {
   if (currentValue.isZero()) {
-    return 0;
+    return undefined; // Cannot calculate yield for zero-value property
   }
 
   const annualRent = monthlyRent.mul(12);
   const yieldDecimal = annualRent.div(currentValue).mul(100);
 
   return yieldDecimal.toNumber();
+}
+
+/**
+ * Calculate annual yield from an asset with rental info
+ *
+ * @param asset - Asset with rentalInfo
+ * @returns Annual yield as percentage, or undefined if not calculable
+ */
+export function getAssetAnnualYield(asset: Asset): number | undefined {
+  if (!asset.rentalInfo?.isRental || !asset.rentalInfo.monthlyRent) {
+    return undefined;
+  }
+
+  const currentPrice = asset.currentPrice ?? 0;
+  if (currentPrice === 0) {
+    return undefined;
+  }
+
+  const monthlyRent = typeof asset.rentalInfo.monthlyRent === 'string'
+    ? new Decimal(asset.rentalInfo.monthlyRent)
+    : asset.rentalInfo.monthlyRent;
+
+  return calculateYield(monthlyRent, new Decimal(currentPrice));
 }
 
 // ============================================================================
@@ -174,7 +197,8 @@ export async function addPropertyAsset(
     ownershipPercentage: data.ownershipPercentage,
   };
 
-  await db.holdings.add(holding as unknown as any);
+  // The database hooks will serialize Decimal fields automatically
+  await db.holdings.add(holding as any as HoldingStorage);
 
   // Create initial buy transaction for cost basis tracking
   const transaction: Transaction = {
@@ -191,7 +215,8 @@ export async function addPropertyAsset(
     notes: `Initial property acquisition: ${data.ownershipPercentage}% ownership`,
   };
 
-  await db.transactions.add(transaction as unknown as any);
+  // The database hooks will serialize Decimal fields automatically
+  await db.transactions.add(transaction as any as TransactionStorage);
 
   return assetId;
 }
