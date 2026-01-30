@@ -24,11 +24,23 @@ interface RebalancingInput {
 
 /**
  * Calculate rebalancing plan
+ *
+ * Compares current portfolio allocation with target model and generates
+ * specific buy/sell/hold actions to rebalance the portfolio.
+ *
+ * @param input - Rebalancing input containing holdings, assets, and target model
+ * @returns Rebalancing plan with actions sorted by drift magnitude
+ * @throws Error if target model allocations don't sum to 100%
  */
 export function calculateRebalancing(
   input: RebalancingInput
 ): RebalancingPlan {
   const { holdings, assets, totalValue, targetModel } = input;
+
+  // Validate target model first
+  if (!validateTargetModel(targetModel)) {
+    throw new Error('Invalid target model: allocations must sum to 100%');
+  }
 
   // Calculate current allocation by asset type
   const currentAllocation = calculateCurrentAllocation(holdings, assets);
@@ -98,15 +110,24 @@ export function calculateRebalancing(
 function calculateCurrentAllocation(
   holdings: Holding[],
   assets: Asset[]
-): Record<AssetType, Decimal> {
-  const allocation: Record<AssetType, Decimal> = {} as any;
+): Partial<Record<AssetType, Decimal>> {
+  const allocation: Partial<Record<AssetType, Decimal>> = {};
+  const missingAssets: string[] = [];
 
   for (const holding of holdings) {
     const asset = assets.find((a) => a.id === holding.assetId);
-    if (!asset) continue;
+    if (!asset) {
+      missingAssets.push(holding.assetId);
+      continue;
+    }
 
     const type = asset.type;
     allocation[type] = (allocation[type] || new Decimal(0)).plus(holding.currentValue);
+  }
+
+  // Log warning if assets are missing
+  if (missingAssets.length > 0) {
+    console.warn('[Rebalancing Service] Missing asset data for holdings:', missingAssets);
   }
 
   return allocation;
@@ -132,6 +153,9 @@ function getAssetTypeName(type: AssetType): string {
 
 /**
  * Validate target model allocations sum to 100%
+ *
+ * @param model - Target model to validate
+ * @returns true if allocations sum to 100% (within 0.01% tolerance for floating-point errors)
  */
 export function validateTargetModel(model: TargetModel): boolean {
   const total = Object.values(model.allocations).reduce(
@@ -145,6 +169,12 @@ export function validateTargetModel(model: TargetModel): boolean {
 
 /**
  * Normalize target model to ensure allocations sum to exactly 100%
+ *
+ * Adjusts all allocations proportionally to sum to exactly 100%.
+ * Useful for fixing rounding errors in custom target models.
+ *
+ * @param model - Target model to normalize
+ * @returns Normalized target model with allocations summing to 100%
  */
 export function normalizeTargetModel(model: TargetModel): TargetModel {
   const total = Object.values(model.allocations).reduce(

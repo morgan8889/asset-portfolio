@@ -11,6 +11,13 @@ import { db } from '@/lib/db/schema';
 
 /**
  * Clone an existing target model
+ *
+ * Creates a copy of a target model with a new name and ID.
+ * Cloned models are always non-system models regardless of source.
+ *
+ * @param sourceModel - Target model to clone
+ * @param name - Name for the cloned model
+ * @returns Promise resolving to the newly cloned model
  */
 export async function cloneTargetModel(
   sourceModel: TargetModel,
@@ -25,15 +32,17 @@ export async function cloneTargetModel(
     updatedAt: new Date(),
   };
 
-  // Save to userSettings
-  const existing = await db.userSettings.get({ key: 'target_models' });
-  const models = (existing?.value as TargetModel[]) || [];
-  models.push(clonedModel);
+  // Save to userSettings using transaction
+  await db.transaction('rw', db.userSettings, async () => {
+    const existing = await db.userSettings.get({ key: 'target_models' });
+    const models = (existing?.value as TargetModel[]) || [];
+    models.push(clonedModel);
 
-  await db.userSettings.put({
-    key: 'target_models',
-    value: models,
-    updatedAt: new Date(),
+    await db.userSettings.put({
+      key: 'target_models',
+      value: models,
+      updatedAt: new Date(),
+    });
   });
 
   return clonedModel;
@@ -41,67 +50,81 @@ export async function cloneTargetModel(
 
 /**
  * Update an existing target model (only non-system models)
+ *
+ * @param modelId - ID of the model to update
+ * @param updates - Partial updates to apply (cannot change id or isSystem)
+ * @throws Error if model not found or attempting to update a system model
  */
 export async function updateTargetModel(
   modelId: string,
   updates: Partial<Omit<TargetModel, 'id' | 'isSystem'>>
 ): Promise<void> {
-  const existing = await db.userSettings.get({ key: 'target_models' });
-  const models = (existing?.value as TargetModel[]) || [];
+  await db.transaction('rw', db.userSettings, async () => {
+    const existing = await db.userSettings.get({ key: 'target_models' });
+    const models = (existing?.value as TargetModel[]) || [];
 
-  const modelIndex = models.findIndex((m) => m.id === modelId);
-  if (modelIndex === -1) {
-    throw new Error('Target model not found');
-  }
+    const modelIndex = models.findIndex((m) => m.id === modelId);
+    if (modelIndex === -1) {
+      throw new Error('Target model not found');
+    }
 
-  const model = models[modelIndex];
-  if (model.isSystem) {
-    throw new Error('Cannot update system models');
-  }
+    const model = models[modelIndex];
+    if (model.isSystem) {
+      throw new Error('Cannot update system models');
+    }
 
-  // Apply updates
-  models[modelIndex] = {
-    ...model,
-    ...updates,
-    id: modelId,
-    isSystem: false,
-    updatedAt: new Date(),
-  };
+    // Apply updates
+    models[modelIndex] = {
+      ...model,
+      ...updates,
+      id: modelId,
+      isSystem: false,
+      updatedAt: new Date(),
+    };
 
-  await db.userSettings.put({
-    key: 'target_models',
-    value: models,
-    updatedAt: new Date(),
+    await db.userSettings.put({
+      key: 'target_models',
+      value: models,
+      updatedAt: new Date(),
+    });
   });
 }
 
 /**
  * Delete a target model (only non-system models)
+ *
+ * @param modelId - ID of the model to delete
+ * @throws Error if model not found or attempting to delete a system model
  */
 export async function deleteTargetModel(modelId: string): Promise<void> {
-  const existing = await db.userSettings.get({ key: 'target_models' });
-  const models = (existing?.value as TargetModel[]) || [];
+  await db.transaction('rw', db.userSettings, async () => {
+    const existing = await db.userSettings.get({ key: 'target_models' });
+    const models = (existing?.value as TargetModel[]) || [];
 
-  const model = models.find((m) => m.id === modelId);
-  if (!model) {
-    throw new Error('Target model not found');
-  }
+    const model = models.find((m) => m.id === modelId);
+    if (!model) {
+      throw new Error('Target model not found');
+    }
 
-  if (model.isSystem) {
-    throw new Error('Cannot delete system models');
-  }
+    if (model.isSystem) {
+      throw new Error('Cannot delete system models');
+    }
 
-  const updatedModels = models.filter((m) => m.id !== modelId);
+    const updatedModels = models.filter((m) => m.id !== modelId);
 
-  await db.userSettings.put({
-    key: 'target_models',
-    value: updatedModels,
-    updatedAt: new Date(),
+    await db.userSettings.put({
+      key: 'target_models',
+      value: updatedModels,
+      updatedAt: new Date(),
+    });
   });
 }
 
 /**
  * Create a custom target model from scratch
+ *
+ * @param modelData - Model data (id, isSystem, timestamps auto-generated)
+ * @returns Promise resolving to the newly created model
  */
 export async function createTargetModel(
   modelData: Omit<TargetModel, 'id' | 'isSystem' | 'createdAt' | 'updatedAt'>
@@ -114,14 +137,16 @@ export async function createTargetModel(
     updatedAt: new Date(),
   };
 
-  const existing = await db.userSettings.get({ key: 'target_models' });
-  const models = (existing?.value as TargetModel[]) || [];
-  models.push(newModel);
+  await db.transaction('rw', db.userSettings, async () => {
+    const existing = await db.userSettings.get({ key: 'target_models' });
+    const models = (existing?.value as TargetModel[]) || [];
+    models.push(newModel);
 
-  await db.userSettings.put({
-    key: 'target_models',
-    value: models,
-    updatedAt: new Date(),
+    await db.userSettings.put({
+      key: 'target_models',
+      value: models,
+      updatedAt: new Date(),
+    });
   });
 
   return newModel;

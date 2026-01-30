@@ -23,6 +23,12 @@ interface RecommendationInput {
 
 /**
  * Generate all recommendations for a portfolio
+ *
+ * Analyzes portfolio composition and generates actionable recommendations
+ * based on predefined rules for cash drag, concentration, and diversification.
+ *
+ * @param input - Recommendation input containing holdings, assets, and thresholds
+ * @returns Array of recommendations sorted by severity
  */
 export function generateRecommendations(
   input: RecommendationInput
@@ -90,15 +96,24 @@ function checkAssetTypeConcentration(
   input: RecommendationInput,
   thresholds: RecommendationThresholds
 ): Recommendation | null {
-  const typeValues: Record<AssetType, Decimal> = {} as any;
+  const typeValues: Partial<Record<AssetType, Decimal>> = {};
+  const missingAssets: string[] = [];
 
   for (const holding of input.holdings) {
     const asset = input.assets.find((a) => a.id === holding.assetId);
-    if (!asset) continue;
+    if (!asset) {
+      missingAssets.push(holding.assetId);
+      continue;
+    }
 
     typeValues[asset.type] = (typeValues[asset.type] || new Decimal(0)).plus(
       holding.currentValue
     );
+  }
+
+  // Log warning if assets are missing
+  if (missingAssets.length > 0) {
+    console.warn('[Recommendation Engine] Missing asset data for holdings:', missingAssets);
   }
 
   // Find the most concentrated asset type
@@ -140,15 +155,24 @@ function checkRegionConcentration(
   thresholds: RecommendationThresholds
 ): Recommendation | null {
   const regionValues: Record<string, Decimal> = {};
+  const missingAssets: string[] = [];
 
   for (const holding of input.holdings) {
     const asset = input.assets.find((a) => a.id === holding.assetId);
-    if (!asset) continue;
+    if (!asset) {
+      missingAssets.push(holding.assetId);
+      continue;
+    }
 
     const region = asset.region || 'US';
     regionValues[region] = (regionValues[region] || new Decimal(0)).plus(
       holding.currentValue
     );
+  }
+
+  // Log warning if assets are missing
+  if (missingAssets.length > 0) {
+    console.warn('[Recommendation Engine] Missing asset data for holdings in region check:', missingAssets);
   }
 
   // Find most concentrated region
@@ -190,15 +214,25 @@ function checkSectorConcentration(
   thresholds: RecommendationThresholds
 ): Recommendation | null {
   const sectorValues: Record<string, Decimal> = {};
+  const missingAssets: string[] = [];
 
   for (const holding of input.holdings) {
     const asset = input.assets.find((a) => a.id === holding.assetId);
-    if (!asset || !asset.sector) continue;
+    if (!asset) {
+      missingAssets.push(holding.assetId);
+      continue;
+    }
+    if (!asset.sector) continue;
 
     const sector = asset.sector;
     sectorValues[sector] = (sectorValues[sector] || new Decimal(0)).plus(
       holding.currentValue
     );
+  }
+
+  // Log warning if assets are missing
+  if (missingAssets.length > 0) {
+    console.warn('[Recommendation Engine] Missing asset data for holdings in sector check:', missingAssets);
   }
 
   // Find most concentrated sector
