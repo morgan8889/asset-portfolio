@@ -15,7 +15,35 @@ import {
 import { AssetType } from '@/types/portfolio';
 
 /**
+ * Performance scoring constants
+ * These define the expected range for portfolio returns
+ */
+const PERFORMANCE_SCORING = {
+  /** Minimum expected annual return (worst case) */
+  MIN_RETURN: -20,
+  /** Maximum expected annual return (best case) */
+  MAX_RETURN: 30,
+  /** Total range for scoring calculation */
+  RANGE: 50, // (MAX_RETURN - MIN_RETURN)
+} as const;
+
+/**
+ * Volatility scoring constants
+ * These define the expected range for portfolio volatility
+ */
+const VOLATILITY_SCORING = {
+  /** Minimum volatility (0%) */
+  MIN_VOLATILITY: 0,
+  /** Maximum volatility threshold (40%) */
+  MAX_VOLATILITY: 0.4,
+} as const;
+
+/**
  * Calculate portfolio health score
+ *
+ * @param input - Health score input containing holdings and performance data
+ * @param profile - Analysis profile defining weights for different metrics
+ * @returns Portfolio health with overall score and individual metrics
  */
 export function calculateHealthScore(
   input: HealthScoreInput,
@@ -136,9 +164,9 @@ function calculatePerformance(input: HealthScoreInput): HealthMetric {
   }
 
   // Score based on return percentage
-  // Assume -20% to +30% range maps to 0-100 score
+  // Map expected return range (-20% to +30%) to 0-100 score
   const returnPercent = perfData.returnPercent;
-  const rawScore = ((returnPercent + 20) / 50) * 100;
+  const rawScore = ((returnPercent - PERFORMANCE_SCORING.MIN_RETURN) / PERFORMANCE_SCORING.RANGE) * 100;
   const score = Math.round(Math.max(0, Math.min(100, rawScore)));
 
   let status: 'good' | 'warning' | 'critical';
@@ -186,9 +214,9 @@ function calculateVolatility(input: HealthScoreInput): HealthMetric {
   }
 
   // Score based on volatility
-  // Assume 0-40% volatility maps to 100-0 score
+  // Map volatility range (0-40%) to score (100-0, inverse relationship)
   const volatility = perfData.volatility;
-  const rawScore = Math.max(0, 100 - (volatility / 0.4) * 100);
+  const rawScore = Math.max(0, 100 - (volatility / VOLATILITY_SCORING.MAX_VOLATILITY) * 100);
   const score = Math.round(rawScore);
 
   let status: 'good' | 'warning' | 'critical';
@@ -220,14 +248,14 @@ function calculateVolatility(input: HealthScoreInput): HealthMetric {
  * Calculate concentration by asset type using HHI
  */
 function calculateConcentrationByType(input: HealthScoreInput): number {
-  const typeValues: Record<AssetType, Decimal> = {} as any;
+  const typeValues: Partial<Record<AssetType, Decimal>> = {};
 
   for (const holding of input.holdings) {
     const type = holding.assetType;
     typeValues[type] = (typeValues[type] || new Decimal(0)).plus(holding.value);
   }
 
-  return calculateHHI(Object.values(typeValues), input.totalValue);
+  return calculateHHI(Object.values(typeValues).filter((v): v is Decimal => v !== undefined), input.totalValue);
 }
 
 /**
@@ -260,7 +288,13 @@ function calculateConcentrationBySector(input: HealthScoreInput): number {
 
 /**
  * Calculate Herfindahl-Hirschman Index (HHI)
- * Returns value between 0 (perfectly diversified) and 10000 (single asset)
+ *
+ * The HHI is an industry-standard measure of concentration. Lower values indicate
+ * better diversification.
+ *
+ * @param values - Array of Decimal values representing holdings in each category
+ * @param totalValue - Total portfolio value
+ * @returns HHI score between 0 (perfectly diversified) and 10000 (single asset)
  */
 function calculateHHI(values: Decimal[], totalValue: Decimal): number {
   if (totalValue.isZero()) return 10000;
