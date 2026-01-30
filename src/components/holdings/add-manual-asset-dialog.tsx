@@ -33,7 +33,7 @@ import type { AssetId, HoldingId, TransactionId } from '@/types/storage';
 
 // Manual asset form validation schema
 const manualAssetFormSchema = z.object({
-  name: z.string().min(1, 'Asset name is required').max(100),
+  name: z.string().min(1, 'Asset name is required').max(200, 'Name too long'),
   type: z.enum(['other', 'bond', 'commodity', 'cash'], {
     required_error: 'Asset type is required',
   }),
@@ -53,7 +53,7 @@ const manualAssetFormSchema = z.object({
     .transform(val => val.replace(/,/g, ''))
     .pipe(z.string().regex(/^\d+(\.\d+)?$/, 'Enter a valid quantity'))
     .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, 'Must be a valid positive number'),
-  notes: z.string().optional(),
+  notes: z.string().max(1000, 'Notes too long').optional(),
 });
 
 type ManualAssetFormValues = z.infer<typeof manualAssetFormSchema>;
@@ -125,10 +125,17 @@ export function AddManualAssetDialog({
         throw new Error('Portfolio not found');
       }
 
+      // Generate safe symbol from name (alphanumeric + underscore only, max 50 chars)
+      const sanitizedSymbol = data.name
+        .toUpperCase()
+        .replace(/[^A-Z0-9\s]/g, '') // Remove special characters
+        .replace(/\s+/g, '_') // Replace spaces with underscores
+        .substring(0, 50); // Limit length
+
       // Create Asset
       const asset: Asset = {
         id: assetId,
-        symbol: data.name.toUpperCase().replace(/\s+/g, '_'),
+        symbol: sanitizedSymbol || 'ASSET', // Fallback if name has no valid chars
         name: data.name,
         type: data.type,
         currency: portfolio.currency,
@@ -165,7 +172,8 @@ export function AddManualAssetDialog({
         ownershipPercentage: 100,
       };
 
-      await db.holdings.add(holding as unknown as any);
+      // The database hooks will automatically serialize Decimal fields to strings
+      await db.holdings.add(holding as any);
 
       // Create initial buy transaction
       const transaction: Transaction = {
@@ -182,7 +190,8 @@ export function AddManualAssetDialog({
         notes: data.notes || `Initial ${data.type} asset acquisition`,
       };
 
-      await db.transactions.add(transaction as unknown as any);
+      // The database hooks will automatically serialize Decimal fields to strings
+      await db.transactions.add(transaction as any);
 
       toast({
         title: 'Asset Added',

@@ -23,7 +23,7 @@ import { usePortfolioStore } from '@/lib/stores';
 
 // Property form validation schema
 const propertyFormSchema = z.object({
-  name: z.string().min(1, 'Property name is required').max(100),
+  name: z.string().min(1, 'Property name is required').max(200, 'Name too long'),
   currentValue: z
     .string()
     .transform(val => val.replace(/,/g, ''))
@@ -35,15 +35,27 @@ const propertyFormSchema = z.object({
     .pipe(z.string().regex(/^\d+(\.\d+)?$/, 'Enter a valid amount'))
     .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, 'Must be a valid positive number'),
   purchaseDate: z.string().min(1, 'Purchase date is required'),
-  address: z.string().optional(),
+  address: z.string().max(500, 'Address too long').optional(),
   ownershipPercentage: z
     .number()
     .min(0.01, 'Must be greater than 0')
     .max(100, 'Cannot exceed 100'),
   isRental: z.boolean().default(false),
   monthlyRent: z.string().optional(),
-  notes: z.string().optional(),
-});
+  notes: z.string().max(1000, 'Notes too long').optional(),
+}).refine(
+  (data) => {
+    // Require monthlyRent if isRental is true
+    if (data.isRental && (!data.monthlyRent || parseFloat(data.monthlyRent) <= 0)) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: 'Monthly rent is required for rental properties',
+    path: ['monthlyRent'],
+  }
+);
 
 type PropertyFormValues = z.infer<typeof propertyFormSchema>;
 
@@ -90,17 +102,6 @@ export function AddPropertyDialog({
   const onSubmit = async (data: PropertyFormValues) => {
     setIsSubmitting(true);
     try {
-      // Validate monthly rent if rental property
-      if (data.isRental && (!data.monthlyRent || parseFloat(data.monthlyRent) <= 0)) {
-        toast({
-          title: 'Validation Error',
-          description: 'Please enter a valid monthly rent for rental properties',
-          variant: 'destructive',
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
       await addPropertyAsset(portfolioId, {
         name: data.name,
         type: 'real_estate',
