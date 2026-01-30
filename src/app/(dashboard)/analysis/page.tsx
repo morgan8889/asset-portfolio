@@ -40,7 +40,9 @@ export default function AnalysisPage() {
       calculateHealth(currentPortfolio.id);
       generateRecommendations(currentPortfolio.id);
     }
-  }, [currentPortfolio, loadTargetModels, calculateHealth, generateRecommendations]);
+    // Zustand store functions are stable references, only re-run when portfolio changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPortfolio?.id]);
 
   const handleProfileChange = async (profileId: string) => {
     setActiveProfile(profileId);

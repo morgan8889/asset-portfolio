@@ -3,6 +3,7 @@
  */
 
 import { TargetModel } from '@/types/analysis';
+import { validateTargetModel } from '@/lib/services/analysis/rebalancing-service';
 
 /**
  * System-defined target allocation models
@@ -112,6 +113,18 @@ export const PREDEFINED_TARGET_MODELS: TargetModel[] = [
     },
   },
 ];
+
+// Runtime validation of predefined models
+// This ensures all predefined models are valid (allocations sum to 100%)
+if (process.env.NODE_ENV !== 'production') {
+  PREDEFINED_TARGET_MODELS.forEach((model) => {
+    if (!validateTargetModel(model)) {
+      throw new Error(
+        `Invalid predefined target model: ${model.id}. Allocations must sum to 100%.`
+      );
+    }
+  });
+}
 
 /**
  * Initialize target models in user settings if not present
