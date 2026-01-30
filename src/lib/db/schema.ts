@@ -103,6 +103,7 @@ export class PortfolioDatabase extends Dexie {
     this.priceSnapshots.hook('creating', this.transformPriceSnapshot);
     this.dividendRecords.hook('creating', this.transformDividendRecord);
     this.assets.hook('creating', this.transformAsset);
+    this.assets.hook('updating', this.transformAssetUpdate);
     this.performanceSnapshots.hook(
       'creating',
       this.transformPerformanceSnapshot
@@ -129,6 +130,23 @@ export class PortfolioDatabase extends Dexie {
     // Set default valuationMethod if not present
     if (!obj.valuationMethod) {
       obj.valuationMethod = 'AUTO';
+    }
+  };
+
+  private transformAssetUpdate = (
+    modifications: Partial<Asset>,
+    _primKey: unknown,
+    _obj: Asset,
+    _trans: unknown
+  ): void => {
+    // Handle RentalInfo decimal fields on update
+    if (modifications.rentalInfo && modifications.rentalInfo.monthlyRent instanceof Decimal) {
+      modifications.rentalInfo.monthlyRent = modifications.rentalInfo.monthlyRent.toString() as any;
+    }
+
+    // Ensure priceUpdatedAt is a Date if modified
+    if (modifications.priceUpdatedAt && !(modifications.priceUpdatedAt instanceof Date)) {
+      modifications.priceUpdatedAt = new Date(modifications.priceUpdatedAt);
     }
   };
 

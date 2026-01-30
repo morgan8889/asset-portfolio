@@ -24,8 +24,16 @@ import { usePortfolioStore } from '@/lib/stores';
 // Property form validation schema
 const propertyFormSchema = z.object({
   name: z.string().min(1, 'Property name is required').max(100),
-  currentValue: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Enter a valid amount'),
-  purchasePrice: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Enter a valid amount'),
+  currentValue: z
+    .string()
+    .transform(val => val.replace(/,/g, ''))
+    .pipe(z.string().regex(/^\d+(\.\d+)?$/, 'Enter a valid amount'))
+    .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, 'Must be a valid positive number'),
+  purchasePrice: z
+    .string()
+    .transform(val => val.replace(/,/g, ''))
+    .pipe(z.string().regex(/^\d+(\.\d+)?$/, 'Enter a valid amount'))
+    .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, 'Must be a valid positive number'),
   purchaseDate: z.string().min(1, 'Purchase date is required'),
   address: z.string().optional(),
   ownershipPercentage: z
@@ -112,7 +120,17 @@ export function AddPropertyDialog({
       });
 
       // Reload holdings to reflect the new property
-      await loadHoldings(portfolioId);
+      try {
+        await loadHoldings(portfolioId);
+      } catch (loadError) {
+        console.error('Error reloading holdings:', loadError);
+        // Property was added successfully, just refresh failed
+        toast({
+          title: 'Refresh Needed',
+          description: 'Property added successfully. Please refresh the page to see it.',
+          variant: 'default',
+        });
+      }
 
       reset();
       onOpenChange(false);
@@ -127,6 +145,7 @@ export function AddPropertyDialog({
             : 'Failed to add property. Please try again.',
         variant: 'destructive',
       });
+      // Don't close dialog on error - let user retry
     } finally {
       setIsSubmitting(false);
     }

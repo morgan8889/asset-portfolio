@@ -43,6 +43,7 @@ import { getExchangeBadgeColor } from '@/lib/services/asset-search';
 import { isUKSymbol } from '@/lib/utils/market-utils';
 import { ManualPriceUpdateDialog } from '@/components/forms/manual-price-update-dialog';
 import { RegionOverrideDialog } from '@/components/forms/region-override-dialog';
+import { getAssetAnnualYield } from '@/lib/services/property-service';
 
 interface HoldingDisplayData {
   id: string;
@@ -122,13 +123,8 @@ const HoldingsTableComponent = () => {
       const gainLoss = currentValue - costBasis;
       const gainLossPercent = costBasis > 0 ? (gainLoss / costBasis) * 100 : 0;
 
-      // Calculate annual yield for rental properties
-      let annualYield: number | undefined;
-      if (asset?.rentalInfo?.isRental && asset.rentalInfo.monthlyRent) {
-        const monthlyRent = parseFloat(asset.rentalInfo.monthlyRent.toString());
-        const annualRent = monthlyRent * 12;
-        annualYield = currentPrice > 0 ? (annualRent / currentPrice) * 100 : 0;
-      }
+      // Calculate annual yield for rental properties using helper function
+      const annualYield = asset ? getAssetAnnualYield(asset) : undefined;
 
       return {
         id: holding.id,
