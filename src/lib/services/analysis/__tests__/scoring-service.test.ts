@@ -191,7 +191,7 @@ describe('Health Scoring Service', () => {
 
       expect(performanceMetric).toBeDefined();
       expect(performanceMetric!.score).toBe(50); // Neutral score when no data
-      expect(performanceMetric!.details).toContain('No performance data');
+      expect(performanceMetric!.details).toContain('Performance data not available');
     });
 
     it('should handle undefined/null performance values', () => {

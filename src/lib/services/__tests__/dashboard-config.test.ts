@@ -311,9 +311,20 @@ describe('Dashboard Configuration Service', () => {
           performerCount: 5,
           layoutMode: 'grid',
           gridColumns: 4,
-          widgetSpans: {},
+          // Explicitly set all widgets to 1-column to override defaults
+          widgetSpans: {
+            'growth-chart': 1,
+            'recent-activity': 1,
+          },
           densePacking: false,
-          widgetRowSpans: {},
+          // Explicitly set all widgets to 1-row to override defaults
+          widgetRowSpans: {
+            'category-breakdown': 1,
+            'growth-chart': 1,
+            'top-performers': 1,
+            'biggest-losers': 1,
+            'recent-activity': 1,
+          },
           widgetSettings: {
             'category-breakdown': {
               showPieChart: false,
@@ -324,7 +335,7 @@ describe('Dashboard Configuration Service', () => {
 
         const layouts = generateRGLLayoutsFromConfig(config);
 
-        // All widgets should be 1x1 in this config
+        // All widgets should be 1x1 in this config (explicitly set above)
         expect(layouts.lg.length).toBe(8);
 
         // First row should have 4 widgets at y=0

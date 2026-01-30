@@ -23,7 +23,14 @@ export interface AssetMetadata {
 export type Region = 'US' | 'UK' | 'EU' | 'APAC' | 'EMERGING' | 'CA' | 'OTHER';
 
 // Valuation method determines how price updates are obtained
-export type ValuationMethod = 'LIVE' | 'MANUAL';
+export type ValuationMethod = 'AUTO' | 'MANUAL';
+
+export interface RentalInfo {
+  isRental: boolean;
+  monthlyRent: Decimal;
+  address?: string;
+  notes?: string;
+}
 
 export interface Asset {
   id: string; // UUID
@@ -37,7 +44,8 @@ export interface Asset {
   priceUpdatedAt?: Date; // Last price update
   metadata: AssetMetadata;
   region?: Region; // Geographic region for analysis
-  valuationMethod?: ValuationMethod; // LIVE (ticker-based) or MANUAL (user-entered)
+  valuationMethod?: ValuationMethod; // AUTO (ticker-based) or MANUAL (user-entered)
+  rentalInfo?: RentalInfo; // For real estate assets
 }
 
 export interface PriceHistory {
@@ -78,6 +86,7 @@ export interface Holding {
   unrealizedGainPercent: number;
   lots: TaxLot[]; // Individual purchase lots
   lastUpdated: Date;
+  ownershipPercentage?: number; // Percentage of asset owned (0-100), default 100
 }
 
 export interface TaxLot {

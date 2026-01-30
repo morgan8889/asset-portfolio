@@ -322,6 +322,7 @@ export class HoldingsCalculator {
 
   /**
    * Update current market values for all holdings using latest prices
+   * Factors in ownershipPercentage for properties and fractional assets
    */
   static async updateMarketValues(portfolioId: string): Promise<void> {
     const holdings = await db.getHoldingsByPortfolio(portfolioId);
@@ -331,7 +332,12 @@ export class HoldingsCalculator {
       if (!asset) continue;
 
       const currentPrice = new Decimal(asset.currentPrice || 0);
-      const currentValue = holding.quantity.mul(currentPrice);
+      const ownershipPercentage = holding.ownershipPercentage ?? 100;
+
+      // Calculate market value factoring in ownership percentage
+      const fullMarketValue = holding.quantity.mul(currentPrice);
+      const currentValue = fullMarketValue.mul(ownershipPercentage).div(100);
+
       const unrealizedGain = currentValue.minus(holding.costBasis);
       const unrealizedGainPercent = holding.costBasis.isZero()
         ? 0

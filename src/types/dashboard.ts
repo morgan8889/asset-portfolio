@@ -144,6 +144,7 @@ export type TimePeriod =
   | 'MONTH'
   | 'QUARTER'
   | 'YEAR'
+  | 'THREE_YEAR'
   | 'ALL';
 
 /**
@@ -472,6 +473,7 @@ export const TimePeriodSchema = z.enum([
   'MONTH',
   'QUARTER',
   'YEAR',
+  'THREE_YEAR',
   'ALL',
 ]);
 
@@ -791,6 +793,12 @@ export const TIME_PERIOD_CONFIGS: Record<TimePeriod, TimePeriodConfig> = {
     label: 'This Year',
     shortLabel: '1Y',
     getStartDate: () => subDays(new Date(), 365),
+  },
+  THREE_YEAR: {
+    id: 'THREE_YEAR',
+    label: '3 Years',
+    shortLabel: '3Y',
+    getStartDate: () => subDays(new Date(), 1095), // 365 * 3 = 1095 days
   },
   ALL: {
     id: 'ALL',

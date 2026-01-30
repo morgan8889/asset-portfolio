@@ -34,7 +34,7 @@ import type { YearOverYearMetric } from '@/types/performance';
  */
 function mapToTimePeriod(
   period: ChartTimePeriod
-): 'MONTH' | 'QUARTER' | 'YEAR' | 'ALL' {
+): 'MONTH' | 'QUARTER' | 'YEAR' | 'THREE_YEAR' | 'ALL' {
   switch (period) {
     case '1M':
       return 'MONTH';
@@ -43,6 +43,8 @@ function mapToTimePeriod(
     case 'YTD':
     case '1Y':
       return 'YEAR';
+    case '3Y':
+      return 'THREE_YEAR';
     case 'ALL':
       return 'ALL';
   }
