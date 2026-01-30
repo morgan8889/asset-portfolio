@@ -19,6 +19,12 @@ export interface AssetMetadata {
   country?: string;
 }
 
+// Region classification for geographic analysis
+export type Region = 'US' | 'UK' | 'EU' | 'APAC' | 'EMERGING' | 'CA' | 'OTHER';
+
+// Valuation method determines how price updates are obtained
+export type ValuationMethod = 'LIVE' | 'MANUAL';
+
 export interface Asset {
   id: string; // UUID
   symbol: string; // Ticker or identifier
@@ -30,6 +36,8 @@ export interface Asset {
   currentPrice?: number; // Latest known price
   priceUpdatedAt?: Date; // Last price update
   metadata: AssetMetadata;
+  region?: Region; // Geographic region for analysis
+  valuationMethod?: ValuationMethod; // LIVE (ticker-based) or MANUAL (user-entered)
 }
 
 export interface PriceHistory {
