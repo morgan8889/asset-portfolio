@@ -27,10 +27,13 @@
 - **Actionability**: Clicking this slice should link to the asset edit form.
 - **Implementation**: Handled in the `metrics-service` aggregation logic.
 
-### 4. Account Exclusion
-**Decision**: Add an `excludeFromAnalysis` flag to the `Portfolio` entity (or Account entity if it existed). Since we only have `Portfolios` and `Holdings`, we will add a `tags` array or `metadata` field to Holdings to flag exclusion.
-**Correction**: The plan calls for "Account-Level Toggle". Since the current schema tracks `Portfolios`, we will add a `rebalancingEnabled` boolean to the `Portfolio` settings (or similar config). Actually, looking at the schema, we have `Portfolio`. We can add a setting in `userSettings` that lists excluded Portfolio IDs.
-**Refined Decision**: Store `excludedPortfolioIds` in `userSettings` (key: `rebalancing_exclusions`).
+### 4. Portfolio Exclusion
+**Decision**: Store excluded portfolio IDs in `userSettings` table under key `rebalancing_exclusions`.
+**Rationale**:
+- **Simplicity**: Portfolio exclusions are a user preference, not inherent to the Portfolio entity itself.
+- **Flexibility**: Users can easily toggle exclusions without modifying core portfolio data.
+- **Consistency**: Matches the pattern used for storing target models in `allocation_targets` key.
+**Implementation**: A JSON array of portfolio IDs stored at `userSettings['rebalancing_exclusions']`.
 
 ## Unknowns Resolved
 - **Storage**: `userSettings` table in Dexie.

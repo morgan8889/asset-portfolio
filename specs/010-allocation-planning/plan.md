@@ -1,13 +1,13 @@
-# Implementation Plan: Comprehensive Allocation Planning
+# Implementation Plan: [FEATURE]
 
-**Branch**: `010-allocation-planning` | **Date**: 2026-01-27 | **Spec**: [specs/010-allocation-planning/spec.md](specs/010-allocation-planning/spec.md)
-**Input**: Feature specification from `/specs/010-allocation-planning/spec.md`
+**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
 ## Summary
 
-Implement a full allocation planning suite featuring current allocation visualization (Asset Class, Sector, Region), target modeling, and actionable rebalancing plans. Key technical components include a client-side rebalancing engine using `decimal.js`, persistence of target models in IndexedDB via `userSettings`, and interactive Recharts visualizations. Margin handling and account exclusions are first-class features.
+[Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
 
@@ -17,31 +17,28 @@ Implement a full allocation planning suite featuring current allocation visualiz
   the iteration process.
 -->
 
-**Language/Version**: TypeScript 5+ (Next.js 14)  
-**Primary Dependencies**: React 18, Recharts, Decimal.js, Zustand, Dexie.js, Zod  
-**Storage**: IndexedDB (`userSettings` table for targets/exclusions)  
-**Testing**: Vitest (Unit/Integration), Playwright (E2E)  
-**Target Platform**: Web (Next.js Client Components)
-**Project Type**: Web Application  
-**Performance Goals**: Rebalancing calc < 200ms, Chart render < 500ms  
-**Constraints**: Local-only analysis (Privacy First), Precision math required  
-**Scale/Scope**: ~500 holdings, ~10 asset classes
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
+**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: [single/web/mobile - determines source structure]  
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
+**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- [x] **Privacy-First**: No external API for rebalancing; data stays local.
-- [x] **Financial Precision**: All drift/amount calculations use `decimal.js`.
-- [x] **Type Safety**: Contracts defined for `RebalancingItem`, `TargetModel`.
-- [x] **Component Architecture**: Reusing `AllocationDonut`, new widgets follow patterns.
+[Gates determined based on constitution file]
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/010-allocation-planning/
+specs/[###-feature]/
 ├── plan.md              # This file (/speckit.plan command output)
 ├── research.md          # Phase 0 output (/speckit.plan command)
 ├── data-model.md        # Phase 1 output (/speckit.plan command)
@@ -59,24 +56,43 @@ specs/010-allocation-planning/
 -->
 
 ```text
+# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
 src/
-├── app/(dashboard)/allocation/
-│   └── page.tsx                 # Update: Real implementation replacing placeholder
-├── components/allocation/
-│   ├── allocation-chart-tabs.tsx # Tabs for Class/Sector/Region views
-│   ├── target-model-editor.tsx   # Sliders for setting targets
-│   ├── rebalancing-table.tsx     # Buy/Sell action list
-│   └── exclusion-toggle.tsx      # Account exclusion UI
-├── lib/services/allocation/
-│   ├── rebalancing-service.ts    # Core logic: Drift & Amount calculation
-│   └── target-service.ts         # CRUD for TargetModels in DB
-├── lib/stores/
-│   └── allocation.ts             # Zustand store for allocation UI state
-└── types/
-    └── allocation.ts             # Shared types
+├── models/
+├── services/
+├── cli/
+└── lib/
+
+tests/
+├── contract/
+├── integration/
+└── unit/
+
+# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
+backend/
+├── src/
+│   ├── models/
+│   ├── services/
+│   └── api/
+└── tests/
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-**Structure Decision**: Option 1: Single project (DEFAULT)
+**Structure Decision**: [Document the selected structure and reference the real
+directories captured above]
 
 ## Complexity Tracking
 
@@ -84,4 +100,5 @@ src/
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| None | N/A | N/A |
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
