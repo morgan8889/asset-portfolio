@@ -38,19 +38,13 @@ const propertyFormSchema = z.object({
   address: z.string().max(500, 'Address too long').optional(),
   ownershipPercentage: z
     .number()
-    .min(0.01, 'Must be greater than 0')
+    .min(0, 'Must be between 0 and 100')
     .max(100, 'Cannot exceed 100'),
   isRental: z.boolean().default(false),
   monthlyRent: z.string().optional(),
   notes: z.string().max(1000, 'Notes too long').optional(),
 }).refine(
-  (data) => {
-    // Require monthlyRent if isRental is true
-    if (data.isRental && (!data.monthlyRent || parseFloat(data.monthlyRent) <= 0)) {
-      return false;
-    }
-    return true;
-  },
+  (data) => !data.isRental || (data.monthlyRent && parseFloat(data.monthlyRent) > 0),
   {
     message: 'Monthly rent is required for rental properties',
     path: ['monthlyRent'],
@@ -232,7 +226,7 @@ export function AddPropertyDialog({
               <Input
                 id="ownershipPercentage"
                 type="number"
-                min="0.01"
+                min="0"
                 max="100"
                 step="0.01"
                 {...register('ownershipPercentage', { valueAsNumber: true })}
