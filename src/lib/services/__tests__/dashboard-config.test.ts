@@ -194,6 +194,11 @@ describe('Dashboard Configuration Service', () => {
           widgetSpans: { 'growth-chart': 2 },
           densePacking: true,
           widgetRowSpans: { 'growth-chart': 2 },
+          widgetSettings: {
+            'category-breakdown': {
+              showPieChart: false,
+            },
+          },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -244,6 +249,11 @@ describe('Dashboard Configuration Service', () => {
           widgetSpans: { 'growth-chart': 2, 'category-breakdown': 2 },
           densePacking: true,
           widgetRowSpans: { 'growth-chart': 3, 'category-breakdown': 2 },
+          widgetSettings: {
+            'category-breakdown': {
+              showPieChart: false,
+            },
+          },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -304,6 +314,11 @@ describe('Dashboard Configuration Service', () => {
           widgetSpans: {},
           densePacking: false,
           widgetRowSpans: {},
+          widgetSettings: {
+            'category-breakdown': {
+              showPieChart: false,
+            },
+          },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -346,6 +361,11 @@ describe('Dashboard Configuration Service', () => {
           widgetSpans: { 'growth-chart': 2, 'category-breakdown': 2 },
           densePacking: false,
           widgetRowSpans: {},
+          widgetSettings: {
+            'category-breakdown': {
+              showPieChart: false,
+            },
+          },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -397,6 +417,11 @@ describe('Dashboard Configuration Service', () => {
           widgetSpans: { 'growth-chart': 2 },
           densePacking: true,
           widgetRowSpans: { 'growth-chart': 3, 'category-breakdown': 2 },
+          widgetSettings: {
+            'category-breakdown': {
+              showPieChart: false,
+            },
+          },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -435,6 +460,11 @@ describe('Dashboard Configuration Service', () => {
           widgetSpans: { 'growth-chart': 2 },
           densePacking: true,
           widgetRowSpans: { 'growth-chart': 3, 'recent-activity': 2 },
+          widgetSettings: {
+            'category-breakdown': {
+              showPieChart: false,
+            },
+          },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -485,6 +515,11 @@ describe('Dashboard Configuration Service', () => {
           widgetSpans: { 'growth-chart': 2 },
           densePacking: false,
           widgetRowSpans: {},
+          widgetSettings: {
+            'category-breakdown': {
+              showPieChart: false,
+            },
+          },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -521,6 +556,11 @@ describe('Dashboard Configuration Service', () => {
           widgetSpans: { 'growth-chart': 2, 'category-breakdown': 2 },
           densePacking: false,
           widgetRowSpans: {},
+          widgetSettings: {
+            'category-breakdown': {
+              showPieChart: false,
+            },
+          },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -557,6 +597,11 @@ describe('Dashboard Configuration Service', () => {
           widgetSpans: { 'growth-chart': 2 },
           densePacking: false,
           widgetRowSpans: { 'growth-chart': 3 },
+          widgetSettings: {
+            'category-breakdown': {
+              showPieChart: false,
+            },
+          },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -603,6 +648,11 @@ describe('Dashboard Configuration Service', () => {
           widgetSpans: { 'growth-chart': 2 },
           densePacking: true,
           widgetRowSpans: { 'growth-chart': 3, 'category-breakdown': 2 },
+          widgetSettings: {
+            'category-breakdown': {
+              showPieChart: false,
+            },
+          },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -649,6 +699,11 @@ describe('Dashboard Configuration Service', () => {
           widgetSpans: {},
           densePacking: false,
           widgetRowSpans: {},
+          widgetSettings: {
+            'category-breakdown': {
+              showPieChart: false,
+            },
+          },
           lastUpdated: '2025-01-01T00:00:00Z',
         };
 
@@ -699,6 +754,11 @@ describe('Dashboard Configuration Service', () => {
         widgetSpans: {},
         densePacking: false,
         widgetRowSpans: {},
+        widgetSettings: {
+          'category-breakdown': {
+            showPieChart: false,
+          },
+        },
         useReactGridLayout: false,
         rglLayouts: undefined,
         lastUpdated: '2025-01-01T00:00:00Z',
@@ -755,6 +815,11 @@ describe('Dashboard Configuration Service', () => {
         widgetSpans: {},
         densePacking: false,
         widgetRowSpans: {},
+        widgetSettings: {
+          'category-breakdown': {
+            showPieChart: false,
+          },
+        },
         useReactGridLayout: false,
         rglLayouts: existingLayouts,
         lastUpdated: '2025-01-01T00:00:00Z',
@@ -808,6 +873,11 @@ describe('Dashboard Configuration Service', () => {
         widgetSpans: {},
         densePacking: false,
         widgetRowSpans: {},
+        widgetSettings: {
+          'category-breakdown': {
+            showPieChart: false,
+          },
+        },
         useReactGridLayout: true,
         rglLayouts: existingLayouts,
         lastUpdated: '2025-01-01T00:00:00Z',
@@ -851,6 +921,11 @@ describe('Dashboard Configuration Service', () => {
         widgetSpans: {},
         densePacking: false,
         widgetRowSpans: {},
+        widgetSettings: {
+          'category-breakdown': {
+            showPieChart: false,
+          },
+        },
         lastUpdated: '2025-01-01T00:00:00Z',
       };
 
@@ -882,6 +957,11 @@ describe('Dashboard Configuration Service', () => {
         widgetSpans: {},
         densePacking: false,
         widgetRowSpans: {},
+        widgetSettings: {
+          'category-breakdown': {
+            showPieChart: false,
+          },
+        },
         lastUpdated: '2025-01-01T00:00:00Z',
       };
 
