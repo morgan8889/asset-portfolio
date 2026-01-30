@@ -23,6 +23,7 @@ tests/
 : Follow standard conventions
 
 ## Recent Changes
+- 010-allocation-planning: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 - 007-performance-3yr-view: Added
 
