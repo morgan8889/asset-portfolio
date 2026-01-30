@@ -70,8 +70,8 @@ We will implement this feature in phases, starting with the core data model exte
 
 ## Final Phase: Polish
 
-- [ ] T021 [Polish] Add "Manual Valuation" UI to `src/components/holdings/holding-row.tsx` (or equivalent) to support Property updates
-- [ ] T022 [Polish] Add "Region" override UI to Asset edit modal
+- [X] T021 [Polish] Add "Manual Valuation" UI to `src/components/holdings/holding-row.tsx` (or equivalent) to support Property updates
+- [X] T022 [Polish] Add "Region" override UI to Asset edit modal
 - [X] T023 [Polish] Ensure all analysis calculations handle edge cases (empty portfolio, zero prices) gracefully
-- [ ] T024 [Polish] Create E2E test for analysis page workflow in `tests/e2e/analysis.spec.ts` (Constitution IV compliance)
-- [ ] T025 [Polish] Add transparency UI showing raw scoring formula and weights in `src/components/analysis/formula-display.tsx`
+- [X] T024 [Polish] Create E2E test for analysis page workflow in `tests/e2e/analysis.spec.ts` (Constitution IV compliance)
+- [X] T025 [Polish] Add transparency UI showing raw scoring formula and weights in `src/components/analysis/formula-display.tsx`

@@ -10,6 +10,7 @@ import { RecommendationList } from '@/components/analysis/recommendation-list';
 import { AllocationChart } from '@/components/analysis/allocation-chart';
 import { TargetModelSelector } from '@/components/analysis/target-model-selector';
 import { RebalancingTable } from '@/components/analysis/rebalancing-table';
+import { FormulaDisplay } from '@/components/analysis/formula-display';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 
@@ -121,6 +122,9 @@ export default function AnalysisPage() {
         <HealthScoreCard health={health} isCalculating={isCalculating} />
         <MetricBreakdown health={health} />
       </div>
+
+      {/* Formula Transparency */}
+      <FormulaDisplay health={health} />
 
       {/* Recommendations */}
       <RecommendationList

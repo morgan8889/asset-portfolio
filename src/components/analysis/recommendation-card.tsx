@@ -65,7 +65,7 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
           {recommendation.description}
         </p>
         {recommendation.actionUrl && (
-          <Link href={recommendation.actionUrl}>
+          <Link href={recommendation.actionUrl as any}>
             <Button variant="outline" size="sm" className="w-full sm:w-auto">
               {recommendation.actionLabel}
               <ArrowRight className="ml-2 h-4 w-4" />
