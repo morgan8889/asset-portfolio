@@ -177,6 +177,7 @@ export interface HoldingStorage {
   unrealizedGainPercent: number;
   lots: TaxLotStorage[];
   lastUpdated: Date;
+  ownershipPercentage?: number;
 }
 
 /**

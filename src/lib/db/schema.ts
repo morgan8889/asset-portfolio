@@ -120,6 +120,16 @@ export class PortfolioDatabase extends Dexie {
     if (obj.priceUpdatedAt && !(obj.priceUpdatedAt instanceof Date)) {
       obj.priceUpdatedAt = new Date(obj.priceUpdatedAt);
     }
+
+    // Handle RentalInfo decimal fields
+    if (obj.rentalInfo && obj.rentalInfo.monthlyRent instanceof Decimal) {
+      obj.rentalInfo.monthlyRent = obj.rentalInfo.monthlyRent.toString() as any;
+    }
+
+    // Set default valuationMethod if not present
+    if (!obj.valuationMethod) {
+      obj.valuationMethod = 'AUTO';
+    }
   };
 
   private transformHolding = (
@@ -144,6 +154,11 @@ export class PortfolioDatabase extends Dexie {
     // Ensure lastUpdated is a Date
     if (obj.lastUpdated && !(obj.lastUpdated instanceof Date)) {
       obj.lastUpdated = new Date(obj.lastUpdated);
+    }
+
+    // Set default ownershipPercentage if not present
+    if (obj.ownershipPercentage === undefined) {
+      obj.ownershipPercentage = 100;
     }
   };
 
@@ -276,6 +291,7 @@ export class PortfolioDatabase extends Dexie {
         holding.lastUpdated instanceof Date
           ? holding.lastUpdated
           : new Date(holding.lastUpdated),
+      ownershipPercentage: holding.ownershipPercentage ?? 100,
     };
   }
 
