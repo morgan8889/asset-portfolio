@@ -18,7 +18,7 @@ Manage your complete portfolio by adding Real Estate assets, tracking rental inc
 ### Tracking Rental Income
 1. In the Add/Edit Property form, toggle **"Rental Property"**.
 2. Enter the **Monthly Rent**.
-3. Save. The system now calculates **Annual Yield** based on the current value.
+3. Save. The system now calculates **Annual Yield** (Monthly Rent × 12 / Current Value × 100%) displayed as a percentage.
 
 ### Updating Property Value
 1. Locate the property in the **Holdings List**.

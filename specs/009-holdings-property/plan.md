@@ -18,7 +18,7 @@ Implement full property asset support within the Holdings page. This includes ex
 -->
 
 **Language/Version**: TypeScript 5+ (Next.js 14)  
-**Primary Dependencies**: React 18, React Hook Form, Zod, Decimal.js, Dexie.js  
+**Primary Dependencies**: React 18, React Hook Form, Zod, Decimal.js, Dexie.js, react-window (virtualization)  
 **Storage**: IndexedDB (`assets`, `holdings` tables extended)  
 **Testing**: Vitest (Unit/Integration), Playwright (E2E for property add flow)  
 **Target Platform**: Web (Next.js Client Components)
@@ -26,6 +26,10 @@ Implement full property asset support within the Holdings page. This includes ex
 **Performance Goals**: List render < 200ms, Immediate update on manual price change  
 **Constraints**: Local-first architecture (no external property API), High precision math for Net Value  
 **Scale/Scope**: Support 10-50 property assets efficiently within the holdings list
+**Explicit Scope Exclusions** (from spec.md Edge Cases):
+- Mortgage/liability tracking (gross asset value only; use Notes field for reference)
+- Multi-currency properties (assume portfolio base currency; reuse existing multi-currency support if implemented)
+- Fractional ownership platforms (supported via `ownershipPercentage` field, but no platform-specific integrations)
 
 ## Constitution Check
 
@@ -81,4 +85,4 @@ src/
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| None | N/A | N/A |
+| Asset.currentPrice remains `number` (Constitution II requires Decimal) | Backwards compatibility with existing 102 usages across 18 files | Full migration to Decimal out of scope for this feature. Property service layer handles Decimal conversion at boundaries. Tracked as technical debt for future refactoring. |

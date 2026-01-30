@@ -7,16 +7,8 @@
 
 | Field | Type | Description |
 |-------|------|-------------|
-| rentalInfo | RentalInfo (Optional) | Metadata for rental properties |
-
-```typescript
-export interface RentalInfo {
-  isRental: boolean;
-  monthlyRent: Decimal;
-  address?: string;
-  notes?: string;
-}
-```
+| rentalInfo | RentalInfo (Optional) | Metadata for rental properties (see `contracts/holdings.ts` for interface definition) |
+| valuationMethod | 'AUTO' \| 'MANUAL' | Price update mechanism (from Feature 008). Properties use 'MANUAL'. |
 
 ### Holding (Extended)
 *Source: `src/types/asset.ts`*
@@ -51,3 +43,13 @@ export interface RentalInfo {
 - Creates `Asset` with manual valuation.
 - Creates `Holding` with ownership percentage.
 - Creates initial `Transaction` (Buy) for cost basis history.
+
+## Performance Validation
+
+### SC-002 Measurement Approach
+Holdings list render time (< 200ms) will be measured using:
+1. **E2E Testing**: Playwright `page.evaluate(() => performance.now())` before/after navigation
+2. **React DevTools Profiler**: Component render duration in development
+3. **Real User Monitoring**: Browser Performance API `navigationTiming.loadEventEnd - navigationTiming.fetchStart`
+
+Target: Time from route navigation to interactive table (virtualized, with 100 items) < 200ms on desktop Chrome.

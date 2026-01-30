@@ -77,7 +77,7 @@ As a landlord, I want to designate a property as a "Rental" and track its monthl
 - **FR-005**: System MUST provide a generic "Add Manual Asset" form for other asset types (Art, Collectibles, etc.) requiring Name, Value, and Type.
 - **FR-006**: System MUST allow marking a Real Estate asset as "Rental" and capturing "Monthly Rent".
 - **FR-007**: System MUST allow manual price updates for assets flagged as `valuationMethod: 'MANUAL'` (from Feature 008).
-- **FR-008**: System MUST calculate and display "Gross Estimated Yield" for rental properties using the formula: `(Monthly Rent * 12) / Current Value`.
+- **FR-008**: System MUST calculate and display "Annual Yield" for rental properties using the formula: `(Monthly Rent * 12) / Current Value * 100` (expressed as percentage).
 - **FR-009**: System MUST calculate the Net Value of property holdings by multiplying current market value by the ownership percentage.
 - **FR-010**: System MUST persist all property and manual asset data locally in IndexedDB.
 
