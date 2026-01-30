@@ -41,7 +41,6 @@ const navigation = [
     name: 'Analysis',
     href: '/analysis',
     icon: BarChart3,
-    badge: 'coming-soon' as const,
   },
   {
     name: 'Performance',

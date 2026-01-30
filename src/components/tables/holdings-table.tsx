@@ -14,18 +14,28 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Search,
   TrendingUp,
   TrendingDown,
   MoreHorizontal,
   DollarSign,
+  Edit,
+  Globe2,
 } from 'lucide-react';
 import { usePortfolioStore, usePriceStore } from '@/lib/stores';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { PriceDisplay } from '@/components/dashboard/price-display';
-import { Holding, LivePriceData, Exchange } from '@/types';
+import { Holding, LivePriceData, Exchange, Asset } from '@/types';
 import { getExchangeBadgeColor } from '@/lib/services/asset-search';
 import { isUKSymbol } from '@/lib/utils/market-utils';
+import { ManualPriceUpdateDialog } from '@/components/forms/manual-price-update-dialog';
+import { RegionOverrideDialog } from '@/components/forms/region-override-dialog';
 
 interface HoldingDisplayData {
   id: string;
@@ -39,6 +49,7 @@ interface HoldingDisplayData {
   gainLossPercent: number;
   type: string;
   exchange?: string;
+  asset?: Asset;
 }
 
 const HoldingsTableComponent = () => {
@@ -46,6 +57,10 @@ const HoldingsTableComponent = () => {
   const [sortField, setSortField] =
     useState<keyof HoldingDisplayData>('symbol');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [priceUpdateAsset, setPriceUpdateAsset] = useState<Asset | null>(null);
+  const [regionUpdateAsset, setRegionUpdateAsset] = useState<Asset | null>(
+    null
+  );
 
   const { holdings, assets, currentPortfolio, loading, error, clearError } =
     usePortfolioStore();
@@ -106,6 +121,7 @@ const HoldingsTableComponent = () => {
         gainLossPercent,
         type: asset?.type || 'other',
         exchange: asset?.exchange || livePrice?.exchange,
+        asset,
       };
     });
   }, [holdings, assets, getLivePrice]);
@@ -452,9 +468,35 @@ const HoldingsTableComponent = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {holding.asset?.valuationMethod === 'MANUAL' && (
+                            <DropdownMenuItem
+                              onClick={() => setPriceUpdateAsset(holding.asset!)}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Update Price
+                            </DropdownMenuItem>
+                          )}
+                          {holding.asset && (
+                            <DropdownMenuItem
+                              onClick={() => setRegionUpdateAsset(holding.asset!)}
+                            >
+                              <Globe2 className="mr-2 h-4 w-4" />
+                              Set Region
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))
@@ -463,6 +505,24 @@ const HoldingsTableComponent = () => {
           </Table>
         </div>
       </CardContent>
+
+      {/* Manual Price Update Dialog */}
+      {priceUpdateAsset && (
+        <ManualPriceUpdateDialog
+          asset={priceUpdateAsset}
+          open={!!priceUpdateAsset}
+          onOpenChange={(open) => !open && setPriceUpdateAsset(null)}
+        />
+      )}
+
+      {/* Region Override Dialog */}
+      {regionUpdateAsset && (
+        <RegionOverrideDialog
+          asset={regionUpdateAsset}
+          open={!!regionUpdateAsset}
+          onOpenChange={(open) => !open && setRegionUpdateAsset(null)}
+        />
+      )}
     </Card>
   );
 };
