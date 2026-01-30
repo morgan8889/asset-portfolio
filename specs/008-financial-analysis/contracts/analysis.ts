@@ -3,7 +3,7 @@
  */
 
 import { Decimal } from 'decimal.js';
-import { AssetType } from '@/types/asset'; // Assuming exists, otherwise will be string
+import { AssetType } from '@/types/portfolio';
 
 // =============================================================================
 // Analysis Types
