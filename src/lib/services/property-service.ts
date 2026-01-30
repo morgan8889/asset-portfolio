@@ -29,8 +29,8 @@ export function calculateNetValue(
   currentValue: Decimal,
   ownershipPercentage: number = 100
 ): Decimal {
-  if (ownershipPercentage < 0 || ownershipPercentage > 100) {
-    throw new Error('Ownership percentage must be between 0 and 100');
+  if (ownershipPercentage <= 0 || ownershipPercentage > 100) {
+    throw new Error('Ownership percentage must be greater than 0 and up to 100');
   }
 
   return currentValue.mul(ownershipPercentage).div(100);
@@ -115,9 +115,9 @@ export async function addPropertyAsset(
   portfolioId: string,
   data: PropertyFormData
 ): Promise<string> {
-  // Validate ownership percentage
-  if (data.ownershipPercentage < 0 || data.ownershipPercentage > 100) {
-    throw new Error('Ownership percentage must be between 0 and 100');
+  // Validate ownership percentage (must be greater than 0 and up to 100)
+  if (data.ownershipPercentage <= 0 || data.ownershipPercentage > 100) {
+    throw new Error('Ownership percentage must be greater than 0 and up to 100');
   }
 
   // Parse monetary values
@@ -157,10 +157,17 @@ export async function addPropertyAsset(
     };
   }
 
+  // Generate safe symbol from name (alphanumeric + underscore only, max 50 chars)
+  const sanitizedSymbol = data.name
+    .toUpperCase()
+    .replace(/[^A-Z0-9\s]/g, '') // Remove special characters
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .substring(0, 50); // Limit length
+
   // Create Asset
   const asset: Asset = {
     id: assetId,
-    symbol: data.name.toUpperCase().replace(/\s+/g, '_'), // Generate symbol from name
+    symbol: sanitizedSymbol || 'PROPERTY', // Fallback if name has no valid chars
     name: data.name,
     type: 'real_estate',
     currency: portfolio.currency,
@@ -197,8 +204,8 @@ export async function addPropertyAsset(
     ownershipPercentage: data.ownershipPercentage,
   };
 
-  // The database hooks will serialize Decimal fields automatically
-  await db.holdings.add(holding as any as HoldingStorage);
+  // The database hooks will automatically serialize Decimal fields to strings
+  await db.holdings.add(holding as any);
 
   // Create initial buy transaction for cost basis tracking
   const transaction: Transaction = {
@@ -215,8 +222,8 @@ export async function addPropertyAsset(
     notes: `Initial property acquisition: ${data.ownershipPercentage}% ownership`,
   };
 
-  // The database hooks will serialize Decimal fields automatically
-  await db.transactions.add(transaction as any as TransactionStorage);
+  // The database hooks will automatically serialize Decimal fields to strings
+  await db.transactions.add(transaction as any);
 
   return assetId;
 }
