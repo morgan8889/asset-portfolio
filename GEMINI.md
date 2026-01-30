@@ -24,6 +24,7 @@ tests/
 
 ## Recent Changes
 - 010-allocation-planning: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+- 009-holdings-property: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 - 007-performance-3yr-view: Added
 
