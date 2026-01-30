@@ -117,5 +117,106 @@ describe('Health Scoring Service', () => {
         growthHealth.metrics[0].weight
       );
     });
+
+    it('should handle extreme positive performance (10x gain)', () => {
+      const input: HealthScoreInput = {
+        holdings: [
+          {
+            assetId: '1',
+            value: new Decimal(10000),
+            assetType: 'stock',
+            region: 'US',
+          },
+        ],
+        totalValue: new Decimal(10000),
+        performanceData: {
+          returnPercent: 1000, // 10x return (1000% gain)
+          volatility: 20,
+          sharpeRatio: 5,
+        },
+      };
+
+      const health = calculateHealthScore(input, ANALYSIS_PROFILES[1]);
+      const performanceMetric = health.metrics.find((m) => m.id === 'performance');
+
+      expect(performanceMetric).toBeDefined();
+      expect(performanceMetric!.score).toBeGreaterThan(0);
+      expect(performanceMetric!.score).toBeLessThanOrEqual(100);
+      expect(performanceMetric!.status).toBe('good');
+    });
+
+    it('should handle extreme negative performance (near-wipeout)', () => {
+      const input: HealthScoreInput = {
+        holdings: [
+          {
+            assetId: '1',
+            value: new Decimal(1000),
+            assetType: 'stock',
+            region: 'US',
+          },
+        ],
+        totalValue: new Decimal(1000),
+        performanceData: {
+          returnPercent: -99, // Near total loss
+          volatility: 50,
+          sharpeRatio: -5,
+        },
+      };
+
+      const health = calculateHealthScore(input, ANALYSIS_PROFILES[1]);
+      const performanceMetric = health.metrics.find((m) => m.id === 'performance');
+
+      expect(performanceMetric).toBeDefined();
+      expect(performanceMetric!.score).toBeGreaterThanOrEqual(0);
+      expect(performanceMetric!.score).toBeLessThan(30);
+      expect(performanceMetric!.status).toBe('critical');
+    });
+
+    it('should handle missing performance data', () => {
+      const input: HealthScoreInput = {
+        holdings: [
+          {
+            assetId: '1',
+            value: new Decimal(10000),
+            assetType: 'stock',
+            region: 'US',
+          },
+        ],
+        totalValue: new Decimal(10000),
+        // No performanceData provided
+      };
+
+      const health = calculateHealthScore(input, ANALYSIS_PROFILES[1]);
+      const performanceMetric = health.metrics.find((m) => m.id === 'performance');
+
+      expect(performanceMetric).toBeDefined();
+      expect(performanceMetric!.score).toBe(50); // Neutral score when no data
+      expect(performanceMetric!.details).toContain('No performance data');
+    });
+
+    it('should handle undefined/null performance values', () => {
+      const input: HealthScoreInput = {
+        holdings: [
+          {
+            assetId: '1',
+            value: new Decimal(10000),
+            assetType: 'stock',
+            region: 'US',
+          },
+        ],
+        totalValue: new Decimal(10000),
+        performanceData: {
+          returnPercent: 0,
+          volatility: 0,
+          sharpeRatio: 0,
+        },
+      };
+
+      const health = calculateHealthScore(input, ANALYSIS_PROFILES[1]);
+
+      expect(health.overallScore).toBeGreaterThan(0);
+      expect(health.overallScore).toBeLessThanOrEqual(100);
+      expect(health.metrics).toHaveLength(3);
+    });
   });
 });

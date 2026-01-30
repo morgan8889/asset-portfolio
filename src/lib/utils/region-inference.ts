@@ -96,7 +96,9 @@ export function inferRegion(symbol: string, exchange?: string): Region {
   }
 
   // Special case for crypto (no region)
-  if (symbol.includes('-USD') || symbol.includes('/USD') || symbol.includes('USDT')) {
+  // Use more specific patterns to avoid false positives
+  const symbolUpper = symbol.toUpperCase();
+  if (symbolUpper.endsWith('-USD') || symbolUpper.endsWith('/USD') || symbolUpper.includes('USDT')) {
     return 'OTHER';
   }
 
