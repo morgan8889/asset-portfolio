@@ -4,7 +4,9 @@
  * Tests widget rendering, size detection, and conditional pie chart display.
  * Pie chart visibility is determined by:
  * - Setting: widgetSettings['category-breakdown'].showPieChart === true
- * - Row span: widgetRowSpans['category-breakdown'] >= 2 (2h or taller)
+ * - Row span based on column span:
+ *   - 1-column widgets: rowSpan >= 4 required for pie chart
+ *   - 2-column widgets: rowSpan >= 2 required for pie chart
  * - Width: measured width >= 150px (minWidthForChart)
  *
  * Layout mode (stacked vs side-by-side) is determined by:
@@ -25,7 +27,7 @@ let mockDashboardConfig = {
     },
   },
   widgetRowSpans: {
-    'category-breakdown': 1 as 1 | 2 | 3, // 1 = 1h, 2 = 2h, 3 = 3h
+    'category-breakdown': 1 as 1 | 2 | 3 | 4, // 1 = 1h, 2 = 2h, 3 = 3h, 4 = 4h
   },
   widgetSpans: {
     'category-breakdown': 1 as 1 | 2, // 1 = 1x, 2 = 2x
@@ -213,8 +215,8 @@ describe('CategoryBreakdownWidget', () => {
       expect(screen.getByText('Stocks')).toBeInTheDocument();
     });
 
-    it('shows pie chart when showPieChart setting is true and rowSpan >= 2', () => {
-      mockWidgetSize = { width: 200, height: 400 };
+    it('shows pie chart when showPieChart setting is true and rowSpan >= 2 (2-column widget)', () => {
+      mockWidgetSize = { width: 400, height: 400 };
       mockDashboardConfig = {
         widgetSettings: {
           'category-breakdown': {
@@ -222,10 +224,10 @@ describe('CategoryBreakdownWidget', () => {
           },
         },
         widgetRowSpans: {
-          'category-breakdown': 2, // 2h - meets height requirement
+          'category-breakdown': 2, // 2h - meets height requirement for 2-column widget
         },
         widgetSpans: {
-          'category-breakdown': 1,
+          'category-breakdown': 2, // 2-column widgets only need rowSpan >= 2
         },
       };
 
@@ -271,7 +273,7 @@ describe('CategoryBreakdownWidget', () => {
       expect(screen.getByText('Stocks')).toBeInTheDocument();
     });
 
-    it('shows pie chart when rowSpan is 2 (2h) and setting enabled', () => {
+    it('shows pie chart when rowSpan is 4 (4h) and setting enabled for 1-column widget', () => {
       mockWidgetSize = { width: 200, height: 400 };
       mockDashboardConfig = {
         widgetSettings: {
@@ -280,7 +282,7 @@ describe('CategoryBreakdownWidget', () => {
           },
         },
         widgetRowSpans: {
-          'category-breakdown': 2, // 2h - meets requirement
+          'category-breakdown': 4, // 4h - meets requirement for 1-column
         },
         widgetSpans: {
           'category-breakdown': 1,
@@ -298,7 +300,7 @@ describe('CategoryBreakdownWidget', () => {
       expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
     });
 
-    it('shows pie chart when rowSpan is 3 (3h) and setting enabled', () => {
+    it('hides pie chart when rowSpan is 3 (3h) for 1-column widget even if setting enabled', () => {
       mockWidgetSize = { width: 200, height: 400 };
       mockDashboardConfig = {
         widgetSettings: {
@@ -307,7 +309,7 @@ describe('CategoryBreakdownWidget', () => {
           },
         },
         widgetRowSpans: {
-          'category-breakdown': 3, // 3h - exceeds requirement
+          'category-breakdown': 3, // 3h - does NOT meet requirement for 1-column (needs 4)
         },
         widgetSpans: {
           'category-breakdown': 1,
@@ -322,7 +324,8 @@ describe('CategoryBreakdownWidget', () => {
         />
       );
 
-      expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
+      // 1-column widgets need rowSpan >= 4 for pie chart
+      expect(screen.queryByTestId('pie-chart')).not.toBeInTheDocument();
     });
   });
 
@@ -354,7 +357,7 @@ describe('CategoryBreakdownWidget', () => {
       expect(screen.queryByTestId('pie-chart')).not.toBeInTheDocument();
     });
 
-    it('shows pie chart at exactly minWidthForChart (150px)', () => {
+    it('shows pie chart at exactly minWidthForChart (150px) with sufficient rowSpan', () => {
       mockWidgetSize = { width: 150, height: 400 }; // Exactly at threshold
       mockDashboardConfig = {
         widgetSettings: {
@@ -363,7 +366,7 @@ describe('CategoryBreakdownWidget', () => {
           },
         },
         widgetRowSpans: {
-          'category-breakdown': 2,
+          'category-breakdown': 4, // 1-column widgets need rowSpan >= 4
         },
         widgetSpans: {
           'category-breakdown': 1,
@@ -390,7 +393,7 @@ describe('CategoryBreakdownWidget', () => {
           },
         },
         widgetRowSpans: {
-          'category-breakdown': 2,
+          'category-breakdown': 4, // Even with sufficient rowSpan
         },
         widgetSpans: {
           'category-breakdown': 1,
@@ -419,7 +422,7 @@ describe('CategoryBreakdownWidget', () => {
           },
         },
         widgetRowSpans: {
-          'category-breakdown': 2,
+          'category-breakdown': 4, // 1-column widgets need rowSpan >= 4 for pie chart
         },
         widgetSpans: {
           'category-breakdown': 1, // 1x column - stacked layout
