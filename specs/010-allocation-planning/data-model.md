@@ -30,21 +30,23 @@ export interface RebalancingExclusions {
 
 ```typescript
 export interface RebalancingPlan {
-  totalValue: Decimal;
+  totalValue: string; // Decimal.js value serialized as string
   targetModelName: string;
   items: RebalancingItem[];
 }
 
 export interface RebalancingItem {
   category: string;
-  currentValue: Decimal;
+  currentValue: string; // Decimal.js value serialized as string
   currentPercent: number;
   targetPercent: number;
   driftPercent: number;
   action: 'BUY' | 'SELL' | 'HOLD';
-  amount: Decimal;
+  amount: string; // Decimal.js value serialized as string
 }
 ```
+
+**Note**: All monetary values use string representation for serialization. At runtime, these are converted to/from `Decimal` instances using `decimal.js` for precise financial calculations.
 
 ## Validation Rules
 

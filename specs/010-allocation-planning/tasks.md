@@ -19,7 +19,7 @@ We will implement this feature in three main phases. Phase 1 focuses on building
 *Goal: Define types and extend database.*
 
 - [ ] T001 [Setup] Create `src/types/allocation.ts` with `TargetModel`, `RebalancingItem`, and `AllocationCategory` interfaces
-- [ ] T002 [Setup] Update `src/lib/db/schema.ts` to include keys/stores for `allocation_targets` and `rebalancing_exclusions` in `userSettings` (if not using generic key-value store)
+- [ ] T002 [Setup] Verify `src/lib/db/schema.ts` userSettings table supports generic key-value storage for keys: `allocation_targets` (TargetModel[]) and `rebalancing_exclusions` (string[])
 - [ ] T003 [Setup] Create `src/lib/services/allocation/target-service.ts` for CRUD operations on TargetModels
 
 ## Phase 2: Foundational
@@ -37,27 +37,29 @@ We will implement this feature in three main phases. Phase 1 focuses on building
 
 - [ ] T007 [US1] Create `src/components/allocation/allocation-chart-tabs.tsx` to switch between Asset Class, Sector, and Region views
 - [ ] T008 [US1] Integrate `AllocationDonut` (reused/refactored) to handle the "Unclassified" visual slice logic
-- [ ] T009 [US1] Update `src/app/(dashboard)/allocation/page.tsx` to display the current allocation charts
+- [ ] T009 [US1] Create `src/components/allocation/unclassified-alert.tsx` to display persistent alert for assets without categories (FR-008)
+- [ ] T010 [US1] Update `src/app/(dashboard)/allocation/page.tsx` to display the current allocation charts and unclassified alert
 
 ## Phase 4: User Story 2 - Define Target Model (P2)
 
 *Goal: Allow users to set their goals.*
 *Test Criteria: Create new target, adjust sliders to 100%, save.*
 
-- [ ] T010 [US2] Create `src/components/allocation/target-model-editor.tsx` with sliders for each asset class
-- [ ] T011 [US2] Implement validation logic in `target-model-editor.tsx` to ensure 100% total before saving
-- [ ] T012 [US2] Add "Manage Targets" modal/dropdown to `src/app/(dashboard)/allocation/page.tsx`
+- [ ] T011 [US2] Create `src/components/allocation/target-model-editor.tsx` with sliders for each asset class
+- [ ] T012 [US2] Implement validation logic in `target-model-editor.tsx` to ensure 100% total before saving
+- [ ] T013 [US2] Add "Manage Targets" modal/dropdown to `src/app/(dashboard)/allocation/page.tsx`
 
 ## Phase 5: User Story 3 - Analyze Drift and Rebalance (P3)
 
 *Goal: Actionable buy/sell advice.*
 *Test Criteria: Select target, see drift table with specific actions.*
 
-- [ ] T013 [US3] Create `src/components/allocation/rebalancing-table.tsx` to display Drift% and Buy/Sell amounts
-- [ ] T014 [US3] Create `src/components/allocation/exclusion-toggle.tsx` to manage account-level exclusions
-- [ ] T015 [US3] Integrate rebalancing table and controls into `src/app/(dashboard)/allocation/page.tsx`
+- [ ] T014 [US3] Create `src/components/allocation/rebalancing-table.tsx` to display Drift% and Buy/Sell amounts
+- [ ] T015 [US3] Create `src/components/allocation/exclusion-toggle.tsx` to manage portfolio-level exclusions
+- [ ] T016 [US3] Implement hierarchical drill-down interaction for FR-006 (click Asset Class to see Sector breakdown)
+- [ ] T017 [US3] Integrate rebalancing table and controls into `src/app/(dashboard)/allocation/page.tsx`
 
 ## Final Phase: Polish
 
-- [ ] T016 [Polish] Add visual alert for "Unclassified" assets in the allocation dashboard
-- [ ] T017 [Polish] Ensure negative cash/margin is visualized correctly (netted or distinct bar) per clarifications
+- [ ] T018 [Polish] Ensure negative cash/margin is visualized correctly (netted or distinct bar) per clarifications
+- [ ] T019 [Polish] Add hover tooltips to all charts showing exact values and percentages

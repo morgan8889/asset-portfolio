@@ -55,7 +55,7 @@ As an investor, I want to see the "drift" between my current and target allocati
 
 - What happens if an asset has no defined class/sector? (Group under "Unclassified" visual slice and prompt user to edit asset details).
 - How are negative cash balances (margin) handled in allocation? (Netted against the total Cash asset class value).
-- What if the user wants to exclude specific accounts (e.g., locked 401k) from rebalancing? (Using the "Exclude from Rebalancing" toggle at the account level).
+- What if the user wants to exclude specific portfolios (e.g., locked 401k) from rebalancing? (Using the "Exclude from Rebalancing" toggle at the portfolio level).
 
 ## Clarifications
 
@@ -63,7 +63,7 @@ As an investor, I want to see the "drift" between my current and target allocati
 
 - Q: How should negative cash balances (margin) be handled? → A: Net against Cash - Negative balances are subtracted from the total value of the Cash asset class.
 - Q: How should assets without categories be visualized? → A: Visual Slice + Alert - Assets without defined class/sector/region appear as an "Unclassified" slice in charts, accompanied by a prompt to fix them.
-- Q: How should specific holdings be excluded from rebalancing? → A: Account-Level Toggle - Users can toggle entire accounts to be excluded from the generated rebalancing plan.
+- Q: How should specific holdings be excluded from rebalancing? → A: Portfolio-Level Toggle - Users can toggle entire portfolios to be excluded from the generated rebalancing plan.
 
 ## Requirements *(mandatory)*
 
@@ -73,23 +73,23 @@ As an investor, I want to see the "drift" between my current and target allocati
 - **FR-002**: System MUST calculate current allocation percentages based on the latest available market values, netting negative cash balances against the total Cash asset class.
 - **FR-003**: System MUST allow users to define and save Target Allocation Models (percentage per Asset Class) that sum to exactly 100%.
 - **FR-004**: System MUST calculate "Drift" (Current % - Target %) for each category based on total portfolio value.
-- **FR-005**: System MUST generate a "Rebalancing Plan" listing specific Buy/Sell actions, excluding any accounts marked as "Excluded from Rebalancing".
+- **FR-005**: System MUST generate a "Rebalancing Plan" listing specific Buy/Sell actions, excluding any portfolios marked as "Excluded from Rebalancing".
 - **FR-006**: System MUST support hierarchical views (e.g., click "Stock" to see breakdown by "Sector").
-- **FR-007**: System MUST persist target models and account-level exclusion preferences in IndexedDB.
+- **FR-007**: System MUST persist target models and portfolio-level exclusion preferences in IndexedDB using keys `allocation_targets` and `rebalancing_exclusions`.
 - **FR-008**: System MUST group "Unclassified" assets into a distinct visual slice in all charts and display a persistent alert until categorized.
-- **FR-009**: System MUST allow users to toggle "Exclude from Rebalancing" at the account level to skip specific accounts in generated plans.
+- **FR-009**: System MUST allow users to toggle "Exclude from Rebalancing" at the portfolio level to skip specific portfolios in generated plans.
 
 ### Key Entities
 
-- **AllocationCategory**: A grouping dimension (Asset Class, Sector, Region).
-- **TargetModel**: (Reused from Feature 008) Definition of target percentages.
-- **RebalancePlan**: A generated set of proposed transactions.
+- **AllocationCategory**: A grouping dimension with three supported types: Asset Class (e.g., Stock, Bond, Cash), Sector (e.g., Technology, Healthcare), and Region (e.g., US, Europe, Asia). String-based to allow extensibility.
+- **TargetModel**: Definition of target allocation percentages per category that sum to 100%. Persisted in IndexedDB userSettings table.
+- **RebalancePlan**: A generated set of proposed buy/sell transactions to achieve target allocation, calculated client-side.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: Allocation charts render in < 500ms for portfolios with up to 500 holdings.
-- **SC-002**: Rebalancing calculation completes in < 200ms.
+- **SC-001**: Allocation charts render in < 500ms (client-side rendering after data fetch) for portfolios with up to 500 holdings.
+- **SC-002**: Rebalancing calculation completes in < 200ms (client-side, excluding data fetch).
 - **SC-003**: Users can successfully define and save a valid target model (100% total) without errors.
 - **SC-004**: "Drift" calculations are accurate to within 0.01% of portfolio value.

@@ -22,7 +22,7 @@ The Allocation Planning feature helps you visualize your portfolio's composition
 2. Scroll to the **Rebalancing Plan** section.
 3. Review the **Drift** column to see deviations.
 4. Follow the **Action** items (Buy/Sell) to realign your portfolio.
-5. *Optional*: Toggle **"Exclude Locked Accounts"** to ignore 401ks or other restricted accounts from the plan.
+5. *Optional*: Toggle **"Exclude Locked Portfolios"** to ignore 401ks or other restricted portfolios from the plan.
 
 ## Implementation Details
 
