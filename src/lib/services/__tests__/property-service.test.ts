@@ -66,53 +66,53 @@ describe('property-service', () => {
     it('should calculate yield correctly for rental property', () => {
       const monthlyRent = new Decimal(2000);
       const currentValue = new Decimal(500000);
-      const yield = calculateYield(monthlyRent, currentValue);
+      const yieldPercent = calculateYield(monthlyRent, currentValue);
 
       // (2000 * 12) / 500000 * 100 = 4.8%
-      expect(yield).toBe(4.8);
+      expect(yieldPercent).toBe(4.8);
     });
 
     it('should return undefined for zero current value', () => {
       const monthlyRent = new Decimal(2000);
       const currentValue = new Decimal(0);
-      const yield = calculateYield(monthlyRent, currentValue);
+      const yieldPercent = calculateYield(monthlyRent, currentValue);
 
-      expect(yield).toBeUndefined();
+      expect(yieldPercent).toBeUndefined();
     });
 
     it('should calculate high yield correctly', () => {
       const monthlyRent = new Decimal(5000);
       const currentValue = new Decimal(50000);
-      const yield = calculateYield(monthlyRent, currentValue);
+      const yieldPercent = calculateYield(monthlyRent, currentValue);
 
       // (5000 * 12) / 50000 * 100 = 120%
-      expect(yield).toBe(120);
+      expect(yieldPercent).toBe(120);
     });
 
     it('should calculate very low yield correctly', () => {
       const monthlyRent = new Decimal(100);
       const currentValue = new Decimal(1000000);
-      const yield = calculateYield(monthlyRent, currentValue);
+      const yieldPercent = calculateYield(monthlyRent, currentValue);
 
       // (100 * 12) / 1000000 * 100 = 0.12%
-      expect(yield).toBe(0.12);
+      expect(yieldPercent).toBe(0.12);
     });
 
     it('should handle zero rent', () => {
       const monthlyRent = new Decimal(0);
       const currentValue = new Decimal(500000);
-      const yield = calculateYield(monthlyRent, currentValue);
+      const yieldPercent = calculateYield(monthlyRent, currentValue);
 
-      expect(yield).toBe(0);
+      expect(yieldPercent).toBe(0);
     });
 
     it('should maintain precision for fractional yields', () => {
       const monthlyRent = new Decimal('1234.56');
       const currentValue = new Decimal('456789.12');
-      const yield = calculateYield(monthlyRent, currentValue);
+      const yieldPercent = calculateYield(monthlyRent, currentValue);
 
       // (1234.56 * 12) / 456789.12 * 100 ≈ 3.244%
-      expect(yield).toBeCloseTo(3.244, 2);
+      expect(yieldPercent).toBeCloseTo(3.244, 2);
     });
   });
 
@@ -129,8 +129,8 @@ describe('property-service', () => {
         valuationMethod: 'MANUAL',
       };
 
-      const yield = getAssetAnnualYield(asset);
-      expect(yield).toBeUndefined();
+      const yieldPercent = getAssetAnnualYield(asset);
+      expect(yieldPercent).toBeUndefined();
     });
 
     it('should return undefined for rental with no monthly rent', () => {
@@ -149,8 +149,8 @@ describe('property-service', () => {
         },
       };
 
-      const yield = getAssetAnnualYield(asset);
-      expect(yield).toBe(0);
+      const yieldPercent = getAssetAnnualYield(asset);
+      expect(yieldPercent).toBe(0);
     });
 
     it('should calculate yield for rental asset with Decimal monthlyRent', () => {
@@ -169,8 +169,8 @@ describe('property-service', () => {
         },
       };
 
-      const yield = getAssetAnnualYield(asset);
-      expect(yield).toBe(4.8);
+      const yieldPercent = getAssetAnnualYield(asset);
+      expect(yieldPercent).toBe(4.8);
     });
 
     it('should calculate yield for rental asset with string monthlyRent', () => {
@@ -189,8 +189,8 @@ describe('property-service', () => {
         },
       };
 
-      const yield = getAssetAnnualYield(asset);
-      expect(yield).toBe(4.8);
+      const yieldPercent = getAssetAnnualYield(asset);
+      expect(yieldPercent).toBe(4.8);
     });
 
     it('should return undefined for zero current price', () => {
@@ -209,8 +209,8 @@ describe('property-service', () => {
         },
       };
 
-      const yield = getAssetAnnualYield(asset);
-      expect(yield).toBeUndefined();
+      const yieldPercent = getAssetAnnualYield(asset);
+      expect(yieldPercent).toBeUndefined();
     });
 
     it('should return undefined for undefined current price', () => {
@@ -228,8 +228,8 @@ describe('property-service', () => {
         },
       };
 
-      const yield = getAssetAnnualYield(asset);
-      expect(yield).toBeUndefined();
+      const yieldPercent = getAssetAnnualYield(asset);
+      expect(yieldPercent).toBeUndefined();
     });
   });
 
@@ -439,9 +439,9 @@ describe('property-service', () => {
     it('should calculate yield with extreme values', () => {
       const monthlyRent = new Decimal('0.01');
       const currentValue = new Decimal('10000000');
-      const yield = calculateYield(monthlyRent, currentValue);
+      const yieldPercent = calculateYield(monthlyRent, currentValue);
 
-      expect(yield).toBeCloseTo(0.0012, 4);
+      expect(yieldPercent).toBeCloseTo(0.0012, 4);
     });
   });
 });

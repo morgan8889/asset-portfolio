@@ -8,7 +8,7 @@
  * @feature 011-export-functionality
  */
 
-import type { PortfolioId } from '@/types/portfolio';
+// Use string type for portfolio IDs (matches Portfolio.id field type)
 
 // ============================================================================
 // Core Types
@@ -34,7 +34,7 @@ export type ExportFormat = 'pdf' | 'csv';
  */
 export interface ReportConfig {
   type: ReportType;
-  portfolioId: PortfolioId;
+  portfolioId: string;
   dateRange: DateRangePreset;
   format: ExportFormat;
   filename?: string;
@@ -141,7 +141,7 @@ export interface IExportService {
    * @throws Error if portfolio not found or generation fails
    */
   generatePerformancePdf(
-    portfolioId: PortfolioId,
+    portfolioId: string,
     dateRange: DateRangePreset,
     onProgress?: (progress: ExportProgress) => void
   ): Promise<void>;
@@ -155,7 +155,7 @@ export interface IExportService {
    * @throws Error if portfolio not found or no transactions in range
    */
   exportTransactionsCsv(
-    portfolioId: PortfolioId,
+    portfolioId: string,
     dateRange: DateRangePreset,
     onProgress?: (progress: ExportProgress) => void
   ): Promise<void>;
@@ -168,7 +168,7 @@ export interface IExportService {
    * @throws Error if portfolio not found or no holdings
    */
   exportHoldingsCsv(
-    portfolioId: PortfolioId,
+    portfolioId: string,
     onProgress?: (progress: ExportProgress) => void
   ): Promise<void>;
 
@@ -180,7 +180,7 @@ export interface IExportService {
    * @returns Formatted transaction rows
    */
   prepareTransactionData(
-    portfolioId: PortfolioId,
+    portfolioId: string,
     dateRange: DateRangePreset
   ): Promise<TransactionExportRow[]>;
 
@@ -191,7 +191,7 @@ export interface IExportService {
    * @returns Formatted holding rows
    */
   prepareHoldingsData(
-    portfolioId: PortfolioId
+    portfolioId: string
   ): Promise<HoldingExportRow[]>;
 
   /**
@@ -202,7 +202,7 @@ export interface IExportService {
    * @returns Report data structure
    */
   preparePerformanceData(
-    portfolioId: PortfolioId,
+    portfolioId: string,
     dateRange: DateRangePreset
   ): Promise<PerformanceReportData>;
 }

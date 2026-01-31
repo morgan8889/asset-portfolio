@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Asset } from '@/types/asset';
-import { usePortfolioStore } from '@/lib/stores';
+import { useAssetStore } from '@/lib/stores';
 
 const formSchema = z.object({
   price: z
@@ -42,7 +42,7 @@ export function ManualPriceUpdateDialog({
   onOpenChange,
 }: ManualPriceUpdateDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const updateAsset = usePortfolioStore((state) => state.updateAsset);
+  const updateAsset = useAssetStore((state) => state.updateAsset);
 
   const {
     register,

@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Asset, Region } from '@/types/asset';
-import { usePortfolioStore } from '@/lib/stores';
+import { useAssetStore } from '@/lib/stores';
 import { inferRegion } from '@/lib/utils/region-inference';
 import { Globe2 } from 'lucide-react';
 
@@ -71,7 +71,7 @@ export function RegionOverrideDialog({
   onOpenChange,
 }: RegionOverrideDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const updateAsset = usePortfolioStore((state) => state.updateAsset);
+  const updateAsset = useAssetStore((state) => state.updateAsset);
 
   // Get inferred region for comparison
   const inferredRegion = inferRegion(asset.symbol, asset.exchange);

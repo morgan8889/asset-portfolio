@@ -26,7 +26,7 @@ import {
   usePriceStore,
 } from '@/lib/stores';
 import { useLivePriceMetrics, LiveHolding } from '@/hooks';
-import { WidgetId, CategoryAllocation } from '@/types/dashboard';
+import { WidgetId, CategoryAllocation, RGLLayout } from '@/types/dashboard';
 import { Holding, Asset } from '@/types';
 import { cn } from '@/lib/utils';
 import { WidgetWrapperRGL } from './widget-wrapper-rgl';
@@ -206,12 +206,12 @@ const DashboardContainerRGLComponent = ({
       const md = allLayouts?.md || [];
       const sm = allLayouts?.sm || [];
 
-      // Persist changes
+      // Persist changes (cast to RGLLayout[] as react-grid-layout uses string for 'i')
       setRGLLayouts(
         {
-          lg,
-          md,
-          sm,
+          lg: lg as RGLLayout[],
+          md: md as RGLLayout[],
+          sm: sm as RGLLayout[],
         },
         newOrder
       );
@@ -344,7 +344,7 @@ const DashboardContainerRGLComponent = ({
   }
 
   return (
-    <div ref={containerRef} className="space-y-4">
+    <div ref={containerRef as React.LegacyRef<HTMLDivElement>} className="space-y-4">
       <StaleDataBanner lastUpdated={null} thresholdMinutes={15} />
 
       {priceLoading && (
@@ -357,19 +357,21 @@ const DashboardContainerRGLComponent = ({
       {/* Only render grid when width is available (v2.x requirement) */}
       {width > 0 && (
         <ResponsiveGridLayout
-          layouts={layouts}
-          breakpoints={{ lg: 1024, md: 768, sm: 0 }}
-          cols={{ lg: config.gridColumns, md: 2, sm: 1 }}
-          rowHeight={120}
-          width={width}
-          isDraggable={!disableDragDrop}
-          isResizable={!disableDragDrop}
-          compactType={config.densePacking ? 'vertical' : null}
-          onLayoutChange={handleLayoutChange}
-          onResizeStop={handleResizeStop}
-          margin={[16, 16]}
-          draggableHandle=".drag-handle"
-          className={cn('transition-all duration-300')}
+          {...({
+            layouts,
+            breakpoints: { lg: 1024, md: 768, sm: 0 },
+            cols: { lg: config.gridColumns, md: 2, sm: 1 },
+            rowHeight: 120,
+            width,
+            isDraggable: !disableDragDrop,
+            isResizable: !disableDragDrop,
+            compactType: config.densePacking ? 'vertical' : null,
+            onLayoutChange: handleLayoutChange,
+            onResizeStop: handleResizeStop,
+            margin: [16, 16],
+            draggableHandle: '.drag-handle',
+            className: cn('transition-all duration-300'),
+          } as any)}
         >
           {visibleWidgets.map((widgetId) => (
             <div key={widgetId} className="h-full">
