@@ -31,10 +31,11 @@ export type LayoutMode = 'grid' | 'stacking';
 export type GridColumns = 2 | 3 | 4;
 
 /**
- * Widget column span (1 = normal, 2 = double-width).
+ * Widget column span (1 = normal, 2 = double-width, 3 = triple-width, 4 = full-width).
  * Spans are clamped to available columns on smaller screens.
+ * Most widgets support 1-2 columns, growth-chart supports 1-4 columns.
  */
-export type WidgetSpan = 1 | 2;
+export type WidgetSpan = 1 | 2 | 3 | 4;
 
 /**
  * Widget row span (1 = normal, 2 = double, 3 = triple, 4 = quadruple height).
@@ -49,7 +50,7 @@ export type WidgetRowSpan = 1 | 2 | 3 | 4;
 export interface WidgetSizeConstraints {
   /** Minimum column span */
   minW: WidgetSpan;
-  /** Maximum column span */
+  /** Maximum column span (growth-chart: 4, others: 2) */
   maxW: WidgetSpan;
   /** Minimum row span */
   minH: WidgetRowSpan;
@@ -67,7 +68,7 @@ export const WIDGET_SIZE_CONSTRAINTS: Record<WidgetId, WidgetSizeConstraints> =
     'gain-loss': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
     'day-change': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
     'category-breakdown': { minW: 1, maxW: 2, minH: 2, maxH: 4 },
-    'growth-chart': { minW: 2, maxW: 2, minH: 2, maxH: 4 },
+    'growth-chart': { minW: 2, maxW: 4, minH: 2, maxH: 4 }, // Allows 2-4 columns for full-width charts
     'top-performers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
     'biggest-losers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
     'recent-activity': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
@@ -485,7 +486,12 @@ export const GridColumnsSchema = z.union([
   z.literal(4),
 ]);
 
-export const WidgetSpanSchema = z.union([z.literal(1), z.literal(2)]);
+export const WidgetSpanSchema = z.union([
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+]);
 
 export const WidgetSpansSchema = z.record(WidgetIdSchema, WidgetSpanSchema);
 
@@ -510,10 +516,9 @@ export const WidgetSettingsSchema = z.object({
 });
 
 /**
- * Version 1 schema for migration validation.
+ * Base schema fields shared across all dashboard config versions.
  */
-export const DashboardConfigurationSchemaV1 = z.object({
-  version: z.literal(1),
+const baseConfigFields = {
   widgetOrder: z
     .array(WidgetIdSchema)
     .min(1, 'At least one widget must be in the order')
@@ -537,6 +542,14 @@ export const DashboardConfigurationSchemaV1 = z.object({
     .min(1, 'Must show at least 1 performer')
     .max(10, 'Cannot show more than 10 performers'),
   lastUpdated: z.string().datetime('Must be a valid ISO 8601 datetime'),
+};
+
+/**
+ * Version 1 schema for migration validation.
+ */
+export const DashboardConfigurationSchemaV1 = z.object({
+  version: z.literal(1),
+  ...baseConfigFields,
 });
 
 /**
@@ -545,29 +558,7 @@ export const DashboardConfigurationSchemaV1 = z.object({
  */
 export const DashboardConfigurationSchemaV2 = z.object({
   version: z.literal(2),
-  widgetOrder: z
-    .array(WidgetIdSchema)
-    .min(1, 'At least one widget must be in the order')
-    .refine((arr) => new Set(arr).size === arr.length, {
-      message: 'Widget order must not contain duplicates',
-    }),
-  widgetVisibility: z.object({
-    'total-value': z.boolean(),
-    'gain-loss': z.boolean(),
-    'day-change': z.boolean(),
-    'category-breakdown': z.boolean(),
-    'growth-chart': z.boolean(),
-    'top-performers': z.boolean(),
-    'biggest-losers': z.boolean(),
-    'recent-activity': z.boolean(),
-  }),
-  timePeriod: TimePeriodSchema,
-  performerCount: z
-    .number()
-    .int('Performer count must be an integer')
-    .min(1, 'Must show at least 1 performer')
-    .max(10, 'Cannot show more than 10 performers'),
-  lastUpdated: z.string().datetime('Must be a valid ISO 8601 datetime'),
+  ...baseConfigFields,
   layoutMode: LayoutModeSchema,
   gridColumns: GridColumnsSchema,
   widgetSpans: z
@@ -582,29 +573,7 @@ export const DashboardConfigurationSchemaV2 = z.object({
  */
 export const DashboardConfigurationSchemaV3 = z.object({
   version: z.literal(3),
-  widgetOrder: z
-    .array(WidgetIdSchema)
-    .min(1, 'At least one widget must be in the order')
-    .refine((arr) => new Set(arr).size === arr.length, {
-      message: 'Widget order must not contain duplicates',
-    }),
-  widgetVisibility: z.object({
-    'total-value': z.boolean(),
-    'gain-loss': z.boolean(),
-    'day-change': z.boolean(),
-    'category-breakdown': z.boolean(),
-    'growth-chart': z.boolean(),
-    'top-performers': z.boolean(),
-    'biggest-losers': z.boolean(),
-    'recent-activity': z.boolean(),
-  }),
-  timePeriod: TimePeriodSchema,
-  performerCount: z
-    .number()
-    .int('Performer count must be an integer')
-    .min(1, 'Must show at least 1 performer')
-    .max(10, 'Cannot show more than 10 performers'),
-  lastUpdated: z.string().datetime('Must be a valid ISO 8601 datetime'),
+  ...baseConfigFields,
   layoutMode: LayoutModeSchema,
   gridColumns: GridColumnsSchema,
   widgetSpans: z
@@ -649,29 +618,7 @@ export const RGLLayoutsSchema = z.object({
  */
 export const DashboardConfigurationSchema = z.object({
   version: z.literal(4),
-  widgetOrder: z
-    .array(WidgetIdSchema)
-    .min(1, 'At least one widget must be in the order')
-    .refine((arr) => new Set(arr).size === arr.length, {
-      message: 'Widget order must not contain duplicates',
-    }),
-  widgetVisibility: z.object({
-    'total-value': z.boolean(),
-    'gain-loss': z.boolean(),
-    'day-change': z.boolean(),
-    'category-breakdown': z.boolean(),
-    'growth-chart': z.boolean(),
-    'top-performers': z.boolean(),
-    'biggest-losers': z.boolean(),
-    'recent-activity': z.boolean(),
-  }),
-  timePeriod: TimePeriodSchema,
-  performerCount: z
-    .number()
-    .int('Performer count must be an integer')
-    .min(1, 'Must show at least 1 performer')
-    .max(10, 'Cannot show more than 10 performers'),
-  lastUpdated: z.string().datetime('Must be a valid ISO 8601 datetime'),
+  ...baseConfigFields,
   layoutMode: LayoutModeSchema,
   gridColumns: GridColumnsSchema,
   widgetSpans: z

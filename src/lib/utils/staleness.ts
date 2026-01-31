@@ -142,3 +142,27 @@ export function getStaleThreshold(refreshInterval: RefreshInterval): number {
 
   return intervalMs * 2;
 }
+
+/**
+ * Recalculates staleness for all prices in a map.
+ * Returns a new map with updated staleness values.
+ *
+ * @param prices - Map of symbol to price data with timestamp and staleness
+ * @param refreshInterval - The user's configured refresh interval
+ * @returns New map with recalculated staleness
+ */
+export function recalculatePriceStaleness<T extends { timestamp: Date; staleness: StalenessLevel }>(
+  prices: Map<string, T>,
+  refreshInterval: RefreshInterval
+): Map<string, T> {
+  const updated = new Map<string, T>();
+
+  prices.forEach((data, symbol) => {
+    updated.set(symbol, {
+      ...data,
+      staleness: calculateStaleness(data.timestamp, refreshInterval),
+    });
+  });
+
+  return updated;
+}

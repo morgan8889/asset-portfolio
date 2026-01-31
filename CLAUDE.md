@@ -165,6 +165,79 @@ const taxAmount = total.mul(taxRate);
 - Input validation with Zod schemas
 - XSS protection via React's default escaping
 
+## Code Quality & Simplification Initiative
+
+A comprehensive codebase refactoring effort to improve maintainability, type safety, and reduce complexity.
+
+### Documentation
+See `docs/planning/` for detailed analysis and implementation tracking:
+- **codebase-simplification-analysis.md**: Complete analysis of 261 TypeScript/TSX files
+- **README.md**: Initiative overview, phases, and metrics
+- **TODO.md**: 5-phase task breakdown with progress tracking
+
+### Completed Improvements (Phase 2)
+
+**Price Fetching Deduplication** (~500 lines removed)
+- Created shared `src/lib/services/price-sources.ts` module (344 lines)
+- Refactored API routes to use shared logic:
+  - `src/app/api/prices/[symbol]/route.ts` (232 lines removed)
+  - `src/app/api/prices/batch/route.ts` (284 lines removed)
+- Unified retry logic, caching, and error handling
+
+**Code Cleanup**
+- Removed deprecated widget wrappers (top-performers, biggest-losers)
+- Consolidated Sharpe ratio calculations
+- Standardized console logging in migrations
+
+### Price Sources Module
+
+The `price-sources.ts` module provides centralized price fetching:
+
+```typescript
+// Shared types
+export interface PriceMetadata {
+  currency: string;
+  marketState?: string;
+  change?: number;
+  changePercent?: number;
+}
+
+export interface PriceResult {
+  price: number;
+  metadata?: PriceMetadata;
+}
+
+// Price source registry
+export const priceSources: PriceSource[] = [
+  yahooFinanceSource,
+  coinGeckoSource,
+  alphaVantageSource,
+];
+
+// Main function - tries all sources with retries
+export async function fetchPriceWithRetry(
+  symbol: string
+): Promise<PriceResult>;
+```
+
+**Benefits:**
+- Single source of truth for price fetching
+- Consistent retry and timeout handling
+- Centralized caching logic
+- Easier testing and maintenance
+
+### Ongoing Work
+See `TODO.md` Code Quality & Simplification section for remaining phases:
+- Phase 1: Type Safety improvements
+- Phase 3: Complexity reduction (split large files)
+- Phase 4: Consistency (logging, patterns)
+- Phase 5: Cleanup (dead code, unused exports)
+
+**Target Metrics:**
+- 87% reduction in duplicated code ✅ (Phase 2 complete)
+- 87% reduction in `any` usage (in progress)
+- 75% reduction in files >500 lines (in progress)
+
 ## CSV Transaction Import
 
 The CSV import feature allows bulk importing transactions from CSV files with auto-detection and validation.
@@ -214,16 +287,40 @@ npm run test:e2e -- tests/e2e/csv-import.spec.ts
 
 ## E2E Testing Notes
 
-Playwright tests cover key user workflows:
-- `portfolio-dashboard.spec.ts`: Dashboard functionality
-- `loading-state-regression.spec.ts`: Loading state completion verification
-- `mock-data-flow.spec.ts`: Mock data generation and dashboard display
-- `transaction-management.spec.ts`: Adding/editing transactions
-- `holdings-table.spec.ts`: Holdings display and filtering
-- `charts-visualization.spec.ts`: Chart interactions
-- `csv-import.spec.ts`: CSV transaction import workflow
+Playwright tests cover comprehensive user workflows (31 test files):
+
+**Dashboard & Layout (14 tests):**
+- dashboard-rgl.spec.ts, dashboard-configuration.spec.ts
+- dashboard-dense-packing.spec.ts, dashboard-display.spec.ts
+- dashboard-performance.spec.ts, dashboard-performers.spec.ts
+- dashboard-responsive.spec.ts, dashboard-time-period.spec.ts
+- dashboard-chart.spec.ts, dashboard-settings-viewport.spec.ts
+- portfolio-dashboard.spec.ts, loading-state-regression.spec.ts
+- mock-data-flow.spec.ts, navigation-bug.spec.ts
+
+**Holdings & Transactions (6 tests):**
+- holdings-table.spec.ts, holdings-performance.spec.ts
+- holdings-data-loading.spec.ts, transaction-management.spec.ts
+- property-addition.spec.ts, real-estate-filter.spec.ts
+
+**Analysis & Pricing (5 tests):**
+- analysis.spec.ts, analysis-manual-price.spec.ts
+- analysis-region-override.spec.ts, price-refresh.spec.ts
+- performance-analytics.spec.ts
+
+**Charts & Visualization (2 tests):**
+- charts-visualization.spec.ts, category-breakdown-pie.spec.ts
+
+**Import/Export (2 tests):**
+- csv-import.spec.ts, export-reports.spec.ts
+
+**Settings & Allocation (2 tests):**
+- settings-verification.spec.ts, allocation-responsive-layout.spec.ts
 
 Tests run against the dev server by default. The Playwright config automatically starts the dev server before tests.
+
+Run with: `npm run test:e2e` (auto-starts dev server)
+Run specific: `npx playwright test tests/e2e/[name].spec.ts`
 
 ## Verification Patterns
 
@@ -295,23 +392,53 @@ Make change → Tell user "done" → User finds visual issue → Repeat
 - Fallback to manual price entry if APIs fail
 
 ## Active Technologies
-- TypeScript 5.3 with Next.js 14.2 (App Router) + React 18, Zustand 4.5, Recharts 2.15, shadcn/ui, Tailwind CSS, dnd-kit, papaparse (CSV parsing), Zod (validation), decimal.js (financial precision)
-- Browser IndexedDB via Dexie.js 3.2 (privacy-first, local-only)
-- TypeScript 5.3+ with Next.js 14.2 (App Router) + @dnd-kit/core 6.3+, @dnd-kit/sortable 10.0+, Zustand 4.5+, Zod (003-dashboard-stacking-layout)
-- IndexedDB via Dexie.js (userSettings table) (003-dashboard-stacking-layout)
-- TypeScript 5.3 (strict mode) + Next.js 14.2, React 18, Tailwind CSS, dnd-kit, Zustand 4.5 (004-grid-dense-packing)
-- IndexedDB via Dexie.js (privacy-first, browser-only) (004-grid-dense-packing)
-- TypeScript 5.3+ with Next.js 14.2 App Router + React 18, Zustand 4.5, Dexie.js 3.2, decimal.js, date-fns (005-live-market-data)
-- Browser IndexedDB via Dexie.js (userSettings table for preferences) (005-live-market-data)
-- TypeScript 5.3 with Next.js 14.2 (App Router) + Recharts 2.15, Dexie.js 3.2, decimal.js, date-fns, Zod, Zustand 4.5 (006-performance-analytics)
-- IndexedDB via Dexie.js (new `performanceSnapshots` table required) (006-performance-analytics)
-- TypeScript 5.3 with Next.js 14.2 (App Router) + React 18, jsPDF + html2canvas (PDF), PapaParse (CSV), Recharts 2.15, decimal.js, date-fns (011-export-functionality)
-- Browser IndexedDB via Dexie.js (read-only for export) (011-export-functionality)
+
+**Core Stack:**
+- TypeScript 5.3 with Next.js 14.2 (App Router) + React 18
+- Zustand 4.5 for state management
+- Dexie.js 3.2 for IndexedDB persistence (privacy-first, browser-only)
+- shadcn/ui + Tailwind CSS for UI components
+- Zod for validation, decimal.js for financial precision calculations
+
+**UI/UX:**
+- Recharts 2.15 for interactive charts
+- @dnd-kit/core 6.3+ and @dnd-kit/sortable 10.0+ for drag-drop
+- react-grid-layout for responsive dashboard layouts
+- react-window for virtual scrolling of large lists
+
+**Data Processing:**
+- PapaParse 5.4 for CSV parsing and import
+- date-fns for date manipulation
+- jsPDF 4.0 + html2canvas 1.4 for PDF export generation
+
+**Development:**
+- Vitest for unit testing
+- Playwright for E2E testing
+- ESLint + Prettier for code quality
 
 ## Recent Changes
-- 001-csv-transaction-import: Added papaparse for CSV parsing, date-parser utility, CSV import dialog and workflow
-- 002-portfolio-dashboard: Added Recharts 2.15, dnd-kit for drag-drop dashboard widgets
-- 005-live-market-data: Added live market data with UK market support, price polling, staleness indicators, and offline resilience
+
+**Foundation Features (Early 2025):**
+- 001-csv-transaction-import: CSV parsing with PapaParse, date-parser, import workflow
+- 002-portfolio-dashboard: Recharts 2.15, dnd-kit drag-drop widgets
+
+**Dashboard Enhancements:**
+- 003-dashboard-stacking-layout: Widget stacking with dnd-kit
+- 004-grid-dense-packing: Optimized grid layout with dense packing
+
+**Market Data & Analytics:**
+- 005-live-market-data: Real-time prices, UK market support, staleness detection
+- 006-performance-analytics: Time-weighted returns, performance tracking
+- 007-performance-3yr-view: Extended 3-year analysis
+
+**Advanced Features:**
+- 008-financial-analysis: Financial metrics and analysis tools
+- 009-holdings-property: Real estate holdings with rental yield calculations
+- 010-allocation-planning: Asset allocation with rebalancing
+
+**Reporting & Code Quality:**
+- 011-export-functionality: PDF/CSV export with jsPDF and html2canvas
+- **Code Simplification**: Extracted price-sources.ts, removed 500+ duplicate lines, cleaned up deprecated code (January 2026)
 
 ## Live Market Data Feature (005)
 
