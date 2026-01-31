@@ -22,7 +22,6 @@ import {
   calculateCumulativeReturn,
   calculateDayChange,
   calculateVolatility,
-  calculateSharpeRatio,
   createSubPeriods,
 } from '../twr-calculator';
 import { CashFlowEvent } from '@/types/performance';
@@ -376,24 +375,6 @@ describe('TWR Calculator', () => {
     });
   });
 
-  describe('calculateSharpeRatio', () => {
-    it('should calculate positive Sharpe ratio', () => {
-      const result = calculateSharpeRatio(15, 10, 5);
-      // (15 - 5) / 10 = 1.0
-      expect(result).toBe(1);
-    });
-
-    it('should calculate negative Sharpe ratio', () => {
-      const result = calculateSharpeRatio(3, 10, 5);
-      // (3 - 5) / 10 = -0.2
-      expect(result).toBe(-0.2);
-    });
-
-    it('should return 0 for zero volatility', () => {
-      const result = calculateSharpeRatio(15, 0, 5);
-      expect(result).toBe(0);
-    });
-  });
 
   describe('Decimal precision', () => {
     it('should maintain precision for large values', () => {

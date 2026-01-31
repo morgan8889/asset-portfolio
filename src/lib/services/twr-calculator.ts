@@ -439,21 +439,3 @@ export function calculateVolatility(dailyReturns: number[]): number {
   return stdDev * Math.sqrt(TRADING_DAYS_PER_YEAR) * 100;
 }
 
-/**
- * Calculate Sharpe Ratio.
- *
- * Sharpe = (Portfolio Return - Risk Free Rate) / Portfolio Volatility
- *
- * @param annualizedReturn Annualized portfolio return (percentage)
- * @param volatility Annualized volatility (percentage)
- * @param riskFreeRate Risk-free rate (percentage), default 5%
- * @returns Sharpe ratio as number
- */
-export function calculateSharpeRatio(
-  annualizedReturn: number,
-  volatility: number,
-  riskFreeRate: number = 5
-): number {
-  if (volatility === 0) return 0;
-  return (annualizedReturn - riskFreeRate) / volatility;
-}

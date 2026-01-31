@@ -32,9 +32,9 @@ import { db } from '@/lib/db/schema';
 import { getSnapshots, getAggregatedSnapshots } from './snapshot-service';
 import {
   calculateVolatility,
-  calculateSharpeRatio,
   annualizeReturn,
 } from './twr-calculator';
+import { calculateSharpeRatio } from './metrics-service';
 
 // =============================================================================
 // Summary Statistics
@@ -84,7 +84,7 @@ export async function getSummary(
 
   const volatility = calculateVolatility(dailyReturns);
   const twrReturn = lastSnapshot.twrReturn.toNumber() * 100;
-  const sharpeRatio = calculateSharpeRatio(twrReturn, volatility);
+  const sharpeRatio = calculateSharpeRatio(dailyReturns);
 
   return {
     portfolioId,
