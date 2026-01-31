@@ -124,79 +124,62 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     [setLayoutMode]
   );
 
+  // Shared helper to regenerate RGL layouts after config updates
+  const regenerateRGLLayouts = useCallback(
+    async (configUpdates: Partial<typeof config>) => {
+      if (!config?.useReactGridLayout) return;
+      const newLayouts = generateRGLLayoutsFromConfig({
+        ...config,
+        ...configUpdates,
+      });
+      await setRGLLayouts(newLayouts, config.widgetOrder);
+    },
+    [config, setRGLLayouts]
+  );
+
   const handleGridColumnsChange = useCallback(
     async (columns: string) => {
       const newColumns = Number(columns) as GridColumns;
       await setGridColumns(newColumns);
-
-      // Regenerate RGL layouts to fit new column count
-      // Note: This results in two IndexedDB writes (setGridColumns + setRGLLayouts).
-      // Future optimization: Add batch update support to dashboardConfigService.
-      if (config && config.useReactGridLayout) {
-        const newLayouts = generateRGLLayoutsFromConfig({
-          ...config,
-          gridColumns: newColumns,
-        });
-        await setRGLLayouts(newLayouts, config.widgetOrder);
-      }
+      await regenerateRGLLayouts({ gridColumns: newColumns });
     },
-    [config, setGridColumns, setRGLLayouts]
+    [setGridColumns, regenerateRGLLayouts]
   );
 
   const handleWidgetSpanChange = useCallback(
     async (widgetId: WidgetId, span: string) => {
       const newSpan = Number(span) as WidgetSpan;
       await setWidgetSpan(widgetId, newSpan);
-
-      // Regenerate RGL layouts to reflect new span
-      if (config && config.useReactGridLayout) {
-        const newLayouts = generateRGLLayoutsFromConfig({
-          ...config,
-          widgetSpans: {
-            ...config.widgetSpans,
-            [widgetId]: newSpan,
-          },
-        });
-        await setRGLLayouts(newLayouts, config.widgetOrder);
-      }
+      await regenerateRGLLayouts({
+        widgetSpans: {
+          ...config?.widgetSpans,
+          [widgetId]: newSpan,
+        },
+      });
     },
-    [config, setWidgetSpan, setRGLLayouts]
+    [config?.widgetSpans, setWidgetSpan, regenerateRGLLayouts]
   );
 
   const handleDensePackingChange = useCallback(
     async (enabled: boolean) => {
       await setDensePacking(enabled);
-
-      // Regenerate RGL layouts to apply new packing mode
-      if (config && config.useReactGridLayout) {
-        const newLayouts = generateRGLLayoutsFromConfig({
-          ...config,
-          densePacking: enabled,
-        });
-        await setRGLLayouts(newLayouts, config.widgetOrder);
-      }
+      await regenerateRGLLayouts({ densePacking: enabled });
     },
-    [config, setDensePacking, setRGLLayouts]
+    [setDensePacking, regenerateRGLLayouts]
   );
 
   const handleWidgetRowSpanChange = useCallback(
     async (widgetId: WidgetId, rowSpan: string) => {
       const newRowSpan = Number(rowSpan) as WidgetRowSpan;
       await setWidgetRowSpan(widgetId, newRowSpan);
-
-      // Regenerate RGL layouts to reflect new row span
-      if (config && config.useReactGridLayout) {
-        const newLayouts = generateRGLLayoutsFromConfig({
-          ...config,
-          widgetRowSpans: {
-            ...config.widgetRowSpans,
-            [widgetId]: newRowSpan,
-          },
-        });
-        await setRGLLayouts(newLayouts, config.widgetOrder);
-      }
+      await regenerateRGLLayouts({
+        widgetRowSpans: {
+          ...config?.widgetRowSpans,
+          [widgetId]: newRowSpan,
+        },
+      });
     },
-    [config, setWidgetRowSpan, setRGLLayouts]
+    [config?.widgetRowSpans, setWidgetRowSpan, regenerateRGLLayouts]
   );
 
   const handleUseReactGridLayoutChange = useCallback(
@@ -233,7 +216,7 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
       }}
     >
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
-      <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-md">
+      <DialogContent className="flex max-h-[85vh] w-full flex-col gap-0 sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Dashboard Settings</DialogTitle>
           <DialogDescription>
@@ -419,6 +402,13 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
                         <SelectContent>
                           <SelectItem value="1">1x</SelectItem>
                           <SelectItem value="2">2x</SelectItem>
+                          {/* Growth chart can span 3-4 columns on 4-column grid */}
+                          {widgetId === 'growth-chart' && (
+                            <>
+                              <SelectItem value="3">3x</SelectItem>
+                              <SelectItem value="4">4x</SelectItem>
+                            </>
+                          )}
                         </SelectContent>
                       </Select>
                     )}
