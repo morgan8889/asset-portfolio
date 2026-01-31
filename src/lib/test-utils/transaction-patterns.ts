@@ -14,6 +14,47 @@ export interface TransactionPattern {
   quantity?: Decimal;
 }
 
+/**
+ * Generator function that yields dates at regular intervals.
+ *
+ * Efficiently iterates through a date range without storing all dates in memory.
+ * Useful for generating periodic transactions (DCA, dividends, rental income).
+ *
+ * @param startDate - Starting date for iteration
+ * @param endDate - Ending date (exclusive)
+ * @param intervalMonths - Number of months between each yielded date
+ * @param useStartOfMonth - Whether to normalize dates to start of month
+ * @yields Dates at the specified interval
+ *
+ * @example
+ * // Generate monthly dates
+ * for (const date of iterateDateRange(start, end, 1, true)) {
+ *   // Process monthly date
+ * }
+ *
+ * @example
+ * // Generate quarterly dates
+ * for (const date of iterateDateRange(start, end, 3)) {
+ *   // Process quarterly date
+ * }
+ */
+function* iterateDateRange(
+  startDate: Date,
+  endDate: Date,
+  intervalMonths: number,
+  useStartOfMonth = false
+): Generator<Date> {
+  let currentDate = addMonths(startDate, intervalMonths);
+  if (useStartOfMonth) {
+    currentDate = startOfMonth(currentDate);
+  }
+
+  while (isAfter(endDate, currentDate)) {
+    yield currentDate;
+    currentDate = addMonths(currentDate, intervalMonths);
+  }
+}
+
 /** Create a base transaction object with common fields */
 function createTransaction(
   portfolioId: string,
@@ -95,9 +136,8 @@ export function generateDCATransactions(
   const transactions: Transaction[] = [];
   const increment = frequency === 'monthly' ? 1 : 0.5;
   const label = frequency === 'monthly' ? 'Monthly' : 'Biweekly';
-  let currentDate = startOfMonth(addMonths(startDate, 1));
 
-  while (isAfter(endDate, currentDate)) {
+  for (const currentDate of iterateDateRange(startDate, endDate, increment, true)) {
     const price = findClosestPrice(currentDate, priceHistory);
     if (price) {
       const quantity = monthlyInvestment.div(price);
@@ -113,7 +153,6 @@ export function generateDCATransactions(
         )
       );
     }
-    currentDate = addMonths(currentDate, increment);
   }
 
   return transactions;
@@ -135,12 +174,10 @@ export function generateDividendTransactions(
   const transactions: Transaction[] = [];
   const quarterlyYield = annualDividendYield / 4;
   let holdingQuantity = currentQuantity;
-  let currentDate = addMonths(startDate, 3);
 
-  while (isAfter(endDate, currentDate)) {
+  for (const currentDate of iterateDateRange(startDate, endDate, 3)) {
     const price = findClosestPrice(currentDate, priceHistory);
     if (!price) {
-      currentDate = addMonths(currentDate, 3);
       continue;
     }
 
@@ -177,8 +214,6 @@ export function generateDividendTransactions(
         notes: `Quarterly dividend payment - $${totalDividend.toFixed(2)}`,
       });
     }
-
-    currentDate = addMonths(currentDate, 3);
   }
 
   return transactions;
@@ -481,9 +516,8 @@ export function generateRentalIncomeTransactions(
   monthlyRent: Decimal
 ): Transaction[] {
   const transactions: Transaction[] = [];
-  let currentDate = startOfMonth(addMonths(startDate, 1));
 
-  while (isAfter(endDate, currentDate)) {
+  for (const currentDate of iterateDateRange(startDate, endDate, 1, true)) {
     transactions.push({
       id: generateTransactionId(),
       portfolioId,
@@ -497,8 +531,6 @@ export function generateRentalIncomeTransactions(
       currency: 'USD',
       notes: `Monthly rental income - $${monthlyRent.toFixed(2)}`,
     });
-
-    currentDate = addMonths(currentDate, 1);
   }
 
   return transactions;
