@@ -22,6 +22,7 @@ import {
   DEFAULT_DASHBOARD_CONFIG,
 } from '@/types/dashboard';
 import { dashboardConfigService } from '@/lib/services/dashboard-config';
+import { logger } from '@/lib/utils/logger';
 
 interface DashboardState {
   config: DashboardConfiguration | null;
@@ -69,7 +70,7 @@ async function optimisticUpdate<T extends keyof DashboardConfiguration>(
     await persistFn();
   } catch (error) {
     // Log the actual error for debugging while showing user-friendly message
-    console.error('Dashboard config update failed:', error);
+    logger.error('Dashboard config update failed:', error);
     const detailedMessage =
       error instanceof Error
         ? `${errorMessage}: ${error.message}`
@@ -236,7 +237,7 @@ export const useDashboardStore = create<DashboardState>()(
         try {
           await dashboardConfigService.setRGLLayouts(layouts, newOrder);
         } catch (error) {
-          console.error('Failed to save RGL layouts:', error);
+          logger.error('Failed to save RGL layouts:', error);
           set({ config, error: 'Failed to save layout changes' });
         }
       },
@@ -267,7 +268,7 @@ export const useDashboardStore = create<DashboardState>()(
         try {
           await dashboardConfigService.setUseReactGridLayout(enabled);
         } catch (error) {
-          console.error('Failed to toggle layout system:', error);
+          logger.error('Failed to toggle layout system:', error);
           set({ config, error: 'Failed to toggle layout system' });
         }
       },

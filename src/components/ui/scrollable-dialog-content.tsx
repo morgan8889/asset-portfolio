@@ -63,7 +63,7 @@ export const ScrollableDialogContent = React.forwardRef<
   }, [checkScroll]);
 
   return (
-    <div className="relative flex-1">
+    <div className="relative flex min-h-0 flex-1 flex-col">
       {/* Top fade indicator */}
       <div
         className={cn(
@@ -76,7 +76,7 @@ export const ScrollableDialogContent = React.forwardRef<
       {/* Scrollable content */}
       <div
         ref={contentRef}
-        className={cn('flex-1 overflow-y-auto', className)}
+        className={cn('min-h-0 flex-1 overflow-y-auto', className)}
         {...props}
       >
         {children}

@@ -19,7 +19,10 @@ import {
   DEFAULT_PRICE_PREFERENCES,
   REFRESH_INTERVALS,
 } from '@/types/market';
-import { calculateStaleness } from '@/lib/utils/staleness';
+import {
+  calculateStaleness,
+  recalculatePriceStaleness,
+} from '@/lib/utils/staleness';
 import { convertPenceToPounds, getExchange } from '@/lib/utils/market-utils';
 import { getMarketState } from '@/lib/services/market-hours';
 import { logger } from '@/lib/utils/logger';
@@ -373,14 +376,10 @@ export const usePriceStore = create<PriceState>()(
         if (!get().isOnline) {
           logger.info('Offline: using cached prices');
           // Recalculate staleness for all cached prices
-          const prices = new Map(get().prices);
-          const refreshInterval = get().preferences.refreshInterval;
-          prices.forEach((data, symbol) => {
-            prices.set(symbol, {
-              ...data,
-              staleness: calculateStaleness(data.timestamp, refreshInterval),
-            });
-          });
+          const prices = recalculatePriceStaleness(
+            get().prices,
+            get().preferences.refreshInterval
+          );
           set({ prices });
           return;
         }
@@ -447,14 +446,10 @@ export const usePriceStore = create<PriceState>()(
 
           // Keep cached data available - don't clear prices on error
           // Recalculate staleness for existing cached data
-          const prices = new Map(get().prices);
-          const refreshInterval = get().preferences.refreshInterval;
-          prices.forEach((data, symbol) => {
-            prices.set(symbol, {
-              ...data,
-              staleness: calculateStaleness(data.timestamp, refreshInterval),
-            });
-          });
+          const prices = recalculatePriceStaleness(
+            get().prices,
+            get().preferences.refreshInterval
+          );
 
           set({ prices, loading: false, error: message });
           logger.error('Error fetching prices:', error);
@@ -536,17 +531,15 @@ export const usePriceStore = create<PriceState>()(
       },
 
       updateStaleness: () => {
-        const prices = new Map(get().prices);
+        const currentPrices = get().prices;
         const refreshInterval = get().preferences.refreshInterval;
-        let updated = false;
+        const prices = recalculatePriceStaleness(currentPrices, refreshInterval);
 
-        prices.forEach((data, symbol) => {
-          const freshStaleness = calculateStaleness(
-            data.timestamp,
-            refreshInterval
-          );
-          if (data.staleness !== freshStaleness) {
-            prices.set(symbol, { ...data, staleness: freshStaleness });
+        // Only update if staleness actually changed
+        let updated = false;
+        currentPrices.forEach((data, symbol) => {
+          const freshData = prices.get(symbol);
+          if (freshData && data.staleness !== freshData.staleness) {
             updated = true;
           }
         });
