@@ -30,7 +30,6 @@ const navigation = [
     name: 'Holdings',
     href: '/holdings',
     icon: Briefcase,
-    badge: 'coming-soon' as const,
   },
   {
     name: 'Transactions',
