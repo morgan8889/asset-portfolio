@@ -178,29 +178,261 @@ class ExportService implements IExportService {
     dateRange: DateRangePreset,
     onProgress?: (progress: ExportProgress) => void
   ): Promise<void> {
-    // To be implemented in US2
-    throw new Error('Not implemented');
+    try {
+      onProgress?.({
+        status: 'preparing',
+        progress: 10,
+        message: 'Preparing transaction data...',
+      });
+
+      // Prepare data
+      const transactions = await this.prepareTransactionData(
+        portfolioId,
+        dateRange
+      );
+
+      if (transactions.length === 0) {
+        throw new Error('No transactions found for the selected date range');
+      }
+
+      onProgress?.({
+        status: 'generating',
+        progress: 50,
+        message: 'Generating CSV...',
+      });
+
+      // Generate CSV using PapaParse
+      const Papa = (await import('papaparse')).default;
+      const csv = Papa.unparse(transactions, {
+        header: true,
+        escapeFormulae: true,
+      });
+
+      onProgress?.({
+        status: 'generating',
+        progress: 80,
+        message: 'Downloading file...',
+      });
+
+      // Download CSV
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      // Generate filename
+      const { db } = await import('@/lib/db');
+      const portfolio = await db.portfolios.get(portfolioId);
+      const filename = generateExportFilename(
+        'transactions',
+        portfolio?.name || 'Portfolio',
+        'csv'
+      );
+
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      onProgress?.({
+        status: 'complete',
+        progress: 100,
+        message: 'CSV generated successfully!',
+      });
+    } catch (error) {
+      onProgress?.({
+        status: 'error',
+        progress: 0,
+        error:
+          error instanceof Error ? error.message : 'Failed to generate CSV',
+      });
+      throw error;
+    }
   }
 
   async exportHoldingsCsv(
     portfolioId: string,
     onProgress?: (progress: ExportProgress) => void
   ): Promise<void> {
-    // To be implemented in US3
-    throw new Error('Not implemented');
+    try {
+      onProgress?.({
+        status: 'preparing',
+        progress: 10,
+        message: 'Preparing holdings data...',
+      });
+
+      // Prepare data
+      const holdings = await this.prepareHoldingsData(portfolioId);
+
+      if (holdings.length === 0) {
+        throw new Error('No holdings found for this portfolio');
+      }
+
+      onProgress?.({
+        status: 'generating',
+        progress: 50,
+        message: 'Generating CSV...',
+      });
+
+      // Generate CSV using PapaParse
+      const Papa = (await import('papaparse')).default;
+      const csv = Papa.unparse(holdings, {
+        header: true,
+        escapeFormulae: true,
+      });
+
+      onProgress?.({
+        status: 'generating',
+        progress: 80,
+        message: 'Downloading file...',
+      });
+
+      // Download CSV
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      // Generate filename
+      const { db } = await import('@/lib/db');
+      const portfolio = await db.portfolios.get(portfolioId);
+      const filename = generateExportFilename(
+        'holdings',
+        portfolio?.name || 'Portfolio',
+        'csv'
+      );
+
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      onProgress?.({
+        status: 'complete',
+        progress: 100,
+        message: 'CSV generated successfully!',
+      });
+    } catch (error) {
+      onProgress?.({
+        status: 'error',
+        progress: 0,
+        error:
+          error instanceof Error ? error.message : 'Failed to generate CSV',
+      });
+      throw error;
+    }
   }
 
   async prepareTransactionData(
     portfolioId: string,
     dateRange: DateRangePreset
   ): Promise<TransactionExportRow[]> {
-    // To be implemented in US2
-    throw new Error('Not implemented');
+    const { db } = await import('@/lib/db');
+    const { format } = await import('date-fns');
+    const Decimal = (await import('decimal.js')).default;
+
+    // Get date range bounds
+    const { start, end } = getDateRangeBounds(dateRange);
+
+    // Get all transactions for portfolio within date range
+    const allTransactions = await db.transactions
+      .where({ portfolioId })
+      .toArray();
+
+    // Filter by date range
+    const filteredTransactions = allTransactions.filter((tx) => {
+      const txDate = new Date(tx.date);
+      return txDate >= start && txDate <= end;
+    });
+
+    // Get asset details
+    const assetIds = [...new Set(filteredTransactions.map((t) => t.assetId))];
+    const assets = await db.assets.where('id').anyOf(assetIds).toArray();
+    const assetMap = new Map(assets.map((a) => [a.id, a]));
+
+    // Format for CSV export
+    const exportRows: TransactionExportRow[] = filteredTransactions.map(
+      (tx) => {
+        const asset = assetMap.get(tx.assetId);
+        const quantity = new Decimal(tx.quantity);
+        const price = new Decimal(tx.price);
+        const fees = new Decimal(tx.fees || 0);
+        const total = new Decimal(tx.totalAmount);
+
+        return {
+          date: format(new Date(tx.date), 'yyyy-MM-dd'),
+          type: tx.type.charAt(0).toUpperCase() + tx.type.slice(1),
+          symbol: asset?.symbol || 'N/A',
+          name: asset?.name || asset?.symbol || 'Unknown',
+          quantity: quantity.toFixed(4),
+          price: price.toFixed(2),
+          fees: fees.toFixed(2),
+          total: total.toFixed(2),
+        };
+      }
+    );
+
+    // Sort by date (newest first)
+    exportRows.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    return exportRows;
   }
 
   async prepareHoldingsData(portfolioId: string): Promise<HoldingExportRow[]> {
-    // To be implemented in US3
-    throw new Error('Not implemented');
+    const { db } = await import('@/lib/db');
+    const Decimal = (await import('decimal.js')).default;
+
+    // Get all holdings for portfolio
+    const holdings = await db.holdings.where({ portfolioId }).toArray();
+
+    // Get asset details
+    const assetIds = [...new Set(holdings.map((h) => h.assetId))];
+    const assets = await db.assets.where('id').anyOf(assetIds).toArray();
+    const assetMap = new Map(assets.map((a) => [a.id, a]));
+
+    // Format for CSV export
+    const exportRows: HoldingExportRow[] = holdings.map((holding) => {
+      const asset = assetMap.get(holding.assetId);
+      const quantity = new Decimal(holding.quantity);
+      const costBasis = new Decimal(holding.costBasis);
+      const marketValue = new Decimal(holding.currentValue);
+      const unrealizedGain = new Decimal(holding.unrealizedGain);
+      const unrealizedGainPercent = holding.unrealizedGainPercent;
+
+      // Calculate average cost
+      const averageCost = quantity.isZero()
+        ? new Decimal(0)
+        : costBasis.div(quantity);
+
+      // Calculate current price from market value / quantity
+      const currentPrice = quantity.isZero()
+        ? new Decimal(0)
+        : marketValue.div(quantity);
+
+      return {
+        symbol: asset?.symbol || 'N/A',
+        name: asset?.name || asset?.symbol || 'Unknown',
+        assetType: asset?.type || 'Unknown',
+        quantity: quantity.toFixed(4),
+        costBasis: costBasis.toFixed(2),
+        averageCost: averageCost.toFixed(2),
+        currentPrice: currentPrice.toFixed(2),
+        marketValue: marketValue.toFixed(2),
+        unrealizedGain: unrealizedGain.toFixed(2),
+        unrealizedGainPercent: unrealizedGainPercent.toFixed(2) + '%',
+      };
+    });
+
+    // Sort by market value (highest first)
+    exportRows.sort((a, b) => {
+      const valueA = new Decimal(a.marketValue);
+      const valueB = new Decimal(b.marketValue);
+      return valueB.minus(valueA).toNumber();
+    });
+
+    return exportRows;
   }
 
   async preparePerformanceData(

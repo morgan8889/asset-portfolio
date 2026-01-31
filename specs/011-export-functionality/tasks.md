@@ -87,12 +87,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Implement prepareTransactionData() with date filtering in src/lib/services/export-service.ts
-- [ ] T023 [US2] Implement exportTransactionsCsv() using PapaParse in src/lib/services/export-service.ts
-- [ ] T024 [P] [US2] Create DateRangeSelect component in src/components/reports/date-range-select.tsx
-- [ ] T025 [US2] Wire up "Download CSV" button for transactions in src/app/(dashboard)/reports/page.tsx
-- [ ] T026 [US2] Add date range selector to transaction export card in src/app/(dashboard)/reports/page.tsx
-- [ ] T027 [US2] Add loading state and error handling for CSV export in src/app/(dashboard)/reports/page.tsx
+- [X] T022 [US2] Implement prepareTransactionData() with date filtering in src/lib/services/export-service.ts
+- [X] T023 [US2] Implement exportTransactionsCsv() using PapaParse in src/lib/services/export-service.ts
+- [X] T024 [P] [US2] Create DateRangeSelect component in src/components/reports/date-range-select.tsx
+- [X] T025 [US2] Wire up "Download CSV" button for transactions in src/app/(dashboard)/reports/page.tsx
+- [X] T026 [US2] Add date range selector to transaction export card in src/app/(dashboard)/reports/page.tsx
+- [X] T027 [US2] Add loading state and error handling for CSV export in src/app/(dashboard)/reports/page.tsx
 
 **Checkpoint**: User Story 2 complete - Transaction CSV export should work independently (FR-003, FR-005, SC-002)
 
@@ -111,10 +111,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T030 [US3] Implement prepareHoldingsData() in src/lib/services/export-service.ts
-- [ ] T031 [US3] Implement exportHoldingsCsv() using PapaParse in src/lib/services/export-service.ts
-- [ ] T032 [US3] Wire up "Download CSV" button for holdings in src/app/(dashboard)/reports/page.tsx
-- [ ] T033 [US3] Add loading state and error handling in src/app/(dashboard)/reports/page.tsx
+- [X] T030 [US3] Implement prepareHoldingsData() in src/lib/services/export-service.ts
+- [X] T031 [US3] Implement exportHoldingsCsv() using PapaParse in src/lib/services/export-service.ts
+- [X] T032 [US3] Wire up "Download CSV" button for holdings in src/app/(dashboard)/reports/page.tsx
+- [X] T033 [US3] Add loading state and error handling in src/app/(dashboard)/reports/page.tsx
 
 **Checkpoint**: User Story 3 complete - Holdings CSV export should work independently (FR-004)
 
