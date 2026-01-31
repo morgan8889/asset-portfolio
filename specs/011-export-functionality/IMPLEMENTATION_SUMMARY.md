@@ -215,12 +215,12 @@ specs/011-export-functionality/
 ```json
 {
   "dependencies": {
-    "jspdf": "^2.5.1",
+    "jspdf": "^4.0.0",
     "html2canvas": "^1.4.1",
-    "jspdf-autotable": "^3.8.0"
+    "jspdf-autotable": "^5.0.7"
   },
   "devDependencies": {
-    "@types/jspdf": "^2.0.0",
+    "@types/jspdf": "^1.3.3",
     "@types/html2canvas": "^1.0.0"
   }
 }
