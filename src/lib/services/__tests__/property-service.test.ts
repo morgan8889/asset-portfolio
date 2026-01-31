@@ -53,12 +53,12 @@ describe('property-service', () => {
 
     it('should handle very large values with precision', () => {
       const result = calculateNetValue(new Decimal('999999999999.99'), 33.33);
-      expect(result.toFixed(2)).toBe('333333333333.30');
+      expect(result.toFixed(2)).toBe('333300000000.00');
     });
 
     it('should maintain decimal precision for fractional ownership', () => {
       const result = calculateNetValue(new Decimal('123456.789'), 12.34567);
-      expect(result.toFixed(6)).toBe('15241.358316');
+      expect(result.toFixed(6)).toBe('15241.567763');
     });
   });
 
@@ -428,7 +428,7 @@ describe('property-service', () => {
         new Decimal('123456.789012345'),
         12.345678901234
       );
-      expect(result.toFixed(12)).toBe('15241.358288469');
+      expect(result.toFixed(12)).toBe('15241.578753238052');
     });
 
     it('should handle zero values gracefully', () => {
@@ -441,7 +441,7 @@ describe('property-service', () => {
       const currentValue = new Decimal('10000000');
       const yieldPercent = calculateYield(monthlyRent, currentValue);
 
-      expect(yieldPercent).toBeCloseTo(0.0012, 4);
+      expect(yieldPercent).toBeCloseTo(0.0000012, 10);
     });
   });
 });
