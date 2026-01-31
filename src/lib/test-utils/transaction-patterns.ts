@@ -2,6 +2,7 @@ import Decimal from 'decimal.js';
 import { addMonths, startOfMonth, isAfter } from 'date-fns';
 import { Transaction, TransactionType } from '@/types/transaction';
 import { generateTransactionId } from '@/types/storage';
+import { HISTORICAL_SPLITS } from './test-data-constants';
 
 /**
  * Transaction pattern configuration
@@ -11,6 +12,47 @@ export interface TransactionPattern {
   frequency?: 'monthly' | 'quarterly' | 'annual';
   amount?: Decimal;
   quantity?: Decimal;
+}
+
+/**
+ * Generator function that yields dates at regular intervals.
+ *
+ * Efficiently iterates through a date range without storing all dates in memory.
+ * Useful for generating periodic transactions (DCA, dividends, rental income).
+ *
+ * @param startDate - Starting date for iteration
+ * @param endDate - Ending date (exclusive)
+ * @param intervalMonths - Number of months between each yielded date
+ * @param useStartOfMonth - Whether to normalize dates to start of month
+ * @yields Dates at the specified interval
+ *
+ * @example
+ * // Generate monthly dates
+ * for (const date of iterateDateRange(start, end, 1, true)) {
+ *   // Process monthly date
+ * }
+ *
+ * @example
+ * // Generate quarterly dates
+ * for (const date of iterateDateRange(start, end, 3)) {
+ *   // Process quarterly date
+ * }
+ */
+function* iterateDateRange(
+  startDate: Date,
+  endDate: Date,
+  intervalMonths: number,
+  useStartOfMonth = false
+): Generator<Date> {
+  let currentDate = addMonths(startDate, intervalMonths);
+  if (useStartOfMonth) {
+    currentDate = startOfMonth(currentDate);
+  }
+
+  while (isAfter(endDate, currentDate)) {
+    yield currentDate;
+    currentDate = addMonths(currentDate, intervalMonths);
+  }
 }
 
 /** Create a base transaction object with common fields */
@@ -94,9 +136,8 @@ export function generateDCATransactions(
   const transactions: Transaction[] = [];
   const increment = frequency === 'monthly' ? 1 : 0.5;
   const label = frequency === 'monthly' ? 'Monthly' : 'Biweekly';
-  let currentDate = startOfMonth(addMonths(startDate, 1));
 
-  while (isAfter(endDate, currentDate)) {
+  for (const currentDate of iterateDateRange(startDate, endDate, increment, true)) {
     const price = findClosestPrice(currentDate, priceHistory);
     if (price) {
       const quantity = monthlyInvestment.div(price);
@@ -112,7 +153,6 @@ export function generateDCATransactions(
         )
       );
     }
-    currentDate = addMonths(currentDate, increment);
   }
 
   return transactions;
@@ -134,17 +174,15 @@ export function generateDividendTransactions(
   const transactions: Transaction[] = [];
   const quarterlyYield = annualDividendYield / 4;
   let holdingQuantity = currentQuantity;
-  let currentDate = addMonths(startDate, 3);
 
-  while (isAfter(endDate, currentDate)) {
+  for (const currentDate of iterateDateRange(startDate, endDate, 3)) {
     const price = findClosestPrice(currentDate, priceHistory);
     if (!price) {
-      currentDate = addMonths(currentDate, 3);
       continue;
     }
 
     const totalDividend = price.mul(quarterlyYield).mul(holdingQuantity);
-    const shouldReinvest = Math.random() > 0.5;
+    const shouldReinvest = Math.random() > 0.3; // 70% reinvest, 30% cash
 
     if (shouldReinvest && totalDividend.greaterThan(price)) {
       const additionalShares = totalDividend.div(price);
@@ -161,6 +199,7 @@ export function generateDividendTransactions(
       );
       holdingQuantity = holdingQuantity.plus(additionalShares);
     } else {
+      // Cash dividend payment
       transactions.push({
         id: generateTransactionId(),
         portfolioId,
@@ -172,11 +211,9 @@ export function generateDividendTransactions(
         totalAmount: totalDividend,
         fees: new Decimal(0),
         currency: 'USD',
-        notes: `Quarterly dividend - $${totalDividend.toFixed(2)}`,
+        notes: `Quarterly dividend payment - $${totalDividend.toFixed(2)}`,
       });
     }
-
-    currentDate = addMonths(currentDate, 3);
   }
 
   return transactions;
@@ -327,6 +364,173 @@ export function generateTaxLossHarvestingTransactions(
         `Tax-loss harvesting - realized loss $${loss.abs().toFixed(2)}`
       )
     );
+  }
+
+  return transactions;
+}
+
+/**
+ * Generate simulated tax-loss harvesting for volatile assets during tax season
+ * This creates realistic sell transactions during Oct-Dec for assets with high volatility
+ */
+export function generateSimulatedTaxLossHarvesting(
+  portfolioId: string,
+  assetId: string,
+  symbol: string,
+  year: number,
+  quantity: Decimal,
+  priceHistory: Map<Date, Decimal>
+): Transaction[] {
+  const transactions: Transaction[] = [];
+
+  // Only harvest during Oct-Dec of specified years (e.g., 2020 post-COVID)
+  const harvestDate = new Date(year, 10, 15); // Nov 15
+
+  const price = findClosestPrice(harvestDate, priceHistory);
+  if (!price) return transactions;
+
+  // Simulate selling a portion (30-50%) of position for tax-loss harvesting
+  const sellPortion = 0.3 + Math.random() * 0.2; // 30-50%
+  const sellQuantity = quantity.mul(sellPortion);
+
+  transactions.push(
+    createTransaction(
+      portfolioId,
+      assetId,
+      'sell',
+      harvestDate,
+      sellQuantity,
+      price,
+      'Tax-loss harvesting - offset capital gains'
+    )
+  );
+
+  // Repurchase 31 days later to avoid wash sale
+  const repurchaseDate = new Date(year, 11, 16); // Dec 16 (31 days later)
+  const repurchasePrice = findClosestPrice(repurchaseDate, priceHistory);
+  if (repurchasePrice) {
+    transactions.push(
+      createTransaction(
+        portfolioId,
+        assetId,
+        'buy',
+        repurchaseDate,
+        sellQuantity,
+        repurchasePrice,
+        'Repurchase after wash sale period'
+      )
+    );
+  }
+
+  return transactions;
+}
+
+/**
+ * Generate stock split transactions for a given asset
+ */
+export function generateStockSplitTransactions(
+  portfolioId: string,
+  assetId: string,
+  symbol: string,
+  startDate: Date,
+  endDate: Date
+): Transaction[] {
+  const transactions: Transaction[] = [];
+  const splits = HISTORICAL_SPLITS[symbol];
+
+  if (!splits) return transactions;
+
+  for (const split of splits) {
+    if (split.date >= startDate && split.date <= endDate) {
+      // Create split transaction
+      transactions.push({
+        id: generateTransactionId(),
+        portfolioId,
+        assetId,
+        type: 'split',
+        date: split.date,
+        quantity: new Decimal(split.ratio),
+        price: new Decimal(1).div(split.ratio),
+        totalAmount: new Decimal(0),
+        fees: new Decimal(0),
+        currency: 'USD',
+        notes: split.description,
+        metadata: {
+          splitRatio: split.ratio,
+          splitType: 'forward',
+        },
+      });
+    }
+  }
+
+  return transactions;
+}
+
+/**
+ * Generate annual management fee transactions
+ */
+export function generateFeeTransactions(
+  portfolioId: string,
+  assetId: string,
+  _symbol: string,
+  startDate: Date,
+  endDate: Date,
+  portfolioValue: Decimal,
+  annualFeeRate: number = 0.005 // 0.5% annual fee
+): Transaction[] {
+  const transactions: Transaction[] = [];
+  let currentDate = new Date(startDate.getFullYear() + 1, 0, 1); // January 1st of next year
+
+  while (isAfter(endDate, currentDate)) {
+    const annualFee = portfolioValue.mul(annualFeeRate);
+
+    transactions.push({
+      id: generateTransactionId(),
+      portfolioId,
+      assetId,
+      type: 'fee',
+      date: currentDate,
+      quantity: new Decimal(0),
+      price: new Decimal(0),
+      totalAmount: annualFee,
+      fees: annualFee,
+      currency: 'USD',
+      notes: `Annual management fee (${(annualFeeRate * 100).toFixed(2)}%)`,
+    });
+
+    currentDate = new Date(currentDate.getFullYear() + 1, 0, 1);
+  }
+
+  return transactions;
+}
+
+/**
+ * Generate monthly rental income transactions for real estate properties
+ */
+export function generateRentalIncomeTransactions(
+  portfolioId: string,
+  assetId: string,
+  _symbol: string,
+  startDate: Date,
+  endDate: Date,
+  monthlyRent: Decimal
+): Transaction[] {
+  const transactions: Transaction[] = [];
+
+  for (const currentDate of iterateDateRange(startDate, endDate, 1, true)) {
+    transactions.push({
+      id: generateTransactionId(),
+      portfolioId,
+      assetId,
+      type: 'interest', // Using interest type for rental income
+      date: currentDate,
+      quantity: new Decimal(0),
+      price: new Decimal(0),
+      totalAmount: monthlyRent,
+      fees: new Decimal(0),
+      currency: 'USD',
+      notes: `Monthly rental income - $${monthlyRent.toFixed(2)}`,
+    });
   }
 
   return transactions;

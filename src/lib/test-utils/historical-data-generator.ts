@@ -29,20 +29,13 @@ import {
   generateInitialPurchase,
   generateDCATransactions,
   generateDividendTransactions,
+  generateStockSplitTransactions,
+  generateFeeTransactions,
+  generateSimulatedTaxLossHarvesting,
+  generateRentalIncomeTransactions,
   getTransactionPatternForAsset,
 } from './transaction-patterns';
-
-/** Asset allocation configuration */
-interface AssetAllocation {
-  symbol: string;
-  name: string;
-  type: AssetType;
-  exchange?: string;
-  sector?: string;
-  targetWeight: number;
-  initialPrice: number;
-  dividendYield?: number;
-}
+import { AssetAllocation, ASSET_ALLOCATIONS } from './asset-allocations';
 
 /** Helper to save items in batches to avoid memory issues */
 async function bulkAddInBatches<T>(
@@ -68,171 +61,6 @@ export interface HistoricalPortfolioOptions {
 
 /** Price data for an asset over time */
 type PriceData = { dates: Date[]; prices: number[]; asset: AssetAllocation };
-
-/** Helper to define an asset allocation */
-const asset = (
-  symbol: string,
-  name: string,
-  type: AssetType,
-  targetWeight: number,
-  initialPrice: number,
-  dividendYield = 0,
-  exchange?: string,
-  sector?: string
-): AssetAllocation => ({
-  symbol,
-  name,
-  type,
-  exchange,
-  sector,
-  targetWeight,
-  initialPrice,
-  dividendYield,
-});
-
-/** Pre-defined asset allocations for different strategies */
-const ASSET_ALLOCATIONS: Record<
-  'balanced' | 'aggressive' | 'conservative',
-  AssetAllocation[]
-> = {
-  balanced: [
-    asset(
-      'VTI',
-      'Vanguard Total Stock Market ETF',
-      'etf',
-      0.4,
-      180,
-      0.015,
-      'NYSE',
-      'Diversified'
-    ),
-    asset(
-      'VXUS',
-      'Vanguard Total International Stock ETF',
-      'etf',
-      0.2,
-      55,
-      0.025,
-      'NASDAQ',
-      'International'
-    ),
-    asset(
-      'BND',
-      'Vanguard Total Bond Market ETF',
-      'etf',
-      0.3,
-      75,
-      0.03,
-      'NASDAQ',
-      'Fixed Income'
-    ),
-    asset(
-      'VNQ',
-      'Vanguard Real Estate ETF',
-      'etf',
-      0.1,
-      85,
-      0.035,
-      'NYSE',
-      'Real Estate'
-    ),
-  ],
-  aggressive: [
-    asset(
-      'AAPL',
-      'Apple Inc.',
-      'stock',
-      0.2,
-      150,
-      0.005,
-      'NASDAQ',
-      'Technology'
-    ),
-    asset(
-      'MSFT',
-      'Microsoft Corporation',
-      'stock',
-      0.2,
-      300,
-      0.008,
-      'NASDAQ',
-      'Technology'
-    ),
-    asset(
-      'GOOGL',
-      'Alphabet Inc.',
-      'stock',
-      0.15,
-      120,
-      0,
-      'NASDAQ',
-      'Technology'
-    ),
-    asset(
-      'AMZN',
-      'Amazon.com Inc.',
-      'stock',
-      0.15,
-      140,
-      0,
-      'NASDAQ',
-      'Consumer Cyclical'
-    ),
-    asset(
-      'NVDA',
-      'NVIDIA Corporation',
-      'stock',
-      0.2,
-      400,
-      0.002,
-      'NASDAQ',
-      'Technology'
-    ),
-    asset('BTC', 'Bitcoin', 'crypto', 0.1, 40000, 0),
-  ],
-  conservative: [
-    asset(
-      'BND',
-      'Vanguard Total Bond Market ETF',
-      'etf',
-      0.5,
-      75,
-      0.03,
-      'NASDAQ',
-      'Fixed Income'
-    ),
-    asset(
-      'VTI',
-      'Vanguard Total Stock Market ETF',
-      'etf',
-      0.3,
-      180,
-      0.015,
-      'NYSE',
-      'Diversified'
-    ),
-    asset(
-      'VNQ',
-      'Vanguard Real Estate ETF',
-      'etf',
-      0.1,
-      85,
-      0.035,
-      'NYSE',
-      'Real Estate'
-    ),
-    asset(
-      'GLD',
-      'SPDR Gold Trust',
-      'commodity',
-      0.1,
-      180,
-      0,
-      'NYSE',
-      'Commodities'
-    ),
-  ],
-};
 
 /**
  * Main function to generate a complete historical portfolio
@@ -326,6 +154,18 @@ export async function generateHistoricalPortfolio(
 
     // Create asset in database
     const assetId = createAssetId(assetAlloc.symbol);
+    const assetMetadata: Record<string, any> = {
+      dividendYield: assetAlloc.dividendYield,
+    };
+
+    // Add real estate specific metadata
+    if (assetAlloc.type === 'real_estate') {
+      assetMetadata.monthlyRent = assetAlloc.monthlyRent;
+      assetMetadata.region = assetAlloc.region;
+      assetMetadata.address = assetAlloc.address;
+      assetMetadata.propertyType = 'rental';
+    }
+
     await db.assets.add({
       id: assetId,
       symbol: assetAlloc.symbol,
@@ -336,7 +176,7 @@ export async function generateHistoricalPortfolio(
       sector: assetAlloc.sector,
       currentPrice: prices[prices.length - 1],
       priceUpdatedAt: endDate,
-      metadata: { dividendYield: assetAlloc.dividendYield },
+      metadata: assetMetadata,
     });
 
     // Save price history
@@ -439,6 +279,70 @@ export async function generateHistoricalPortfolio(
         )
       );
     }
+
+    // Stock split transactions
+    allTransactions.push(
+      ...generateStockSplitTransactions(
+        portfolioId,
+        assetRecord.id,
+        assetAlloc.symbol,
+        startDate,
+        endDate
+      )
+    );
+
+    // Tax-loss harvesting for volatile assets during 2020 (post-COVID crash)
+    if (
+      (assetAlloc.type === 'stock' || assetAlloc.type === 'crypto') &&
+      startDate <= new Date('2020-01-01') &&
+      endDate >= new Date('2020-12-31')
+    ) {
+      allTransactions.push(
+        ...generateSimulatedTaxLossHarvesting(
+          portfolioId,
+          assetRecord.id,
+          assetAlloc.symbol,
+          2020,
+          initialQuantity,
+          priceMap
+        )
+      );
+    }
+
+    // Rental income for real estate properties
+    if (assetAlloc.type === 'real_estate' && assetAlloc.monthlyRent) {
+      allTransactions.push(
+        ...generateRentalIncomeTransactions(
+          portfolioId,
+          assetRecord.id,
+          assetAlloc.symbol,
+          startDate,
+          endDate,
+          new Decimal(assetAlloc.monthlyRent)
+        )
+      );
+    }
+  }
+
+  // Add annual management fee transactions
+  if (assets.length > 0) {
+    const firstAsset = await db.assets
+      .where('symbol')
+      .equals(assets[0].symbol)
+      .first();
+    if (firstAsset) {
+      allTransactions.push(
+        ...generateFeeTransactions(
+          portfolioId,
+          firstAsset.id,
+          assets[0].symbol,
+          startDate,
+          endDate,
+          new Decimal(totalInitialInvestment),
+          0.005 // 0.5% annual fee
+        )
+      );
+    }
   }
 
   allTransactions.sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -496,6 +400,11 @@ function applyTransaction(holding: HoldingState, tx: Transaction): void {
       new Decimal(1).minus(proportionSold)
     );
     holding.quantity = holding.quantity.minus(tx.quantity);
+  } else if (tx.type === 'split') {
+    // Stock split: multiply quantity by split ratio, cost basis stays same
+    const splitRatio = tx.quantity;
+    holding.quantity = holding.quantity.mul(splitRatio);
+    // Cost basis remains unchanged (total investment doesn't change)
   }
 }
 
@@ -667,6 +576,17 @@ async function recalculateHoldings(
         new Decimal(1).minus(proportionSold)
       );
       holding.quantity = holding.quantity.minus(tx.quantity);
+    } else if (tx.type === 'split') {
+      // Stock split: multiply quantities by split ratio, adjust prices
+      const splitRatio = tx.quantity;
+      holding.quantity = holding.quantity.mul(splitRatio);
+      // Cost basis stays same, but update all lots
+      for (const lot of holding.lots) {
+        lot.quantity = lot.quantity.mul(splitRatio);
+        lot.remainingQuantity = lot.remainingQuantity.mul(splitRatio);
+        lot.soldQuantity = lot.soldQuantity.mul(splitRatio);
+        lot.purchasePrice = lot.purchasePrice.div(splitRatio);
+      }
     }
   }
 

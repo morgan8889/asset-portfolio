@@ -11,6 +11,7 @@ import {
 } from '../property-service';
 import { db } from '@/lib/db/schema';
 import { Asset } from '@/types';
+import { createTestAsset } from './test-factories';
 
 describe('property-service', () => {
   describe('calculateNetValue', () => {
@@ -53,12 +54,12 @@ describe('property-service', () => {
 
     it('should handle very large values with precision', () => {
       const result = calculateNetValue(new Decimal('999999999999.99'), 33.33);
-      expect(result.toFixed(2)).toBe('333333333333.30');
+      expect(result.toFixed(2)).toBe('333300000000.00');
     });
 
     it('should maintain decimal precision for fractional ownership', () => {
       const result = calculateNetValue(new Decimal('123456.789'), 12.34567);
-      expect(result.toFixed(6)).toBe('15241.358316');
+      expect(result.toFixed(6)).toBe('15241.567763');
     });
   });
 
@@ -118,115 +119,74 @@ describe('property-service', () => {
 
   describe('getAssetAnnualYield', () => {
     it('should return undefined for non-rental assets', () => {
-      const asset: Asset = {
-        id: 'test-1',
-        symbol: 'PROP1',
-        name: 'Property 1',
-        type: 'real_estate',
-        currency: 'USD',
-        currentPrice: 500000,
-        metadata: {},
-        valuationMethod: 'MANUAL',
-      };
+      const asset = createTestAsset();
 
       const yieldPercent = getAssetAnnualYield(asset);
       expect(yieldPercent).toBeUndefined();
     });
 
     it('should return undefined for rental with no monthly rent', () => {
-      const asset: Asset = {
+      const asset = createTestAsset({
         id: 'test-2',
-        symbol: 'PROP2',
-        name: 'Property 2',
-        type: 'real_estate',
-        currency: 'USD',
-        currentPrice: 500000,
-        metadata: {},
-        valuationMethod: 'MANUAL',
         rentalInfo: {
           isRental: true,
           monthlyRent: new Decimal(0),
         },
-      };
+      });
 
       const yieldPercent = getAssetAnnualYield(asset);
       expect(yieldPercent).toBe(0);
     });
 
     it('should calculate yield for rental asset with Decimal monthlyRent', () => {
-      const asset: Asset = {
+      const asset = createTestAsset({
         id: 'test-3',
-        symbol: 'PROP3',
-        name: 'Property 3',
-        type: 'real_estate',
-        currency: 'USD',
-        currentPrice: 500000,
-        metadata: {},
-        valuationMethod: 'MANUAL',
         rentalInfo: {
           isRental: true,
           monthlyRent: new Decimal(2000),
         },
-      };
+      });
 
       const yieldPercent = getAssetAnnualYield(asset);
       expect(yieldPercent).toBe(4.8);
     });
 
     it('should calculate yield for rental asset with string monthlyRent', () => {
-      const asset: Asset = {
+      const asset = createTestAsset({
         id: 'test-4',
-        symbol: 'PROP4',
-        name: 'Property 4',
-        type: 'real_estate',
-        currency: 'USD',
-        currentPrice: 500000,
-        metadata: {},
-        valuationMethod: 'MANUAL',
         rentalInfo: {
           isRental: true,
           monthlyRent: '2000' as any, // Simulating storage format
         },
-      };
+      });
 
       const yieldPercent = getAssetAnnualYield(asset);
       expect(yieldPercent).toBe(4.8);
     });
 
     it('should return undefined for zero current price', () => {
-      const asset: Asset = {
+      const asset = createTestAsset({
         id: 'test-5',
-        symbol: 'PROP5',
-        name: 'Property 5',
-        type: 'real_estate',
-        currency: 'USD',
         currentPrice: 0,
-        metadata: {},
-        valuationMethod: 'MANUAL',
         rentalInfo: {
           isRental: true,
           monthlyRent: new Decimal(2000),
         },
-      };
+      });
 
       const yieldPercent = getAssetAnnualYield(asset);
       expect(yieldPercent).toBeUndefined();
     });
 
     it('should return undefined for undefined current price', () => {
-      const asset: Asset = {
+      const asset = createTestAsset({
         id: 'test-6',
-        symbol: 'PROP6',
-        name: 'Property 6',
-        type: 'real_estate',
-        currency: 'USD',
-        metadata: {},
-        valuationMethod: 'MANUAL',
+        currentPrice: undefined,
         rentalInfo: {
           isRental: true,
           monthlyRent: new Decimal(2000),
         },
-      };
+      });
 
       const yieldPercent = getAssetAnnualYield(asset);
       expect(yieldPercent).toBeUndefined();
@@ -428,7 +388,7 @@ describe('property-service', () => {
         new Decimal('123456.789012345'),
         12.345678901234
       );
-      expect(result.toFixed(12)).toBe('15241.358288469');
+      expect(result.toFixed(12)).toBe('15241.578753238052');
     });
 
     it('should handle zero values gracefully', () => {
@@ -441,7 +401,7 @@ describe('property-service', () => {
       const currentValue = new Decimal('10000000');
       const yieldPercent = calculateYield(monthlyRent, currentValue);
 
-      expect(yieldPercent).toBeCloseTo(0.0012, 4);
+      expect(yieldPercent).toBeCloseTo(0.0000012, 10);
     });
   });
 });

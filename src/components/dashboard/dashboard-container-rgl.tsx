@@ -26,7 +26,14 @@ import {
   usePriceStore,
 } from '@/lib/stores';
 import { useLivePriceMetrics, LiveHolding } from '@/hooks';
-import { WidgetId, CategoryAllocation, RGLLayout } from '@/types/dashboard';
+import {
+  WidgetId,
+  CategoryAllocation,
+  RGLLayout,
+  WIDGET_SIZE_CONSTRAINTS,
+  WidgetSpan,
+  WidgetRowSpan,
+} from '@/types/dashboard';
 import { Holding, Asset } from '@/types';
 import { cn } from '@/lib/utils';
 import { WidgetWrapperRGL } from './widget-wrapper-rgl';
@@ -139,20 +146,10 @@ const DashboardContainerRGLComponent = ({
   const { config, setRGLLayouts, setWidgetSpan, setWidgetRowSpan } =
     useDashboardStore();
 
-  // Account for RGL horizontal margins to prevent overflow
-  // RGL applies margins between and around grid items
-  // For N columns with margin=16px: (N+1) * 16px total horizontal margins
-  // lg breakpoint (4 cols): 5 * 16 = 80px, md (2 cols): 3 * 16 = 48px, sm (1 col): 2 * 16 = 32px
-  const determineColumnCount = (viewportWidth: number) => {
-    if (viewportWidth >= 1024) return config?.gridColumns || 4; // lg
-    if (viewportWidth >= 768) return 2; // md
-    return 1; // sm
-  };
-
-  const MARGIN_SIZE = 16;
-  const cols = determineColumnCount(measuredWidth);
-  const totalHorizontalMargins = (cols + 1) * MARGIN_SIZE;
-  const width = Math.max(0, measuredWidth - totalHorizontalMargins);
+  // Use full measured width for RGL container
+  // RGL internally handles margin spacing between grid items
+  // Margins are only applied BETWEEN items, not around the container edges
+  const width = measuredWidth;
   const { metrics, holdings, assets } = usePortfolioStore();
   const { loading: priceLoading } = usePriceStore();
   const setSymbolAssetMappings = usePriceStore(
@@ -227,9 +224,13 @@ const DashboardContainerRGLComponent = ({
    */
   const syncLayoutToSpans = useCallback(
     async (widgetId: WidgetId, w: number, h: number) => {
-      // Clamp to valid span values (WidgetSpan: 1|2, WidgetRowSpan: 1|2|3|4)
-      const colSpan = Math.max(1, Math.min(2, w)) as 1 | 2;
-      const rowSpan = Math.max(1, Math.min(4, h)) as 1 | 2 | 3 | 4;
+      // Get widget-specific constraints (growth-chart: maxW=4, others: maxW=2)
+      const constraints = WIDGET_SIZE_CONSTRAINTS[widgetId];
+      const maxCols = constraints?.maxW ?? 2; // Default to 2 for widgets without constraints
+
+      // Clamp to valid span values based on widget constraints
+      const colSpan = Math.max(1, Math.min(maxCols, w)) as WidgetSpan;
+      const rowSpan = Math.max(1, Math.min(4, h)) as WidgetRowSpan;
 
       // Update store (persists to IndexedDB)
       await setWidgetSpan(widgetId, colSpan);
