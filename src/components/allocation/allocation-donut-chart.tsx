@@ -1,13 +1,7 @@
 'use client';
 
 import { useMemo, memo } from 'react';
-import {
-  Cell,
-  PieChart,
-  Pie,
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts';
+import { Cell, PieChart, Pie, ResponsiveContainer, Tooltip } from 'recharts';
 import { formatCurrency } from '@/lib/utils';
 import { AllocationData, AllocationBreakdown } from '@/types/allocation';
 import Decimal from 'decimal.js';
@@ -94,7 +88,9 @@ const CustomTooltip = ({ active, payload }: any) => {
           />
           <p className="font-medium">{data.name}</p>
           {data.isUnclassified && (
-            <span className="text-xs text-muted-foreground">(unclassified)</span>
+            <span className="text-xs text-muted-foreground">
+              (unclassified)
+            </span>
           )}
         </div>
         <div className="space-y-1 text-sm">
@@ -156,9 +152,9 @@ const AllocationDonutChartComponent = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="grid gap-6 md:grid-cols-[1fr_1fr] lg:grid-cols-[3fr_2fr]">
       {/* Donut Chart */}
-      <div className="relative h-[300px] w-full">
+      <div className="relative h-[350px] w-full md:h-[400px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -167,8 +163,8 @@ const AllocationDonutChartComponent = ({
               cy="50%"
               labelLine={false}
               label={renderCustomizedLabel}
-              outerRadius={100}
-              innerRadius={40}
+              outerRadius={120}
+              innerRadius={50}
               fill="#8884d8"
               dataKey="value"
               strokeWidth={2}
@@ -190,13 +186,17 @@ const AllocationDonutChartComponent = ({
 
         {/* Center Text */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <div className="text-2xl font-bold">{formatCurrency(totalValue)}</div>
-          <div className="text-xs text-muted-foreground">Total Value</div>
+          <div className="text-3xl font-bold md:text-4xl">
+            {formatCurrency(totalValue)}
+          </div>
+          <div className="text-sm text-muted-foreground md:text-base">
+            Total Value
+          </div>
         </div>
       </div>
 
       {/* Allocation Breakdown */}
-      <div className="space-y-3">
+      <div className="scrollbar-thin space-y-3 md:max-h-[400px] md:overflow-y-auto md:pr-2">
         <div className="flex items-center justify-between text-sm">
           <span className="font-medium">Breakdown</span>
           <span className="text-muted-foreground">Value / %</span>
@@ -215,7 +215,9 @@ const AllocationDonutChartComponent = ({
               />
               <span className="font-medium">{item.name}</span>
               {item.isUnclassified && (
-                <span className="text-xs text-muted-foreground">(fix needed)</span>
+                <span className="text-xs text-muted-foreground">
+                  (fix needed)
+                </span>
               )}
             </div>
 
