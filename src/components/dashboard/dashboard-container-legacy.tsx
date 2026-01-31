@@ -50,10 +50,12 @@ import {
   DayChangeWidget,
   CategoryBreakdownWidget,
   GrowthChartWidget,
-  TopPerformersWidget,
-  BiggestLosersWidget,
   RecentActivityWidget,
 } from './widgets';
+import {
+  TopPerformersWidget,
+  BiggestLosersWidget,
+} from './widgets/performance-list-widget';
 
 interface DashboardContainerProps {
   disableDragDrop?: boolean;
