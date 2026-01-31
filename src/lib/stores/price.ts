@@ -22,6 +22,7 @@ import {
 import { calculateStaleness } from '@/lib/utils/staleness';
 import { convertPenceToPounds, getExchange } from '@/lib/utils/market-utils';
 import { getMarketState } from '@/lib/services/market-hours';
+import { logger } from '@/lib/utils/logger';
 import {
   priceResponseSchema,
   batchPriceResponseSchema,
@@ -159,7 +160,7 @@ export const usePriceStore = create<PriceState>()(
         if (intervalChanged && get().isPolling) {
           // Use polling lock to prevent race conditions
           if (get().pollingLock) {
-            console.warn('Polling restart already in progress, skipping');
+            logger.warn('Polling restart already in progress, skipping');
             return;
           }
 
@@ -184,7 +185,7 @@ export const usePriceStore = create<PriceState>()(
               }
             }
           } catch (error) {
-            console.error('Error restarting polling:', error);
+            logger.error('Error restarting polling:', error);
           } finally {
             set({ pollingLock: false });
           }
@@ -204,7 +205,7 @@ export const usePriceStore = create<PriceState>()(
             set({ preferences: { ...DEFAULT_PRICE_PREFERENCES, ...saved } });
           }
         } catch (error) {
-          console.error('Failed to load price preferences:', error);
+          logger.error('Failed to load price preferences:', error);
         }
       },
 
@@ -216,7 +217,7 @@ export const usePriceStore = create<PriceState>()(
             get().preferences
           );
         } catch (error) {
-          console.error('Failed to save price preferences:', error);
+          logger.error('Failed to save price preferences:', error);
         }
       },
 
@@ -290,7 +291,7 @@ export const usePriceStore = create<PriceState>()(
       refreshPrice: async (symbol) => {
         // Skip fetch if offline - rely on cached data
         if (!get().isOnline) {
-          console.log(`Offline: using cached data for ${symbol}`);
+          logger.info(`Offline: using cached data for ${symbol}`);
           return;
         }
 
@@ -313,7 +314,7 @@ export const usePriceStore = create<PriceState>()(
           // Validate response with Zod
           const parseResult = priceResponseSchema.safeParse(rawData);
           if (!parseResult.success) {
-            console.error('Invalid price response:', parseResult.error);
+            logger.error('Invalid price response:', parseResult.error);
             throw new Error('Invalid price data format received from API');
           }
 
@@ -344,7 +345,7 @@ export const usePriceStore = create<PriceState>()(
           // Just set error state so UI can show staleness indicator
           const existingPrice = get().prices.get(symbol.toUpperCase());
           if (existingPrice) {
-            console.warn(`Using cached price for ${symbol} due to fetch error`);
+            logger.warn(`Using cached price for ${symbol} due to fetch error`);
             // Recalculate staleness for the cached data
             const updatedPrice = {
               ...existingPrice,
@@ -360,7 +361,7 @@ export const usePriceStore = create<PriceState>()(
             set({ loading: false, error: message });
           }
 
-          console.error(`Error fetching price for ${symbol}:`, error);
+          logger.error(`Error fetching price for ${symbol}:`, error);
         }
       },
 
@@ -370,7 +371,7 @@ export const usePriceStore = create<PriceState>()(
 
         // Skip fetch if offline - rely on cached data
         if (!get().isOnline) {
-          console.log('Offline: using cached prices');
+          logger.info('Offline: using cached prices');
           // Recalculate staleness for all cached prices
           const prices = new Map(get().prices);
           const refreshInterval = get().preferences.refreshInterval;
@@ -407,7 +408,7 @@ export const usePriceStore = create<PriceState>()(
           // Validate response with Zod
           const parseResult = batchPriceResponseSchema.safeParse(rawResult);
           if (!parseResult.success) {
-            console.error('Invalid batch price response:', parseResult.error);
+            logger.error('Invalid batch price response:', parseResult.error);
             throw new Error(
               'Invalid batch price data format received from API'
             );
@@ -456,7 +457,7 @@ export const usePriceStore = create<PriceState>()(
           });
 
           set({ prices, loading: false, error: message });
-          console.error('Error fetching prices:', error);
+          logger.error('Error fetching prices:', error);
         }
       },
 
@@ -484,7 +485,7 @@ export const usePriceStore = create<PriceState>()(
 
               if (online && wasOffline) {
                 // Connection restored - refresh prices
-                console.log(
+                logger.info(
                   'Network connection restored, refreshing prices...'
                 );
                 const { watchedSymbols, preferences: prefs } = get();
@@ -495,7 +496,7 @@ export const usePriceStore = create<PriceState>()(
                   get().refreshAllPrices();
                 }
               } else if (!online) {
-                console.log('Network connection lost, using cached prices');
+                logger.info('Network connection lost, using cached prices');
               }
             },
             onLoadCache: () => get().loadCachedPrices(),
@@ -515,7 +516,7 @@ export const usePriceStore = create<PriceState>()(
             set({ isOnline: service!.isOnline });
           })
           .catch((error) => {
-            console.error('Failed to start polling:', error);
+            logger.error('Failed to start polling:', error);
             set({ isPolling: false });
           });
       },
@@ -529,7 +530,7 @@ export const usePriceStore = create<PriceState>()(
         if (service) {
           // Stop polling asynchronously (fire and forget)
           service.stop().catch((error) => {
-            console.error('Failed to stop polling:', error);
+            logger.error('Failed to stop polling:', error);
           });
         }
       },
@@ -584,11 +585,11 @@ export const usePriceStore = create<PriceState>()(
 
             if (prices.size > 0) {
               set({ prices });
-              console.log(`Loaded ${prices.size} cached prices from IndexedDB`);
+              logger.info(`Loaded ${prices.size} cached prices from IndexedDB`);
             }
           }
         } catch (error) {
-          console.error('Failed to load cached prices:', error);
+          logger.error('Failed to load cached prices:', error);
         }
       },
 
@@ -610,7 +611,7 @@ export const usePriceStore = create<PriceState>()(
 
           await settingsQueries.set('priceCache', cacheObject);
         } catch (error) {
-          console.error('Failed to persist price cache:', error);
+          logger.error('Failed to persist price cache:', error);
         }
       },
 
@@ -654,7 +655,7 @@ export const usePriceStore = create<PriceState>()(
             await priceQueries.saveBatchSnapshots(snapshots);
           }
         } catch (error) {
-          console.error('Failed to persist price snapshots:', error);
+          logger.error('Failed to persist price snapshots:', error);
         }
       },
 
@@ -668,14 +669,14 @@ export const usePriceStore = create<PriceState>()(
         if (!get().pollingService) {
           if (online && wasOffline) {
             set({ error: null });
-            console.log('Network connection restored, refreshing prices...');
+            logger.info('Network connection restored, refreshing prices...');
             // Trigger a refresh when coming back online
             const { watchedSymbols } = get();
             if (watchedSymbols.size > 0) {
               get().refreshAllPrices();
             }
           } else if (!online) {
-            console.log('Network connection lost, using cached prices');
+            logger.info('Network connection lost, using cached prices');
           }
         }
         // When polling service is active, it handles network changes via onNetworkChange callback

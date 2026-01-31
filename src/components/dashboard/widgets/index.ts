@@ -4,9 +4,12 @@ export { GainLossWidget } from './gain-loss-widget';
 export { DayChangeWidget } from './day-change-widget';
 export { CategoryBreakdownWidget } from './category-breakdown-widget';
 export { GrowthChartWidget } from './growth-chart-widget';
-export { TopPerformersWidget } from './top-performers-widget';
-export { BiggestLosersWidget } from './biggest-losers-widget';
 export { RecentActivityWidget } from './recent-activity-widget';
+export {
+  TopPerformersWidget,
+  BiggestLosersWidget,
+  PerformanceListWidget,
+} from './performance-list-widget';
 
 // Shared utilities for building widgets
 export {

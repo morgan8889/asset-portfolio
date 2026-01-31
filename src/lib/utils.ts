@@ -183,17 +183,17 @@ export function sortBy<T>(
 }
 
 // Local storage helpers with error handling
-export function getFromStorage(key: string): any {
+export function getFromStorage<T = unknown>(key: string): T | null {
   try {
     const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : null;
+    return item ? (JSON.parse(item) as T) : null;
   } catch (error) {
     console.error(`Error reading from localStorage key "${key}":`, error);
     return null;
   }
 }
 
-export function setToStorage(key: string, value: any): void {
+export function setToStorage<T = unknown>(key: string, value: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {

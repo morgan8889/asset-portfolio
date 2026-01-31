@@ -10,6 +10,7 @@ import type {
   HoldingStorage,
   TransactionStorage,
 } from '@/types/storage';
+import { holdingToStorage, transactionToStorage } from '@/lib/db/converters';
 
 /**
  * Property Service
@@ -220,9 +221,8 @@ export async function addPropertyAsset(
     ownershipPercentage: data.ownershipPercentage,
   };
 
-  // Type cast is safe: The database's 'creating' hooks automatically serialize
-  // Decimal fields to strings before storage (see schema.ts transformHoldingDecimals)
-  await db.holdings.add(holding as any);
+  // Convert domain type to storage format before adding to database
+  await db.holdings.add(holdingToStorage(holding));
 
   // Create initial buy transaction for cost basis tracking
   const transaction: Transaction = {
@@ -239,9 +239,8 @@ export async function addPropertyAsset(
     notes: `Initial property acquisition: ${data.ownershipPercentage}% ownership`,
   };
 
-  // Type cast is safe: The database's 'creating' hooks automatically serialize
-  // Decimal fields to strings before storage (see schema.ts transformTransactionDecimals)
-  await db.transactions.add(transaction as any);
+  // Convert domain type to storage format before adding to database
+  await db.transactions.add(transactionToStorage(transaction));
 
   return assetId;
 }
@@ -309,15 +308,16 @@ export async function updateManualPrice(
   // Optional: Create price history entry for tracking
   // This can be used for historical charts/analysis
   const priceHistoryId = uuidv4() as PriceHistoryId;
+  const priceString = newPrice.toString();
   await db.priceHistory.add({
     id: priceHistoryId,
     assetId: assetId as AssetId,
     date,
-    open: newPrice.toString() as any,
-    high: newPrice.toString() as any,
-    low: newPrice.toString() as any,
-    close: newPrice.toString() as any,
-    adjustedClose: newPrice.toString() as any,
+    open: priceString,
+    high: priceString,
+    low: priceString,
+    close: priceString,
+    adjustedClose: priceString,
     volume: 0,
     source: 'manual',
   });

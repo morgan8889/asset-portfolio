@@ -1,4 +1,5 @@
 import { db } from './schema';
+import { logger } from '@/lib/utils/logger';
 
 // Migration interface
 interface Migration {
@@ -23,7 +24,7 @@ const migrations: Migration[] = [
     up: async () => {
       // Initial schema is already defined in the Dexie constructor
       // This migration is just for tracking
-      console.log('Applying initial schema migration...');
+      logger.info('Applying initial schema migration...');
     },
     down: async () => {
       // Cannot easily rollback initial schema
@@ -56,7 +57,7 @@ export class MigrationManager {
       const migrationState = state?.value as MigrationState | undefined;
       return migrationState?.version || 0;
     } catch (error) {
-      console.warn('Could not get current migration version:', error);
+      logger.warn('Could not get current migration version:', error);
       return 0;
     }
   }
@@ -95,11 +96,11 @@ export class MigrationManager {
     const latestVersion = Math.max(...migrations.map((m) => m.version));
 
     if (currentVersion >= latestVersion) {
-      console.log('Database is up to date');
+      logger.info('Database is up to date');
       return;
     }
 
-    console.log(
+    logger.info(
       `Migrating database from version ${currentVersion} to ${latestVersion}`
     );
 
@@ -107,7 +108,7 @@ export class MigrationManager {
     for (const migration of migrations) {
       if (migration.version > currentVersion) {
         try {
-          console.log(
+          logger.info(
             `Applying migration ${migration.version}: ${migration.description}`
           );
           await migration.up();
@@ -115,9 +116,9 @@ export class MigrationManager {
             migration.version,
             migration.description
           );
-          console.log(`Migration ${migration.version} completed`);
+          logger.info(`Migration ${migration.version} completed`);
         } catch (error) {
-          console.error(`Migration ${migration.version} failed:`, error);
+          logger.error(`Migration ${migration.version} failed:`, error);
           throw new Error(
             `Migration failed at version ${migration.version}: ${error}`
           );
@@ -125,18 +126,18 @@ export class MigrationManager {
       }
     }
 
-    console.log('All migrations completed successfully');
+    logger.info('All migrations completed successfully');
   }
 
   static async rollback(targetVersion: number): Promise<void> {
     const currentVersion = await this.getCurrentVersion();
 
     if (targetVersion >= currentVersion) {
-      console.log('No rollback needed');
+      logger.info('No rollback needed');
       return;
     }
 
-    console.log(
+    logger.info(
       `Rolling back database from version ${currentVersion} to ${targetVersion}`
     );
 
@@ -147,13 +148,13 @@ export class MigrationManager {
 
     for (const migration of rollbackMigrations) {
       try {
-        console.log(
+        logger.info(
           `Rolling back migration ${migration.version}: ${migration.description}`
         );
         await migration.down();
-        console.log(`Rollback ${migration.version} completed`);
+        logger.info(`Rollback ${migration.version} completed`);
       } catch (error) {
-        console.error(`Rollback ${migration.version} failed:`, error);
+        logger.error(`Rollback ${migration.version} failed:`, error);
         throw new Error(
           `Rollback failed at version ${migration.version}: ${error}`
         );
@@ -167,17 +168,17 @@ export class MigrationManager {
       targetMigration?.description || 'Rolled back'
     );
 
-    console.log('Rollback completed successfully');
+    logger.info('Rollback completed successfully');
   }
 
   static async reset(): Promise<void> {
-    console.log('Resetting database...');
+    logger.info('Resetting database...');
 
     try {
       await db.delete();
-      console.log('Database reset completed');
+      logger.info('Database reset completed');
     } catch (error) {
-      console.error('Database reset failed:', error);
+      logger.error('Database reset failed:', error);
       throw error;
     }
   }
@@ -193,7 +194,7 @@ export class MigrationManager {
         .map((s) => s.value as MigrationState)
         .sort((a, b) => a.version - b.version);
     } catch (error) {
-      console.warn('Could not get applied migrations:', error);
+      logger.warn('Could not get applied migrations:', error);
       return [];
     }
   }
@@ -210,10 +211,10 @@ export class MigrationManager {
       await db.dividendRecords.limit(1).toArray();
       await db.userSettings.limit(1).toArray();
 
-      console.log('Database validation passed');
+      logger.info('Database validation passed');
       return true;
     } catch (error) {
-      console.error('Database validation failed:', error);
+      logger.error('Database validation failed:', error);
       return false;
     }
   }
@@ -222,7 +223,7 @@ export class MigrationManager {
 // Initialize database and run migrations
 export async function initializeDatabase(): Promise<void> {
   try {
-    console.log('Initializing database...');
+    logger.info('Initializing database...');
 
     // Open the database
     await db.open();
@@ -236,9 +237,9 @@ export async function initializeDatabase(): Promise<void> {
     // Run migrations
     await MigrationManager.migrate();
 
-    console.log('Database initialization completed');
+    logger.info('Database initialization completed');
   } catch (error) {
-    console.error('Database initialization failed:', error);
+    logger.error('Database initialization failed:', error);
     throw error;
   }
 }
@@ -249,11 +250,11 @@ export async function seedInitialData(): Promise<void> {
     // Check if data already exists
     const portfolioCount = await db.portfolios.count();
     if (portfolioCount > 0) {
-      console.log('Database already contains data, skipping seed');
+      logger.info('Database already contains data, skipping seed');
       return;
     }
 
-    console.log('Seeding initial data...');
+    logger.info('Seeding initial data...');
 
     // Create default portfolio
     const portfolioId = crypto.randomUUID();
@@ -328,9 +329,9 @@ export async function seedInitialData(): Promise<void> {
       updatedAt: new Date(),
     });
 
-    console.log('Initial data seeded successfully');
+    logger.info('Initial data seeded successfully');
   } catch (error) {
-    console.error('Failed to seed initial data:', error);
+    logger.error('Failed to seed initial data:', error);
     throw error;
   }
 }
