@@ -244,237 +244,238 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
 
         <ScrollableDialogContent>
           {/* Layout Settings Section */}
-        <div className="space-y-4 border-b py-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Layout Mode</Label>
-            <LayoutModeSelector
-              value={config.layoutMode}
-              onValueChange={handleLayoutModeChange}
-            />
-          </div>
-
-          {config.layoutMode === 'grid' && (
+          <div className="space-y-4 border-b py-4">
             <div className="space-y-2">
-              <Label htmlFor="grid-columns" className="text-sm font-medium">
-                Grid Columns
-              </Label>
-              <Select
-                value={String(config.gridColumns)}
-                onValueChange={handleGridColumnsChange}
-              >
-                <SelectTrigger id="grid-columns" className="w-32">
-                  <SelectValue placeholder="Columns" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="2">2 Columns</SelectItem>
-                  <SelectItem value="3">3 Columns</SelectItem>
-                  <SelectItem value="4">4 Columns</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label className="text-sm font-medium">Layout Mode</Label>
+              <LayoutModeSelector
+                value={config.layoutMode}
+                onValueChange={handleLayoutModeChange}
+              />
             </div>
-          )}
 
-          {config.layoutMode === 'grid' && (
+            {config.layoutMode === 'grid' && (
+              <div className="space-y-2">
+                <Label htmlFor="grid-columns" className="text-sm font-medium">
+                  Grid Columns
+                </Label>
+                <Select
+                  value={String(config.gridColumns)}
+                  onValueChange={handleGridColumnsChange}
+                >
+                  <SelectTrigger id="grid-columns" className="w-32">
+                    <SelectValue placeholder="Columns" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2">2 Columns</SelectItem>
+                    <SelectItem value="3">3 Columns</SelectItem>
+                    <SelectItem value="4">4 Columns</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {config.layoutMode === 'grid' && (
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label
+                    htmlFor="dense-packing"
+                    className="flex items-center gap-2 text-sm font-medium"
+                  >
+                    Dense Packing
+                    <Badge
+                      variant="secondary"
+                      className="border-green-200 bg-green-100 px-1.5 py-0 text-[10px] text-green-700"
+                    >
+                      New
+                    </Badge>
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Fill gaps with smaller widgets
+                  </p>
+                </div>
+                <Switch
+                  id="dense-packing"
+                  checked={config.densePacking}
+                  onCheckedChange={handleDensePackingChange}
+                  aria-label="Toggle dense packing"
+                />
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <div>
                 <Label
-                  htmlFor="dense-packing"
+                  htmlFor="use-rgl"
                   className="flex items-center gap-2 text-sm font-medium"
                 >
-                  Dense Packing
+                  New Layout System
                   <Badge
                     variant="secondary"
-                    className="border-green-200 bg-green-100 px-1.5 py-0 text-[10px] text-green-700"
+                    className="border-blue-200 bg-blue-100 px-1.5 py-0 text-[10px] text-blue-700"
                   >
-                    New
+                    Beta
                   </Badge>
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Fill gaps with smaller widgets
+                  Enable drag-and-drop resizing
                 </p>
               </div>
               <Switch
-                id="dense-packing"
-                checked={config.densePacking}
-                onCheckedChange={handleDensePackingChange}
-                aria-label="Toggle dense packing"
+                id="use-rgl"
+                checked={config.useReactGridLayout ?? false}
+                onCheckedChange={handleUseReactGridLayoutChange}
+                aria-label="Toggle new layout system"
               />
             </div>
-          )}
+          </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <Label
-                htmlFor="use-rgl"
-                className="flex items-center gap-2 text-sm font-medium"
-              >
-                New Layout System
-                <Badge
-                  variant="secondary"
-                  className="border-blue-200 bg-blue-100 px-1.5 py-0 text-[10px] text-blue-700"
+          {/* Widget-Specific Settings Section */}
+          <div className="space-y-4 border-b py-4">
+            <Label className="text-sm font-medium">Widget Settings</Label>
+            <div className="flex items-center justify-between">
+              <div>
+                <Label
+                  htmlFor="category-pie-chart"
+                  className="text-sm font-medium"
                 >
-                  Beta
-                </Badge>
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Enable drag-and-drop resizing
-              </p>
+                  Category Breakdown Pie Chart
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Show pie chart visualization (requires 2x width and 2h+
+                  height)
+                </p>
+              </div>
+              <Switch
+                id="category-pie-chart"
+                checked={
+                  config.widgetSettings?.['category-breakdown']?.showPieChart ??
+                  false
+                }
+                onCheckedChange={handleCategoryPieChartChange}
+                aria-label="Toggle category breakdown pie chart"
+              />
             </div>
-            <Switch
-              id="use-rgl"
-              checked={config.useReactGridLayout ?? false}
-              onCheckedChange={handleUseReactGridLayoutChange}
-              aria-label="Toggle new layout system"
-            />
           </div>
-        </div>
 
-        {/* Widget-Specific Settings Section */}
-        <div className="space-y-4 border-b py-4">
-          <Label className="text-sm font-medium">Widget Settings</Label>
-          <div className="flex items-center justify-between">
-            <div>
-              <Label
-                htmlFor="category-pie-chart"
-                className="text-sm font-medium"
-              >
-                Category Breakdown Pie Chart
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                Show pie chart visualization (requires 2x width and 2h+ height)
-              </p>
-            </div>
-            <Switch
-              id="category-pie-chart"
-              checked={
-                config.widgetSettings?.['category-breakdown']?.showPieChart ??
-                false
-              }
-              onCheckedChange={handleCategoryPieChartChange}
-              aria-label="Toggle category breakdown pie chart"
-            />
-          </div>
-        </div>
+          {/* Widget Settings Section */}
+          <div className="space-y-4 py-4">
+            {config.widgetOrder.map((widgetId, index) => {
+              const definition = WIDGET_DEFINITIONS[widgetId];
+              const isVisible = config.widgetVisibility[widgetId];
+              const isFirst = index === 0;
+              const isLast = index === config.widgetOrder.length - 1;
 
-        {/* Widget Settings Section */}
-        <div className="space-y-4 py-4">
-          {config.widgetOrder.map((widgetId, index) => {
-            const definition = WIDGET_DEFINITIONS[widgetId];
-            const isVisible = config.widgetVisibility[widgetId];
-            const isFirst = index === 0;
-            const isLast = index === config.widgetOrder.length - 1;
+              return (
+                <div
+                  key={widgetId}
+                  className={cn(
+                    'flex items-center justify-between rounded-lg border p-3',
+                    !isVisible && 'opacity-60'
+                  )}
+                >
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <Switch
+                      id={`widget-${widgetId}`}
+                      checked={isVisible}
+                      onCheckedChange={(checked) =>
+                        handleVisibilityChange(widgetId, checked)
+                      }
+                      disabled={!definition.canHide}
+                      aria-label={`Toggle ${definition.displayName} visibility`}
+                    />
+                    <div className="min-w-0">
+                      <Label
+                        htmlFor={`widget-${widgetId}`}
+                        className="cursor-pointer font-medium"
+                      >
+                        {definition.displayName}
+                      </Label>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {definition.description}
+                      </p>
+                    </div>
+                  </div>
 
-            return (
-              <div
-                key={widgetId}
-                className={cn(
-                  'flex items-center justify-between rounded-lg border p-3',
-                  !isVisible && 'opacity-60'
-                )}
-              >
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <Switch
-                    id={`widget-${widgetId}`}
-                    checked={isVisible}
-                    onCheckedChange={(checked) =>
-                      handleVisibilityChange(widgetId, checked)
-                    }
-                    disabled={!definition.canHide}
-                    aria-label={`Toggle ${definition.displayName} visibility`}
-                  />
-                  <div className="min-w-0">
-                    <Label
-                      htmlFor={`widget-${widgetId}`}
-                      className="cursor-pointer font-medium"
+                  <div className="ml-2 flex flex-shrink-0 items-center gap-1">
+                    {/* Widget column span selector - only shown in grid mode */}
+                    {config.layoutMode === 'grid' && (
+                      <Select
+                        value={String(
+                          config.widgetSpans?.[widgetId] ??
+                            DEFAULT_WIDGET_SPANS[widgetId] ??
+                            1
+                        )}
+                        onValueChange={(value) =>
+                          handleWidgetSpanChange(widgetId, value)
+                        }
+                        disabled={!isVisible}
+                      >
+                        <SelectTrigger
+                          className="h-8 w-16"
+                          aria-label={`Column span for ${definition.displayName}`}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1x</SelectItem>
+                          <SelectItem value="2">2x</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                    {/* Widget row span selector - only shown when dense packing is enabled */}
+                    {config.layoutMode === 'grid' && config.densePacking && (
+                      <Select
+                        value={String(
+                          config.widgetRowSpans?.[widgetId] ??
+                            DEFAULT_WIDGET_ROW_SPANS[widgetId] ??
+                            1
+                        )}
+                        onValueChange={(value) =>
+                          handleWidgetRowSpanChange(widgetId, value)
+                        }
+                        disabled={!isVisible}
+                      >
+                        <SelectTrigger
+                          className="h-8 w-16"
+                          aria-label={`Row span for ${definition.displayName}`}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1h</SelectItem>
+                          <SelectItem value="2">2h</SelectItem>
+                          <SelectItem value="3">3h</SelectItem>
+                          {widgetId === 'growth-chart' && (
+                            <SelectItem value="4">4h</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleMoveUp(widgetId)}
+                      disabled={isFirst}
+                      aria-label={`Move ${definition.displayName} up`}
                     >
-                      {definition.displayName}
-                    </Label>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {definition.description}
-                    </p>
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => handleMoveDown(widgetId)}
+                      disabled={isLast}
+                      aria-label={`Move ${definition.displayName} down`}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-
-                <div className="ml-2 flex flex-shrink-0 items-center gap-1">
-                  {/* Widget column span selector - only shown in grid mode */}
-                  {config.layoutMode === 'grid' && (
-                    <Select
-                      value={String(
-                        config.widgetSpans?.[widgetId] ??
-                          DEFAULT_WIDGET_SPANS[widgetId] ??
-                          1
-                      )}
-                      onValueChange={(value) =>
-                        handleWidgetSpanChange(widgetId, value)
-                      }
-                      disabled={!isVisible}
-                    >
-                      <SelectTrigger
-                        className="h-8 w-16"
-                        aria-label={`Column span for ${definition.displayName}`}
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1x</SelectItem>
-                        <SelectItem value="2">2x</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                  {/* Widget row span selector - only shown when dense packing is enabled */}
-                  {config.layoutMode === 'grid' && config.densePacking && (
-                    <Select
-                      value={String(
-                        config.widgetRowSpans?.[widgetId] ??
-                          DEFAULT_WIDGET_ROW_SPANS[widgetId] ??
-                          1
-                      )}
-                      onValueChange={(value) =>
-                        handleWidgetRowSpanChange(widgetId, value)
-                      }
-                      disabled={!isVisible}
-                    >
-                      <SelectTrigger
-                        className="h-8 w-16"
-                        aria-label={`Row span for ${definition.displayName}`}
-                      >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1h</SelectItem>
-                        <SelectItem value="2">2h</SelectItem>
-                        <SelectItem value="3">3h</SelectItem>
-                        {widgetId === 'growth-chart' && (
-                          <SelectItem value="4">4h</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => handleMoveUp(widgetId)}
-                    disabled={isFirst}
-                    aria-label={`Move ${definition.displayName} up`}
-                  >
-                    <ChevronUp className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => handleMoveDown(widgetId)}
-                    disabled={isLast}
-                    aria-label={`Move ${definition.displayName} down`}
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
         </ScrollableDialogContent>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">

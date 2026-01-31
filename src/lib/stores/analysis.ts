@@ -73,16 +73,20 @@ export const useAnalysisStore = create<AnalysisState>()(
             }
 
             const input: HealthScoreInput = {
-              holdings: holdings.map((h) => {
-                const asset = assets.find((a) => a.id === h.assetId);
-                return {
-                  assetId: h.assetId,
-                  value: h.currentValue.isNegative() ? new Decimal(0) : h.currentValue, // Handle negative values
-                  assetType: asset?.type || 'other',
-                  region: asset?.region,
-                  sector: asset?.sector,
-                };
-              }).filter((h) => h.value.greaterThan(0)), // Filter out zero-value holdings
+              holdings: holdings
+                .map((h) => {
+                  const asset = assets.find((a) => a.id === h.assetId);
+                  return {
+                    assetId: h.assetId,
+                    value: h.currentValue.isNegative()
+                      ? new Decimal(0)
+                      : h.currentValue, // Handle negative values
+                    assetType: asset?.type || 'other',
+                    region: asset?.region,
+                    sector: asset?.sector,
+                  };
+                })
+                .filter((h) => h.value.greaterThan(0)), // Filter out zero-value holdings
               totalValue,
             };
 
@@ -101,9 +105,10 @@ export const useAnalysisStore = create<AnalysisState>()(
 
             set({ health, isCalculating: false });
           } catch (error) {
-            const errorMessage = error instanceof Error
-              ? error.message
-              : `Failed to calculate health score: ${String(error)}`;
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : `Failed to calculate health score: ${String(error)}`;
             console.error('[Analysis Store] Health calculation error:', error);
             set({
               error: errorMessage,
@@ -144,10 +149,14 @@ export const useAnalysisStore = create<AnalysisState>()(
 
             set({ recommendations, isCalculating: false });
           } catch (error) {
-            const errorMessage = error instanceof Error
-              ? error.message
-              : `Failed to generate recommendations: ${String(error)}`;
-            console.error('[Analysis Store] Recommendation generation error:', error);
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : `Failed to generate recommendations: ${String(error)}`;
+            console.error(
+              '[Analysis Store] Recommendation generation error:',
+              error
+            );
             set({
               error: errorMessage,
               isCalculating: false,
@@ -163,7 +172,9 @@ export const useAnalysisStore = create<AnalysisState>()(
           set({ isCalculating: true, error: null });
           try {
             const { targetModels } = get();
-            const targetModel = targetModels.find((m) => m.id === targetModelId);
+            const targetModel = targetModels.find(
+              (m) => m.id === targetModelId
+            );
 
             if (!targetModel) {
               throw new Error('Target model not found');
@@ -198,10 +209,14 @@ export const useAnalysisStore = create<AnalysisState>()(
 
             set({ rebalancingPlan, isCalculating: false });
           } catch (error) {
-            const errorMessage = error instanceof Error
-              ? error.message
-              : `Failed to calculate rebalancing: ${String(error)}`;
-            console.error('[Analysis Store] Rebalancing calculation error:', error);
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : `Failed to calculate rebalancing: ${String(error)}`;
+            console.error(
+              '[Analysis Store] Rebalancing calculation error:',
+              error
+            );
             set({
               error: errorMessage,
               isCalculating: false,
@@ -240,11 +255,14 @@ export const useAnalysisStore = create<AnalysisState>()(
 
             set({ targetModels: models });
           } catch (error) {
-            console.error('[Analysis Store] Failed to load target models:', error);
+            console.error(
+              '[Analysis Store] Failed to load target models:',
+              error
+            );
             // Fallback to predefined models
             set({
               targetModels: PREDEFINED_TARGET_MODELS,
-              error: 'Failed to load custom target models, using defaults'
+              error: 'Failed to load custom target models, using defaults',
             });
           }
         },

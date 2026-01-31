@@ -137,7 +137,9 @@ describe('Health Scoring Service', () => {
       };
 
       const health = calculateHealthScore(input, ANALYSIS_PROFILES[1]);
-      const performanceMetric = health.metrics.find((m) => m.id === 'performance');
+      const performanceMetric = health.metrics.find(
+        (m) => m.id === 'performance'
+      );
 
       expect(performanceMetric).toBeDefined();
       expect(performanceMetric!.score).toBeGreaterThan(0);
@@ -164,7 +166,9 @@ describe('Health Scoring Service', () => {
       };
 
       const health = calculateHealthScore(input, ANALYSIS_PROFILES[1]);
-      const performanceMetric = health.metrics.find((m) => m.id === 'performance');
+      const performanceMetric = health.metrics.find(
+        (m) => m.id === 'performance'
+      );
 
       expect(performanceMetric).toBeDefined();
       expect(performanceMetric!.score).toBeGreaterThanOrEqual(0);
@@ -187,11 +191,15 @@ describe('Health Scoring Service', () => {
       };
 
       const health = calculateHealthScore(input, ANALYSIS_PROFILES[1]);
-      const performanceMetric = health.metrics.find((m) => m.id === 'performance');
+      const performanceMetric = health.metrics.find(
+        (m) => m.id === 'performance'
+      );
 
       expect(performanceMetric).toBeDefined();
       expect(performanceMetric!.score).toBe(50); // Neutral score when no data
-      expect(performanceMetric!.details).toContain('Performance data not available');
+      expect(performanceMetric!.details).toContain(
+        'Performance data not available'
+      );
     });
 
     it('should handle undefined/null performance values', () => {

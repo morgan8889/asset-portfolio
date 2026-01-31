@@ -21,9 +21,15 @@ vi.mock('@/lib/utils/logger', () => ({
 
 // Mock validation functions
 vi.mock('@/lib/utils/validation', () => ({
-  validateSymbol: vi.fn((symbol: string) => /^[\^]?[A-Z0-9.]{1,10}$/.test(symbol)),
+  validateSymbol: vi.fn((symbol: string) =>
+    /^[\^]?[A-Z0-9.]{1,10}$/.test(symbol)
+  ),
   sanitizeSymbol: vi.fn((input: string) =>
-    input.replace(/[^a-zA-Z0-9.\^]/g, '').trim().toUpperCase().slice(0, 15)
+    input
+      .replace(/[^a-zA-Z0-9.\^]/g, '')
+      .trim()
+      .toUpperCase()
+      .slice(0, 15)
   ),
   sanitizeInput: vi.fn((input: string) =>
     input.replace(/[^a-zA-Z0-9]/g, '').slice(0, 20)
@@ -472,10 +478,13 @@ describe('API Routes Integration Tests', () => {
 
       const { POST } = await import('@/app/api/prices/batch/route');
 
-      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
-        method: 'POST',
-        body: JSON.stringify({ symbols: ['AAPL', 'GOOGL', 'MSFT'] }),
-      });
+      const request = new NextRequest(
+        'http://localhost:3000/api/prices/batch',
+        {
+          method: 'POST',
+          body: JSON.stringify({ symbols: ['AAPL', 'GOOGL', 'MSFT'] }),
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(200);
@@ -492,10 +501,13 @@ describe('API Routes Integration Tests', () => {
     it('should reject empty symbols array', async () => {
       const { POST } = await import('@/app/api/prices/batch/route');
 
-      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
-        method: 'POST',
-        body: JSON.stringify({ symbols: [] }),
-      });
+      const request = new NextRequest(
+        'http://localhost:3000/api/prices/batch',
+        {
+          method: 'POST',
+          body: JSON.stringify({ symbols: [] }),
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(400);
@@ -507,10 +519,13 @@ describe('API Routes Integration Tests', () => {
     it('should reject request without symbols', async () => {
       const { POST } = await import('@/app/api/prices/batch/route');
 
-      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
-        method: 'POST',
-        body: JSON.stringify({}),
-      });
+      const request = new NextRequest(
+        'http://localhost:3000/api/prices/batch',
+        {
+          method: 'POST',
+          body: JSON.stringify({}),
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(400);
@@ -522,10 +537,13 @@ describe('API Routes Integration Tests', () => {
     it('should reject request with non-array symbols', async () => {
       const { POST } = await import('@/app/api/prices/batch/route');
 
-      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
-        method: 'POST',
-        body: JSON.stringify({ symbols: 'AAPL' }),
-      });
+      const request = new NextRequest(
+        'http://localhost:3000/api/prices/batch',
+        {
+          method: 'POST',
+          body: JSON.stringify({ symbols: 'AAPL' }),
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(400);
@@ -540,10 +558,13 @@ describe('API Routes Integration Tests', () => {
       // Create array with 21 symbols (exceeds max of 20)
       const symbols = Array.from({ length: 21 }, (_, i) => `SYM${i}`);
 
-      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
-        method: 'POST',
-        body: JSON.stringify({ symbols }),
-      });
+      const request = new NextRequest(
+        'http://localhost:3000/api/prices/batch',
+        {
+          method: 'POST',
+          body: JSON.stringify({ symbols }),
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(400);
@@ -555,10 +576,13 @@ describe('API Routes Integration Tests', () => {
     it('should reject invalid JSON body', async () => {
       const { POST } = await import('@/app/api/prices/batch/route');
 
-      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
-        method: 'POST',
-        body: 'invalid json',
-      });
+      const request = new NextRequest(
+        'http://localhost:3000/api/prices/batch',
+        {
+          method: 'POST',
+          body: 'invalid json',
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(400);
@@ -593,12 +617,15 @@ describe('API Routes Integration Tests', () => {
       const { POST } = await import('@/app/api/prices/batch/route');
 
       // Mix of valid and invalid symbols
-      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
-        method: 'POST',
-        body: JSON.stringify({
-          symbols: ['AAPL', 'INVALID!!!', 'GOOGL', '', 123],
-        }),
-      });
+      const request = new NextRequest(
+        'http://localhost:3000/api/prices/batch',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            symbols: ['AAPL', 'INVALID!!!', 'GOOGL', '', 123],
+          }),
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(200);
@@ -612,12 +639,15 @@ describe('API Routes Integration Tests', () => {
     it('should return error when no valid symbols provided', async () => {
       const { POST } = await import('@/app/api/prices/batch/route');
 
-      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
-        method: 'POST',
-        body: JSON.stringify({
-          symbols: ['!!!', '???', ''],
-        }),
-      });
+      const request = new NextRequest(
+        'http://localhost:3000/api/prices/batch',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            symbols: ['!!!', '???', ''],
+          }),
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(400);
@@ -635,10 +665,13 @@ describe('API Routes Integration Tests', () => {
 
       const { POST } = await import('@/app/api/prices/batch/route');
 
-      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
-        method: 'POST',
-        body: JSON.stringify({ symbols: ['AAPL', 'GOOGL'] }),
-      });
+      const request = new NextRequest(
+        'http://localhost:3000/api/prices/batch',
+        {
+          method: 'POST',
+          body: JSON.stringify({ symbols: ['AAPL', 'GOOGL'] }),
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(429);
@@ -673,26 +706,34 @@ describe('API Routes Integration Tests', () => {
       const { POST } = await import('@/app/api/prices/batch/route');
 
       // First request
-      const request1 = new NextRequest('http://localhost:3000/api/prices/batch', {
-        method: 'POST',
-        body: JSON.stringify({ symbols: ['AAPL'] }),
-      });
+      const request1 = new NextRequest(
+        'http://localhost:3000/api/prices/batch',
+        {
+          method: 'POST',
+          body: JSON.stringify({ symbols: ['AAPL'] }),
+        }
+      );
 
       const response1 = await POST(request1);
       expect(response1.status).toBe(200);
 
       // Second request (should be cached)
-      const request2 = new NextRequest('http://localhost:3000/api/prices/batch', {
-        method: 'POST',
-        body: JSON.stringify({ symbols: ['AAPL'] }),
-      });
+      const request2 = new NextRequest(
+        'http://localhost:3000/api/prices/batch',
+        {
+          method: 'POST',
+          body: JSON.stringify({ symbols: ['AAPL'] }),
+        }
+      );
 
       const response2 = await POST(request2);
       expect(response2.status).toBe(200);
 
       const data2 = await response2.json();
       // At least one result should be cached
-      const cachedResults = data2.successful.filter((r: any) => r.cached === true);
+      const cachedResults = data2.successful.filter(
+        (r: any) => r.cached === true
+      );
       expect(cachedResults.length).toBeGreaterThan(0);
     }, 15000);
 
@@ -737,10 +778,13 @@ describe('API Routes Integration Tests', () => {
       const validSymbol = 'AAPL'; // Known valid symbol
       const invalidSymbol = 'ZZZZZZINVALID999'; // Definitely invalid symbol
 
-      const request = new NextRequest('http://localhost:3000/api/prices/batch', {
-        method: 'POST',
-        body: JSON.stringify({ symbols: [validSymbol, invalidSymbol] }),
-      });
+      const request = new NextRequest(
+        'http://localhost:3000/api/prices/batch',
+        {
+          method: 'POST',
+          body: JSON.stringify({ symbols: [validSymbol, invalidSymbol] }),
+        }
+      );
 
       const response = await POST(request);
       expect(response.status).toBe(200);
@@ -750,7 +794,9 @@ describe('API Routes Integration Tests', () => {
       expect(data.total).toBeGreaterThanOrEqual(1);
       // We expect the valid symbol to succeed and the invalid to fail,
       // but the API may filter out invalid symbols before processing
-      expect(data.successful.length + data.failed.length).toBeGreaterThanOrEqual(1);
+      expect(
+        data.successful.length + data.failed.length
+      ).toBeGreaterThanOrEqual(1);
     }, 15000);
   });
 });

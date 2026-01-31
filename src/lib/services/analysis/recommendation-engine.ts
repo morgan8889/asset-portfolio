@@ -33,7 +33,10 @@ interface RecommendationInput {
 export function generateRecommendations(
   input: RecommendationInput
 ): Recommendation[] {
-  const thresholds = { ...DEFAULT_RECOMMENDATION_THRESHOLDS, ...input.thresholds };
+  const thresholds = {
+    ...DEFAULT_RECOMMENDATION_THRESHOLDS,
+    ...input.thresholds,
+  };
   const recommendations: Recommendation[] = [];
 
   // Check each rule
@@ -113,7 +116,10 @@ function checkAssetTypeConcentration(
 
   // Log warning if assets are missing
   if (missingAssets.length > 0) {
-    console.warn('[Recommendation Engine] Missing asset data for holdings:', missingAssets);
+    console.warn(
+      '[Recommendation Engine] Missing asset data for holdings:',
+      missingAssets
+    );
   }
 
   // Find the most concentrated asset type
@@ -140,7 +146,11 @@ function checkAssetTypeConcentration(
       severity: maxPercent > 60 ? 'high' : 'medium',
       actionLabel: 'Diversify Portfolio',
       actionUrl: '/analysis',
-      metadata: { assetType: maxType, percent: maxPercent, threshold: thresholds.concentrationPercent },
+      metadata: {
+        assetType: maxType,
+        percent: maxPercent,
+        threshold: thresholds.concentrationPercent,
+      },
     };
   }
 
@@ -172,7 +182,10 @@ function checkRegionConcentration(
 
   // Log warning if assets are missing
   if (missingAssets.length > 0) {
-    console.warn('[Recommendation Engine] Missing asset data for holdings in region check:', missingAssets);
+    console.warn(
+      '[Recommendation Engine] Missing asset data for holdings in region check:',
+      missingAssets
+    );
   }
 
   // Find most concentrated region
@@ -199,7 +212,11 @@ function checkRegionConcentration(
       severity: maxPercent > 90 ? 'high' : 'medium',
       actionLabel: 'View Regional Breakdown',
       actionUrl: '/analysis',
-      metadata: { region: maxRegion, percent: maxPercent, threshold: thresholds.regionConcentrationPercent },
+      metadata: {
+        region: maxRegion,
+        percent: maxPercent,
+        threshold: thresholds.regionConcentrationPercent,
+      },
     };
   }
 
@@ -232,7 +249,10 @@ function checkSectorConcentration(
 
   // Log warning if assets are missing
   if (missingAssets.length > 0) {
-    console.warn('[Recommendation Engine] Missing asset data for holdings in sector check:', missingAssets);
+    console.warn(
+      '[Recommendation Engine] Missing asset data for holdings in sector check:',
+      missingAssets
+    );
   }
 
   // Find most concentrated sector
@@ -259,7 +279,11 @@ function checkSectorConcentration(
       severity: maxPercent > 70 ? 'high' : 'medium',
       actionLabel: 'View Sector Breakdown',
       actionUrl: '/analysis',
-      metadata: { sector: maxSector, percent: maxPercent, threshold: thresholds.sectorConcentrationPercent },
+      metadata: {
+        sector: maxSector,
+        percent: maxPercent,
+        threshold: thresholds.sectorConcentrationPercent,
+      },
     };
   }
 

@@ -83,7 +83,11 @@ export function AllocationChart({
               height={80}
             />
             <YAxis
-              label={{ value: 'Allocation %', angle: -90, position: 'insideLeft' }}
+              label={{
+                value: 'Allocation %',
+                angle: -90,
+                position: 'insideLeft',
+              }}
             />
             <Tooltip
               formatter={(value: number) => `${value.toFixed(1)}%`}
@@ -93,16 +97,8 @@ export function AllocationChart({
               }}
             />
             <Legend />
-            <Bar
-              dataKey="current"
-              fill="hsl(var(--primary))"
-              name="Current"
-            />
-            <Bar
-              dataKey="target"
-              fill="hsl(var(--accent))"
-              name="Target"
-            />
+            <Bar dataKey="current" fill="hsl(var(--primary))" name="Current" />
+            <Bar dataKey="target" fill="hsl(var(--accent))" name="Target" />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>
