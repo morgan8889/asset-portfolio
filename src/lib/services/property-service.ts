@@ -2,7 +2,14 @@ import { Decimal } from 'decimal.js';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '@/lib/db/schema';
 import { Asset, Holding, Transaction, RentalInfo } from '@/types';
-import type { AssetId, HoldingId, TransactionId, PriceHistoryId, HoldingStorage, TransactionStorage } from '@/types/storage';
+import type {
+  AssetId,
+  HoldingId,
+  TransactionId,
+  PriceHistoryId,
+  HoldingStorage,
+  TransactionStorage,
+} from '@/types/storage';
 
 /**
  * Property Service
@@ -75,9 +82,10 @@ export function getAssetAnnualYield(asset: Asset): number | undefined {
     return undefined;
   }
 
-  const monthlyRent = typeof asset.rentalInfo.monthlyRent === 'string'
-    ? new Decimal(asset.rentalInfo.monthlyRent)
-    : asset.rentalInfo.monthlyRent;
+  const monthlyRent =
+    typeof asset.rentalInfo.monthlyRent === 'string'
+      ? new Decimal(asset.rentalInfo.monthlyRent)
+      : asset.rentalInfo.monthlyRent;
 
   return calculateYield(monthlyRent, new Decimal(currentPrice));
 }
@@ -123,7 +131,9 @@ export async function addPropertyAsset(
   // Parse monetary values
   const purchasePrice = new Decimal(data.purchasePrice);
   const currentValue = new Decimal(data.currentValue);
-  const monthlyRent = data.monthlyRent ? new Decimal(data.monthlyRent) : new Decimal(0);
+  const monthlyRent = data.monthlyRent
+    ? new Decimal(data.monthlyRent)
+    : new Decimal(0);
 
   // Validate values
   if (purchasePrice.isNegative()) {
@@ -181,8 +191,14 @@ export async function addPropertyAsset(
   await db.assets.add(asset);
 
   // Calculate net values based on ownership percentage
-  const netCurrentValue = calculateNetValue(currentValue, data.ownershipPercentage);
-  const netPurchasePrice = calculateNetValue(purchasePrice, data.ownershipPercentage);
+  const netCurrentValue = calculateNetValue(
+    currentValue,
+    data.ownershipPercentage
+  );
+  const netPurchasePrice = calculateNetValue(
+    purchasePrice,
+    data.ownershipPercentage
+  );
   const unrealizedGain = netCurrentValue.sub(netPurchasePrice);
   const unrealizedGainPercent = netPurchasePrice.isZero()
     ? 0

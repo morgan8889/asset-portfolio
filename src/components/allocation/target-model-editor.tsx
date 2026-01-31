@@ -54,17 +54,23 @@ export function TargetModelEditor({
   );
 
   // Validate form
-  const isValid = name.trim().length > 0 && Math.abs(totalPercentage - 100) < 0.01;
+  const isValid =
+    name.trim().length > 0 && Math.abs(totalPercentage - 100) < 0.01;
   const isDifferent = totalPercentage !== 100;
 
   // Update a target category
-  const updateTarget = (index: number, field: 'category' | 'percentage', value: string | number) => {
+  const updateTarget = (
+    index: number,
+    field: 'category' | 'percentage',
+    value: string | number
+  ) => {
     setTargets((prev) => {
       const updated = [...prev];
       if (field === 'category') {
         updated[index] = { ...updated[index], category: value as string };
       } else {
-        const numValue = typeof value === 'number' ? value : parseFloat(value as string) || 0;
+        const numValue =
+          typeof value === 'number' ? value : parseFloat(value as string) || 0;
         updated[index] = { ...updated[index], percentage: numValue };
       }
       return updated;
@@ -123,7 +129,9 @@ export function TargetModelEditor({
 
       await onSave(name, targetsRecord);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save target model');
+      setError(
+        err instanceof Error ? err.message : 'Failed to save target model'
+      );
       setSaving(false);
     }
   };
@@ -166,11 +174,7 @@ export function TargetModelEditor({
               Total: {formatPercentage(totalPercentage)}
             </span>
             {targets.length < availableCategories.length && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={addCategory}
-              >
+              <Button variant="outline" size="sm" onClick={addCategory}>
                 <Plus className="h-4 w-4" />
               </Button>
             )}
@@ -217,7 +221,10 @@ export function TargetModelEditor({
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor={`percentage-${index}`} className="text-xs">
+                      <Label
+                        htmlFor={`percentage-${index}`}
+                        className="text-xs"
+                      >
                         Target Percentage
                       </Label>
                       <span className="text-sm font-medium">

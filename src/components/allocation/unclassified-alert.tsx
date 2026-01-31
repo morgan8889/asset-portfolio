@@ -10,7 +10,10 @@ interface UnclassifiedAlertProps {
   dimension: 'assetClass' | 'sector' | 'region';
 }
 
-export function UnclassifiedAlert({ count, dimension }: UnclassifiedAlertProps) {
+export function UnclassifiedAlert({
+  count,
+  dimension,
+}: UnclassifiedAlertProps) {
   const router = useRouter();
 
   if (count === 0) {
@@ -24,15 +27,19 @@ export function UnclassifiedAlert({ count, dimension }: UnclassifiedAlertProps) 
   }[dimension];
 
   return (
-    <Alert variant="destructive" className="border-amber-500 bg-amber-50 dark:bg-amber-950">
+    <Alert
+      variant="destructive"
+      className="border-amber-500 bg-amber-50 dark:bg-amber-950"
+    >
       <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
       <AlertTitle className="text-amber-900 dark:text-amber-100">
         Unclassified Assets Detected
       </AlertTitle>
       <AlertDescription className="text-amber-800 dark:text-amber-200">
         <p className="mb-3">
-          {count} {count === 1 ? 'holding has' : 'holdings have'} no {dimensionLabel}{' '}
-          assigned. This affects your allocation analysis accuracy.
+          {count} {count === 1 ? 'holding has' : 'holdings have'} no{' '}
+          {dimensionLabel} assigned. This affects your allocation analysis
+          accuracy.
         </p>
         <Button
           variant="outline"

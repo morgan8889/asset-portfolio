@@ -34,8 +34,8 @@ export function ExclusionToggle({
           Exclude from Rebalancing
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Toggle portfolios to exclude from rebalancing calculations (e.g., locked 401k
-          accounts).
+          Toggle portfolios to exclude from rebalancing calculations (e.g.,
+          locked 401k accounts).
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -47,10 +47,15 @@ export function ExclusionToggle({
               className="flex items-center justify-between rounded-lg border p-3"
             >
               <div className="flex-1">
-                <Label htmlFor={`exclude-${portfolio.id}`} className="font-medium">
+                <Label
+                  htmlFor={`exclude-${portfolio.id}`}
+                  className="font-medium"
+                >
                   {portfolio.name}
                 </Label>
-                <p className="text-xs text-muted-foreground">{portfolio.type}</p>
+                <p className="text-xs text-muted-foreground">
+                  {portfolio.type}
+                </p>
               </div>
               <Switch
                 id={`exclude-${portfolio.id}`}

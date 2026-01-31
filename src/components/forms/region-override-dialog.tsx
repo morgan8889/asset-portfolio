@@ -166,42 +166,42 @@ export function RegionOverrideDialog({
             )}
           </div>
 
-            <div className="rounded-md bg-muted p-3 text-sm">
-              <div className="mb-1 font-medium">Detection Info:</div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Auto-detected:</span>
-                <span className="font-medium">
-                  {inferredRegion
-                    ? REGION_OPTIONS.find((opt) => opt.value === inferredRegion)
-                        ?.label || inferredRegion
-                    : 'Unknown'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Current Setting:</span>
-                <span className="font-medium">
-                  {asset.region
-                    ? REGION_OPTIONS.find((opt) => opt.value === asset.region)
-                        ?.label || asset.region
-                    : 'Not set (using auto-detected)'}
-                </span>
-              </div>
+          <div className="rounded-md bg-muted p-3 text-sm">
+            <div className="mb-1 font-medium">Detection Info:</div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Auto-detected:</span>
+              <span className="font-medium">
+                {inferredRegion
+                  ? REGION_OPTIONS.find((opt) => opt.value === inferredRegion)
+                      ?.label || inferredRegion
+                  : 'Unknown'}
+              </span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Current Setting:</span>
+              <span className="font-medium">
+                {asset.region
+                  ? REGION_OPTIONS.find((opt) => opt.value === asset.region)
+                      ?.label || asset.region
+                  : 'Not set (using auto-detected)'}
+              </span>
+            </div>
+          </div>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Updating...' : 'Update Region'}
-              </Button>
-            </DialogFooter>
-          </form>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Updating...' : 'Update Region'}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

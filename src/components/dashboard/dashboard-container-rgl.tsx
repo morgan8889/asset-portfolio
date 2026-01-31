@@ -7,7 +7,10 @@
  */
 
 import React, { useEffect, useMemo, useCallback, memo } from 'react';
-import { Responsive as ResponsiveGridLayout, useContainerWidth } from 'react-grid-layout';
+import {
+  Responsive as ResponsiveGridLayout,
+  useContainerWidth,
+} from 'react-grid-layout';
 import type ReactGridLayout from 'react-grid-layout';
 import { Decimal } from 'decimal.js';
 import { PieChart } from 'lucide-react';
@@ -131,12 +134,8 @@ const DashboardContainerRGLComponent = ({
   // Get container width for react-grid-layout v2.x
   const { containerRef, width: measuredWidth } = useContainerWidth();
 
-  const {
-    config,
-    setRGLLayouts,
-    setWidgetSpan,
-    setWidgetRowSpan,
-  } = useDashboardStore();
+  const { config, setRGLLayouts, setWidgetSpan, setWidgetRowSpan } =
+    useDashboardStore();
 
   // Account for RGL horizontal margins to prevent overflow
   // RGL applies margins between and around grid items
@@ -152,11 +151,7 @@ const DashboardContainerRGLComponent = ({
   const cols = determineColumnCount(measuredWidth);
   const totalHorizontalMargins = (cols + 1) * MARGIN_SIZE;
   const width = Math.max(0, measuredWidth - totalHorizontalMargins);
-  const {
-    metrics,
-    holdings,
-    assets,
-  } = usePortfolioStore();
+  const { metrics, holdings, assets } = usePortfolioStore();
   const { loading: priceLoading } = usePriceStore();
   const setSymbolAssetMappings = usePriceStore(
     (state) => state.setSymbolAssetMappings

@@ -101,7 +101,10 @@ export async function updateTargetModel(
 
   // Validate if targets are being updated
   if (updates.targets) {
-    const sum = Object.values(updates.targets).reduce((acc, val) => acc + val, 0);
+    const sum = Object.values(updates.targets).reduce(
+      (acc, val) => acc + val,
+      0
+    );
     if (Math.abs(sum - 100) > 0.01) {
       throw new Error(
         `Target percentages must sum to 100%. Current sum: ${sum.toFixed(2)}%`
@@ -199,7 +202,5 @@ export async function removeRebalancingExclusion(
   portfolioId: string
 ): Promise<void> {
   const existing = await getRebalancingExclusions();
-  await setRebalancingExclusions(
-    existing.filter((id) => id !== portfolioId)
-  );
+  await setRebalancingExclusions(existing.filter((id) => id !== portfolioId));
 }

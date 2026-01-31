@@ -181,7 +181,9 @@ describe('TargetService', () => {
     it('should throw error if model not found', async () => {
       vi.mocked(db.userSettings.first).mockResolvedValue(undefined);
 
-      await expect(deleteTargetModel('nonexistent')).rejects.toThrow('not found');
+      await expect(deleteTargetModel('nonexistent')).rejects.toThrow(
+        'not found'
+      );
     });
   });
 

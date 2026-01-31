@@ -34,7 +34,10 @@ export async function cloneTargetModel(
 
   // Save to userSettings using transaction
   await db.transaction('rw', db.userSettings, async () => {
-    const existing = await db.userSettings.where('key').equals('target_models').first();
+    const existing = await db.userSettings
+      .where('key')
+      .equals('target_models')
+      .first();
     const models = (existing?.value as TargetModel[]) || [];
     models.push(clonedModel);
 
@@ -61,7 +64,10 @@ export async function updateTargetModel(
   updates: Partial<Omit<TargetModel, 'id' | 'isSystem'>>
 ): Promise<void> {
   await db.transaction('rw', db.userSettings, async () => {
-    const existing = await db.userSettings.where('key').equals('target_models').first();
+    const existing = await db.userSettings
+      .where('key')
+      .equals('target_models')
+      .first();
     const models = (existing?.value as TargetModel[]) || [];
 
     const modelIndex = models.findIndex((m) => m.id === modelId);
@@ -100,7 +106,10 @@ export async function updateTargetModel(
  */
 export async function deleteTargetModel(modelId: string): Promise<void> {
   await db.transaction('rw', db.userSettings, async () => {
-    const existing = await db.userSettings.where('key').equals('target_models').first();
+    const existing = await db.userSettings
+      .where('key')
+      .equals('target_models')
+      .first();
     const models = (existing?.value as TargetModel[]) || [];
 
     const model = models.find((m) => m.id === modelId);
@@ -141,7 +150,10 @@ export async function createTargetModel(
   };
 
   await db.transaction('rw', db.userSettings, async () => {
-    const existing = await db.userSettings.where('key').equals('target_models').first();
+    const existing = await db.userSettings
+      .where('key')
+      .equals('target_models')
+      .first();
     const models = (existing?.value as TargetModel[]) || [];
     models.push(newModel);
 

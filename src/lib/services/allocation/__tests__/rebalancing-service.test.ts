@@ -244,7 +244,9 @@ describe('RebalancingService', () => {
         'assetClass'
       );
 
-      const stockItem = allocation.breakdown.find((b) => b.category === 'stock');
+      const stockItem = allocation.breakdown.find(
+        (b) => b.category === 'stock'
+      );
       expect(stockItem?.count).toBe(2);
     });
   });

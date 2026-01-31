@@ -140,12 +140,19 @@ export class PortfolioDatabase extends Dexie {
     _trans: unknown
   ): void => {
     // Handle RentalInfo decimal fields on update
-    if (modifications.rentalInfo && modifications.rentalInfo.monthlyRent instanceof Decimal) {
-      modifications.rentalInfo.monthlyRent = modifications.rentalInfo.monthlyRent.toString() as any;
+    if (
+      modifications.rentalInfo &&
+      modifications.rentalInfo.monthlyRent instanceof Decimal
+    ) {
+      modifications.rentalInfo.monthlyRent =
+        modifications.rentalInfo.monthlyRent.toString() as any;
     }
 
     // Ensure priceUpdatedAt is a Date if modified
-    if (modifications.priceUpdatedAt && !(modifications.priceUpdatedAt instanceof Date)) {
+    if (
+      modifications.priceUpdatedAt &&
+      !(modifications.priceUpdatedAt instanceof Date)
+    ) {
       modifications.priceUpdatedAt = new Date(modifications.priceUpdatedAt);
     }
   };
