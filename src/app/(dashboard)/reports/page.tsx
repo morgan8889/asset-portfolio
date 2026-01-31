@@ -7,13 +7,18 @@ import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { useExportStore } from '@/lib/stores/export';
 import { exportService } from '@/lib/services/export-service';
 import { ExportButton } from '@/components/reports/export-button';
+import { DateRangeSelect } from '@/components/reports/date-range-select';
 import { useToast } from '@/components/ui/use-toast';
+import type { DateRangePreset } from '@/types/export';
 
 export default function ReportsPage() {
   const { currentPortfolio } = usePortfolioStore();
   const { updateProgress, resetProgress } = useExportStore();
   const { toast } = useToast();
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isGeneratingTransactionsCsv, setIsGeneratingTransactionsCsv] = useState(false);
+  const [isGeneratingHoldingsCsv, setIsGeneratingHoldingsCsv] = useState(false);
+  const [transactionDateRange, setTransactionDateRange] = useState<DateRangePreset>('YTD');
 
   const handleGeneratePerformancePdf = async () => {
     if (!currentPortfolio) {
@@ -25,7 +30,7 @@ export default function ReportsPage() {
       return;
     }
 
-    setIsGenerating(true);
+    setIsGeneratingPdf(true);
     resetProgress();
 
     try {
@@ -48,23 +53,84 @@ export default function ReportsPage() {
         variant: 'destructive',
       });
     } finally {
-      setIsGenerating(false);
+      setIsGeneratingPdf(false);
       setTimeout(() => resetProgress(), 2000);
     }
   };
 
   const handleGenerateTransactionsCsv = async () => {
-    toast({
-      title: 'Coming Soon',
-      description: 'Transaction CSV export will be available in the next release.',
-    });
+    if (!currentPortfolio) {
+      toast({
+        title: 'No Portfolio Selected',
+        description: 'Please select a portfolio first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsGeneratingTransactionsCsv(true);
+    resetProgress();
+
+    try {
+      await exportService.exportTransactionsCsv(
+        currentPortfolio.id,
+        transactionDateRange,
+        (progress) => {
+          updateProgress(progress);
+        }
+      );
+
+      toast({
+        title: 'Success',
+        description: 'Transaction history exported successfully!',
+      });
+    } catch (error) {
+      toast({
+        title: 'Export Failed',
+        description: error instanceof Error ? error.message : 'Failed to export transactions',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGeneratingTransactionsCsv(false);
+      setTimeout(() => resetProgress(), 2000);
+    }
   };
 
   const handleGenerateHoldingsCsv = async () => {
-    toast({
-      title: 'Coming Soon',
-      description: 'Holdings CSV export will be available in the next release.',
-    });
+    if (!currentPortfolio) {
+      toast({
+        title: 'No Portfolio Selected',
+        description: 'Please select a portfolio first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsGeneratingHoldingsCsv(true);
+    resetProgress();
+
+    try {
+      await exportService.exportHoldingsCsv(
+        currentPortfolio.id,
+        (progress) => {
+          updateProgress(progress);
+        }
+      );
+
+      toast({
+        title: 'Success',
+        description: 'Holdings exported successfully!',
+      });
+    } catch (error) {
+      toast({
+        title: 'Export Failed',
+        description: error instanceof Error ? error.message : 'Failed to export holdings',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGeneratingHoldingsCsv(false);
+      setTimeout(() => resetProgress(), 2000);
+    }
   };
 
   const hasPortfolio = !!currentPortfolio;
@@ -106,7 +172,7 @@ export default function ReportsPage() {
             </p>
             <ExportButton
               onClick={handleGeneratePerformancePdf}
-              disabled={!hasPortfolio || isGenerating}
+              disabled={!hasPortfolio || isGeneratingPdf}
             >
               Download PDF
             </ExportButton>
@@ -124,9 +190,19 @@ export default function ReportsPage() {
             <p className="mb-4 text-sm text-muted-foreground">
               Complete transaction history for tax filing and analysis.
             </p>
+            <div className="mb-4">
+              <label className="mb-2 block text-sm font-medium">
+                Date Range
+              </label>
+              <DateRangeSelect
+                value={transactionDateRange}
+                onValueChange={setTransactionDateRange}
+                disabled={!hasPortfolio || isGeneratingTransactionsCsv}
+              />
+            </div>
             <ExportButton
               onClick={handleGenerateTransactionsCsv}
-              disabled={!hasPortfolio}
+              disabled={!hasPortfolio || isGeneratingTransactionsCsv}
             >
               Download CSV
             </ExportButton>
@@ -146,7 +222,7 @@ export default function ReportsPage() {
             </p>
             <ExportButton
               onClick={handleGenerateHoldingsCsv}
-              disabled={!hasPortfolio}
+              disabled={!hasPortfolio || isGeneratingHoldingsCsv}
             >
               Download CSV
             </ExportButton>
