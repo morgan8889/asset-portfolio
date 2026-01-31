@@ -238,31 +238,53 @@ export function generateScenariosForRange(
 }
 
 /**
- * Asset-specific volatility multipliers
+ * Asset profile with volatility and return characteristics
  */
-export const ASSET_VOLATILITY_MULTIPLIERS: Record<string, number> = {
+export interface AssetProfile {
+  volatilityMultiplier: number;
+  returnMultiplier: number;
+}
+
+/**
+ * Asset-specific profiles combining volatility and return multipliers
+ */
+export const ASSET_PROFILES: Record<string, AssetProfile> = {
   // Large Cap Tech
-  AAPL: 0.9,
-  MSFT: 0.85,
-  GOOGL: 0.95,
+  AAPL: { volatilityMultiplier: 0.9, returnMultiplier: 1.2 },
+  MSFT: { volatilityMultiplier: 0.85, returnMultiplier: 1.15 },
+  GOOGL: { volatilityMultiplier: 0.95, returnMultiplier: 1.0 },
   // High Growth Tech
-  AMZN: 1.15,
-  TSLA: 1.8,
-  NVDA: 1.4,
+  AMZN: { volatilityMultiplier: 1.15, returnMultiplier: 1.1 },
+  TSLA: { volatilityMultiplier: 1.8, returnMultiplier: 1.8 },
+  NVDA: { volatilityMultiplier: 1.4, returnMultiplier: 1.5 },
   // ETFs
-  VTI: 0.85,
-  VXUS: 1.0,
-  BND: 0.3,
-  VNQ: 1.1,
+  VTI: { volatilityMultiplier: 0.85, returnMultiplier: 1.0 },
+  VXUS: { volatilityMultiplier: 1.0, returnMultiplier: 1.0 },
+  BND: { volatilityMultiplier: 0.3, returnMultiplier: 0.3 },
+  VNQ: { volatilityMultiplier: 1.1, returnMultiplier: 0.9 },
   // Crypto
-  BTC: 3.0,
-  ETH: 3.5,
+  BTC: { volatilityMultiplier: 3.0, returnMultiplier: 2.5 },
+  ETH: { volatilityMultiplier: 3.5, returnMultiplier: 2.8 },
   // Defensive Stocks
-  KO: 0.7,
-  PG: 0.65,
-  JNJ: 0.7,
+  KO: { volatilityMultiplier: 0.7, returnMultiplier: 0.8 },
+  PG: { volatilityMultiplier: 0.65, returnMultiplier: 0.75 },
+  JNJ: { volatilityMultiplier: 0.7, returnMultiplier: 0.85 },
+  // Healthcare
+  UNH: { volatilityMultiplier: 0.85, returnMultiplier: 1.1 },
+  // Financials
+  JPM: { volatilityMultiplier: 1.0, returnMultiplier: 0.95 },
+  BAC: { volatilityMultiplier: 1.1, returnMultiplier: 1.0 },
   // Commodities
-  GLD: 0.8,
+  GLD: { volatilityMultiplier: 0.8, returnMultiplier: 0.5 },
+  // Real Estate Properties (low volatility, modest appreciation)
+  PROPERTY_001: { volatilityMultiplier: 0.15, returnMultiplier: 0.4 },
+  PROPERTY_002: { volatilityMultiplier: 0.15, returnMultiplier: 0.4 },
+  // UK Stocks
+  'VOD.L': { volatilityMultiplier: 1.1, returnMultiplier: 0.6 },
+  'HSBA.L': { volatilityMultiplier: 1.0, returnMultiplier: 0.7 },
+  // European Stocks
+  SAP: { volatilityMultiplier: 0.95, returnMultiplier: 0.9 },
+  ASML: { volatilityMultiplier: 1.2, returnMultiplier: 1.3 },
 };
 
 /** Get adjusted volatility for a specific asset */
@@ -270,35 +292,10 @@ export function getAssetVolatility(
   symbol: string,
   baseVolatility: number
 ): number {
-  return baseVolatility * (ASSET_VOLATILITY_MULTIPLIERS[symbol] ?? 1.0);
+  return baseVolatility * (ASSET_PROFILES[symbol]?.volatilityMultiplier ?? 1.0);
 }
-
-/**
- * Asset-specific return multipliers (relative to market)
- */
-export const ASSET_RETURN_MULTIPLIERS: Record<string, number> = {
-  // High growth outperformers
-  AAPL: 1.2,
-  MSFT: 1.15,
-  NVDA: 1.5,
-  TSLA: 1.8,
-  // Market performers
-  GOOGL: 1.0,
-  AMZN: 1.1,
-  VTI: 1.0,
-  // Conservative underperformers
-  BND: 0.3,
-  VNQ: 0.9,
-  KO: 0.8,
-  PG: 0.75,
-  // Crypto
-  BTC: 2.5,
-  ETH: 2.8,
-  // Commodities
-  GLD: 0.5,
-};
 
 /** Get adjusted return for a specific asset */
 export function getAssetReturn(symbol: string, baseReturn: number): number {
-  return baseReturn * (ASSET_RETURN_MULTIPLIERS[symbol] ?? 1.0);
+  return baseReturn * (ASSET_PROFILES[symbol]?.returnMultiplier ?? 1.0);
 }
