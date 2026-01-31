@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 
 type NavRoute = {
   name: string;
-  href: string;
+  href: '/' | '/holdings' | '/transactions' | '/analysis' | '/performance' | '/allocation' | '/reports' | '/settings';
   icon: typeof Home;
   badge?: 'beta' | 'coming-soon';
 };
