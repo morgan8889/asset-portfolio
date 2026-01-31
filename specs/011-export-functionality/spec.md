@@ -39,16 +39,16 @@ As an investor, I want to export my full transaction history as a CSV file, so t
 
 ### User Story 3 - Export Current Holdings Snapshot (Priority: P3)
 
-As an investor, I want to download a snapshot of my current holdings as an Excel file, so that I can perform offline rebalancing calculations or net worth tracking.
+As an investor, I want to download a snapshot of my current holdings as a CSV file, so that I can perform offline rebalancing calculations or net worth tracking.
 
 **Why this priority**: Complements the transaction history by providing the "current state" view, useful for periodic net worth statements.
 
-**Independent Test**: Can be tested by generating the "Holdings Summary" Excel report and verifying it lists all current assets with their market values.
+**Independent Test**: Can be tested by generating the "Holdings Summary" CSV export and verifying it lists all current assets with their market values.
 
 **Acceptance Scenarios**:
 
-1. **Given** I have active holdings, **When** I click "Export Holdings (Excel)", **Then** an .xlsx file is downloaded.
-2. **Given** the Excel file, **When** I view it, **Then** I see rows for each asset with columns for Quantity, Cost Basis, Market Value, and Gain/Loss.
+1. **Given** I have active holdings, **When** I click "Export Holdings (CSV)", **Then** a .csv file is downloaded.
+2. **Given** the CSV file, **When** I open it in a spreadsheet application, **Then** I see rows for each asset with columns for Quantity, Cost Basis, Market Value, and Gain/Loss.
 
 ### Edge Cases
 
