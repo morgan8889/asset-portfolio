@@ -30,7 +30,7 @@ describe('TargetService', () => {
 
   describe('getTargetModels', () => {
     it('should return empty array when no models exist', async () => {
-      vi.mocked(db.userSettings.first).mockResolvedValue(undefined);
+      vi.mocked((db.userSettings as any).first).mockResolvedValue(undefined);
 
       const models = await getTargetModels();
 
@@ -47,7 +47,7 @@ describe('TargetService', () => {
         },
       ];
 
-      vi.mocked(db.userSettings.first).mockResolvedValue({
+      vi.mocked((db.userSettings as any).first).mockResolvedValue({
         key: 'allocation_targets',
         value: mockModels,
         updatedAt: new Date(),
@@ -62,7 +62,7 @@ describe('TargetService', () => {
 
   describe('createTargetModel', () => {
     it('should create a new target model', async () => {
-      vi.mocked(db.userSettings.first).mockResolvedValue(undefined);
+      vi.mocked((db.userSettings as any).first).mockResolvedValue(undefined);
 
       const model = await createTargetModel('Balanced', {
         Stock: 60,
@@ -88,7 +88,7 @@ describe('TargetService', () => {
     });
 
     it('should accept targets within 0.01% tolerance', async () => {
-      vi.mocked(db.userSettings.first).mockResolvedValue(undefined);
+      vi.mocked((db.userSettings as any).first).mockResolvedValue(undefined);
 
       const model = await createTargetModel('Balanced', {
         Stock: 60.005,
@@ -110,7 +110,7 @@ describe('TargetService', () => {
         },
       ];
 
-      vi.mocked(db.userSettings.first).mockResolvedValue({
+      vi.mocked((db.userSettings as any).first).mockResolvedValue({
         key: 'allocation_targets',
         value: existingModels,
         updatedAt: new Date(),
@@ -123,7 +123,7 @@ describe('TargetService', () => {
     });
 
     it('should throw error if model not found', async () => {
-      vi.mocked(db.userSettings.first).mockResolvedValue(undefined);
+      vi.mocked((db.userSettings as any).first).mockResolvedValue(undefined);
 
       await expect(
         updateTargetModel('nonexistent', { name: 'Test' })
@@ -140,7 +140,7 @@ describe('TargetService', () => {
         },
       ];
 
-      vi.mocked(db.userSettings.first).mockResolvedValue({
+      vi.mocked((db.userSettings as any).first).mockResolvedValue({
         key: 'allocation_targets',
         value: existingModels,
         updatedAt: new Date(),
@@ -163,7 +163,7 @@ describe('TargetService', () => {
         },
       ];
 
-      vi.mocked(db.userSettings.first).mockResolvedValue({
+      vi.mocked((db.userSettings as any).first).mockResolvedValue({
         key: 'allocation_targets',
         value: existingModels,
         updatedAt: new Date(),
@@ -179,7 +179,7 @@ describe('TargetService', () => {
     });
 
     it('should throw error if model not found', async () => {
-      vi.mocked(db.userSettings.first).mockResolvedValue(undefined);
+      vi.mocked((db.userSettings as any).first).mockResolvedValue(undefined);
 
       await expect(deleteTargetModel('nonexistent')).rejects.toThrow(
         'not found'
@@ -189,7 +189,7 @@ describe('TargetService', () => {
 
   describe('Rebalancing Exclusions', () => {
     it('should get empty array when no exclusions exist', async () => {
-      vi.mocked(db.userSettings.first).mockResolvedValue(undefined);
+      vi.mocked((db.userSettings as any).first).mockResolvedValue(undefined);
 
       const exclusions = await getRebalancingExclusions();
 
@@ -208,7 +208,7 @@ describe('TargetService', () => {
     });
 
     it('should add exclusion', async () => {
-      vi.mocked(db.userSettings.first).mockResolvedValue({
+      vi.mocked((db.userSettings as any).first).mockResolvedValue({
         key: 'rebalancing_exclusions',
         value: { portfolioIds: ['portfolio1'] },
         updatedAt: new Date(),
@@ -224,7 +224,7 @@ describe('TargetService', () => {
     });
 
     it('should not add duplicate exclusion', async () => {
-      vi.mocked(db.userSettings.first).mockResolvedValue({
+      vi.mocked((db.userSettings as any).first).mockResolvedValue({
         key: 'rebalancing_exclusions',
         value: { portfolioIds: ['portfolio1'] },
         updatedAt: new Date(),
@@ -236,7 +236,7 @@ describe('TargetService', () => {
     });
 
     it('should remove exclusion', async () => {
-      vi.mocked(db.userSettings.first).mockResolvedValue({
+      vi.mocked((db.userSettings as any).first).mockResolvedValue({
         key: 'rebalancing_exclusions',
         value: { portfolioIds: ['portfolio1', 'portfolio2'] },
         updatedAt: new Date(),
