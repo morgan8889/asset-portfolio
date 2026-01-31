@@ -20,7 +20,14 @@ import { Button } from '@/components/ui/button';
 import { useUIStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 
-const navigation = [
+type NavRoute = {
+  name: string;
+  href: string;
+  icon: typeof Home;
+  badge?: 'beta' | 'coming-soon';
+};
+
+const navigation: NavRoute[] = [
   {
     name: 'Dashboard',
     href: '/',
@@ -84,7 +91,7 @@ export function Sidebar() {
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <Link key={item.name} href={item.href as any}>
+                <Link key={item.name} href={item.href}>
                   <Button
                     variant={isActive ? 'secondary' : 'ghost'}
                     className={cn(
