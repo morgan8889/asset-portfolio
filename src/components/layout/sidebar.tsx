@@ -22,7 +22,15 @@ import { cn } from '@/lib/utils';
 
 type NavRoute = {
   name: string;
-  href: '/' | '/holdings' | '/transactions' | '/analysis' | '/performance' | '/allocation' | '/reports' | '/settings';
+  href:
+    | '/'
+    | '/holdings'
+    | '/transactions'
+    | '/analysis'
+    | '/performance'
+    | '/allocation'
+    | '/reports'
+    | '/settings';
   icon: typeof Home;
   badge?: 'beta' | 'coming-soon';
 };
@@ -57,13 +65,11 @@ const navigation: NavRoute[] = [
     name: 'Allocation',
     href: '/allocation',
     icon: PieChart,
-    badge: 'beta' as const,
   },
   {
     name: 'Reports',
     href: '/reports',
     icon: FileText,
-    badge: 'coming-soon' as const,
   },
   {
     name: 'Settings',
