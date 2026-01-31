@@ -1,10 +1,74 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { FileText, Download, Calendar, TrendingUp } from 'lucide-react';
+import { FileText, Calendar, TrendingUp } from 'lucide-react';
+import { usePortfolioStore } from '@/lib/stores/portfolio';
+import { useExportStore } from '@/lib/stores/export';
+import { exportService } from '@/lib/services/export-service';
+import { ExportButton } from '@/components/reports/export-button';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function ReportsPage() {
+  const { currentPortfolio } = usePortfolioStore();
+  const { updateProgress, resetProgress } = useExportStore();
+  const { toast } = useToast();
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGeneratePerformancePdf = async () => {
+    if (!currentPortfolio) {
+      toast({
+        title: 'No Portfolio Selected',
+        description: 'Please select a portfolio first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    resetProgress();
+
+    try {
+      await exportService.generatePerformancePdf(
+        currentPortfolio.id,
+        'YTD',
+        (progress) => {
+          updateProgress(progress);
+        }
+      );
+
+      toast({
+        title: 'Success',
+        description: 'Performance report generated successfully!',
+      });
+    } catch (error) {
+      toast({
+        title: 'Export Failed',
+        description: error instanceof Error ? error.message : 'Failed to generate PDF',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGenerating(false);
+      setTimeout(() => resetProgress(), 2000);
+    }
+  };
+
+  const handleGenerateTransactionsCsv = async () => {
+    toast({
+      title: 'Coming Soon',
+      description: 'Transaction CSV export will be available in the next release.',
+    });
+  };
+
+  const handleGenerateHoldingsCsv = async () => {
+    toast({
+      title: 'Coming Soon',
+      description: 'Holdings CSV export will be available in the next release.',
+    });
+  };
+
+  const hasPortfolio = !!currentPortfolio;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -15,11 +79,17 @@ export default function ReportsPage() {
             performance and tax reporting.
           </p>
         </div>
-        <Button>
-          <Download className="mr-2 h-4 w-4" />
-          Generate Report
-        </Button>
       </div>
+
+      {!hasPortfolio && (
+        <Card className="border-yellow-200 bg-yellow-50">
+          <CardContent className="pt-6">
+            <p className="text-sm text-yellow-800">
+              Please select or create a portfolio to generate reports.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
@@ -34,10 +104,12 @@ export default function ReportsPage() {
               Comprehensive portfolio performance analysis with charts and
               metrics.
             </p>
-            <Button variant="outline" size="sm" className="w-full">
-              <Download className="mr-2 h-4 w-4" />
+            <ExportButton
+              onClick={handleGeneratePerformancePdf}
+              disabled={!hasPortfolio || isGenerating}
+            >
               Download PDF
-            </Button>
+            </ExportButton>
           </CardContent>
         </Card>
 
@@ -45,17 +117,19 @@ export default function ReportsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              Tax Report
+              Transaction History
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="mb-4 text-sm text-muted-foreground">
-              Capital gains/losses and dividend income for tax filing.
+              Complete transaction history for tax filing and analysis.
             </p>
-            <Button variant="outline" size="sm" className="w-full">
-              <Download className="mr-2 h-4 w-4" />
+            <ExportButton
+              onClick={handleGenerateTransactionsCsv}
+              disabled={!hasPortfolio}
+            >
               Download CSV
-            </Button>
+            </ExportButton>
           </CardContent>
         </Card>
 
@@ -70,10 +144,12 @@ export default function ReportsPage() {
             <p className="mb-4 text-sm text-muted-foreground">
               Current holdings with cost basis and market values.
             </p>
-            <Button variant="outline" size="sm" className="w-full">
-              <Download className="mr-2 h-4 w-4" />
-              Download Excel
-            </Button>
+            <ExportButton
+              onClick={handleGenerateHoldingsCsv}
+              disabled={!hasPortfolio}
+            >
+              Download CSV
+            </ExportButton>
           </CardContent>
         </Card>
       </div>
