@@ -40,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ScrollableDialogContent } from '@/components/ui/scrollable-dialog-content';
 import { generateRGLLayoutsFromConfig } from '@/lib/services/dashboard-config';
 
 interface DashboardSettingsProps {
@@ -241,7 +242,7 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto">
+        <ScrollableDialogContent>
           {/* Layout Settings Section */}
         <div className="space-y-4 border-b py-4">
           <div className="space-y-2">
@@ -474,7 +475,7 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
             );
           })}
         </div>
-        </div>
+        </ScrollableDialogContent>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">
           {showResetConfirm ? (
