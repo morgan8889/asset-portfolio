@@ -57,7 +57,7 @@
 ### Tests for User Story 1
 
 - [X] T010 [P] [US1] Unit test for preparePerformanceData() in src/lib/services/__tests__/export-service.test.ts
-- [ ] T011 [P] [US1] E2E test for PDF download workflow in tests/e2e/export-reports.spec.ts
+- [X] T011 [P] [US1] E2E test for PDF download workflow in tests/e2e/export-reports.spec.ts
 
 ### Implementation for User Story 1
 
@@ -81,9 +81,9 @@
 
 ### Tests for User Story 2
 
-- [ ] T019 [P] [US2] Unit test for prepareTransactionData() with date range filtering in src/lib/services/__tests__/export-service.test.ts
-- [ ] T020 [P] [US2] Unit test for CSV generation with 5K mock transactions (SC-002) in src/lib/services/__tests__/export-service.test.ts
-- [ ] T021 [P] [US2] E2E test for transaction CSV download in tests/e2e/export-reports.spec.ts
+- [X] T019 [P] [US2] Unit test for prepareTransactionData() with date range filtering in src/lib/services/__tests__/export-service.test.ts
+- [X] T020 [P] [US2] Unit test for CSV generation with 5K mock transactions (SC-002) in src/lib/services/__tests__/export-service.test.ts
+- [X] T021 [P] [US2] E2E test for transaction CSV download in tests/e2e/export-reports.spec.ts
 
 ### Implementation for User Story 2
 
@@ -106,8 +106,8 @@
 
 ### Tests for User Story 3
 
-- [ ] T028 [P] [US3] Unit test for prepareHoldingsData() in src/lib/services/__tests__/export-service.test.ts
-- [ ] T029 [P] [US3] E2E test for holdings CSV download in tests/e2e/export-reports.spec.ts
+- [X] T028 [P] [US3] Unit test for prepareHoldingsData() in src/lib/services/__tests__/export-service.test.ts
+- [X] T029 [P] [US3] E2E test for holdings CSV download in tests/e2e/export-reports.spec.ts
 
 ### Implementation for User Story 3
 
@@ -124,12 +124,12 @@
 
 **Purpose**: Edge cases, empty state handling, and overall polish
 
-- [ ] T034 [P] Handle empty portfolio state - disable buttons or show message in src/app/(dashboard)/reports/page.tsx
-- [ ] T035 [P] Add escapeFormulae: true to all CSV generation (CSV injection prevention)
-- [ ] T036 Verify filename convention compliance (FR-007) across all exports
-- [ ] T037 [P] E2E test for empty portfolio handling in tests/e2e/export-reports.spec.ts
-- [ ] T038 [P] Verify no network requests during export (SC-004) via E2E test in tests/e2e/export-reports.spec.ts
-- [ ] T039 Run type-check and lint: `npm run type-check && npm run lint`
+- [X] T034 [P] Handle empty portfolio state - disable buttons or show message in src/app/(dashboard)/reports/page.tsx
+- [X] T035 [P] Add escapeFormulae: true to all CSV generation (CSV injection prevention)
+- [X] T036 Verify filename convention compliance (FR-007) across all exports
+- [X] T037 [P] E2E test for empty portfolio handling in tests/e2e/export-reports.spec.ts
+- [X] T038 [P] Verify no network requests during export (SC-004) via E2E test in tests/e2e/export-reports.spec.ts
+- [X] T039 Run type-check and lint: `npm run type-check && npm run lint`
 - [ ] T040 Manual verification: Open exported CSV in Excel/Numbers/Sheets (SC-003)
 
 ---
