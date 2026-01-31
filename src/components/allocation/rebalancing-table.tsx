@@ -11,7 +11,12 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowDownCircle, ArrowUpCircle, MinusCircle, TrendingUp } from 'lucide-react';
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  MinusCircle,
+  TrendingUp,
+} from 'lucide-react';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { RebalancingPlan, RebalancingAction } from '@/types/allocation';
 import Decimal from 'decimal.js';
@@ -32,7 +37,10 @@ const actionLabels: Record<RebalancingAction, string> = {
   HOLD: 'Hold',
 };
 
-const actionVariants: Record<RebalancingAction, 'default' | 'destructive' | 'secondary'> = {
+const actionVariants: Record<
+  RebalancingAction,
+  'default' | 'destructive' | 'secondary'
+> = {
   BUY: 'default',
   SELL: 'destructive',
   HOLD: 'secondary',
@@ -93,9 +101,12 @@ export function RebalancingTable({ plan }: RebalancingTableProps) {
           <span>Portfolio Value: {formatCurrency(totalValue)}</span>
           <span>•</span>
           <span>
-            Actions: {actionSummary.buy > 0 && `${formatCurrency(actionSummary.buy)} to buy`}
+            Actions:{' '}
+            {actionSummary.buy > 0 &&
+              `${formatCurrency(actionSummary.buy)} to buy`}
             {actionSummary.buy > 0 && actionSummary.sell > 0 && ', '}
-            {actionSummary.sell > 0 && `${formatCurrency(actionSummary.sell)} to sell`}
+            {actionSummary.sell > 0 &&
+              `${formatCurrency(actionSummary.sell)} to sell`}
           </span>
         </div>
       </CardHeader>
@@ -119,7 +130,10 @@ export function RebalancingTable({ plan }: RebalancingTableProps) {
               const isDrifted = Math.abs(item.driftPercent) > 0.5; // More than 0.5% drift
 
               return (
-                <TableRow key={item.category} className={isDrifted ? 'bg-muted/30' : ''}>
+                <TableRow
+                  key={item.category}
+                  className={isDrifted ? 'bg-muted/30' : ''}
+                >
                   <TableCell className="font-medium">{item.category}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex flex-col items-end">
@@ -153,7 +167,7 @@ export function RebalancingTable({ plan }: RebalancingTableProps) {
                   <TableCell className="text-right">
                     <Badge
                       variant={actionVariants[item.action]}
-                      className="flex w-fit items-center gap-1 ml-auto"
+                      className="ml-auto flex w-fit items-center gap-1"
                     >
                       {actionIcons[item.action]}
                       {actionLabels[item.action]}

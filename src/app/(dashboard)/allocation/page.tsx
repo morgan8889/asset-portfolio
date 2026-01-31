@@ -30,13 +30,8 @@ import { calculateCurrentAllocation } from '@/lib/services/allocation/rebalancin
 import { AllocationDimension } from '@/types/allocation';
 
 export default function AllocationPage() {
-  const {
-    currentPortfolio,
-    portfolios,
-    holdings,
-    assets,
-    loadHoldings,
-  } = usePortfolioStore();
+  const { currentPortfolio, portfolios, holdings, assets, loadHoldings } =
+    usePortfolioStore();
 
   const {
     targetModels,
@@ -77,7 +72,14 @@ export default function AllocationPage() {
         if (!asset) return null;
         return { holding, asset };
       })
-      .filter((item): item is { holding: typeof holdings[0]; asset: typeof assets[0] } => item !== null);
+      .filter(
+        (
+          item
+        ): item is {
+          holding: (typeof holdings)[0];
+          asset: (typeof assets)[0];
+        } => item !== null
+      );
   }, [holdings, assets]);
 
   // Calculate current allocation for each dimension
@@ -120,7 +122,12 @@ export default function AllocationPage() {
       default:
         return assetClassAllocation;
     }
-  }, [selectedDimension, assetClassAllocation, sectorAllocation, regionAllocation]);
+  }, [
+    selectedDimension,
+    assetClassAllocation,
+    sectorAllocation,
+    regionAllocation,
+  ]);
 
   // Get unclassified count for current dimension
   const unclassifiedCount = useMemo(() => {
@@ -144,7 +151,13 @@ export default function AllocationPage() {
     if (activeTargetModel && holdingsWithAssets.length > 0) {
       calculateRebalancing(holdingsWithAssets, selectedDimension);
     }
-  }, [activeTargetModel, holdingsWithAssets, selectedDimension, excludedPortfolioIds, calculateRebalancing]);
+  }, [
+    activeTargetModel,
+    holdingsWithAssets,
+    selectedDimension,
+    excludedPortfolioIds,
+    calculateRebalancing,
+  ]);
 
   // Handle dimension change
   const handleDimensionChange = (dimension: AllocationDimension) => {
@@ -152,7 +165,10 @@ export default function AllocationPage() {
   };
 
   // Handle target model save
-  const handleSaveTarget = async (name: string, targets: Record<string, number>) => {
+  const handleSaveTarget = async (
+    name: string,
+    targets: Record<string, number>
+  ) => {
     await createTarget(name, targets);
     setShowTargetEditor(false);
   };
@@ -169,7 +185,9 @@ export default function AllocationPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Asset Allocation</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Asset Allocation
+          </h1>
           <p className="text-muted-foreground">
             View and manage your portfolio allocation and rebalancing strategy.
           </p>
@@ -218,7 +236,10 @@ export default function AllocationPage() {
 
       {/* Unclassified Alert */}
       {currentAllocation?.hasUnclassified && (
-        <UnclassifiedAlert count={unclassifiedCount} dimension={selectedDimension} />
+        <UnclassifiedAlert
+          count={unclassifiedCount}
+          dimension={selectedDimension}
+        />
       )}
 
       {/* Target Model Selector */}

@@ -64,7 +64,8 @@ export function RecommendationList({
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Recommendations</h2>
         <span className="text-sm text-muted-foreground">
-          {recommendations.length} {recommendations.length === 1 ? 'issue' : 'issues'} found
+          {recommendations.length}{' '}
+          {recommendations.length === 1 ? 'issue' : 'issues'} found
         </span>
       </div>
       <div className="grid gap-4">

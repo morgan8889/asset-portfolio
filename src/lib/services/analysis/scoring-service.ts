@@ -112,12 +112,13 @@ function calculateDiversification(input: HealthScoreInput): HealthMetric {
   const sectorConcentration = calculateConcentrationBySector(input);
 
   // Average the three concentration metrics
-  const avgConcentration = (typeConcentration + regionConcentration + sectorConcentration) / 3;
+  const avgConcentration =
+    (typeConcentration + regionConcentration + sectorConcentration) / 3;
 
   // Convert HHI to score (lower concentration = higher score)
   // HHI ranges from 0 (perfect diversification) to 10000 (single asset)
   // Score: 100 when HHI=0, 0 when HHI=10000
-  const rawScore = Math.max(0, 100 - (avgConcentration / 100));
+  const rawScore = Math.max(0, 100 - avgConcentration / 100);
   const score = Math.round(rawScore);
 
   let status: 'good' | 'warning' | 'critical';
@@ -125,13 +126,16 @@ function calculateDiversification(input: HealthScoreInput): HealthMetric {
 
   if (score >= 70) {
     status = 'good';
-    details = 'Your portfolio is well-diversified across asset types, regions, and sectors.';
+    details =
+      'Your portfolio is well-diversified across asset types, regions, and sectors.';
   } else if (score >= 40) {
     status = 'warning';
-    details = 'Your portfolio has moderate concentration. Consider diversifying further.';
+    details =
+      'Your portfolio has moderate concentration. Consider diversifying further.';
   } else {
     status = 'critical';
-    details = 'Your portfolio is highly concentrated. This increases risk significantly.';
+    details =
+      'Your portfolio is highly concentrated. This increases risk significantly.';
   }
 
   return {
@@ -166,7 +170,10 @@ function calculatePerformance(input: HealthScoreInput): HealthMetric {
   // Score based on return percentage
   // Map expected return range (-20% to +30%) to 0-100 score
   const returnPercent = perfData.returnPercent;
-  const rawScore = ((returnPercent - PERFORMANCE_SCORING.MIN_RETURN) / PERFORMANCE_SCORING.RANGE) * 100;
+  const rawScore =
+    ((returnPercent - PERFORMANCE_SCORING.MIN_RETURN) /
+      PERFORMANCE_SCORING.RANGE) *
+    100;
   const score = Math.round(Math.max(0, Math.min(100, rawScore)));
 
   let status: 'good' | 'warning' | 'critical';
@@ -216,7 +223,10 @@ function calculateVolatility(input: HealthScoreInput): HealthMetric {
   // Score based on volatility
   // Map volatility range (0-40%) to score (100-0, inverse relationship)
   const volatility = perfData.volatility;
-  const rawScore = Math.max(0, 100 - (volatility / VOLATILITY_SCORING.MAX_VOLATILITY) * 100);
+  const rawScore = Math.max(
+    0,
+    100 - (volatility / VOLATILITY_SCORING.MAX_VOLATILITY) * 100
+  );
   const score = Math.round(rawScore);
 
   let status: 'good' | 'warning' | 'critical';
@@ -255,7 +265,10 @@ function calculateConcentrationByType(input: HealthScoreInput): number {
     typeValues[type] = (typeValues[type] || new Decimal(0)).plus(holding.value);
   }
 
-  return calculateHHI(Object.values(typeValues).filter((v): v is Decimal => v !== undefined), input.totalValue);
+  return calculateHHI(
+    Object.values(typeValues).filter((v): v is Decimal => v !== undefined),
+    input.totalValue
+  );
 }
 
 /**
@@ -266,7 +279,9 @@ function calculateConcentrationByRegion(input: HealthScoreInput): number {
 
   for (const holding of input.holdings) {
     const region = holding.region || 'US';
-    regionValues[region] = (regionValues[region] || new Decimal(0)).plus(holding.value);
+    regionValues[region] = (regionValues[region] || new Decimal(0)).plus(
+      holding.value
+    );
   }
 
   return calculateHHI(Object.values(regionValues), input.totalValue);
@@ -280,7 +295,9 @@ function calculateConcentrationBySector(input: HealthScoreInput): number {
 
   for (const holding of input.holdings) {
     const sector = holding.sector || 'Unknown';
-    sectorValues[sector] = (sectorValues[sector] || new Decimal(0)).plus(holding.value);
+    sectorValues[sector] = (sectorValues[sector] || new Decimal(0)).plus(
+      holding.value
+    );
   }
 
   return calculateHHI(Object.values(sectorValues), input.totalValue);

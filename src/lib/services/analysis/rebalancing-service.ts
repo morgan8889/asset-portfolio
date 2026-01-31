@@ -32,9 +32,7 @@ interface RebalancingInput {
  * @returns Rebalancing plan with actions sorted by drift magnitude
  * @throws Error if target model allocations don't sum to 100%
  */
-export function calculateRebalancing(
-  input: RebalancingInput
-): RebalancingPlan {
+export function calculateRebalancing(input: RebalancingInput): RebalancingPlan {
   const { holdings, assets, totalValue, targetModel } = input;
 
   // Validate target model first
@@ -92,7 +90,9 @@ export function calculateRebalancing(
   }
 
   // Sort actions by absolute difference (largest drift first)
-  actions.sort((a, b) => Math.abs(b.differencePercent) - Math.abs(a.differencePercent));
+  actions.sort(
+    (a, b) => Math.abs(b.differencePercent) - Math.abs(a.differencePercent)
+  );
 
   return {
     targetModel,
@@ -122,12 +122,17 @@ function calculateCurrentAllocation(
     }
 
     const type = asset.type;
-    allocation[type] = (allocation[type] || new Decimal(0)).plus(holding.currentValue);
+    allocation[type] = (allocation[type] || new Decimal(0)).plus(
+      holding.currentValue
+    );
   }
 
   // Log warning if assets are missing
   if (missingAssets.length > 0) {
-    console.warn('[Rebalancing Service] Missing asset data for holdings:', missingAssets);
+    console.warn(
+      '[Rebalancing Service] Missing asset data for holdings:',
+      missingAssets
+    );
   }
 
   return allocation;

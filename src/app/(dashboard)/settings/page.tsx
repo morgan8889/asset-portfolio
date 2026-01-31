@@ -1,8 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -12,10 +14,127 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Settings, Save, RefreshCw, Download, Upload } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { Settings, RefreshCw, Download, Upload, AlertTriangle } from 'lucide-react';
 import { PriceSettings } from '@/components/settings/price-settings';
+import { CsvImportDialog } from '@/components/forms/csv-import-dialog';
+import { ResetConfirmationDialog } from '@/components/settings/reset-confirmation-dialog';
+import { useUIStore } from '@/lib/stores/ui';
+import { usePortfolioStore } from '@/lib/stores/portfolio';
+import { db } from '@/lib/db';
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
+  const { modals, openModal, closeModal } = useUIStore();
+  const { currentPortfolio } = usePortfolioStore();
+
+  const [baseCurrency, setBaseCurrency] = useState<string>('USD');
+  const [showResetDialog, setShowResetDialog] = useState(false);
+
+  // Load currency preference on mount
+  useEffect(() => {
+    const loadCurrency = async () => {
+      const currency = await db.userSettings
+        .where('key')
+        .equals('baseCurrency')
+        .first();
+      if (currency) {
+        setBaseCurrency(currency.value as string);
+      }
+    };
+    loadCurrency();
+  }, []);
+
+  // Handler for currency change
+  const handleCurrencyChange = async (currency: string) => {
+    setBaseCurrency(currency);
+
+    try {
+      await db.userSettings.put({
+        key: 'baseCurrency',
+        value: currency,
+        updatedAt: new Date(),
+      });
+
+      toast({
+        title: 'Currency updated',
+        description: `Base currency set to ${currency}`,
+      });
+    } catch (error) {
+      console.error('Failed to save currency:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save currency preference.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Handler for clearing cache
+  const handleClearCache = async () => {
+    try {
+      await db.priceSnapshots.clear();
+      await db.priceHistory.clear();
+
+      toast({
+        title: 'Cache cleared',
+        description: 'Price cache has been cleared successfully.',
+      });
+    } catch (error) {
+      console.error('Failed to clear cache:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to clear cache. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Handler for data import
+  const handleImportData = () => {
+    if (!currentPortfolio?.id) {
+      toast({
+        title: 'No portfolio selected',
+        description: 'Please select a portfolio first',
+        variant: 'destructive',
+      });
+      return;
+    }
+    openModal('importCSV');
+  };
+
+  // Handler for reset all data
+  const handleResetAllData = async () => {
+    try {
+      // Clear all tables except userSettings (in dependency order)
+      await db.performanceSnapshots.clear();
+      await db.dividendRecords.clear();
+      await db.transactions.clear();
+      await db.holdings.clear();
+      await db.priceSnapshots.clear();
+      await db.priceHistory.clear();
+      await db.assets.clear();
+      await db.portfolios.clear();
+
+      toast({
+        title: 'All data reset',
+        description: 'All portfolios and data have been deleted.',
+      });
+
+      setShowResetDialog(false);
+      router.push('/');
+    } catch (error) {
+      console.error('Failed to reset data:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to reset data. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-1">
@@ -39,7 +158,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="currency">Base Currency</Label>
-              <Select defaultValue="USD">
+              <Select value={baseCurrency} onValueChange={handleCurrencyChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
@@ -57,7 +176,10 @@ export default function SettingsPage() {
                 <Label>Dark Mode</Label>
                 <p className="text-sm text-muted-foreground">Use dark theme</p>
               </div>
-              <Switch />
+              <Switch
+                checked={theme === 'dark'}
+                onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+              />
             </div>
           </CardContent>
         </Card>
@@ -78,7 +200,11 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={handleImportData}
+              >
                 <Upload className="mr-2 h-4 w-4" />
                 Import Data
               </Button>
@@ -88,7 +214,11 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={handleClearCache}
+              >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Clear Cache
               </Button>
@@ -98,8 +228,12 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <Button variant="destructive" className="w-full justify-start">
-                <RefreshCw className="mr-2 h-4 w-4" />
+              <Button
+                variant="destructive"
+                className="w-full justify-start"
+                onClick={() => setShowResetDialog(true)}
+              >
+                <AlertTriangle className="mr-2 h-4 w-4" />
                 Reset All Data
               </Button>
               <p className="text-xs text-muted-foreground">
@@ -110,41 +244,19 @@ export default function SettingsPage() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>API Configuration</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="alpha-vantage-key">Alpha Vantage API Key</Label>
-            <Input
-              id="alpha-vantage-key"
-              type="password"
-              placeholder="Enter your API key"
-            />
-            <p className="text-xs text-muted-foreground">
-              Optional: Provides more reliable stock price data
-            </p>
-          </div>
+      {/* CSV Import Dialog */}
+      <CsvImportDialog
+        open={modals.importCSV}
+        onOpenChange={(open) => !open && closeModal('importCSV')}
+        portfolioId={currentPortfolio?.id ?? ''}
+      />
 
-          <div className="space-y-2">
-            <Label htmlFor="coinbase-key">CoinGecko API Key</Label>
-            <Input
-              id="coinbase-key"
-              type="password"
-              placeholder="Enter your API key"
-            />
-            <p className="text-xs text-muted-foreground">
-              Optional: For premium cryptocurrency data features
-            </p>
-          </div>
-
-          <Button className="w-full">
-            <Save className="mr-2 h-4 w-4" />
-            Save Settings
-          </Button>
-        </CardContent>
-      </Card>
+      {/* Reset Confirmation Dialog */}
+      <ResetConfirmationDialog
+        open={showResetDialog}
+        onOpenChange={setShowResetDialog}
+        onConfirm={handleResetAllData}
+      />
     </div>
   );
 }

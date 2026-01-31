@@ -112,39 +112,39 @@ export function ManualPriceUpdateDialog({
             </p>
           </div>
 
-            <div className="rounded-md bg-muted p-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Previous Price:</span>
+          <div className="rounded-md bg-muted p-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Previous Price:</span>
+              <span className="font-medium">
+                {asset.currentPrice
+                  ? `${asset.currency}${asset.currentPrice.toFixed(2)}`
+                  : 'Not set'}
+              </span>
+            </div>
+            {asset.priceUpdatedAt && (
+              <div className="mt-1 flex justify-between">
+                <span className="text-muted-foreground">Last Updated:</span>
                 <span className="font-medium">
-                  {asset.currentPrice
-                    ? `${asset.currency}${asset.currentPrice.toFixed(2)}`
-                    : 'Not set'}
+                  {new Date(asset.priceUpdatedAt).toLocaleDateString()}
                 </span>
               </div>
-              {asset.priceUpdatedAt && (
-                <div className="mt-1 flex justify-between">
-                  <span className="text-muted-foreground">Last Updated:</span>
-                  <span className="font-medium">
-                    {new Date(asset.priceUpdatedAt).toLocaleDateString()}
-                  </span>
-                </div>
-              )}
-            </div>
+            )}
+          </div>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Updating...' : 'Update Price'}
-              </Button>
-            </DialogFooter>
-          </form>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Updating...' : 'Update Price'}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

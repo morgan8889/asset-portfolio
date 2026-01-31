@@ -148,9 +148,7 @@ export function FormulaDisplay({ health }: FormulaDisplayProps) {
                     {metrics.map((metric, index) => (
                       <tr
                         key={metric.id}
-                        className={
-                          index % 2 === 0 ? 'bg-card' : 'bg-muted/20'
-                        }
+                        className={index % 2 === 0 ? 'bg-card' : 'bg-muted/20'}
                       >
                         <td className="p-3 font-medium">{metric.name}</td>
                         <td className="p-3 text-center font-mono">
@@ -210,8 +208,7 @@ export function FormulaDisplay({ health }: FormulaDisplayProps) {
 
             {/* Calculation Timestamp */}
             <div className="text-center text-xs text-muted-foreground">
-              Last calculated:{' '}
-              {new Date(health.calculatedAt).toLocaleString()}
+              Last calculated: {new Date(health.calculatedAt).toLocaleString()}
             </div>
           </CardContent>
         </CollapsibleContent>

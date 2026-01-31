@@ -5,24 +5,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Recommendation } from '@/types/analysis';
-import {
-  AlertCircle,
-  AlertTriangle,
-  Info,
-  ArrowRight,
-} from 'lucide-react';
+import { AlertCircle, AlertTriangle, Info, ArrowRight } from 'lucide-react';
 
 interface RecommendationCardProps {
   recommendation: Recommendation;
 }
 
-export function RecommendationCard({ recommendation }: RecommendationCardProps) {
+export function RecommendationCard({
+  recommendation,
+}: RecommendationCardProps) {
   const getIcon = () => {
     switch (recommendation.severity) {
       case 'high':
-        return <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />;
+        return (
+          <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+        );
       case 'medium':
-        return <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />;
+        return (
+          <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+        );
       case 'low':
         return <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />;
     }
@@ -42,7 +43,10 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
   };
 
   const getSeverityLabel = () => {
-    return recommendation.severity.charAt(0).toUpperCase() + recommendation.severity.slice(1);
+    return (
+      recommendation.severity.charAt(0).toUpperCase() +
+      recommendation.severity.slice(1)
+    );
   };
 
   return (
@@ -73,7 +77,12 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
           </Link>
         )}
         {!recommendation.actionUrl && (
-          <Button variant="outline" size="sm" disabled className="w-full sm:w-auto">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled
+            className="w-full sm:w-auto"
+          >
             {recommendation.actionLabel}
           </Button>
         )}

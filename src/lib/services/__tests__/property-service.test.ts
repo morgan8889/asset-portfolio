@@ -383,7 +383,10 @@ describe('property-service', () => {
       vi.spyOn(db.assets, 'get').mockResolvedValue(undefined);
 
       await expect(
-        updateRentalInfo('non-existent', { isRental: true, monthlyRent: new Decimal(2000) })
+        updateRentalInfo('non-existent', {
+          isRental: true,
+          monthlyRent: new Decimal(2000),
+        })
       ).rejects.toThrow('Asset not found');
     });
 
@@ -401,7 +404,10 @@ describe('property-service', () => {
       vi.spyOn(db.assets, 'get').mockResolvedValue(asset);
 
       await expect(
-        updateRentalInfo('asset-1', { isRental: true, monthlyRent: new Decimal(2000) })
+        updateRentalInfo('asset-1', {
+          isRental: true,
+          monthlyRent: new Decimal(2000),
+        })
       ).rejects.toThrow('Can only update rental info for real estate assets');
     });
   });

@@ -28,7 +28,8 @@ export function TargetModelSelector({
       </CardHeader>
       <CardContent>
         <p className="mb-4 text-sm text-muted-foreground">
-          Choose a target allocation model to compare your current portfolio against.
+          Choose a target allocation model to compare your current portfolio
+          against.
         </p>
         <Select value={activeTargetModelId || ''} onValueChange={onModelChange}>
           <SelectTrigger>

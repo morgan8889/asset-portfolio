@@ -86,7 +86,10 @@ describe('Target Model Service', () => {
 
       await cloneTargetModel(sourceModel, 'Cloned Model');
 
-      const stored = await db.userSettings.where('key').equals('target_models').first();
+      const stored = await db.userSettings
+        .where('key')
+        .equals('target_models')
+        .first();
       expect(stored).toBeDefined();
       expect(stored?.value).toHaveLength(1);
       expect((stored?.value as TargetModel[])[0].name).toBe('Cloned Model');
@@ -137,10 +140,16 @@ describe('Target Model Service', () => {
 
       await cloneTargetModel(sourceModel, 'Cloned Model');
 
-      const stored = await db.userSettings.where('key').equals('target_models').first();
+      const stored = await db.userSettings
+        .where('key')
+        .equals('target_models')
+        .first();
       expect(stored?.value).toHaveLength(2);
       const models = stored?.value as TargetModel[];
-      expect(models.map((m) => m.name)).toEqual(['Existing Model', 'Cloned Model']);
+      expect(models.map((m) => m.name)).toEqual([
+        'Existing Model',
+        'Cloned Model',
+      ]);
     });
   });
 
@@ -208,7 +217,10 @@ describe('Target Model Service', () => {
         },
       });
 
-      const stored = await db.userSettings.where('key').equals('target_models').first();
+      const stored = await db.userSettings
+        .where('key')
+        .equals('target_models')
+        .first();
       const models = stored?.value as TargetModel[];
       const updated = models.find((m) => m.id === 'user-model-1');
 
@@ -242,7 +254,10 @@ describe('Target Model Service', () => {
         isSystem: true as any,
       });
 
-      const stored = await db.userSettings.where('key').equals('target_models').first();
+      const stored = await db.userSettings
+        .where('key')
+        .equals('target_models')
+        .first();
       const models = stored?.value as TargetModel[];
       const updated = models.find((m) => m.id === 'user-model-1');
 
@@ -314,7 +329,10 @@ describe('Target Model Service', () => {
     it('should delete a non-system model', async () => {
       await deleteTargetModel('user-model-1');
 
-      const stored = await db.userSettings.where('key').equals('target_models').first();
+      const stored = await db.userSettings
+        .where('key')
+        .equals('target_models')
+        .first();
       const models = stored?.value as TargetModel[];
 
       expect(models).toHaveLength(2);
@@ -383,7 +401,10 @@ describe('Target Model Service', () => {
 
       await createTargetModel(modelData);
 
-      const stored = await db.userSettings.where('key').equals('target_models').first();
+      const stored = await db.userSettings
+        .where('key')
+        .equals('target_models')
+        .first();
       expect(stored).toBeDefined();
       expect(stored?.value).toHaveLength(1);
       expect((stored?.value as TargetModel[])[0].name).toBe('My Custom Model');
@@ -432,10 +453,16 @@ describe('Target Model Service', () => {
 
       await createTargetModel(modelData);
 
-      const stored = await db.userSettings.where('key').equals('target_models').first();
+      const stored = await db.userSettings
+        .where('key')
+        .equals('target_models')
+        .first();
       expect(stored?.value).toHaveLength(2);
       const models = stored?.value as TargetModel[];
-      expect(models.map((m) => m.name)).toEqual(['Existing Model', 'New Model']);
+      expect(models.map((m) => m.name)).toEqual([
+        'Existing Model',
+        'New Model',
+      ]);
     });
   });
 

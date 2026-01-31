@@ -314,7 +314,7 @@ describe('PricePollingService', () => {
 
       await service.start({
         refreshInterval: 'standard',
-          showStalenessIndicator: true,
+        showStalenessIndicator: true,
         pauseWhenHidden: true,
       });
 
@@ -332,7 +332,7 @@ describe('PricePollingService', () => {
 
       await service.start({
         refreshInterval: 'standard',
-          showStalenessIndicator: true,
+        showStalenessIndicator: true,
         pauseWhenHidden: true,
       });
 
@@ -349,7 +349,7 @@ describe('PricePollingService', () => {
 
       await service.start({
         refreshInterval: 'standard',
-          showStalenessIndicator: true,
+        showStalenessIndicator: true,
         pauseWhenHidden: false, // Don't pause when hidden
       });
 
@@ -406,7 +406,7 @@ describe('PricePollingService', () => {
 
       await service.start({
         refreshInterval: 'standard',
-          showStalenessIndicator: true,
+        showStalenessIndicator: true,
         pauseWhenHidden: false,
       });
 
@@ -431,7 +431,7 @@ describe('PricePollingService', () => {
     it('should return true after starting with pauseWhenHidden', async () => {
       await service.start({
         refreshInterval: 'standard',
-          showStalenessIndicator: true,
+        showStalenessIndicator: true,
         pauseWhenHidden: true,
       });
 
@@ -441,7 +441,7 @@ describe('PricePollingService', () => {
     it('should return false after stopping', async () => {
       await service.start({
         refreshInterval: 'standard',
-          showStalenessIndicator: true,
+        showStalenessIndicator: true,
         pauseWhenHidden: true,
       });
 
