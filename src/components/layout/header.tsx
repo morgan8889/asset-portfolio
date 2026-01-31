@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import {
   Menu,
@@ -32,7 +33,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
+      <div className="flex h-14 w-full items-center justify-between px-4">
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
@@ -93,9 +94,11 @@ export function Header() {
               </Button>
             )}
 
-            <Button variant="ghost" size="icon" aria-label="Settings">
-              <Settings className="h-5 w-5" />
-            </Button>
+            <Link href="/settings">
+              <Button variant="ghost" size="icon" aria-label="Settings">
+                <Settings className="h-5 w-5" />
+              </Button>
+            </Link>
 
             <Button variant="ghost" size="icon" aria-label="User menu">
               <User className="h-5 w-5" />

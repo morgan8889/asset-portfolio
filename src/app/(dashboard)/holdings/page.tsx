@@ -15,9 +15,10 @@ import { Plus, Home, Coins, Package } from 'lucide-react';
 import { HoldingsTable } from '@/components/tables/holdings-table';
 import { AddPropertyDialog } from '@/components/holdings/add-property-dialog';
 import { AddManualAssetDialog } from '@/components/holdings/add-manual-asset-dialog';
+import { DashboardProvider } from '@/components/dashboard';
 import { usePortfolioStore } from '@/lib/stores';
 
-export default function HoldingsPage() {
+function HoldingsPageContent() {
   const [showPropertyDialog, setShowPropertyDialog] = useState(false);
   const [showManualAssetDialog, setShowManualAssetDialog] = useState(false);
   const { currentPortfolio } = usePortfolioStore();
@@ -117,5 +118,13 @@ export default function HoldingsPage() {
         </Card>
       )}
     </div>
+  );
+}
+
+export default function HoldingsPage() {
+  return (
+    <DashboardProvider>
+      <HoldingsPageContent />
+    </DashboardProvider>
   );
 }

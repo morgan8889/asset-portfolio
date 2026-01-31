@@ -173,13 +173,12 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
   portfolioId,
   isLoading: externalLoading = false,
 }: GrowthChartWidgetProps) {
-  const { config } = useDashboardStore();
+  const { config, setTimePeriod } = useDashboardStore();
   const { currentPortfolio } = usePortfolioStore();
   const effectivePortfolioId = portfolioId || currentPortfolio?.id;
 
-  const [period, setPeriod] = useState<TimePeriod>(
-    config?.timePeriod || 'MONTH'
-  );
+  // Use global time period from dashboard config
+  const period = config?.timePeriod || 'MONTH';
   const [data, setData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -235,7 +234,7 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
       cancelled = true;
       abortController.abort();
     };
-  }, [effectivePortfolioId, period]);
+  }, [effectivePortfolioId, config?.timePeriod]);
 
   const chartStats = useMemo(() => {
     if (data.length === 0) return null;
@@ -316,7 +315,7 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
                 key={p}
                 variant={period === p ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setPeriod(p)}
+                onClick={() => setTimePeriod(p)}
                 className="h-8 px-3"
               >
                 {TIME_PERIOD_CONFIGS[p].shortLabel}
