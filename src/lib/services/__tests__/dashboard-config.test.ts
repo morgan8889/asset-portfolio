@@ -14,7 +14,10 @@ import type {
   WidgetId,
   RGLLayouts,
 } from '@/types/dashboard';
-import { DEFAULT_WIDGET_SPANS, DEFAULT_WIDGET_ROW_SPANS } from '@/types/dashboard';
+import {
+  DEFAULT_WIDGET_SPANS,
+  DEFAULT_WIDGET_ROW_SPANS,
+} from '@/types/dashboard';
 
 // Use vi.hoisted to define mocks that can be referenced by hoisted vi.mock
 const { mockSettingsQueries } = vi.hoisted(() => ({
@@ -30,7 +33,10 @@ vi.mock('@/lib/db', () => ({
 }));
 
 // Import after mock is set up
-import { dashboardConfigService, generateRGLLayoutsFromConfig } from '../dashboard-config';
+import {
+  dashboardConfigService,
+  generateRGLLayoutsFromConfig,
+} from '../dashboard-config';
 
 describe('Dashboard Configuration Service', () => {
   beforeEach(() => {
@@ -241,7 +247,13 @@ describe('Dashboard Configuration Service', () => {
             'biggest-losers': false,
             'recent-activity': true,
           },
-          widgetOrder: ['total-value', 'gain-loss', 'category-breakdown', 'growth-chart', 'recent-activity'],
+          widgetOrder: [
+            'total-value',
+            'gain-loss',
+            'category-breakdown',
+            'growth-chart',
+            'recent-activity',
+          ],
           timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
@@ -266,16 +278,22 @@ describe('Dashboard Configuration Service', () => {
         expect(config.rglLayouts?.lg.length).toBe(5);
 
         // Check that 2-column widgets are properly sized
-        const growthChartLg = config.rglLayouts?.lg.find((item) => item.i === 'growth-chart');
+        const growthChartLg = config.rglLayouts?.lg.find(
+          (item) => item.i === 'growth-chart'
+        );
         expect(growthChartLg?.w).toBe(2);
         expect(growthChartLg?.h).toBe(3);
 
-        const categoryBreakdownLg = config.rglLayouts?.lg.find((item) => item.i === 'category-breakdown');
+        const categoryBreakdownLg = config.rglLayouts?.lg.find(
+          (item) => item.i === 'category-breakdown'
+        );
         expect(categoryBreakdownLg?.w).toBe(2);
         expect(categoryBreakdownLg?.h).toBe(2);
 
         // Check 1-column widgets
-        const totalValueLg = config.rglLayouts?.lg.find((item) => item.i === 'total-value');
+        const totalValueLg = config.rglLayouts?.lg.find(
+          (item) => item.i === 'total-value'
+        );
         expect(totalValueLg?.w).toBe(1);
         expect(totalValueLg?.h).toBe(1);
       });
@@ -364,7 +382,12 @@ describe('Dashboard Configuration Service', () => {
             'recent-activity': false,
             'day-change': false,
           },
-          widgetOrder: ['total-value', 'gain-loss', 'growth-chart', 'category-breakdown'],
+          widgetOrder: [
+            'total-value',
+            'gain-loss',
+            'growth-chart',
+            'category-breakdown',
+          ],
           timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
@@ -386,10 +409,14 @@ describe('Dashboard Configuration Service', () => {
         expect(layouts.lg.length).toBe(4);
 
         // Check 2-column widgets
-        const growthChart = layouts.lg.find((item) => item.i === 'growth-chart');
+        const growthChart = layouts.lg.find(
+          (item) => item.i === 'growth-chart'
+        );
         expect(growthChart?.w).toBe(2);
 
-        const categoryBreakdownWidget = layouts.lg.find((item) => item.i === 'category-breakdown');
+        const categoryBreakdownWidget = layouts.lg.find(
+          (item) => item.i === 'category-breakdown'
+        );
         expect(categoryBreakdownWidget?.w).toBe(2);
 
         // Total value and gain-loss should be 1 column each
@@ -420,7 +447,13 @@ describe('Dashboard Configuration Service', () => {
             'biggest-losers': false,
             'recent-activity': false,
           },
-          widgetOrder: ['total-value', 'gain-loss', 'day-change', 'growth-chart', 'category-breakdown'],
+          widgetOrder: [
+            'total-value',
+            'gain-loss',
+            'day-change',
+            'growth-chart',
+            'category-breakdown',
+          ],
           timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
@@ -439,10 +472,14 @@ describe('Dashboard Configuration Service', () => {
         const layouts = generateRGLLayoutsFromConfig(config);
 
         // Check row spans are preserved
-        const growthChart = layouts.lg.find((item) => item.i === 'growth-chart');
+        const growthChart = layouts.lg.find(
+          (item) => item.i === 'growth-chart'
+        );
         expect(growthChart?.h).toBe(3); // 3 rows high
 
-        const categoryBreakdownWidget = layouts.lg.find((item) => item.i === 'category-breakdown');
+        const categoryBreakdownWidget = layouts.lg.find(
+          (item) => item.i === 'category-breakdown'
+        );
         expect(categoryBreakdownWidget?.h).toBe(2); // 2 rows high
 
         // Metric widgets should be 1 row high
@@ -463,7 +500,12 @@ describe('Dashboard Configuration Service', () => {
             'biggest-losers': false,
             'day-change': false,
           },
-          widgetOrder: ['growth-chart', 'total-value', 'gain-loss', 'recent-activity'],
+          widgetOrder: [
+            'growth-chart',
+            'total-value',
+            'gain-loss',
+            'recent-activity',
+          ],
           timePeriod: 'MONTH',
           performerCount: 5,
           layoutMode: 'grid',
@@ -481,7 +523,9 @@ describe('Dashboard Configuration Service', () => {
 
         const layouts = generateRGLLayoutsFromConfig(config);
 
-        const growthChart = layouts.lg.find((item) => item.i === 'growth-chart');
+        const growthChart = layouts.lg.find(
+          (item) => item.i === 'growth-chart'
+        );
         const totalValue = layouts.lg.find((item) => item.i === 'total-value');
         const gainLoss = layouts.lg.find((item) => item.i === 'gain-loss');
 
@@ -578,11 +622,15 @@ describe('Dashboard Configuration Service', () => {
         const layouts = generateRGLLayoutsFromConfig(config);
 
         // lg layout: both widgets should be 2 columns
-        const growthChartLg = layouts.lg.find((item) => item.i === 'growth-chart');
+        const growthChartLg = layouts.lg.find(
+          (item) => item.i === 'growth-chart'
+        );
         expect(growthChartLg?.w).toBe(2);
 
         // md layout: should clamp to max 2 columns
-        const growthChartMd = layouts.md.find((item) => item.i === 'growth-chart');
+        const growthChartMd = layouts.md.find(
+          (item) => item.i === 'growth-chart'
+        );
         expect(growthChartMd?.w).toBeLessThanOrEqual(2);
         expect(growthChartMd?.w).toBe(2);
       });
@@ -631,7 +679,9 @@ describe('Dashboard Configuration Service', () => {
         });
 
         // Y positions should be sequential based on heights
-        const growthChart = layouts.sm.find((item) => item.i === 'growth-chart');
+        const growthChart = layouts.sm.find(
+          (item) => item.i === 'growth-chart'
+        );
         const totalValue = layouts.sm.find((item) => item.i === 'total-value');
 
         expect(growthChart?.y).toBe(0);
@@ -670,17 +720,29 @@ describe('Dashboard Configuration Service', () => {
         const layouts = generateRGLLayoutsFromConfig(config);
 
         // Heights should be preserved across breakpoints
-        const growthChartLg = layouts.lg.find((item) => item.i === 'growth-chart');
-        const growthChartMd = layouts.md.find((item) => item.i === 'growth-chart');
-        const growthChartSm = layouts.sm.find((item) => item.i === 'growth-chart');
+        const growthChartLg = layouts.lg.find(
+          (item) => item.i === 'growth-chart'
+        );
+        const growthChartMd = layouts.md.find(
+          (item) => item.i === 'growth-chart'
+        );
+        const growthChartSm = layouts.sm.find(
+          (item) => item.i === 'growth-chart'
+        );
 
         expect(growthChartLg?.h).toBe(3);
         expect(growthChartMd?.h).toBe(3);
         expect(growthChartSm?.h).toBe(3);
 
-        const categoryBreakdownLg = layouts.lg.find((item) => item.i === 'category-breakdown');
-        const categoryBreakdownMd = layouts.md.find((item) => item.i === 'category-breakdown');
-        const categoryBreakdownSm = layouts.sm.find((item) => item.i === 'category-breakdown');
+        const categoryBreakdownLg = layouts.lg.find(
+          (item) => item.i === 'category-breakdown'
+        );
+        const categoryBreakdownMd = layouts.md.find(
+          (item) => item.i === 'category-breakdown'
+        );
+        const categoryBreakdownSm = layouts.sm.find(
+          (item) => item.i === 'category-breakdown'
+        );
 
         expect(categoryBreakdownLg?.h).toBe(2);
         expect(categoryBreakdownMd?.h).toBe(2);
@@ -719,7 +781,9 @@ describe('Dashboard Configuration Service', () => {
         };
 
         const layouts = generateRGLLayoutsFromConfig(config);
-        const growthChart = layouts.lg.find((item) => item.i === 'growth-chart');
+        const growthChart = layouts.lg.find(
+          (item) => item.i === 'growth-chart'
+        );
 
         // Should have min/max constraints
         expect(growthChart?.minW).toBeDefined();
@@ -796,13 +860,43 @@ describe('Dashboard Configuration Service', () => {
     it('should preserve existing RGL layouts when enabling RGL mode', async () => {
       const existingLayouts: RGLLayouts = {
         lg: [
-          { i: 'total-value', x: 0, y: 0, w: 1, h: 1, minW: 1, maxW: 1, minH: 1, maxH: 1 },
+          {
+            i: 'total-value',
+            x: 0,
+            y: 0,
+            w: 1,
+            h: 1,
+            minW: 1,
+            maxW: 1,
+            minH: 1,
+            maxH: 1,
+          },
         ],
         md: [
-          { i: 'total-value', x: 0, y: 0, w: 1, h: 1, minW: 1, maxW: 1, minH: 1, maxH: 1 },
+          {
+            i: 'total-value',
+            x: 0,
+            y: 0,
+            w: 1,
+            h: 1,
+            minW: 1,
+            maxW: 1,
+            minH: 1,
+            maxH: 1,
+          },
         ],
         sm: [
-          { i: 'total-value', x: 0, y: 0, w: 1, h: 1, minW: 1, maxW: 1, minH: 1, maxH: 1 },
+          {
+            i: 'total-value',
+            x: 0,
+            y: 0,
+            w: 1,
+            h: 1,
+            minW: 1,
+            maxW: 1,
+            minH: 1,
+            maxH: 1,
+          },
         ],
       };
 
@@ -854,13 +948,43 @@ describe('Dashboard Configuration Service', () => {
     it('should disable RGL mode without affecting layouts', async () => {
       const existingLayouts: RGLLayouts = {
         lg: [
-          { i: 'total-value', x: 0, y: 0, w: 1, h: 1, minW: 1, maxW: 1, minH: 1, maxH: 1 },
+          {
+            i: 'total-value',
+            x: 0,
+            y: 0,
+            w: 1,
+            h: 1,
+            minW: 1,
+            maxW: 1,
+            minH: 1,
+            maxH: 1,
+          },
         ],
         md: [
-          { i: 'total-value', x: 0, y: 0, w: 1, h: 1, minW: 1, maxW: 1, minH: 1, maxH: 1 },
+          {
+            i: 'total-value',
+            x: 0,
+            y: 0,
+            w: 1,
+            h: 1,
+            minW: 1,
+            maxW: 1,
+            minH: 1,
+            maxH: 1,
+          },
         ],
         sm: [
-          { i: 'total-value', x: 0, y: 0, w: 1, h: 1, minW: 1, maxW: 1, minH: 1, maxH: 1 },
+          {
+            i: 'total-value',
+            x: 0,
+            y: 0,
+            w: 1,
+            h: 1,
+            minW: 1,
+            maxW: 1,
+            minH: 1,
+            maxH: 1,
+          },
         ],
       };
 

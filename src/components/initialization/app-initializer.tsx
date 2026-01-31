@@ -13,7 +13,9 @@ let globalInitializationComplete = false;
 
 export function AppInitializer({ children }: AppInitializerProps) {
   // Start as initialized if global initialization already completed
-  const [isInitialized, setIsInitialized] = useState(globalInitializationComplete);
+  const [isInitialized, setIsInitialized] = useState(
+    globalInitializationComplete
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

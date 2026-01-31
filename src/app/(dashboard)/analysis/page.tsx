@@ -106,7 +106,9 @@ export default function AnalysisPage() {
           disabled={isCalculating}
           variant="outline"
         >
-          <RefreshCw className={`mr-2 h-4 w-4 ${isCalculating ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`mr-2 h-4 w-4 ${isCalculating ? 'animate-spin' : ''}`}
+          />
           Refresh
         </Button>
       </div>

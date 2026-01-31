@@ -137,7 +137,9 @@ export function RebalancingTable({
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right font-medium">
-                  {action.action !== 'hold' ? `$${action.amount.toFixed(2)}` : '-'}
+                  {action.action !== 'hold'
+                    ? `$${action.amount.toFixed(2)}`
+                    : '-'}
                 </TableCell>
               </TableRow>
             ))}

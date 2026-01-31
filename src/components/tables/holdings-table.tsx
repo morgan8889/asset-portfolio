@@ -230,7 +230,7 @@ const HoldingsTableComponent = () => {
         </CardHeader>
         <CardContent>
           <div className="py-8 text-center">
-            <p className="text-destructive mb-4">{error}</p>
+            <p className="mb-4 text-destructive">{error}</p>
             <Button onClick={handleRetry}>Retry</Button>
           </div>
         </CardContent>
@@ -299,27 +299,35 @@ const HoldingsTableComponent = () => {
                   className="cursor-pointer"
                   onClick={() => handleSort('symbol')}
                 >
-                  Symbol {sortField === 'symbol' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  Symbol{' '}
+                  {sortField === 'symbol' &&
+                    (sortDirection === 'asc' ? '↑' : '↓')}
                 </TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead
-                  className="text-right cursor-pointer"
+                  className="cursor-pointer text-right"
                   onClick={() => handleSort('quantity')}
                 >
-                  Quantity {sortField === 'quantity' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  Quantity{' '}
+                  {sortField === 'quantity' &&
+                    (sortDirection === 'asc' ? '↑' : '↓')}
                 </TableHead>
                 <TableHead className="text-right">Price</TableHead>
                 <TableHead
-                  className="text-right cursor-pointer"
+                  className="cursor-pointer text-right"
                   onClick={() => handleSort('currentValue')}
                 >
-                  Net Value {sortField === 'currentValue' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  Net Value{' '}
+                  {sortField === 'currentValue' &&
+                    (sortDirection === 'asc' ? '↑' : '↓')}
                 </TableHead>
                 <TableHead
-                  className="text-right cursor-pointer"
+                  className="cursor-pointer text-right"
                   onClick={() => handleSort('gainLoss')}
                 >
-                  Gain/Loss {sortField === 'gainLoss' && (sortDirection === 'asc' ? '↑' : '↓')}
+                  Gain/Loss{' '}
+                  {sortField === 'gainLoss' &&
+                    (sortDirection === 'asc' ? '↑' : '↓')}
                 </TableHead>
                 <TableHead></TableHead>
               </TableRow>
@@ -327,7 +335,10 @@ const HoldingsTableComponent = () => {
             <TableBody>
               {filteredAndSortedHoldings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell
+                    colSpan={7}
+                    className="py-8 text-center text-muted-foreground"
+                  >
                     No holdings match your search criteria
                   </TableCell>
                 </TableRow>
@@ -337,8 +348,11 @@ const HoldingsTableComponent = () => {
                     <TableCell className="font-medium">
                       <div className="flex flex-col gap-1">
                         <div>{holding.symbol}</div>
-                        <div className="flex gap-1 flex-wrap">
-                          <Badge variant="outline" className={getTypeColor(holding.type)}>
+                        <div className="flex flex-wrap gap-1">
+                          <Badge
+                            variant="outline"
+                            className={getTypeColor(holding.type)}
+                          >
                             {holding.type.toUpperCase()}
                           </Badge>
                           {holding.valuationMethod === 'MANUAL' && (
@@ -349,29 +363,32 @@ const HoldingsTableComponent = () => {
                               Manual
                             </Badge>
                           )}
-                          {holding.isRental && holding.annualYield !== undefined && (
-                            <Badge
-                              variant="outline"
-                              className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
-                            >
-                              Rental: {holding.annualYield.toFixed(2)}%
-                            </Badge>
-                          )}
-                          {holding.ownershipPercentage && holding.ownershipPercentage < 100 && (
-                            <Badge variant="outline" className="text-xs">
-                              {holding.ownershipPercentage}% owned
-                            </Badge>
-                          )}
-                          {holding.exchange && holding.exchange !== 'UNKNOWN' && (
-                            <Badge
-                              className={getExchangeBadgeColor(
-                                holding.exchange as Exchange
-                              )}
-                              variant="outline"
-                            >
-                              {holding.exchange}
-                            </Badge>
-                          )}
+                          {holding.isRental &&
+                            holding.annualYield !== undefined && (
+                              <Badge
+                                variant="outline"
+                                className="bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+                              >
+                                Rental: {holding.annualYield.toFixed(2)}%
+                              </Badge>
+                            )}
+                          {holding.ownershipPercentage &&
+                            holding.ownershipPercentage < 100 && (
+                              <Badge variant="outline" className="text-xs">
+                                {holding.ownershipPercentage}% owned
+                              </Badge>
+                            )}
+                          {holding.exchange &&
+                            holding.exchange !== 'UNKNOWN' && (
+                              <Badge
+                                className={getExchangeBadgeColor(
+                                  holding.exchange as Exchange
+                                )}
+                                variant="outline"
+                              >
+                                {holding.exchange}
+                              </Badge>
+                            )}
                           {!holding.exchange && isUKSymbol(holding.symbol) && (
                             <Badge
                               className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
@@ -450,7 +467,9 @@ const HoldingsTableComponent = () => {
                         <DropdownMenuContent align="end">
                           {holding.asset?.valuationMethod === 'MANUAL' && (
                             <DropdownMenuItem
-                              onClick={() => setPriceUpdateAsset(holding.asset!)}
+                              onClick={() =>
+                                setPriceUpdateAsset(holding.asset!)
+                              }
                             >
                               <Edit className="mr-2 h-4 w-4" />
                               Update Price
@@ -458,7 +477,9 @@ const HoldingsTableComponent = () => {
                           )}
                           {holding.asset && (
                             <DropdownMenuItem
-                              onClick={() => setRegionUpdateAsset(holding.asset!)}
+                              onClick={() =>
+                                setRegionUpdateAsset(holding.asset!)
+                              }
                             >
                               <Globe2 className="mr-2 h-4 w-4" />
                               Set Region

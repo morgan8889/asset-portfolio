@@ -22,34 +22,46 @@ import { addPropertyAsset } from '@/lib/services/property-service';
 import { usePortfolioStore } from '@/lib/stores';
 
 // Property form validation schema
-const propertyFormSchema = z.object({
-  name: z.string().min(1, 'Property name is required').max(200, 'Name too long'),
-  currentValue: z
-    .string()
-    .transform(val => val.replace(/,/g, ''))
-    .pipe(z.string().regex(/^\d+(\.\d+)?$/, 'Enter a valid amount'))
-    .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, 'Must be a valid positive number'),
-  purchasePrice: z
-    .string()
-    .transform(val => val.replace(/,/g, ''))
-    .pipe(z.string().regex(/^\d+(\.\d+)?$/, 'Enter a valid amount'))
-    .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, 'Must be a valid positive number'),
-  purchaseDate: z.string().min(1, 'Purchase date is required'),
-  address: z.string().max(500, 'Address too long').optional(),
-  ownershipPercentage: z
-    .number()
-    .min(0, 'Must be between 0 and 100')
-    .max(100, 'Cannot exceed 100'),
-  isRental: z.boolean().default(false),
-  monthlyRent: z.string().optional(),
-  notes: z.string().max(1000, 'Notes too long').optional(),
-}).refine(
-  (data) => !data.isRental || (data.monthlyRent && parseFloat(data.monthlyRent) > 0),
-  {
-    message: 'Monthly rent is required for rental properties',
-    path: ['monthlyRent'],
-  }
-);
+const propertyFormSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, 'Property name is required')
+      .max(200, 'Name too long'),
+    currentValue: z
+      .string()
+      .transform((val) => val.replace(/,/g, ''))
+      .pipe(z.string().regex(/^\d+(\.\d+)?$/, 'Enter a valid amount'))
+      .refine(
+        (val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0,
+        'Must be a valid positive number'
+      ),
+    purchasePrice: z
+      .string()
+      .transform((val) => val.replace(/,/g, ''))
+      .pipe(z.string().regex(/^\d+(\.\d+)?$/, 'Enter a valid amount'))
+      .refine(
+        (val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0,
+        'Must be a valid positive number'
+      ),
+    purchaseDate: z.string().min(1, 'Purchase date is required'),
+    address: z.string().max(500, 'Address too long').optional(),
+    ownershipPercentage: z
+      .number()
+      .min(0, 'Must be between 0 and 100')
+      .max(100, 'Cannot exceed 100'),
+    isRental: z.boolean().default(false),
+    monthlyRent: z.string().optional(),
+    notes: z.string().max(1000, 'Notes too long').optional(),
+  })
+  .refine(
+    (data) =>
+      !data.isRental || (data.monthlyRent && parseFloat(data.monthlyRent) > 0),
+    {
+      message: 'Monthly rent is required for rental properties',
+      path: ['monthlyRent'],
+    }
+  );
 
 type PropertyFormValues = z.infer<typeof propertyFormSchema>;
 
@@ -122,7 +134,8 @@ export function AddPropertyDialog({
         // Property was added successfully, just refresh failed
         toast({
           title: 'Refresh Needed',
-          description: 'Property added successfully. Please refresh the page to see it.',
+          description:
+            'Property added successfully. Please refresh the page to see it.',
           variant: 'default',
         });
       }
@@ -157,8 +170,8 @@ export function AddPropertyDialog({
         <DialogHeader>
           <DialogTitle>Add Real Estate Property</DialogTitle>
           <DialogDescription>
-            Add a residential or commercial property to your portfolio. Values are
-            manually updated.
+            Add a residential or commercial property to your portfolio. Values
+            are manually updated.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

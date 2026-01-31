@@ -4,11 +4,15 @@ import {
   TransactionType,
   AssetMetadata,
   PortfolioSettings,
+  Holding,
+  TaxLot,
 } from '@/types';
+import type { LivePriceData } from '@/types/market';
 import Decimal from 'decimal.js';
 
 let assetIdCounter = 1;
 let transactionIdCounter = 1;
+let holdingIdCounter = 1;
 
 const defaultAssetMetadata: AssetMetadata = {};
 
@@ -92,7 +96,53 @@ export const createMockPortfolio = (overrides: any = {}) => ({
   ...overrides,
 });
 
+export const createMockHolding = (overrides: Partial<Holding> = {}): Holding => ({
+  id: `holding-${holdingIdCounter++}`,
+  portfolioId: 'portfolio-1',
+  assetId: 'asset-1',
+  quantity: new Decimal(10),
+  costBasis: new Decimal(1000),
+  averageCost: new Decimal(100),
+  currentValue: new Decimal(1500),
+  unrealizedGain: new Decimal(500),
+  unrealizedGainPercent: 50,
+  lots: [],
+  lastUpdated: new Date(),
+  ownershipPercentage: 100,
+  ...overrides,
+});
+
+export const createMockLivePriceData = (
+  overrides: Partial<LivePriceData> = {}
+): LivePriceData => ({
+  symbol: 'AAPL',
+  price: '150.00',
+  currency: 'USD',
+  displayPrice: '150.00',
+  displayCurrency: 'USD',
+  change: '+5.00',
+  changePercent: 3.45,
+  timestamp: new Date(),
+  source: 'yahoo',
+  marketState: 'REGULAR',
+  staleness: 'fresh',
+  exchange: 'NASDAQ',
+  ...overrides,
+});
+
+export const createMockHoldings = (count: number): Holding[] =>
+  Array.from({ length: count }, (_, i) =>
+    createMockHolding({
+      id: `holding-${i + 1}`,
+      assetId: `asset-${i + 1}`,
+      quantity: new Decimal(10 + i),
+      averageCost: new Decimal(100 + i * 10),
+      currentValue: new Decimal((10 + i) * (150 + i * 5)),
+    })
+  );
+
 export const resetCounters = () => {
   assetIdCounter = 1;
   transactionIdCounter = 1;
+  holdingIdCounter = 1;
 };

@@ -39,20 +39,29 @@ const manualAssetFormSchema = z.object({
   }),
   currentValue: z
     .string()
-    .transform(val => val.replace(/,/g, ''))
+    .transform((val) => val.replace(/,/g, ''))
     .pipe(z.string().regex(/^\d+(\.\d+)?$/, 'Enter a valid amount'))
-    .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, 'Must be a valid positive number'),
+    .refine(
+      (val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0,
+      'Must be a valid positive number'
+    ),
   purchasePrice: z
     .string()
-    .transform(val => val.replace(/,/g, ''))
+    .transform((val) => val.replace(/,/g, ''))
     .pipe(z.string().regex(/^\d+(\.\d+)?$/, 'Enter a valid amount'))
-    .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, 'Must be a valid positive number'),
+    .refine(
+      (val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0,
+      'Must be a valid positive number'
+    ),
   purchaseDate: z.string().min(1, 'Purchase date is required'),
   quantity: z
     .string()
-    .transform(val => val.replace(/,/g, ''))
+    .transform((val) => val.replace(/,/g, ''))
     .pipe(z.string().regex(/^\d+(\.\d+)?$/, 'Enter a valid quantity'))
-    .refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, 'Must be a valid positive number'),
+    .refine(
+      (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
+      'Must be a valid positive number'
+    ),
   notes: z.string().max(1000, 'Notes too long').optional(),
 });
 
@@ -206,7 +215,8 @@ export function AddManualAssetDialog({
         // Asset was added successfully, just refresh failed
         toast({
           title: 'Refresh Needed',
-          description: 'Asset added successfully. Please refresh the page to see it.',
+          description:
+            'Asset added successfully. Please refresh the page to see it.',
           variant: 'default',
         });
       }
@@ -305,7 +315,9 @@ export function AddManualAssetDialog({
                 {...register('quantity')}
               />
               {errors.quantity && (
-                <p className="text-sm text-red-600">{errors.quantity.message}</p>
+                <p className="text-sm text-red-600">
+                  {errors.quantity.message}
+                </p>
               )}
               <p className="text-xs text-muted-foreground">
                 Number of units owned

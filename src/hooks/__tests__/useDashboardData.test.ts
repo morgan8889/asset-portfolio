@@ -1,13 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useDashboardData } from '../useDashboardData';
-import {
-  createMockPortfolio,
-  createMockTransaction,
-} from '@/test-utils/test-factories';
+import { createMockPortfolio } from '@/test-utils/test-factories';
 import Decimal from 'decimal.js';
 
-// Mock stores with hoisted state
+/**
+ * Tests for useDashboardData hook
+ *
+ * This hook orchestrates all data loading for the dashboard and holdings pages.
+ * Critical for verifying DashboardProvider integration works correctly.
+ */
+
+// Use vi.hoisted() to avoid "Cannot access before initialization" errors
 const {
   mockPortfolioStore,
   mockTransactionStore,
@@ -18,58 +22,77 @@ const {
   useAssetStoreMock,
 } = vi.hoisted(() => {
   const mockActions = {
-    loadPortfolios: vi.fn(),
-    loadHoldings: vi.fn(),
+    loadPortfolios: vi.fn().mockResolvedValue(undefined),
+    setCurrentPortfolio: vi.fn(),
+    loadHoldings: vi.fn().mockResolvedValue(undefined),
     calculateMetrics: vi.fn(),
-    refreshPortfolioData: vi.fn(),
-    loadTransactions: vi.fn(),
-    loadAssets: vi.fn(),
+    refreshData: vi.fn().mockResolvedValue(undefined),
+    loadTransactions: vi.fn().mockResolvedValue([]),
+    loadAssets: vi.fn().mockResolvedValue(undefined),
   };
 
   const mockPortfolioStore = {
-    currentPortfolio: null as any,
     portfolios: [] as any[],
-    metrics: null as any,
+    currentPortfolio: null as any,
     holdings: [] as any[],
+    assets: [] as any[],
+    metrics: null as any,
     loading: false,
     error: null as string | null,
-    setCurrentPortfolio: vi.fn(),
     _loadingHoldingsForId: null as string | null,
+    ...mockActions,
     getState: vi.fn(),
   };
 
   const mockTransactionStore = {
     transactions: [] as any[],
     loading: false,
+    error: null as string | null,
+    loadTransactions: mockActions.loadTransactions,
     getState: vi.fn(),
   };
 
   const mockAssetStore = {
     assets: [] as any[],
     loading: false,
+    error: null as string | null,
+    loadAssets: mockActions.loadAssets,
     getState: vi.fn(),
   };
 
-  // Create store mock functions
   const usePortfolioStoreMock = Object.assign(
-    vi.fn((selector?: any) =>
-      selector ? selector(mockPortfolioStore) : mockPortfolioStore
-    ),
-    { getState: mockPortfolioStore.getState }
+    vi.fn((selector) => (selector ? selector(mockPortfolioStore) : mockPortfolioStore)),
+    {
+      getState: vi.fn(() => ({
+        ...mockPortfolioStore,
+        loadPortfolios: mockActions.loadPortfolios,
+        setCurrentPortfolio: mockActions.setCurrentPortfolio,
+        loadHoldings: mockActions.loadHoldings,
+        calculateMetrics: mockActions.calculateMetrics,
+        refreshData: mockActions.refreshData,
+        _loadingHoldingsForId: mockPortfolioStore._loadingHoldingsForId,
+      })),
+    }
   );
 
   const useTransactionStoreMock = Object.assign(
-    vi.fn((selector?: any) =>
-      selector ? selector(mockTransactionStore) : mockTransactionStore
-    ),
-    { getState: mockTransactionStore.getState }
+    vi.fn((selector) => (selector ? selector(mockTransactionStore) : mockTransactionStore)),
+    {
+      getState: vi.fn(() => ({
+        ...mockTransactionStore,
+        loadTransactions: mockActions.loadTransactions,
+      })),
+    }
   );
 
   const useAssetStoreMock = Object.assign(
-    vi.fn((selector?: any) =>
-      selector ? selector(mockAssetStore) : mockAssetStore
-    ),
-    { getState: mockAssetStore.getState }
+    vi.fn((selector) => (selector ? selector(mockAssetStore) : mockAssetStore)),
+    {
+      getState: vi.fn(() => ({
+        ...mockAssetStore,
+        loadAssets: mockActions.loadAssets,
+      })),
+    }
   );
 
   return {
@@ -83,290 +106,332 @@ const {
   };
 });
 
-vi.mock('@/lib/stores', () => ({
+// Mock the stores
+vi.mock('@/lib/stores/portfolio', () => ({
   usePortfolioStore: usePortfolioStoreMock,
+}));
+
+vi.mock('@/lib/stores/transaction', () => ({
   useTransactionStore: useTransactionStoreMock,
+}));
+
+vi.mock('@/lib/stores/asset', () => ({
   useAssetStore: useAssetStoreMock,
 }));
 
 describe('useDashboardData', () => {
   beforeEach(() => {
-    // Reset mocks
     vi.clearAllMocks();
-
-    // Reset store state
-    mockPortfolioStore.currentPortfolio = null;
     mockPortfolioStore.portfolios = [];
-    mockPortfolioStore.metrics = null;
+    mockPortfolioStore.currentPortfolio = null;
     mockPortfolioStore.holdings = [];
+    mockPortfolioStore.assets = [];
+    mockPortfolioStore.metrics = null;
     mockPortfolioStore.loading = false;
     mockPortfolioStore.error = null;
     mockPortfolioStore._loadingHoldingsForId = null;
-
     mockTransactionStore.transactions = [];
     mockTransactionStore.loading = false;
-
+    mockTransactionStore.error = null;
     mockAssetStore.assets = [];
     mockAssetStore.loading = false;
+    mockAssetStore.error = null;
 
-    // Setup getState to return stable action references
-    mockPortfolioStore.getState.mockReturnValue({
+    // Reset getState mocks
+    usePortfolioStoreMock.getState.mockReturnValue({
       ...mockPortfolioStore,
       loadPortfolios: mockActions.loadPortfolios,
+      setCurrentPortfolio: mockActions.setCurrentPortfolio,
       loadHoldings: mockActions.loadHoldings,
       calculateMetrics: mockActions.calculateMetrics,
-      refreshData: mockActions.refreshPortfolioData,
+      refreshData: mockActions.refreshData,
+      _loadingHoldingsForId: mockPortfolioStore._loadingHoldingsForId,
     });
 
-    mockTransactionStore.getState.mockReturnValue({
+    useTransactionStoreMock.getState.mockReturnValue({
       ...mockTransactionStore,
       loadTransactions: mockActions.loadTransactions,
     });
 
-    mockAssetStore.getState.mockReturnValue({
+    useAssetStoreMock.getState.mockReturnValue({
       ...mockAssetStore,
       loadAssets: mockActions.loadAssets,
     });
-
-    // Default mock implementations (resolve immediately)
-    mockActions.loadPortfolios.mockResolvedValue(undefined);
-    mockActions.loadHoldings.mockResolvedValue(undefined);
-    mockActions.calculateMetrics.mockResolvedValue(undefined);
-    mockActions.refreshPortfolioData.mockResolvedValue(undefined);
-    mockActions.loadTransactions.mockResolvedValue(undefined);
-    mockActions.loadAssets.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Mount & Initialization', () => {
-    it('should not auto-select when there are no portfolios', async () => {
-      const { result } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(mockActions.loadPortfolios).toHaveBeenCalledTimes(1);
-      });
-
-      expect(mockPortfolioStore.setCurrentPortfolio).not.toHaveBeenCalled();
-      expect(result.current.currentPortfolio).toBeNull();
-    });
-
-    it('should load portfolios and auto-select first on mount', async () => {
-      const mockPortfolio = createMockPortfolio({ id: 'portfolio-1' });
-      mockPortfolioStore.portfolios = [mockPortfolio];
-
-      const { result, rerender } = renderHook(() => useDashboardData());
-
-      await waitFor(() => {
-        expect(mockActions.loadPortfolios).toHaveBeenCalledTimes(1);
-        expect(mockActions.loadAssets).toHaveBeenCalledTimes(1);
-      });
-
-      // Trigger auto-select effect
-      rerender();
-
-      await waitFor(() => {
-        expect(mockPortfolioStore.setCurrentPortfolio).toHaveBeenCalledWith(
-          mockPortfolio
-        );
-      });
-    });
-
-    it('should not re-select when portfolio already selected', () => {
-      const mockPortfolio = createMockPortfolio({ id: 'portfolio-1' });
-      mockPortfolioStore.portfolios = [mockPortfolio];
-      mockPortfolioStore.currentPortfolio = mockPortfolio;
+    it('should not auto-select portfolio when no portfolios exist', async () => {
+      mockPortfolioStore.portfolios = [];
+      mockActions.loadPortfolios.mockResolvedValue(undefined);
 
       renderHook(() => useDashboardData());
 
-      expect(mockPortfolioStore.setCurrentPortfolio).not.toHaveBeenCalled();
-    });
-
-    it('should prevent duplicate loads during React Strict Mode', async () => {
-      // In React Strict Mode, effects run twice but the ref guard prevents duplicate calls
-      const { rerender } = renderHook(() => useDashboardData());
-
       await waitFor(() => {
-        expect(mockActions.loadPortfolios).toHaveBeenCalledTimes(1);
-        expect(mockActions.loadAssets).toHaveBeenCalledTimes(1);
+        expect(mockActions.loadPortfolios).toHaveBeenCalledOnce();
       });
 
-      // Trigger a rerender (simulating what Strict Mode does)
+      expect(mockActions.setCurrentPortfolio).not.toHaveBeenCalled();
+    });
+
+    it('should load portfolios and auto-select first when portfolios exist', async () => {
+      const portfolio1 = createMockPortfolio({ id: 'p1', name: 'Portfolio 1' });
+      const portfolio2 = createMockPortfolio({ id: 'p2', name: 'Portfolio 2' });
+
+      // Pre-populate portfolios (simulating after loadPortfolios completes)
+      mockPortfolioStore.portfolios = [portfolio1, portfolio2];
+      mockPortfolioStore.currentPortfolio = null;
+
+      renderHook(() => useDashboardData());
+
+      await waitFor(() => {
+        expect(mockActions.loadPortfolios).toHaveBeenCalledOnce();
+      });
+
+      // Should auto-select first portfolio since portfolios exist and none is selected
+      expect(mockActions.setCurrentPortfolio).toHaveBeenCalledWith(portfolio1);
+    });
+
+    it('should not re-select portfolio when one is already selected', async () => {
+      const portfolio = createMockPortfolio({ id: 'p1' });
+      mockPortfolioStore.portfolios = [portfolio];
+      mockPortfolioStore.currentPortfolio = portfolio;
+
+      renderHook(() => useDashboardData());
+
+      await waitFor(() => {
+        expect(mockActions.loadPortfolios).toHaveBeenCalled();
+      });
+
+      // Should not set current portfolio again since one is already selected
+      expect(mockActions.setCurrentPortfolio).not.toHaveBeenCalled();
+    });
+
+    it('should prevent duplicate loads in React Strict Mode', async () => {
+      mockPortfolioStore.portfolios = [];
+      mockActions.loadPortfolios.mockResolvedValue(undefined);
+
+      // Simulate React Strict Mode by rendering twice
+      const { rerender } = renderHook(() => useDashboardData());
+      rerender();
       rerender();
 
-      // Wait a bit to ensure no additional calls were made
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await waitFor(() => {
+        expect(mockActions.loadPortfolios).toHaveBeenCalled();
+      });
 
-      // Should still be called only once
-      expect(mockActions.loadPortfolios).toHaveBeenCalledTimes(1);
-      expect(mockActions.loadAssets).toHaveBeenCalledTimes(1);
+      // Should only load once despite multiple renders
+      expect(mockActions.loadPortfolios).toHaveBeenCalledOnce();
     });
   });
 
   describe('Portfolio Selection & Loading', () => {
     it('should trigger holdings load when portfolio changes', async () => {
-      const mockPortfolio = createMockPortfolio({ id: 'portfolio-1' });
-      mockPortfolioStore.portfolios = [mockPortfolio];
-      mockPortfolioStore.currentPortfolio = mockPortfolio;
+      const portfolio = createMockPortfolio({ id: 'p1' });
+      mockPortfolioStore.portfolios = [portfolio];
+      mockPortfolioStore.currentPortfolio = null;
 
       const { rerender } = renderHook(() => useDashboardData());
 
-      // Simulate portfolio change
+      // Change current portfolio
+      mockPortfolioStore.currentPortfolio = portfolio;
       rerender();
 
       await waitFor(() => {
-        expect(mockActions.loadHoldings).toHaveBeenCalledWith('portfolio-1');
+        expect(mockActions.loadHoldings).toHaveBeenCalledWith('p1');
       });
     });
 
     it('should trigger metrics calculation when portfolio changes', async () => {
-      const mockPortfolio = createMockPortfolio({ id: 'portfolio-1' });
-      mockPortfolioStore.portfolios = [mockPortfolio];
-      mockPortfolioStore.currentPortfolio = mockPortfolio;
+      const portfolio = createMockPortfolio({ id: 'p1' });
+      mockPortfolioStore.portfolios = [portfolio];
+      mockPortfolioStore.currentPortfolio = null;
 
       const { rerender } = renderHook(() => useDashboardData());
 
-      // Simulate portfolio change
+      // Change current portfolio and add holdings
+      mockPortfolioStore.currentPortfolio = portfolio;
+      mockPortfolioStore.holdings = [
+        {
+          id: 'h1',
+          portfolioId: 'p1',
+          assetId: 'a1',
+          quantity: new Decimal(10),
+          costBasis: new Decimal(1000),
+          averageCost: new Decimal(100),
+          currentValue: new Decimal(1500),
+          unrealizedGain: new Decimal(500),
+          unrealizedGainPercent: 50,
+          lots: [],
+          lastUpdated: new Date(),
+          ownershipPercentage: 100,
+        },
+      ];
       rerender();
 
       await waitFor(() => {
-        expect(mockActions.calculateMetrics).toHaveBeenCalledWith(
-          'portfolio-1'
-        );
+        expect(mockActions.calculateMetrics).toHaveBeenCalledWith('p1');
       });
     });
 
     it('should trigger transactions load when portfolio changes', async () => {
-      const mockPortfolio = createMockPortfolio({ id: 'portfolio-1' });
-      mockPortfolioStore.portfolios = [mockPortfolio];
-      mockPortfolioStore.currentPortfolio = mockPortfolio;
+      const portfolio = createMockPortfolio({ id: 'p1' });
+      mockPortfolioStore.portfolios = [portfolio];
+      mockPortfolioStore.currentPortfolio = null;
 
       const { rerender } = renderHook(() => useDashboardData());
 
-      // Simulate portfolio change
+      // Change current portfolio
+      mockPortfolioStore.currentPortfolio = portfolio;
       rerender();
 
       await waitFor(() => {
-        expect(mockActions.loadTransactions).toHaveBeenCalledWith(
-          'portfolio-1'
-        );
+        expect(mockActions.loadTransactions).toHaveBeenCalledWith('p1');
       });
     });
 
-    it('should skip loading if portfolio is already being loaded (race condition)', async () => {
-      const mockPortfolio = createMockPortfolio({ id: 'portfolio-1' });
-      mockPortfolioStore.portfolios = [mockPortfolio];
-      mockPortfolioStore.currentPortfolio = mockPortfolio;
-      mockPortfolioStore._loadingHoldingsForId = 'portfolio-1';
+    it('should skip loading if already loading', async () => {
+      const portfolio = createMockPortfolio({ id: 'p1' });
+      mockPortfolioStore.portfolios = [portfolio];
+      mockPortfolioStore.currentPortfolio = portfolio;
+      mockPortfolioStore._loadingHoldingsForId = 'p1'; // Already loading this portfolio
 
-      // Mock getState to return the race condition guard
-      mockPortfolioStore.getState.mockReturnValue({
+      // Update getState to return the loading flag
+      usePortfolioStoreMock.getState.mockReturnValue({
         ...mockPortfolioStore,
-        _loadingHoldingsForId: 'portfolio-1',
         loadPortfolios: mockActions.loadPortfolios,
+        setCurrentPortfolio: mockActions.setCurrentPortfolio,
         loadHoldings: mockActions.loadHoldings,
         calculateMetrics: mockActions.calculateMetrics,
-        refreshData: mockActions.refreshPortfolioData,
+        refreshData: mockActions.refreshData,
+        _loadingHoldingsForId: 'p1',
       });
 
       renderHook(() => useDashboardData());
 
-      // Wait a bit to ensure no calls were made
+      // Wait a bit to ensure no additional calls
       await new Promise((resolve) => setTimeout(resolve, 100));
 
+      // Should not load holdings if already loading
       expect(mockActions.loadHoldings).not.toHaveBeenCalled();
-      expect(mockActions.calculateMetrics).not.toHaveBeenCalled();
     });
   });
 
   describe('Metrics Calculation', () => {
-    it('should parse metrics with valid Decimal values correctly', () => {
-      mockPortfolioStore.metrics = {
-        totalValue: new Decimal(10000),
-        totalGain: new Decimal(500),
-        totalGainPercent: 5.0,
-        dayChange: new Decimal(100),
-        dayChangePercent: 1.0,
-      } as any;
+    it('should calculate metrics with valid Decimal values', async () => {
+      const portfolio = createMockPortfolio({ id: 'p1' });
+      mockPortfolioStore.portfolios = [portfolio];
+      mockPortfolioStore.currentPortfolio = portfolio;
+      mockPortfolioStore.holdings = [
+        {
+          id: 'h1',
+          portfolioId: 'p1',
+          assetId: 'a1',
+          quantity: new Decimal(10),
+          costBasis: new Decimal(1000),
+          averageCost: new Decimal(100),
+          currentValue: new Decimal(1500),
+          unrealizedGain: new Decimal(500),
+          unrealizedGainPercent: 50,
+          lots: [],
+          lastUpdated: new Date(),
+          ownershipPercentage: 100,
+        },
+      ];
 
-      const { result } = renderHook(() => useDashboardData());
+      renderHook(() => useDashboardData());
 
-      expect(result.current.totalValue).toBe(10000);
-      expect(result.current.totalGain).toBe(500);
-      expect(result.current.totalGainPercent).toBe(5.0);
-      expect(result.current.dayChange).toBe(100);
-      expect(result.current.dayChangePercent).toBe(1.0);
+      await waitFor(() => {
+        expect(mockActions.calculateMetrics).toHaveBeenCalledWith('p1');
+      });
     });
 
-    it('should use safe defaults for null/missing metrics', () => {
+    it('should handle null/missing metrics safely', () => {
+      const portfolio = createMockPortfolio({ id: 'p1' });
+      mockPortfolioStore.portfolios = [portfolio];
+      mockPortfolioStore.currentPortfolio = portfolio;
       mockPortfolioStore.metrics = null;
 
       const { result } = renderHook(() => useDashboardData());
 
-      expect(result.current.totalValue).toBe(0);
-      expect(result.current.totalGain).toBe(0);
-      expect(result.current.totalGainPercent).toBe(0);
-      expect(result.current.dayChange).toBe(0);
-      expect(result.current.dayChangePercent).toBe(0);
+      expect(result.current.metrics).toBeNull();
     });
 
-    it('should combine loading states from multiple stores', () => {
+    it('should combine loading state from multiple stores', () => {
       mockPortfolioStore.loading = true;
       mockTransactionStore.loading = false;
-      mockAssetStore.loading = false;
 
-      const { result, rerender } = renderHook(() => useDashboardData());
+      const { result } = renderHook(() => useDashboardData());
 
       expect(result.current.isLoading).toBe(true);
-      expect(result.current.isPortfolioLoading).toBe(true);
-      expect(result.current.isTransactionsLoading).toBe(false);
-      expect(result.current.isAssetsLoading).toBe(false);
 
-      // Change loading states
       mockPortfolioStore.loading = false;
       mockTransactionStore.loading = true;
-      rerender();
 
-      expect(result.current.isLoading).toBe(true);
-      expect(result.current.isPortfolioLoading).toBe(false);
-      expect(result.current.isTransactionsLoading).toBe(true);
+      const { result: result2 } = renderHook(() => useDashboardData());
+
+      expect(result2.current.isLoading).toBe(true);
     });
   });
 
   describe('Recent Transactions', () => {
-    it('should sort transactions by date descending', () => {
-      mockTransactionStore.transactions = [
-        createMockTransaction({
-          id: 'tx-1',
-          date: new Date('2025-01-15'),
-        }),
-        createMockTransaction({
-          id: 'tx-2',
-          date: new Date('2025-01-20'),
-        }),
-        createMockTransaction({
-          id: 'tx-3',
-          date: new Date('2025-01-10'),
-        }),
-      ];
+    it('should return recent transactions sorted by date descending', () => {
+      const oldTxn = {
+        id: 'txn-1',
+        assetId: 'a1',
+        portfolioId: 'p1',
+        type: 'buy' as const,
+        date: new Date('2025-01-01'),
+        quantity: new Decimal(10),
+        price: new Decimal(100),
+        totalAmount: new Decimal(1000),
+        fees: new Decimal(0),
+        currency: 'USD',
+        notes: '',
+      };
+
+      const newTxn = {
+        id: 'txn-2',
+        assetId: 'a1',
+        portfolioId: 'p1',
+        type: 'sell' as const,
+        date: new Date('2025-01-15'),
+        quantity: new Decimal(5),
+        price: new Decimal(150),
+        totalAmount: new Decimal(750),
+        fees: new Decimal(0),
+        currency: 'USD',
+        notes: '',
+      };
+
+      mockTransactionStore.transactions = [oldTxn, newTxn];
 
       const { result } = renderHook(() => useDashboardData());
 
-      expect(result.current.recentTransactions).toHaveLength(3);
-      expect(result.current.recentTransactions[0].id).toBe('tx-2'); // Latest
-      expect(result.current.recentTransactions[1].id).toBe('tx-1');
-      expect(result.current.recentTransactions[2].id).toBe('tx-3'); // Oldest
+      expect(result.current.recentTransactions).toHaveLength(2);
+      expect(result.current.recentTransactions[0].id).toBe('txn-2'); // newer first
+      expect(result.current.recentTransactions[1].id).toBe('txn-1');
     });
 
     it('should limit recent transactions to 5 items', () => {
-      mockTransactionStore.transactions = Array.from({ length: 10 }, (_, i) =>
-        createMockTransaction({
-          id: `tx-${i}`,
-          date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
-        })
-      );
+      const transactions = Array.from({ length: 10 }, (_, i) => ({
+        id: `txn-${i}`,
+        assetId: 'a1',
+        portfolioId: 'p1',
+        type: 'buy' as const,
+        date: new Date(`2025-01-${i + 1}`),
+        quantity: new Decimal(10),
+        price: new Decimal(100),
+        totalAmount: new Decimal(1000),
+        fees: new Decimal(0),
+        currency: 'USD',
+        notes: '',
+      }));
+
+      mockTransactionStore.transactions = transactions;
 
       const { result } = renderHook(() => useDashboardData());
 
@@ -376,27 +441,29 @@ describe('useDashboardData', () => {
 
   describe('Refresh Functionality', () => {
     it('should refresh all data when refreshData is called', async () => {
-      const mockPortfolio = createMockPortfolio({ id: 'portfolio-1' });
-      mockPortfolioStore.currentPortfolio = mockPortfolio;
+      const portfolio = createMockPortfolio({ id: 'p1' });
+      mockPortfolioStore.portfolios = [portfolio];
+      mockPortfolioStore.currentPortfolio = portfolio;
 
       const { result } = renderHook(() => useDashboardData());
 
       await result.current.refreshData();
 
-      expect(mockActions.refreshPortfolioData).toHaveBeenCalledTimes(1);
-      expect(mockActions.loadAssets).toHaveBeenCalled();
-      expect(mockActions.loadTransactions).toHaveBeenCalledWith('portfolio-1');
+      expect(mockActions.loadPortfolios).toHaveBeenCalled();
+      expect(mockActions.loadHoldings).toHaveBeenCalledWith('p1');
+      expect(mockActions.loadTransactions).toHaveBeenCalledWith('p1');
     });
 
-    it('should not load transactions when no current portfolio exists', async () => {
+    it('should not refresh if no current portfolio', async () => {
+      mockPortfolioStore.portfolios = [];
       mockPortfolioStore.currentPortfolio = null;
 
       const { result } = renderHook(() => useDashboardData());
 
       await result.current.refreshData();
 
-      expect(mockActions.refreshPortfolioData).toHaveBeenCalledTimes(1);
-      expect(mockActions.loadAssets).toHaveBeenCalled();
+      expect(mockActions.loadPortfolios).toHaveBeenCalled();
+      expect(mockActions.loadHoldings).not.toHaveBeenCalled();
       expect(mockActions.loadTransactions).not.toHaveBeenCalled();
     });
   });

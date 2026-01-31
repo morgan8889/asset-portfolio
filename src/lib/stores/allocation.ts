@@ -32,7 +32,10 @@ interface AllocationState {
   // Actions
   loadTargetModels: () => Promise<void>;
   setActiveTargetModel: (model: TargetModel | null) => void;
-  createTarget: (name: string, targets: Record<string, number>) => Promise<void>;
+  createTarget: (
+    name: string,
+    targets: Record<string, number>
+  ) => Promise<void>;
   updateTarget: (
     id: string,
     updates: Partial<Omit<TargetModel, 'id' | 'lastUpdated'>>
