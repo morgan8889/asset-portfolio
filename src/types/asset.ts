@@ -1,6 +1,9 @@
 import { Decimal } from 'decimal.js';
 import { AssetType } from './portfolio';
 
+// Re-export AssetType for convenience
+export type { AssetType };
+
 export interface AssetMetadata {
   isin?: string; // International Securities ID
   cusip?: string; // CUSIP for US securities

@@ -250,9 +250,9 @@ describe('Target Model Service', () => {
       await updateTargetModel('user-model-1', {
         name: 'Updated Model',
         // Trying to change these should be ignored
-        id: 'different-id' as any,
-        isSystem: true as any,
-      });
+        id: 'different-id',
+        isSystem: true,
+      } as any);
 
       const stored = await db.userSettings
         .where('key')
