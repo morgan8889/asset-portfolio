@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AddTransactionDialog } from '@/components/forms/add-transaction';
@@ -12,9 +13,14 @@ import { TimePeriodSelector } from './time-period-selector';
 import { useDashboardStore } from '@/lib/stores';
 
 export function DashboardHeader() {
+  const router = useRouter();
   const { currentPortfolio } = useDashboardContext();
   const { config } = useDashboardStore();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+
+  const handleExportClick = () => {
+    router.push('/reports');
+  };
 
   if (!currentPortfolio) return null;
 
@@ -48,7 +54,7 @@ export function DashboardHeader() {
           periods={['WEEK', 'MONTH', 'QUARTER', 'YEAR', 'ALL']}
           className="hidden sm:flex"
         />
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={handleExportClick}>
           <Download className="mr-2 h-4 w-4" />
           Export
         </Button>
