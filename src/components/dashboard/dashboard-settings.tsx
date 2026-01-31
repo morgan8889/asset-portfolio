@@ -232,7 +232,7 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
       }}
     >
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Dashboard Settings</DialogTitle>
           <DialogDescription>
@@ -241,7 +241,8 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Layout Settings Section */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Layout Settings Section */}
         <div className="space-y-4 border-b py-4">
           <div className="space-y-2">
             <Label className="text-sm font-medium">Layout Mode</Label>
@@ -355,7 +356,7 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
         </div>
 
         {/* Widget Settings Section */}
-        <div className="max-h-[300px] space-y-4 overflow-y-auto py-4">
+        <div className="space-y-4 py-4">
           {config.widgetOrder.map((widgetId, index) => {
             const definition = WIDGET_DEFINITIONS[widgetId];
             const isVisible = config.widgetVisibility[widgetId];
@@ -472,6 +473,7 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
               </div>
             );
           })}
+        </div>
         </div>
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">
