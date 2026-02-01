@@ -204,6 +204,13 @@ export interface TransactionStorage {
   notes?: string;
   importSource?: string;
   metadata?: Record<string, unknown>;
+  
+  // Tax-specific fields (Decimal → string serialization)
+  grantDate?: Date;
+  vestingDate?: Date;
+  discountPercent?: string;
+  sharesWithheld?: string;
+  ordinaryIncomeAmount?: string;
 }
 
 /**
