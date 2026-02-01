@@ -41,6 +41,7 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/stores/ui'
 import { Transaction, ESPPTransactionMetadata, RSUTransactionMetadata } from '@/types';
 import { assetQueries } from '@/lib/db';
 import { ESPPTransactionFormFields } from './espp-transaction-form';
+import { RSUTransactionFormFields } from './rsu-transaction-form';
 import { FormProvider } from 'react-hook-form';
 
 const baseTransactionSchema = z.object({
@@ -165,6 +166,60 @@ const transactionSchema = baseTransactionSchema.refine(
   {
     message: 'Grant date must be before purchase date',
     path: ['grantDate'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'rsu_vest') return true;
+    return data.vestingDate !== undefined;
+  },
+  {
+    message: 'Vesting date is required for RSU transactions',
+    path: ['vestingDate'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'rsu_vest') return true;
+    if (!data.grossSharesVested) return false;
+    const num = parseFloat(data.grossSharesVested);
+    return !isNaN(num) && num > 0;
+  },
+  {
+    message: 'Gross shares vested is required for RSU transactions',
+    path: ['grossSharesVested'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'rsu_vest') return true;
+    if (!data.sharesWithheld) return false;
+    const num = parseFloat(data.sharesWithheld);
+    return !isNaN(num) && num >= 0;
+  },
+  {
+    message: 'Shares withheld must be 0 or greater',
+    path: ['sharesWithheld'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'rsu_vest') return true;
+    if (!data.vestingPrice) return false;
+    const num = parseFloat(data.vestingPrice);
+    return !isNaN(num) && num > 0;
+  },
+  {
+    message: 'Vesting price is required for RSU transactions',
+    path: ['vestingPrice'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'rsu_vest') return true;
+    if (!data.grossSharesVested || !data.sharesWithheld) return true;
+    const gross = parseFloat(data.grossSharesVested);
+    const withheld = parseFloat(data.sharesWithheld);
+    return withheld <= gross;
+  },
+  {
+    message: 'Shares withheld cannot exceed gross shares vested',
+    path: ['sharesWithheld'],
   }
 );
 
@@ -712,6 +767,13 @@ function TransactionDialog({
           {watchedType === 'espp_purchase' && (
             <FormProvider {...form}>
               <ESPPTransactionFormFields />
+            </FormProvider>
+          )}
+
+          {/* RSU-specific fields */}
+          {watchedType === 'rsu_vest' && (
+            <FormProvider {...form}>
+              <RSUTransactionFormFields />
             </FormProvider>
           )}
 
