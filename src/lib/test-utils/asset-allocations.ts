@@ -168,16 +168,7 @@ export const ASSET_ALLOCATIONS: Record<
       'NYSE',
       'Financials'
     ),
-    asset(
-      'SAP',
-      'SAP SE',
-      'stock',
-      0.03,
-      140,
-      0.015,
-      'XETRA',
-      'Technology'
-    ),
+    asset('SAP', 'SAP SE', 'stock', 0.03, 140, 0.015, 'XETRA', 'Technology'),
     asset(
       'ASML',
       'ASML Holding N.V.',
@@ -324,16 +315,7 @@ export const ASSET_ALLOCATIONS: Record<
       'NASDAQ',
       'Technology'
     ),
-    asset(
-      'SAP',
-      'SAP SE',
-      'stock',
-      0.03,
-      140,
-      0.015,
-      'XETRA',
-      'Technology'
-    ),
+    asset('SAP', 'SAP SE', 'stock', 0.03, 140, 0.015, 'XETRA', 'Technology'),
   ],
   conservative: [
     asset(
