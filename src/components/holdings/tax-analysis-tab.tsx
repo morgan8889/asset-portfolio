@@ -26,7 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { ArrowUpDown, AlertTriangle } from 'lucide-react';
+import { ArrowUpDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { Holding } from '@/types/asset';
 import { estimateTaxLiability } from '@/lib/services/tax-estimator';
@@ -296,12 +296,23 @@ export function TaxAnalysisTab({
                               ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                               : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
                           )}
+                          aria-label={lot.holdingPeriod === 'long' ? 'Long-term' : 'Short-term'}
                         >
                           {lot.holdingPeriod === 'long' ? 'LT' : 'ST'}
                         </Badge>
                       </TableCell>
                       <TableCell className="py-2">
-                        <Badge variant="outline" className="text-xs">
+                        <Badge
+                          variant="outline"
+                          className="text-xs"
+                          aria-label={
+                            lot.lotType === 'espp'
+                              ? 'ESPP (Employee Stock Purchase Plan)'
+                              : lot.lotType === 'rsu'
+                                ? 'RSU (Restricted Stock Unit)'
+                                : 'Standard'
+                          }
+                        >
                           {lot.lotType === 'espp'
                             ? 'ESPP'
                             : lot.lotType === 'rsu'
@@ -347,6 +358,7 @@ export function TaxAnalysisTab({
                                 <Badge
                                   variant="outline"
                                   className="bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400 text-xs"
+                                  aria-label="Qualifying disposition"
                                 >
                                   ✓
                                 </Badge>
@@ -360,6 +372,7 @@ export function TaxAnalysisTab({
                                     <Badge
                                       variant="outline"
                                       className="bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400 cursor-help text-xs"
+                                      aria-label="Disqualifying disposition warning"
                                     >
                                       ⚠️
                                     </Badge>
