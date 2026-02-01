@@ -100,8 +100,9 @@ export function checkDispositionStatus(
   const twoYearsFromGrant = addYears(grantDate, 2);
   const oneYearFromPurchase = addYears(purchaseDate, 1);
 
-  const meetsGrantRequirement = sellDate >= twoYearsFromGrant;
-  const meetsPurchaseRequirement = sellDate >= oneYearFromPurchase;
+  // IRS requires MORE than 2 years from grant AND MORE than 1 year from purchase
+  const meetsGrantRequirement = sellDate > twoYearsFromGrant;
+  const meetsPurchaseRequirement = sellDate > oneYearFromPurchase;
   const isQualifying = meetsGrantRequirement && meetsPurchaseRequirement;
 
   return {
