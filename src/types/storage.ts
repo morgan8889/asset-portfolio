@@ -160,6 +160,12 @@ export interface TaxLotStorage {
   soldQuantity: string;
   remainingQuantity: string;
   notes?: string;
+  // Tax-specific fields (Decimal as strings)
+  lotType?: 'standard' | 'espp' | 'rsu';
+  grantDate?: Date;
+  bargainElement?: string;
+  vestingDate?: Date;
+  vestingPrice?: string;
 }
 
 /**

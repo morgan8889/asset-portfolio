@@ -24,15 +24,15 @@ interface TaxSettingsState {
  * Custom storage to handle Decimal serialization for persist middleware
  */
 const taxSettingsStorage = {
-  getItem: (name: string): string | null => {
+  getItem: (name: string) => {
     const str = localStorage.getItem(name);
     if (!str) return null;
     return str;
   },
-  setItem: (name: string, value: string): void => {
+  setItem: (name: string, value: string) => {
     localStorage.setItem(name, value);
   },
-  removeItem: (name: string): void => {
+  removeItem: (name: string) => {
     localStorage.removeItem(name);
   },
 };
@@ -78,7 +78,6 @@ export const useTaxSettingsStore = create<TaxSettingsState>()(
     }),
     {
       name: 'tax-settings-storage',
-      storage: taxSettingsStorage,
       // Custom serialization for Decimal fields
       serialize: (state) => {
         return JSON.stringify({

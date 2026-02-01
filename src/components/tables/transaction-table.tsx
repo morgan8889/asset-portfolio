@@ -87,6 +87,16 @@ export const getTransactionTypeBadge = (type: TransactionType) => {
       color:
         'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
     },
+    espp_purchase: {
+      label: 'ESPP Purchase',
+      color:
+        'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
+    },
+    rsu_vest: {
+      label: 'RSU Vest',
+      color:
+        'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300',
+    },
   };
 
   const config = typeConfig[type] || typeConfig.buy;
