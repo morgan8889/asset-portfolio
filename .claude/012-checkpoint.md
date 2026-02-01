@@ -1,10 +1,11 @@
 # 012-tax-features-stock Progress Checkpoint
 
-**Date**: 2026-01-31
+**Date**: 2026-01-31 21:23 UTC
 **Branch**: 012-tax-features-stock
-**Status**: Foundation Complete (Phases 1 & 2)
+**Iteration**: 1/30
+**Status**: Foundation + Core Tests Complete
 
-## Completed Tasks (13/46)
+## Completed Tasks (15/46)
 
 ### Phase 1: Setup ✅ (T001-T006)
 - Extended TransactionType with espp_purchase, rsu_vest
@@ -14,32 +15,52 @@
 - Added Zod validation schemas
 
 ### Phase 2: Foundational Services ✅ (T007-T012)
-- HoldingPeriodCalculator: ST/LT classification (100% tested, 23/23 passing)
+- HoldingPeriodCalculator: ST/LT classification
 - TaxEstimator: Unrealized gains analysis with FIFO
 - ESPPValidator: Disqualifying disposition detection
 - TaxSettings Zustand store with persist middleware
 
-## Next Steps (Iteration 2+)
+### Unit Tests ✅ (T013, T026-T027)
+- HoldingPeriodCalculator: 23 tests (boundary conditions, leap years)
+- TaxEstimator: 8 tests (FIFO, losses, ESPP, multiple holdings)
+- ESPPValidator: 15 tests (disposition rules, messages, edge cases)
+- **Total: 55/55 unit tests passing** ✅
 
-### Immediate Priority
-1. T026-T028: Unit tests for TaxEstimator and ESPPValidator
-2. T014: E2E test for ESPP workflow
-3. T015-T019: ESPP transaction form and UI integration
+## Remaining Tasks (31/46)
 
-### MVP Scope (19 tasks)
-Phases 1-3 will deliver basic ESPP tracking capability.
+### High Priority (MVP)
+1. T014: E2E test for ESPP workflow
+2. T015-T019: User Story 1 - ESPP Forms & UI
+3. T020-T025: User Story 2 - RSU Forms & UI
 
-## Technical Notes
+### Medium Priority
+4. T028-T037: User Story 3 - Tax Analysis UI & E2E tests
+5. T038-T046: Polish & validation
 
-- All decimal.js arithmetic verified in services
-- date-fns used consistently for date calculations
-- Zustand persist handles Decimal serialization correctly
-- Tests configured with vitest.config.ts
+## Technical Achievements
 
-## Files Changed
-- Types: transaction.ts, asset.ts, tax.ts (new)
-- Services: holding-period.ts, tax-estimator.ts, espp-validator.ts (new)
-- Stores: tax-settings.ts (new)
-- Utils: decimal-serialization.ts (updated)
-- Tests: holding-period.test.ts (new, 23 passing)
-- Config: vitest.config.ts (new)
+✅ All core tax calculation logic implemented
+✅ ESPP/RSU transaction types in type system
+✅ Decimal.js precision throughout
+✅ Date handling with date-fns
+✅ Comprehensive test coverage for services
+✅ Zod validation for all new types
+
+## Key Insights
+
+- ESPP rules require MORE than thresholds (not "at least")
+- Leap year handling critical for date calculations
+- Test date mocking essential for consistent results
+- FIFO lot selection working correctly
+
+## Next Iteration Focus
+
+**Priority**: Implement UI components for ESPP transaction entry (T015-T017)
+- ESPPTransactionForm component
+- Integration with transaction dialog
+- Holdings display updates
+
+**Status**: NOT DONE - Cannot output completion promise yet
+- 31 tasks remaining
+- All UI components needed
+- E2E tests required
