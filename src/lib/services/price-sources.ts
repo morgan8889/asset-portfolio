@@ -132,7 +132,9 @@ export async function fetchYahooPrice(symbol: string): Promise<PriceResult> {
  * Fetch cryptocurrency price from CoinGecko API.
  * Supports major cryptocurrencies with USD pricing.
  */
-export async function fetchCoinGeckoPrice(symbol: string): Promise<PriceResult> {
+export async function fetchCoinGeckoPrice(
+  symbol: string
+): Promise<PriceResult> {
   const cryptoMapping: Record<string, string> = {
     BTC: 'bitcoin',
     ETH: 'ethereum',

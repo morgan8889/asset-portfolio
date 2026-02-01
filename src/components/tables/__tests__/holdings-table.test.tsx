@@ -11,41 +11,42 @@ import {
 import Decimal from 'decimal.js';
 
 // Mock stores with hoisted state
-const { mockPortfolioStore, mockPriceStore, usePortfolioStoreMock } = vi.hoisted(() => {
-  const mockPortfolioStore = {
-    holdings: [] as any[],
-    assets: [] as any[],
-    currentPortfolio: null as any,
-    loading: false,
-    error: null as string | null,
-    clearError: vi.fn(),
-    loadHoldings: vi.fn(),
-    getState: vi.fn(),
-  };
+const { mockPortfolioStore, mockPriceStore, usePortfolioStoreMock } =
+  vi.hoisted(() => {
+    const mockPortfolioStore = {
+      holdings: [] as any[],
+      assets: [] as any[],
+      currentPortfolio: null as any,
+      loading: false,
+      error: null as string | null,
+      clearError: vi.fn(),
+      loadHoldings: vi.fn(),
+      getState: vi.fn(),
+    };
 
-  const mockPriceStore = {
-    prices: new Map(),
-    loading: false,
-    preferences: {
-      refreshInterval: 'standard',
-      showStalenessIndicator: true,
-      pauseWhenHidden: true,
-    },
-  };
+    const mockPriceStore = {
+      prices: new Map(),
+      loading: false,
+      preferences: {
+        refreshInterval: 'standard',
+        showStalenessIndicator: true,
+        pauseWhenHidden: true,
+      },
+    };
 
-  // Create store mock with getState
-  const usePortfolioStoreMock = Object.assign(
-    vi.fn(() => mockPortfolioStore),
-    {
-      getState: vi.fn(() => ({
-        ...mockPortfolioStore,
-        loadHoldings: mockPortfolioStore.loadHoldings,
-      })),
-    }
-  );
+    // Create store mock with getState
+    const usePortfolioStoreMock = Object.assign(
+      vi.fn(() => mockPortfolioStore),
+      {
+        getState: vi.fn(() => ({
+          ...mockPortfolioStore,
+          loadHoldings: mockPortfolioStore.loadHoldings,
+        })),
+      }
+    );
 
-  return { mockPortfolioStore, mockPriceStore, usePortfolioStoreMock };
-});
+    return { mockPortfolioStore, mockPriceStore, usePortfolioStoreMock };
+  });
 
 vi.mock('@/lib/stores', () => ({
   usePortfolioStore: usePortfolioStoreMock,
@@ -79,7 +80,8 @@ vi.mock('@/lib/utils/market-utils', () => ({
 }));
 
 vi.mock('@/lib/services/property-service', () => ({
-  getAssetAnnualYield: (asset: any) => asset.rentalInfo?.monthlyRent ? 5.5 : undefined,
+  getAssetAnnualYield: (asset: any) =>
+    asset.rentalInfo?.monthlyRent ? 5.5 : undefined,
 }));
 
 describe('HoldingsTable', () => {
@@ -125,7 +127,9 @@ describe('HoldingsTable', () => {
 
     it('should show error state with retry button', async () => {
       mockPortfolioStore.error = 'Failed to load holdings';
-      mockPortfolioStore.currentPortfolio = createMockPortfolio({ id: 'port-1' });
+      mockPortfolioStore.currentPortfolio = createMockPortfolio({
+        id: 'port-1',
+      });
 
       render(<HoldingsTable />);
 
@@ -145,7 +149,9 @@ describe('HoldingsTable', () => {
       render(<HoldingsTable />);
 
       expect(screen.getByText('No holdings yet.')).toBeInTheDocument();
-      expect(screen.getByText(/add transactions to see your portfolio holdings/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/add transactions to see your portfolio holdings/i)
+      ).toBeInTheDocument();
     });
 
     it('should display holdings correctly', () => {
@@ -173,9 +179,24 @@ describe('HoldingsTable', () => {
   describe('Search & Filter', () => {
     beforeEach(() => {
       const assets = [
-        createMockAsset({ id: 'asset-1', symbol: 'AAPL', name: 'Apple Inc.', type: 'stock' }),
-        createMockAsset({ id: 'asset-2', symbol: 'BTC', name: 'Bitcoin', type: 'crypto' }),
-        createMockAsset({ id: 'asset-3', symbol: 'MSFT', name: 'Microsoft Corp.', type: 'stock' }),
+        createMockAsset({
+          id: 'asset-1',
+          symbol: 'AAPL',
+          name: 'Apple Inc.',
+          type: 'stock',
+        }),
+        createMockAsset({
+          id: 'asset-2',
+          symbol: 'BTC',
+          name: 'Bitcoin',
+          type: 'crypto',
+        }),
+        createMockAsset({
+          id: 'asset-3',
+          symbol: 'MSFT',
+          name: 'Microsoft Corp.',
+          type: 'stock',
+        }),
       ];
       const holdings = [
         createMockHolding({ id: 'h1', assetId: 'asset-1' }),
@@ -230,7 +251,9 @@ describe('HoldingsTable', () => {
       await user.type(searchInput, 'NONEXISTENT');
 
       await waitFor(() => {
-        expect(screen.getByText('No holdings match your search criteria')).toBeInTheDocument();
+        expect(
+          screen.getByText('No holdings match your search criteria')
+        ).toBeInTheDocument();
       });
     });
 
@@ -243,7 +266,9 @@ describe('HoldingsTable', () => {
       const filterSelect = screen.getByRole('combobox');
       await user.click(filterSelect);
 
-      const cryptoOption = await screen.findByRole('option', { name: 'Crypto' });
+      const cryptoOption = await screen.findByRole('option', {
+        name: 'Crypto',
+      });
       await user.click(cryptoOption);
 
       await waitFor(() => {
@@ -521,7 +546,11 @@ describe('HoldingsTable', () => {
     });
 
     it('should display type badge with correct color for stock', () => {
-      const asset = createMockAsset({ id: 'asset-1', symbol: 'AAPL', type: 'stock' });
+      const asset = createMockAsset({
+        id: 'asset-1',
+        symbol: 'AAPL',
+        type: 'stock',
+      });
       const holding = createMockHolding({ assetId: 'asset-1' });
 
       mockPortfolioStore.holdings = [holding];
@@ -534,7 +563,11 @@ describe('HoldingsTable', () => {
     });
 
     it('should display type badge with correct color for crypto', () => {
-      const asset = createMockAsset({ id: 'asset-1', symbol: 'BTC', type: 'crypto' });
+      const asset = createMockAsset({
+        id: 'asset-1',
+        symbol: 'BTC',
+        type: 'crypto',
+      });
       const holding = createMockHolding({ assetId: 'asset-1' });
 
       mockPortfolioStore.holdings = [holding];
@@ -668,7 +701,9 @@ describe('HoldingsTable', () => {
       await user.click(updatePriceItem);
 
       await waitFor(() => {
-        expect(screen.getByTestId('manual-price-dialog')).toHaveTextContent('MANUAL1');
+        expect(screen.getByTestId('manual-price-dialog')).toHaveTextContent(
+          'MANUAL1'
+        );
       });
     });
 
