@@ -25,8 +25,7 @@ test.describe('Tax Analysis View', () => {
 
     // Should show summary cards
     await expect(page.getByText(/total unrealized gains/i)).toBeVisible();
-    await expect(page.getByText(/short-term gains/i)).toBeVisible();
-    await expect(page.getByText(/long-term gains/i)).toBeVisible();
+    await expect(page.getByText(/short-term.*long-term/i)).toBeVisible();
     await expect(page.getByText(/estimated tax liability/i)).toBeVisible();
 
     // Should show tax lot table
@@ -109,14 +108,14 @@ test.describe('Tax Analysis View', () => {
     await expect(page.getByText('ESPP')).toBeVisible();
     await expect(page.getByText('RSU')).toBeVisible();
 
-    // Verify holding period classifications
-    const longTermBadges = page.getByText(/long-term/i);
-    const shortTermBadges = page.getByText(/short-term/i);
+    // Verify holding period classifications (LT/ST badges)
+    const longTermBadges = page.getByText('LT');
+    const shortTermBadges = page.getByText('ST');
     await expect(longTermBadges.first()).toBeVisible();
     await expect(shortTermBadges.first()).toBeVisible();
 
-    // Verify ESPP has disqualifying warning
-    await expect(page.getByText(/disqualifying/i)).toBeVisible();
+    // Verify ESPP has disqualifying warning (⚠️ emoji badge)
+    await expect(page.getByText('⚠️')).toBeVisible();
   });
 
   test('should sort tax lot table by different columns', async ({ page }) => {
@@ -146,15 +145,15 @@ test.describe('Tax Analysis View', () => {
     await page.goto('/tax-analysis');
     await page.waitForLoadState('networkidle');
 
-    // Test sorting by purchase date
-    const purchaseDateHeader = page.getByRole('button', { name: /purchase date/i });
-    await purchaseDateHeader.click();
+    // Test sorting by date (now shortened from "Purchase Date")
+    const dateHeader = page.getByRole('button', { name: /^date$/i });
+    await dateHeader.click();
 
     // Verify sort indicator appears
-    await expect(purchaseDateHeader).toBeVisible();
+    await expect(dateHeader).toBeVisible();
 
-    // Test sorting by quantity
-    const quantityHeader = page.getByRole('button', { name: /quantity/i });
+    // Test sorting by quantity (now shortened to "Qty")
+    const quantityHeader = page.getByRole('button', { name: /^qty$/i });
     await quantityHeader.click();
 
     // Test sorting by unrealized gain
@@ -295,16 +294,16 @@ test.describe('Tax Analysis View', () => {
     await page.goto('/tax-analysis');
     await page.waitForLoadState('networkidle');
 
-    // Verify all column headers
+    // Verify all column headers (updated to match shortened labels)
     await expect(page.getByRole('columnheader', { name: /asset/i })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: /purchase date/i })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: /quantity/i })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: /cost basis/i })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: /current value/i })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: /gain.*loss/i })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: /^date$/i })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: /^qty$/i })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: /^cost$/i })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: /^value$/i })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: /^gain$/i })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: /period/i })).toBeVisible();
     await expect(page.getByRole('columnheader', { name: /type/i })).toBeVisible();
-    await expect(page.getByRole('columnheader', { name: /warnings/i })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: /status/i })).toBeVisible();
   });
 
   test('should show loading state when first loading page', async ({ page }) => {
@@ -354,8 +353,8 @@ test.describe('Tax Analysis View', () => {
     await page.goto('/tax-analysis');
     await page.waitForLoadState('networkidle');
 
-    // Find and hover over the disqualifying badge
-    const warningBadge = page.getByText(/disqualifying/i).first();
+    // Find and hover over the disqualifying badge (now ⚠️ emoji)
+    const warningBadge = page.getByText('⚠️').first();
     await warningBadge.hover();
 
     // Tooltip should appear with details
