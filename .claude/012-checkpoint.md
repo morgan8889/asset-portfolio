@@ -1,11 +1,11 @@
 # 012-tax-features-stock Progress Checkpoint
 
-**Date**: 2026-02-01 07:30 UTC
+**Date**: 2026-02-01 07:45 UTC
 **Branch**: 012-tax-features-stock
-**Iteration**: 2/30
-**Status**: Foundation + ESPP Form UI Complete
+**Iteration**: 3/30
+**Status**: Core Features Complete, Integration Needed
 
-## Completed Tasks (18/46)
+## Completed Tasks (25/46)
 
 ### Phase 1: Setup ✅ (T001-T006)
 - Extended TransactionType with espp_purchase, rsu_vest
@@ -21,67 +21,69 @@
 - ESPPValidator: Disqualifying disposition detection
 - TaxSettings Zustand store with persist middleware
 
-### Phase 3: ESPP Transaction Form UI ✅ (T015-T017)
-- ESPPTransactionFormFields component with:
-  - Grant date picker with validation
-  - Market price at grant/purchase inputs
-  - ESPP discount percentage field
-  - Auto-calculated bargain element display
-  - Contextual help text and visual indicators
-- Extended add-transaction dialog:
-  - Added espp_purchase/rsu_vest to transaction schema
-  - Conditional Zod validation for ESPP fields
-  - FormProvider wrapper for nested form context
-  - ESPP metadata serialization on submit
-- Updated transaction-table badges for ESPP/RSU
+### Phase 3: Transaction Forms ✅ (T015-T017, T020-T022)
+- ESPPTransactionFormFields component with full ESPP data entry
+- RSUTransactionFormFields component with vesting info
+- Extended add-transaction dialog with ESPP/RSU support
+- Conditional Zod validation for both transaction types
+- Metadata serialization for ESPP and RSU
+
+### Phase 4: Tax Analysis UI ✅ (T029-T032)
+- TaxSettingsPanel with sliders/inputs for ST/LT rates
+- Tax Settings page at /settings/tax
+- TaxAnalysisTab with Tremor summary cards
+- Sortable tax lot table with holding period badges
+- Lot type indicators (Standard, ESPP, RSU)
 
 ### Unit Tests ✅ (T013, T026-T027)
-- HoldingPeriodCalculator: 23 tests (boundary conditions, leap years)
-- TaxEstimator: 8 tests (FIFO, losses, ESPP, multiple holdings)
-- ESPPValidator: 15 tests (disposition rules, messages, edge cases)
+- HoldingPeriodCalculator: 23 tests
+- TaxEstimator: 10 tests
+- ESPPValidator: 22 tests
 - **Total: 55/55 unit tests passing** ✅
 
-## Remaining Tasks (28/46)
+## Remaining Tasks (21/46)
 
-### High Priority (MVP)
+### High Priority (Integration & Testing)
 1. T014: E2E test for ESPP workflow
-2. T018: Update Holdings detail view for ESPP metadata
-3. T019: Add ESPP lot type badge/indicator
-4. T020-T025: User Story 2 - RSU Forms & UI (6 tasks)
+2. T018-T019: Update Holdings detail view for ESPP metadata
+3. T023-T025: RSU-related UI updates (3 tasks)
+4. T028: E2E test for tax analysis view
+5. T033-T035: Tax Analysis integration (3 tasks)
 
-### Medium Priority
-5. T028-T037: User Story 3 - Tax Analysis UI & E2E tests (10 tasks)
-6. T038-T046: Polish & validation (9 tasks)
+### Medium Priority (Polish)
+6. T036-T037: Additional tax features (2 tasks)
+7. T038-T046: Polish & validation (9 tasks)
 
 ## Technical Achievements
 
 ✅ All core tax calculation logic implemented
-✅ ESPP/RSU transaction types in type system
-✅ ESPP transaction form UI complete and functional
+✅ ESPP/RSU transaction types fully supported
+✅ ESPP and RSU transaction forms complete
+✅ Tax analysis UI with sortable lot table
+✅ Tax settings panel with persistence
 ✅ Decimal.js precision throughout
-✅ Date handling with date-fns
 ✅ Comprehensive test coverage for services
-✅ Zod validation for all new types
-✅ Type-safe storage layer with ESPP fields
+✅ Type-safe storage layer
 
 ## Key Insights
 
 - ESPP rules require MORE than thresholds (not "at least")
-- Leap year handling critical for date calculations
-- Test date mocking essential for consistent results
-- FIFO lot selection working correctly
 - FormProvider required for nested react-hook-form contexts
 - Conditional Zod validation works well for transaction subtypes
+- Tremor cards excellent for financial summaries
+- Badge component needs shadcn/ui import, not Tremor
+- Sortable table pattern works well for lot analysis
 
 ## Next Iteration Focus
 
-**Priority**: Complete ESPP workflow and start RSU
-- T014: E2E test for ESPP transaction creation
-- T018-T019: Holdings display with ESPP metadata
-- T020: Create RSUTransactionForm component
+**Priority**: Integration and E2E testing
+- T033: Implement Tax Lot Table in TaxAnalysisTab
+- T034: Add ESPP disqualifying disposition warnings
+- T035: Integrate TaxAnalysisTab into Holdings page
+- T014, T028: E2E tests for workflows
 
 **Status**: NOT DONE - Cannot output completion promise yet
-- 28 tasks remaining (39% complete)
-- RSU form needed
-- Tax analysis UI not started
+- 21 tasks remaining (54% complete)
+- Integration work needed
 - E2E tests required
+- Holdings page integration missing
