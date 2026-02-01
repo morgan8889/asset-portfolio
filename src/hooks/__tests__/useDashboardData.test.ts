@@ -61,7 +61,9 @@ const {
   };
 
   const usePortfolioStoreMock = Object.assign(
-    vi.fn((selector) => (selector ? selector(mockPortfolioStore) : mockPortfolioStore)),
+    vi.fn((selector) =>
+      selector ? selector(mockPortfolioStore) : mockPortfolioStore
+    ),
     {
       getState: vi.fn(() => ({
         ...mockPortfolioStore,
@@ -76,7 +78,9 @@ const {
   );
 
   const useTransactionStoreMock = Object.assign(
-    vi.fn((selector) => (selector ? selector(mockTransactionStore) : mockTransactionStore)),
+    vi.fn((selector) =>
+      selector ? selector(mockTransactionStore) : mockTransactionStore
+    ),
     {
       getState: vi.fn(() => ({
         ...mockTransactionStore,

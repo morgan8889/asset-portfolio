@@ -392,6 +392,8 @@ Make change → Tell user "done" → User finds visual issue → Repeat
 - Fallback to manual price entry if APIs fail
 
 ## Active Technologies
+- TypeScript 5.3 with Next.js 14.2 (App Router) + React 18 + Dexie.js 3.2 (IndexedDB), decimal.js 10.4 (financial precision), Zod 3.25 (validation), React Hook Form 7.63, shadcn/ui + Radix UI, Recharts 2.15 (012-tax-features-stock)
+- Browser IndexedDB via Dexie.js (privacy-first, no server persistence) (012-tax-features-stock)
 
 **Core Stack:**
 - TypeScript 5.3 with Next.js 14.2 (App Router) + React 18
@@ -486,4 +488,165 @@ npm run test -- --run src/lib/utils/__tests__/market-utils.test.ts src/lib/utils
 
 # Run E2E price refresh tests
 npx playwright test tests/e2e/price-refresh.spec.ts --project=chromium
+```
+
+## Tax Features (012-tax-features-stock)
+
+The tax features enable ESPP/RSU tracking and capital gains tax analysis for stock holdings.
+
+### ESPP Transactions
+
+**Entry**: Navigate to Transactions → Add Transaction → Select "ESPP Purchase"
+
+**Required Fields**:
+- **Grant Date**: ESPP offering date (start of offering period)
+- **Purchase Date**: Date shares were purchased
+- **Market Price at Grant**: Stock FMV when offering period began
+- **Market Price at Purchase**: Stock FMV on purchase date
+- **Discount %**: ESPP discount percentage (e.g., 15%)
+- **Quantity**: Number of shares purchased
+
+**Metadata Stored**:
+- Grant date for disqualifying disposition calculations
+- Bargain element = (Market Price at Purchase - Discounted Price) × Quantity
+
+**Cost Basis**: The discounted price paid (NOT the FMV at purchase)
+
+**Disqualifying Disposition Rules**:
+A sale is disqualifying if it occurs:
+- Within 2 years of grant date, OR
+- Within 1 year of purchase date
+
+If disqualifying, the bargain element is taxed as ordinary income (W-2) instead of capital gains.
+
+### RSU Transactions
+
+**Entry**: Navigate to Transactions → Add Transaction → Select "RSU Vest"
+
+**Required Fields**:
+- **Vesting Date**: Date RSUs vested
+- **Gross Shares Vested**: Total shares that vested
+- **Shares Withheld for Tax**: Shares automatically sold to cover taxes
+- **Vesting Price (FMV)**: Fair market value per share at vesting
+
+**Metadata Stored**:
+- Vesting date for tax reporting
+- Vesting price (FMV at vest)
+- Net shares received = Gross Shares - Withheld Shares
+
+**Cost Basis**: FMV at vesting × Net shares received
+
+**Tax Withholding**: The shares withheld for tax are automatically handled by reducing the total share count. The withheld shares don't appear in your holdings.
+
+**Important**: RSU income is already reported on your W-2 at vesting. The cost basis for capital gains is the FMV at vest.
+
+### Tax Analysis
+
+**Access**:
+1. Dedicated page: Navigate to `/tax-analysis`
+2. Holdings detail: Go to Holdings → Click dropdown → "View Details" → "Tax Analysis" tab
+
+**Features**:
+- **Holding Period Classification**: 
+  - Short-term: ≤ 365 days from purchase
+  - Long-term: > 365 days from purchase
+- **FIFO Method**: First-in-first-out lot selection for tax calculations
+- **Summary Cards**:
+  - Total unrealized gains across all holdings
+  - Short-term gains (taxed at ordinary income rate)
+  - Long-term gains (taxed at preferential rate)
+  - Estimated tax liability if all positions sold today
+- **Tax Lot Table**:
+  - Sortable by purchase date, quantity, cost basis, gain/loss, holding period
+  - Color-coded holding periods (green = long-term, yellow = short-term)
+  - Lot type badges (Standard, ESPP, RSU)
+  - ESPP disqualifying disposition warnings with detailed tooltips
+  - Per-lot unrealized gain/loss calculations
+
+**ESPP Warnings**:
+- **Qualifying Badge** (Green): Sale would qualify for favorable tax treatment
+- **Disqualifying Badge** (Amber with ⚠️): Sale would trigger ordinary income tax on bargain element
+  - Hover tooltip shows:
+    - Days from grant and purchase dates
+    - Days remaining until qualifying
+    - Tax implications
+
+### Tax Settings
+
+**Location**: Navigate to `/settings/tax` or Settings → Tax Settings
+
+**Configuration**:
+- **Short-Term Rate**: Tax rate for gains ≤ 365 days (default: 24%)
+  - Applied to ordinary income/short-term capital gains
+  - Adjustable slider: 0% - 50%
+- **Long-Term Rate**: Tax rate for gains > 365 days (default: 15%)
+  - Applied to long-term capital gains
+  - Adjustable slider: 0% - 30%
+
+**Persistence**: Settings are stored in browser IndexedDB with Decimal.js precision to avoid floating-point errors.
+
+**Common Tax Rates** (2024 US):
+- Short-term (ordinary income): 10%, 12%, 22%, 24%, 32%, 35%, 37%
+- Long-term capital gains: 0%, 15%, 20%
+
+### Viewing ESPP/RSU Lots
+
+**Holdings Table**:
+- ESPP lots show purple "ESPP" badge
+- RSU lots show blue "RSU" badge
+
+**Holdings Detail Modal**:
+1. Navigate to Holdings page
+2. Click dropdown (⋮) on any holding → "View Details"
+3. **Overview Tab**: Summary of total quantity, cost basis, current value, unrealized gain
+4. **Tax Lots Tab**: Detailed breakdown of each lot with metadata:
+   - ESPP lots: Grant date, bargain element (in purple card)
+   - RSU lots: Vesting date, vesting price/FMV (in blue card)
+   - Purchase date, quantity purchased vs sold
+   - Notes field
+5. **Tax Analysis Tab**: Full tax analysis for that specific holding
+
+### Common Debugging Scenarios
+
+**Disqualifying Disposition Warning Not Showing**:
+- Verify grant date is set in the ESPP transaction
+- Check that grant date is < purchase date
+- Ensure grant date is within the last 2 years
+
+**Tax Estimate Seems Incorrect**:
+- Navigate to Settings → Tax Settings
+- Verify short-term and long-term rates match your tax bracket
+- Check IndexedDB (DevTools → Application → IndexedDB → userSettings)
+- Look for `tax_rates` key with Decimal values
+
+**ESPP Bargain Element Wrong**:
+- Verify discount % is correct (e.g., 15 for 15%)
+- Check market price at grant and purchase are accurate
+- Bargain Element = (Market Price at Purchase - Discounted Price) × Quantity
+- Example: Purchase price $85, discount 15% → Cost basis $72.25, FMV $85 → Bargain element $12.75/share
+
+**RSU Net Shares Mismatch**:
+- Check gross shares vested
+- Verify shares withheld for tax
+- Net shares = Gross - Withheld
+- Example: 100 gross, 22 withheld → 78 net shares in holdings
+
+**Tax Settings Not Persisting**:
+- Check browser IndexedDB is enabled
+- Look for errors in browser console
+- Verify `tax_rates` entry exists in userSettings table
+- Re-save settings if needed
+
+### Testing
+
+```bash
+# Run tax service unit tests (55 tests total)
+npm run test -- --run src/lib/services/__tests__/holding-period.test.ts
+npm run test -- --run src/lib/services/__tests__/tax-estimator.test.ts
+npm run test -- --run src/lib/services/__tests__/espp-validator.test.ts
+
+# Run E2E workflow tests
+npx playwright test tests/e2e/espp-workflow.spec.ts --project=chromium
+npx playwright test tests/e2e/rsu-workflow.spec.ts --project=chromium
+npx playwright test tests/e2e/tax-analysis-view.spec.ts --project=chromium
 ```

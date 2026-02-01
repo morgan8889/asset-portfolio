@@ -137,7 +137,12 @@ export function generateDCATransactions(
   const increment = frequency === 'monthly' ? 1 : 0.5;
   const label = frequency === 'monthly' ? 'Monthly' : 'Biweekly';
 
-  for (const currentDate of iterateDateRange(startDate, endDate, increment, true)) {
+  for (const currentDate of iterateDateRange(
+    startDate,
+    endDate,
+    increment,
+    true
+  )) {
     const price = findClosestPrice(currentDate, priceHistory);
     if (price) {
       const quantity = monthlyInvestment.div(price);

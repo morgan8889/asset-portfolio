@@ -13,7 +13,13 @@ interface ExportButtonProps {
   onClick: () => void;
   disabled?: boolean;
   children: React.ReactNode;
-  variant?: 'default' | 'outline' | 'secondary' | 'ghost' | 'link' | 'destructive';
+  variant?:
+    | 'default'
+    | 'outline'
+    | 'secondary'
+    | 'ghost'
+    | 'link'
+    | 'destructive';
   size?: 'default' | 'sm' | 'lg' | 'icon';
 }
 
@@ -25,7 +31,8 @@ export function ExportButton({
   size = 'sm',
 }: ExportButtonProps) {
   const { progress } = useExportStore();
-  const isExporting = progress.status === 'preparing' || progress.status === 'generating';
+  const isExporting =
+    progress.status === 'preparing' || progress.status === 'generating';
 
   return (
     <Button
