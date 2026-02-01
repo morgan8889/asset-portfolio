@@ -23,6 +23,7 @@ import {
   HOLDING_DECIMAL_FIELDS,
   TRANSACTION_DECIMAL_FIELDS,
 } from '@/lib/utils/decimal-serialization';
+import { holdingToStorage } from './converters';
 
 // Portfolio queries
 export const portfolioQueries = {
@@ -185,17 +186,44 @@ export const holdingQueries = {
     }
 
     const newId = generateHoldingId();
-    await db.holdings.add({
+    const holdingWithId: Holding = {
       ...holding,
       id: newId,
       lastUpdated: new Date(),
-    } as unknown as HoldingStorage);
+    } as Holding;
+
+    // Serialize Decimal fields before storage (including nested tax lots)
+    const serialized = holdingToStorage(holdingWithId);
+
+    await db.holdings.add(serialized);
     return newId;
   },
 
   async update(id: string, updates: Partial<Holding>): Promise<void> {
-    const serialized = serializePartialDecimals(updates, HOLDING_DECIMAL_FIELDS);
-    await db.holdings.update(id, { ...serialized, lastUpdated: new Date() });
+    // If updates include lots (tax lots), we need to serialize them properly
+    if (updates.lots) {
+      // Get the existing holding to merge with updates
+      const existing = await this.getById(id);
+      if (!existing) {
+        throw new Error(`Holding ${id} not found`);
+      }
+
+      // Merge updates with existing data to create a full Holding object
+      const merged: Holding = {
+        ...existing,
+        ...updates,
+        id,
+        lastUpdated: new Date(),
+      };
+
+      // Use holdingToStorage to properly serialize including nested tax lots
+      const serialized = holdingToStorage(merged);
+      await db.holdings.update(id, serialized);
+    } else {
+      // No lots to serialize, use the simpler partial serialization
+      const serialized = serializePartialDecimals(updates, HOLDING_DECIMAL_FIELDS);
+      await db.holdings.update(id, { ...serialized, lastUpdated: new Date() });
+    }
   },
 
   async delete(id: string): Promise<void> {

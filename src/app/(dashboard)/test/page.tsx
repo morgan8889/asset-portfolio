@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { db } from '@/lib/db/schema';
+import { HoldingsCalculator } from '@/lib/db/holdings-calculator';
 import { Loader2, CheckCircle, Trash2, TrendingUp } from 'lucide-react';
 import {
   generatePortfolioId,
@@ -220,52 +221,9 @@ async function seedMockData() {
     },
   });
 
-  // Add holding for ACME with ESPP and RSU lots
-  const acmeQuantity = new Decimal('138'); // 100 ESPP + 38 RSU
-  const acmeCostBasis = new Decimal('8500').plus('4560'); // ESPP cost + RSU cost
-  const acmeCurrentPrice = new Decimal('125');
-  const acmeCurrentValue = acmeQuantity.mul(acmeCurrentPrice);
-  const acmeUnrealizedGain = acmeCurrentValue.minus(acmeCostBasis);
-  const acmeGainPercent = acmeCostBasis.isZero()
-    ? 0
-    : acmeUnrealizedGain.dividedBy(acmeCostBasis).mul(100).toNumber();
-
-  await db.holdings.add({
-    id: generateHoldingId(),
-    portfolioId: portfolioId,
-    assetId: createAssetId('ACME'),
-    quantity: acmeQuantity.toString(),
-    costBasis: acmeCostBasis.toString(),
-    averageCost: acmeCostBasis.dividedBy(acmeQuantity).toString(),
-    currentValue: acmeCurrentValue.toString(),
-    unrealizedGain: acmeUnrealizedGain.toString(),
-    unrealizedGainPercent: acmeGainPercent,
-    lots: [
-      {
-        id: generateTransactionId(),
-        quantity: new Decimal('100'),
-        purchasePrice: new Decimal('85'),
-        purchaseDate: esppPurchaseDate,
-        soldQuantity: new Decimal('0'),
-        remainingQuantity: new Decimal('100'),
-        lotType: 'espp',
-        grantDate: esppGrantDate,
-        bargainElement: new Decimal('15'), // $15 per share
-      },
-      {
-        id: generateTransactionId(),
-        quantity: new Decimal('38'),
-        purchasePrice: new Decimal('120'),
-        purchaseDate: rsuVestDate,
-        soldQuantity: new Decimal('0'),
-        remainingQuantity: new Decimal('38'),
-        lotType: 'rsu',
-        vestingDate: rsuVestDate,
-        vestingPrice: new Decimal('120'),
-      },
-    ] as any,
-    lastUpdated: new Date(),
-  });
+  // Trigger holdings calculator to create ACME holding from transactions
+  // This will automatically build tax lots from the ESPP and RSU transactions
+  await HoldingsCalculator.recalculatePortfolioHoldings(portfolioId);
 
   return portfolioId;
 }

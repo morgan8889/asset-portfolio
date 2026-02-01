@@ -72,6 +72,7 @@ export const WIDGET_SIZE_CONSTRAINTS: Record<WidgetId, WidgetSizeConstraints> =
     'top-performers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
     'biggest-losers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
     'recent-activity': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
+    'tax-exposure': { minW: 1, maxW: 2, minH: 2, maxH: 4 },
   };
 
 /**
@@ -106,7 +107,8 @@ export type WidgetId =
   | 'growth-chart'
   | 'top-performers'
   | 'biggest-losers'
-  | 'recent-activity';
+  | 'recent-activity'
+  | 'tax-exposure';
 
 /**
  * Static definition of a widget type.
@@ -466,6 +468,7 @@ export const WidgetIdSchema = z.enum([
   'top-performers',
   'biggest-losers',
   'recent-activity',
+  'tax-exposure',
 ]);
 
 export const TimePeriodSchema = z.enum([
@@ -534,6 +537,7 @@ const baseConfigFields = {
     'top-performers': z.boolean(),
     'biggest-losers': z.boolean(),
     'recent-activity': z.boolean(),
+    'tax-exposure': z.boolean().optional().default(true),
   }),
   timePeriod: TimePeriodSchema,
   performerCount: z
@@ -704,6 +708,14 @@ export const WIDGET_DEFINITIONS: Record<WidgetId, WidgetDefinition> = {
     minHeight: 300,
     canHide: true,
   },
+  'tax-exposure': {
+    id: 'tax-exposure',
+    displayName: 'Tax Exposure',
+    description: 'Estimated tax liability and aging lots',
+    colSpan: 1,
+    minHeight: 200,
+    canHide: true,
+  },
 };
 
 // =============================================================================
@@ -791,6 +803,7 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
     'total-value',
     'gain-loss',
     'day-change',
+    'tax-exposure',
     'category-breakdown',
     'growth-chart',
     'top-performers',
@@ -801,6 +814,7 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
     'total-value': true,
     'gain-loss': true,
     'day-change': true,
+    'tax-exposure': true,
     'category-breakdown': true,
     'growth-chart': true,
     'top-performers': true,

@@ -32,6 +32,13 @@ export interface Transaction {
   notes?: string;
   importSource?: string; // CSV import tracking
   metadata?: Record<string, any>;
+  
+  // Tax-specific fields (optional, for ESPP/RSU transactions)
+  grantDate?: Date; // ESPP: Purchase date | RSU: Award date
+  vestingDate?: Date; // When shares became owned
+  discountPercent?: Decimal; // ESPP discount (0.0-0.5 range)
+  sharesWithheld?: Decimal; // Shares withheld for taxes
+  ordinaryIncomeAmount?: Decimal; // W-2 taxable compensation
 }
 
 export interface TaxReport {

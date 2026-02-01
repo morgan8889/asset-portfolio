@@ -263,7 +263,7 @@ src/components/forms/
 ```
 
 ### Import Flow
-1. **File Upload**: User selects/drops CSV file (max 10MB)
+1. **File Upload**: User selects/drops CSV file (max 5MB)
 2. **Parsing**: PapaParse extracts headers and rows with delimiter auto-detection
 3. **Column Detection**: Headers matched against known patterns (Date, Symbol, Quantity, etc.)
 4. **Validation**: Each row validated with detailed error messages
@@ -392,8 +392,6 @@ Make change → Tell user "done" → User finds visual issue → Repeat
 - Fallback to manual price entry if APIs fail
 
 ## Active Technologies
-- TypeScript 5.3 with Next.js 14.2 (App Router) + React 18 + Dexie.js 3.2 (IndexedDB), decimal.js 10.4 (financial precision), Zod 3.25 (validation), React Hook Form 7.63, shadcn/ui + Radix UI, Recharts 2.15 (012-tax-features-stock)
-- Browser IndexedDB via Dexie.js (privacy-first, no server persistence) (012-tax-features-stock)
 
 **Core Stack:**
 - TypeScript 5.3 with Next.js 14.2 (App Router) + React 18
@@ -547,7 +545,7 @@ If disqualifying, the bargain element is taxed as ordinary income (W-2) instead 
 2. Holdings detail: Go to Holdings → Click dropdown → "View Details" → "Tax Analysis" tab
 
 **Features**:
-- **Holding Period Classification**: 
+- **Holding Period Classification**:
   - Short-term: ≤ 365 days from purchase
   - Long-term: > 365 days from purchase
 - **FIFO Method**: First-in-first-out lot selection for tax calculations
@@ -650,3 +648,164 @@ npx playwright test tests/e2e/espp-workflow.spec.ts --project=chromium
 npx playwright test tests/e2e/rsu-workflow.spec.ts --project=chromium
 npx playwright test tests/e2e/tax-analysis-view.spec.ts --project=chromium
 ```
+
+## Tax Data Integration Feature (013)
+
+### Overview
+The tax data integration feature enables comprehensive tax tracking for stock compensation (ESPP, RSU) and capital gains analysis. It extends the CSV import/export system with tax-specific fields and adds tax exposure visualization to the dashboard and analysis pages.
+
+### Key Components
+- **Tax Calculator** (`src/lib/services/tax-calculator.ts`): Core tax calculation engine with holding period analysis, aging lot detection, and tax exposure metrics
+- **Tax Settings Store** (`src/lib/stores/tax-settings.ts`): Zustand store managing tax rates (default: ST 24%, LT 15%)
+- **Tax Exposure Widget** (`src/components/dashboard/widgets/tax-exposure-widget.tsx`): Dashboard widget displaying estimated tax liability and aging lots
+- **Tax Formatters** (`src/lib/utils/tax-formatters.ts`): Utilities for formatting currency, percentages, and holding periods
+
+### Tax Field Definitions
+
+The following optional fields are available on Transaction records:
+
+- **grantDate**: ESPP purchase date or RSU award date (must be ≤ today)
+- **vestingDate**: When shares became owned (must be ≥ grantDate, ≤ today)
+- **discountPercent**: ESPP discount percentage as decimal (0.0-0.5 range, e.g., 0.15 for 15%)
+- **sharesWithheld**: Number of shares withheld for taxes (must be ≤ quantity)
+- **ordinaryIncomeAmount**: W-2 taxable compensation including bargain element (must be ≥ 0)
+
+All tax fields use `Decimal.js` for precision calculations.
+
+### CSV Import with Tax Fields
+
+The CSV import system automatically detects tax-related columns:
+
+**Supported Header Patterns:**
+- Grant Date: `grant_date`, `grantdate`, `award_date`, `purchase_date`, `option_date`
+- Vesting Date: `vesting_date`, `vest_date`, `release_date`, `settlement_date`
+- Discount: `discount`, `discount %`, `espp discount`, `purchase discount`
+- Shares Withheld: `shares withheld`, `tax shares`, `shares sold to cover`, `withheld`
+- Ordinary Income: `ordinary income`, `w2 income`, `compensation income`, `taxable income`
+
+**Import Behavior:**
+- If `sharesWithheld` column is mapped, the system assumes **Gross shares** input and automatically calculates net shares
+- Validation enforces business rules (e.g., grantDate ≤ vestingDate ≤ transactionDate)
+- All tax fields are optional and backward-compatible with existing transactions
+
+**Example CSV with Tax Fields:**
+```csv
+Date,Symbol,Type,Quantity,Price,Grant Date,Vesting Date,Discount %,Shares Withheld,Ordinary Income
+2025-01-15,ACME,Buy,100,50.00,2024-01-15,2025-01-15,15,22,1100.00
+2025-02-01,ACME,Sell,50,55.00,,,,
+```
+
+### Export with Tax Data
+
+Both transaction and holdings exports include tax-related columns:
+
+**Transaction Export Columns** (5 tax columns added):
+- `grantDate`: Formatted as `yyyy-MM-dd`
+- `vestDate`: Formatted as `yyyy-MM-dd`
+- `discountPercent`: Formatted as `##.##%`
+- `sharesWithheld`: Formatted as `#,###.####`
+- `ordinaryIncome`: Formatted as `$#,###.##`
+
+**Holdings Export Columns** (5 tax columns added):
+- `holdingPeriod`: `ST` (Short-Term), `LT` (Long-Term), or `Mixed`
+- `shortTermGain`: Unrealized gains on lots held ≤365 days
+- `longTermGain`: Unrealized gains on lots held >365 days
+- `estimatedTax`: ST × STrate + LT × LTrate
+- `basisAdjustment`: For ESPP disqualifying dispositions
+
+### Tax Exposure Widget
+
+The Tax Exposure widget displays on the dashboard and shows:
+- **Estimated Tax Liability**: Total potential tax bill on unrealized gains
+- **Short-Term Gains**: Gains taxed at ordinary income rates (default 24%)
+- **Long-Term Gains**: Gains taxed at preferential rates (default 15%)
+- **Aging Lots Alert**: Number of lots becoming long-term within 30 days
+
+**Performance Target**: Renders in <200ms for portfolios with 500+ holdings
+
+### Tax Lot Aging Recommendations
+
+The analysis engine detects holdings approaching long-term capital gains status:
+- **Detection Window**: 30 days before a lot becomes long-term (held >365 days)
+- **Recommendation Type**: `tax_lot_aging`
+- **Severity**: High if ≤7 days, Medium if 8-30 days
+- **Metadata**: Includes asset symbol, aging lots count, days until LT, and potential savings
+
+**Business Rule**: Long-term status = held >365 days from purchase date
+
+### Tax Settings Configuration
+
+Default tax rates (configurable via tax settings store):
+- **Short-Term Rate**: 24% (ordinary income tax rate)
+- **Long-Term Rate**: 15% (long-term capital gains rate)
+
+Users can customize these rates based on their tax bracket.
+
+### Testing Tax Features
+
+```bash
+# Run tax calculator unit tests
+npm run test -- --run src/lib/services/__tests__/tax-calculator.test.ts
+
+# Run CSV import with tax field tests
+npm run test -- --run src/lib/services/__tests__/column-detector.test.ts src/lib/services/__tests__/csv-validator.test.ts
+
+# Run export service tests
+npm run test -- --run src/lib/services/__tests__/export-service.test.ts
+
+# Run tax widget tests
+npm run test -- --run src/components/dashboard/widgets/__tests__/tax-exposure-widget.test.tsx
+
+# Run E2E tax import tests (when available)
+npx playwright test tests/e2e/csv-import-tax.spec.ts --project=chromium
+
+# Run E2E tax export tests (when available)
+npx playwright test tests/e2e/export-tax-data.spec.ts --project=chromium
+```
+
+### Common Tax Scenarios
+
+**ESPP Purchase (Qualified Holding):**
+```csv
+Date,Symbol,Type,Quantity,Price,Grant Date,Discount %,Ordinary Income
+2025-01-15,ACME,Buy,100,42.50,2024-07-15,15,750.00
+```
+- Grant Date: Offering period start (6 months before purchase)
+- Discount: 15% ESPP discount
+- Ordinary Income: (FMV - Discounted Price) × Quantity = $750
+
+**RSU Vest (Net Shares):**
+```csv
+Date,Symbol,Type,Quantity,Price,Vesting Date,Shares Withheld,Ordinary Income
+2025-02-01,ACME,Buy,78,50.00,2025-02-01,22,5000.00
+```
+- Quantity: Net shares received after withholding
+- Shares Withheld: Sold to cover taxes (gross = 78 + 22 = 100)
+- Ordinary Income: FMV at vest × Gross shares = $5,000
+
+**Tax Loss Harvesting:**
+The analysis engine will recommend waiting to sell lots approaching long-term status, potentially saving the difference between ordinary income and long-term capital gains rates (e.g., 24% - 15% = 9% savings).
+
+### Privacy & Security
+
+All tax data is stored **locally in IndexedDB only**:
+- No server-side persistence or transmission of sensitive tax information
+- Tax calculations performed entirely in the browser
+- Export functionality creates local files only (no uploads)
+
+### Architecture Notes
+
+**Type Safety:**
+- All tax fields are optional (`?:`) for backward compatibility
+- Type guards available: Check for tax metadata presence before accessing
+- No `any` types used in tax calculation code
+
+**Decimal Precision:**
+- All monetary calculations use `Decimal.js` to avoid floating-point errors
+- Tax rates stored as decimals (0.24, not 24)
+- Percentages converted during display only
+
+**Performance Optimizations:**
+- Tax exposure calculations memoized with `useMemo` in dashboard
+- Aging lot detection runs only when holdings or prices change
+- IndexedDB compound indexes available for future optimization
