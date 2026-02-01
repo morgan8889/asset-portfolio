@@ -14,6 +14,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Search,
   TrendingUp,
   TrendingDown,
@@ -21,10 +28,14 @@ import {
   Calendar,
   DollarSign,
   Filter,
+  Edit,
+  Trash2,
 } from 'lucide-react';
 import { useTransactionStore, usePortfolioStore } from '@/lib/stores';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Transaction, TransactionType } from '@/types';
+import { TransactionDialog } from '@/components/forms/add-transaction';
+import { DeleteTransactionDialog } from '@/components/dialogs/delete-transaction-dialog';
 
 interface TransactionTableProps {
   showPortfolioFilter?: boolean;
@@ -112,6 +123,11 @@ const TransactionTableComponent = ({
 }: TransactionTableProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<TransactionType | 'all'>('all');
+  const [editTransaction, setEditTransaction] = useState<Transaction | null>(
+    null
+  );
+  const [deleteTransaction, setDeleteTransaction] =
+    useState<Transaction | null>(null);
 
   const {
     transactions,
@@ -121,6 +137,7 @@ const TransactionTableComponent = ({
     loadTransactions,
     filterTransactions,
     clearError,
+    deleteTransaction: deleteTransactionAction,
   } = useTransactionStore();
 
   const { currentPortfolio } = usePortfolioStore();
@@ -158,6 +175,13 @@ const TransactionTableComponent = ({
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
   }, [filteredTransactions, transactions, searchTerm, filterType]);
+
+  const handleDelete = async () => {
+    if (deleteTransaction) {
+      await deleteTransactionAction(deleteTransaction.id);
+      setDeleteTransaction(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -321,9 +345,29 @@ const TransactionTableComponent = ({
                       {transaction.notes || '-'}
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => setEditTransaction(transaction)}
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => setDeleteTransaction(transaction)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -332,6 +376,24 @@ const TransactionTableComponent = ({
           </div>
         )}
       </CardContent>
+
+      {/* Edit Transaction Dialog */}
+      {editTransaction && (
+        <TransactionDialog
+          mode="edit"
+          transaction={editTransaction}
+          open={!!editTransaction}
+          onOpenChange={(open) => !open && setEditTransaction(null)}
+        />
+      )}
+
+      {/* Delete Transaction Dialog */}
+      <DeleteTransactionDialog
+        transaction={deleteTransaction}
+        open={!!deleteTransaction}
+        onOpenChange={(open) => !open && setDeleteTransaction(null)}
+        onConfirm={handleDelete}
+      />
     </Card>
   );
 };

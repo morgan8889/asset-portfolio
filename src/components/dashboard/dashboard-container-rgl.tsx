@@ -347,7 +347,10 @@ const DashboardContainerRGLComponent = ({
   }
 
   return (
-    <div ref={containerRef as React.LegacyRef<HTMLDivElement>} className="space-y-4">
+    <div
+      ref={containerRef as React.LegacyRef<HTMLDivElement>}
+      className="space-y-4"
+    >
       <StaleDataBanner lastUpdated={null} thresholdMinutes={15} />
 
       {priceLoading && (

@@ -427,6 +427,7 @@ const HoldingsTableComponent = () => {
                               priceData={livePrice}
                               showChange={false}
                               size="sm"
+                              align="right"
                             />
                           );
                         }

@@ -5,7 +5,11 @@
 
 import { z } from 'zod';
 
-export const ReportTypeSchema = z.enum(['performance', 'transactions', 'holdings']);
+export const ReportTypeSchema = z.enum([
+  'performance',
+  'transactions',
+  'holdings',
+]);
 
 export const DateRangePresetSchema = z.enum(['YTD', '1Y', 'ALL']);
 
