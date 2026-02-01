@@ -11,7 +11,7 @@
  * 5. Results summary
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -40,13 +40,15 @@ import {
 } from './column-mapping-editor';
 import { DuplicateReview } from './duplicate-review';
 import { useCsvImportStore } from '@/lib/stores/csv-import';
+import { usePortfolioStore } from '@/lib/stores/portfolio';
+import { ensureValidPortfolio } from '@/lib/utils/portfolio-validation';
 import type { DuplicateHandling } from '@/types/csv-import';
 import type { TransactionField } from '@/types/csv-import';
 
 interface CsvImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  portfolioId: string;
+  portfolioId: string | null;
 }
 
 type DialogStep = 'upload' | 'preview' | 'mapping' | 'importing' | 'results';
@@ -81,6 +83,10 @@ export function CsvImportDialog({
   } | null>(null);
 
   const [showMappingEditor, setShowMappingEditor] = useState(false);
+  const [validatedPortfolioId, setValidatedPortfolioId] = useState<string | null>(null);
+  const [portfolioAutoCreated, setPortfolioAutoCreated] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const { setCurrentPortfolio } = usePortfolioStore();
 
   const getCurrentStep = (): DialogStep => {
     if (importResult) return 'results';
@@ -93,11 +99,63 @@ export function CsvImportDialog({
 
   const currentStep = getCurrentStep();
 
+  // Validate portfolio on dialog open
+  useEffect(() => {
+    let mounted = true;
+
+    async function validatePortfolioOnOpen() {
+      if (!open) {
+        // Reset state when dialog closes
+        setPortfolioAutoCreated(false);
+        setValidatedPortfolioId(null);
+        setIsValidating(false);
+        return;
+      }
+
+      setIsValidating(true);
+
+      try {
+        const result = await ensureValidPortfolio(portfolioId);
+        if (!mounted) return; // Prevent state update after unmount
+
+        setValidatedPortfolioId(result.portfolioId);
+        setPortfolioAutoCreated(result.wasCreated);
+        setIsValidating(false);
+
+        // Update store if portfolio was auto-created
+        if (result.wasCreated) {
+          setCurrentPortfolio(result.portfolio);
+        }
+      } catch (err) {
+        if (!mounted) return; // Prevent state update after unmount
+
+        console.error('Portfolio validation error:', err);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        useCsvImportStore.setState({
+          error: `Failed to validate portfolio: ${errorMessage}`,
+        });
+        setIsValidating(false);
+        // Still allow dialog to show with error message
+      }
+    }
+
+    validatePortfolioOnOpen();
+    return () => {
+      mounted = false;
+    };
+  }, [open, portfolioId, setCurrentPortfolio]);
+
   const handleFileSelect = useCallback(
     async (file: File) => {
-      await startImport(file, portfolioId);
+      if (!validatedPortfolioId) {
+        useCsvImportStore.setState({
+          error: 'Portfolio validation is still in progress. Please try again.',
+        });
+        return;
+      }
+      await startImport(file, validatedPortfolioId);
     },
-    [startImport, portfolioId]
+    [startImport, validatedPortfolioId]
   );
 
   const handleConfirmImport = useCallback(async () => {
@@ -203,6 +261,16 @@ export function CsvImportDialog({
         </DialogHeader>
 
         <div className="py-4">
+          {/* Portfolio Auto-Created Notification */}
+          {portfolioAutoCreated && (
+            <Alert className="mb-4 border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                No portfolio found. Created "My Portfolio" for your transactions.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Error Alert */}
           {error && (
             <Alert variant="destructive" className="mb-4">
@@ -215,7 +283,7 @@ export function CsvImportDialog({
           {currentStep === 'upload' && (
             <CsvFileUpload
               onFileSelect={handleFileSelect}
-              disabled={isProcessing}
+              disabled={isProcessing || isValidating || !validatedPortfolioId}
             />
           )}
 
