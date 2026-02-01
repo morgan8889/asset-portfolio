@@ -248,7 +248,7 @@ export default function SettingsPage() {
       <CsvImportDialog
         open={modals.importCSV}
         onOpenChange={(open) => !open && closeModal('importCSV')}
-        portfolioId={currentPortfolio?.id ?? ''}
+        portfolioId={currentPortfolio?.id ?? null}
       />
 
       {/* Reset Confirmation Dialog */}
