@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import { Liability } from '@/types/planning';
 import { usePlanningStore } from '@/lib/stores/planning';
+import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -30,7 +31,11 @@ import { z } from 'zod';
 import { format } from 'date-fns';
 
 const liabilitySchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .max(100, 'Name cannot exceed 100 characters')
+    .regex(/^[a-zA-Z0-9\s\-',.&()]+$/, 'Name contains invalid characters'),
   balance: z.coerce.number().min(0, 'Balance cannot be negative'),
   interestRate: z.coerce
     .number()
@@ -48,6 +53,7 @@ interface LiabilityManagerProps {
 }
 
 export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
+  const { currentPortfolio } = usePortfolioStore();
   const { liabilities, addLiability, updateLiability, deleteLiability } =
     usePlanningStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -118,9 +124,10 @@ export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
   };
 
   const formatCurrency = (value: number) => {
+    const currency = currentPortfolio?.currency || 'USD';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency,
     }).format(value);
   };
 

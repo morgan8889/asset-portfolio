@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { usePlanningStore } from '@/lib/stores/planning';
 import { LiabilityManager } from '@/components/planning/liability-manager';
@@ -8,6 +8,7 @@ import { NetWorthChart } from '@/components/planning/net-worth-chart';
 import { GoalInputForm } from '@/components/planning/goal-input-form';
 import { FireProjectionChart } from '@/components/planning/fire-projection-chart';
 import { ScenarioControls } from '@/components/planning/scenario-controls';
+import { ErrorBoundary } from '@/components/error-boundary';
 import {
   getNetWorthHistory,
   getCurrentNetWorth,
@@ -44,39 +45,7 @@ export default function PlanningPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'1Y' | '3Y' | '5Y' | 'ALL'>('5Y');
 
-  useEffect(() => {
-    if (currentPortfolio) {
-      loadData();
-    }
-  }, [currentPortfolio]);
-
-  useEffect(() => {
-    if (currentPortfolio) {
-      loadNetWorthHistory();
-    }
-  }, [currentPortfolio, timeRange]);
-
-  useEffect(() => {
-    if (currentPortfolio && netWorthHistory.length > 0) {
-      updateProjection();
-    }
-  }, [fireConfig, scenarios, netWorthHistory]);
-
-  const loadData = async () => {
-    if (!currentPortfolio) return;
-
-    setIsLoading(true);
-    try {
-      await loadLiabilities(currentPortfolio.id);
-      await loadNetWorthHistory();
-    } catch (error) {
-      console.error('Failed to load planning data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadNetWorthHistory = async () => {
+  const loadNetWorthHistory = useCallback(async () => {
     if (!currentPortfolio) return;
 
     try {
@@ -110,9 +79,9 @@ export default function PlanningPage() {
     } catch (error) {
       console.error('Failed to load net worth history:', error);
     }
-  };
+  }, [currentPortfolio, timeRange, setNetWorthHistory]);
 
-  const updateProjection = async () => {
+  const updateProjection = useCallback(async () => {
     if (!currentPortfolio) return;
 
     try {
@@ -134,7 +103,39 @@ export default function PlanningPage() {
     } catch (error) {
       console.error('Failed to update projection:', error);
     }
-  };
+  }, [currentPortfolio, fireConfig, scenarios, setFireProjection, setFireCalculation]);
+
+  const loadData = useCallback(async () => {
+    if (!currentPortfolio) return;
+
+    setIsLoading(true);
+    try {
+      await loadLiabilities(currentPortfolio.id);
+      await loadNetWorthHistory();
+    } catch (error) {
+      console.error('Failed to load planning data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPortfolio, loadLiabilities, loadNetWorthHistory]);
+
+  useEffect(() => {
+    if (currentPortfolio) {
+      loadData();
+    }
+  }, [currentPortfolio, loadData]);
+
+  useEffect(() => {
+    if (currentPortfolio) {
+      loadNetWorthHistory();
+    }
+  }, [currentPortfolio, timeRange, loadNetWorthHistory]);
+
+  useEffect(() => {
+    if (currentPortfolio && netWorthHistory.length > 0) {
+      updateProjection();
+    }
+  }, [currentPortfolio, fireConfig, scenarios, netWorthHistory, updateProjection]);
 
   if (!currentPortfolio) {
     return (
@@ -158,63 +159,65 @@ export default function PlanningPage() {
   }
 
   return (
-    <div className="container mx-auto space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Financial Planning</h1>
-          <p className="text-muted-foreground">
-            Track your net worth and plan your path to Financial Independence
-          </p>
+    <ErrorBoundary>
+      <div className="container mx-auto space-y-6 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Financial Planning</h1>
+            <p className="text-muted-foreground">
+              Track your net worth and plan your path to Financial Independence
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Label htmlFor="timeRange" className="text-sm">
+              Time Range:
+            </Label>
+            <Select
+              value={timeRange}
+              onValueChange={(value: '1Y' | '3Y' | '5Y' | 'ALL') =>
+                setTimeRange(value)
+              }
+            >
+              <SelectTrigger id="timeRange" className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1Y">1 Year</SelectItem>
+                <SelectItem value="3Y">3 Years</SelectItem>
+                <SelectItem value="5Y">5 Years</SelectItem>
+                <SelectItem value="ALL">All Time</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Label htmlFor="timeRange" className="text-sm">
-            Time Range:
-          </Label>
-          <Select
-            value={timeRange}
-            onValueChange={(value: '1Y' | '3Y' | '5Y' | 'ALL') =>
-              setTimeRange(value)
-            }
-          >
-            <SelectTrigger id="timeRange" className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1Y">1 Year</SelectItem>
-              <SelectItem value="3Y">3 Years</SelectItem>
-              <SelectItem value="5Y">5 Years</SelectItem>
-              <SelectItem value="ALL">All Time</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+
+        {/* Net Worth Section */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">Net Worth History</h2>
+          <div className="grid gap-6">
+            <NetWorthChart data={netWorthHistory} />
+            <LiabilityManager portfolioId={currentPortfolio.id} />
+          </div>
+        </section>
+
+        {/* FIRE Planning Section */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">FIRE Planning</h2>
+          <div className="grid gap-6">
+            <GoalInputForm />
+            <FireProjectionChart
+              projection={fireProjection}
+              fireCalculation={fireCalculation}
+            />
+          </div>
+        </section>
+
+        {/* Scenarios Section */}
+        <section className="space-y-4">
+          <h2 className="text-2xl font-semibold">What-If Analysis</h2>
+          <ScenarioControls />
+        </section>
       </div>
-
-      {/* Net Worth Section */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">Net Worth History</h2>
-        <div className="grid gap-6">
-          <NetWorthChart data={netWorthHistory} />
-          <LiabilityManager portfolioId={currentPortfolio.id} />
-        </div>
-      </section>
-
-      {/* FIRE Planning Section */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">FIRE Planning</h2>
-        <div className="grid gap-6">
-          <GoalInputForm />
-          <FireProjectionChart
-            projection={fireProjection}
-            fireCalculation={fireCalculation}
-          />
-        </div>
-      </section>
-
-      {/* Scenarios Section */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">What-If Analysis</h2>
-        <ScenarioControls />
-      </section>
-    </div>
+    </ErrorBoundary>
   );
 }
