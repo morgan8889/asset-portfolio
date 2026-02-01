@@ -7,6 +7,16 @@ import { usePlanningStore } from '@/lib/stores/planning';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -65,6 +75,8 @@ export function ScenarioControls() {
   const { scenarios, addScenario, deleteScenario, toggleScenario } =
     usePlanningStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [scenarioToDelete, setScenarioToDelete] = useState<string | null>(null);
 
   const {
     register,
@@ -91,10 +103,17 @@ export function ScenarioControls() {
     reset();
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this scenario?')) {
-      deleteScenario(id);
+  const handleDeleteClick = (id: string) => {
+    setScenarioToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (scenarioToDelete) {
+      deleteScenario(scenarioToDelete);
+      setScenarioToDelete(null);
     }
+    setDeleteDialogOpen(false);
   };
 
   const getValueLabel = (scenario: Scenario) => {
@@ -295,7 +314,7 @@ export function ScenarioControls() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleDelete(scenario.id)}
+                  onClick={() => handleDeleteClick(scenario.id)}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -304,6 +323,21 @@ export function ScenarioControls() {
           </div>
         )}
       </CardContent>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Scenario</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this scenario? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

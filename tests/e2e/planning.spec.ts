@@ -137,9 +137,6 @@ test.describe('Net Worth Planning & FIRE Feature', () => {
     // Submit form
     await page.click('button:has-text("Update Goals")');
 
-    // Wait for page to process update
-    await page.waitForTimeout(1000);
-
     // Check that FIRE Target updated
     const fireTarget = page.locator('text=/FIRE Target:/');
     await expect(fireTarget).toBeVisible();
@@ -257,17 +254,16 @@ test.describe('Net Worth Planning & FIRE Feature', () => {
     // Get the time range selector
     const timeRangeSelect = page.locator('select[id="timeRange"]');
 
-    // Change to 1 Year
+    // Change to 1 Year and verify chart updates
     await timeRangeSelect.selectOption('1Y');
-    await page.waitForTimeout(1000);
+    await expect(page.locator('.recharts-responsive-container').first()).toBeVisible();
 
     // Change to 3 Years
     await timeRangeSelect.selectOption('3Y');
-    await page.waitForTimeout(1000);
+    await expect(page.locator('.recharts-responsive-container').first()).toBeVisible();
 
     // Change to All Time
     await timeRangeSelect.selectOption('ALL');
-    await page.waitForTimeout(1000);
 
     // Chart should still be visible
     await expect(page.locator('.recharts-responsive-container').first()).toBeVisible();
@@ -283,8 +279,8 @@ test.describe('Net Worth Planning & FIRE Feature', () => {
     await page.fill('input[id="startDate"]', '2020-01-01');
     await page.click('button:has-text("Add")');
 
-    // Wait for update
-    await page.waitForTimeout(2000);
+    // Wait for liability to appear in table
+    await expect(page.locator('text=Huge Debt')).toBeVisible();
 
     // Chart should still render (with reference line at zero)
     await expect(page.locator('.recharts-responsive-container').first()).toBeVisible();
@@ -299,7 +295,11 @@ test.describe('Net Worth Planning & FIRE Feature', () => {
     // Set very low annual expenses to make FIRE target achievable
     await page.fill('input[id="annualExpenses"]', '1000');
     await page.click('button:has-text("Update Goals")');
-    await page.waitForTimeout(2000);
+
+    // Wait for projection to update by checking chart is visible
+    await expect(
+      page.locator('text=/Path to Financial Independence/')
+    ).toBeVisible();
 
     // Check for congratulations message
     const successMessage = page.locator(
