@@ -2,30 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Net Worth Planning & FIRE Feature', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to test page
-    await page.goto('/test');
-    await page.waitForLoadState('networkidle');
-
-    // Check if we need to generate mock data
-    const generateButton = page.getByRole('button', { name: 'Generate Mock Data' });
-
-    if (await generateButton.isEnabled()) {
-      await generateButton.click();
-      await expect(page.getByText('Done! Redirecting...')).toBeVisible({ timeout: 10000 });
-      await page.waitForURL('/', { timeout: 10000 });
-    } else {
-      // Data already exists, navigate to dashboard
-      await page.goto('/');
-    }
-
-    await page.waitForLoadState('networkidle');
-
-    // Wait for dashboard to load
-    await page.waitForSelector('text=/Total Value/', { timeout: 10000 });
-
-    // Navigate to Planning page
-    await page.click('a[href="/planning"]');
-    await page.waitForURL('/planning', { timeout: 10000 });
+    // Navigate to the planning page directly
+    await page.goto('/planning');
     await page.waitForLoadState('networkidle');
   });
 
