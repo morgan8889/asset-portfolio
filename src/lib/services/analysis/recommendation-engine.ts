@@ -315,9 +315,9 @@ function checkTaxLotAging(
   }
 
   // Get tax settings for calculating potential savings
-  const taxSettings = useTaxSettingsStore.getState();
-  const shortTermRate = taxSettings.shortTermRate;
-  const longTermRate = taxSettings.longTermRate;
+  const taxSettings = useTaxSettingsStore.getState().settings;
+  const shortTermRate = taxSettings.shortTermTaxRate;
+  const longTermRate = taxSettings.longTermTaxRate;
   const rateDiff = shortTermRate - longTermRate;
 
   // Find the lot closest to becoming long-term
@@ -333,10 +333,10 @@ function checkTaxLotAging(
   const potentialSavings = totalUnrealizedGains.mul(rateDiff).toNumber();
 
   const metadata: TaxRecommendationMetadata = {
-    assetSymbol: nearestLot.assetSymbol,
     agingLotsCount: agingLots.length,
-    daysUntilLongTerm: nearestLot.daysUntilLongTerm,
-    potentialSavings,
+    totalUnrealizedGain: totalUnrealizedGains.toString(),
+    earliestLotDaysRemaining: nearestLot.daysUntilLongTerm,
+    affectedAssetIds: [...new Set(agingLots.map(lot => lot.assetId))],
   };
 
   const daysText = nearestLot.daysUntilLongTerm === 1 ? 'day' : 'days';
