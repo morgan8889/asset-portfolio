@@ -100,6 +100,17 @@ export interface TaxLot {
   soldQuantity: Decimal; // Partial sales tracking
   remainingQuantity: Decimal; // Calculated field
   notes?: string;
+
+  // Tax-specific fields
+  lotType?: 'standard' | 'espp' | 'rsu';  // Lot classification
+
+  // ESPP-specific
+  grantDate?: Date;              // Offering date (for ESPP disqualifying disposition check)
+  bargainElement?: Decimal;      // Market price - purchase price (ESPP discount)
+
+  // RSU-specific
+  vestingDate?: Date;            // RSU vesting date (for reporting)
+  vestingPrice?: Decimal;        // FMV at vesting (should match purchasePrice for RSUs)
 }
 
 export interface DividendRecord {
