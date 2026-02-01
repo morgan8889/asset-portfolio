@@ -41,11 +41,11 @@ export async function calculateNetWorthAtDate(
 
     let price: Decimal;
     if (priceHistory.length > 0) {
-      // Use the closest price at or before the date
-      const sortedPrices = priceHistory.sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      // Find the most recent price without sorting the entire array
+      const latestPrice = priceHistory.reduce((latest, current) =>
+        new Date(current.date) > new Date(latest.date) ? current : latest
       );
-      price = sortedPrices[0].close;
+      price = new Decimal(latestPrice.close);
     } else {
       // Fallback to current price if no historical data
       price = asset.currentPrice ? new Decimal(asset.currentPrice) : new Decimal(0);

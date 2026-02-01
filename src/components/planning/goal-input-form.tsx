@@ -5,7 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { FireConfig, PLANNING_CONSTRAINTS } from '@/types/planning';
 import { usePlanningStore } from '@/lib/stores/planning';
+import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatCurrency } from '@/lib/utils/currency';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -41,6 +43,7 @@ type FireConfigFormData = z.infer<typeof fireConfigSchema>;
 
 export function GoalInputForm() {
   const { fireConfig, setFireConfig, resetFireConfig } = usePlanningStore();
+  const { currentPortfolio } = usePortfolioStore();
 
   const {
     register,
@@ -70,23 +73,30 @@ export function GoalInputForm() {
     });
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(value);
+  const handleReset = () => {
+    resetFireConfig();
+    // Reset the form to default values
+    const defaultConfig = {
+      annualExpenses: 40000,
+      withdrawalRate: 4,
+      monthlySavings: 0,
+      expectedReturn: 7,
+      inflationRate: 3,
+      retirementAge: undefined,
+    };
+    reset(defaultConfig);
   };
 
   // Calculate FIRE number for display
   const fireNumber = fireConfig.annualExpenses / fireConfig.withdrawalRate;
+  const currency = currentPortfolio?.currency || 'USD';
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>FIRE Goal Settings</CardTitle>
         <div className="text-sm text-muted-foreground">
-          FIRE Target: <span className="text-lg font-bold text-foreground">{formatCurrency(fireNumber)}</span>
+          FIRE Target: <span className="text-lg font-bold text-foreground">{formatCurrency(fireNumber, { currency })}</span>
         </div>
       </CardHeader>
       <CardContent>
@@ -284,10 +294,7 @@ export function GoalInputForm() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                resetFireConfig();
-                window.location.reload();
-              }}
+              onClick={handleReset}
             >
               Reset to Defaults
             </Button>

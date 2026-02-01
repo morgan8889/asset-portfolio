@@ -1,11 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Info } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Liability } from '@/types/planning';
 import { usePlanningStore } from '@/lib/stores/planning';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
+import { formatCurrency, formatPercentage } from '@/lib/utils/currency';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Dialog,
   DialogContent,
@@ -60,6 +77,8 @@ export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
   const [editingLiability, setEditingLiability] = useState<Liability | null>(
     null
   );
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [liabilityToDelete, setLiabilityToDelete] = useState<string | null>(null);
 
   const {
     register,
@@ -109,10 +128,17 @@ export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this liability?')) {
-      await deleteLiability(id);
+  const handleDeleteClick = (id: string) => {
+    setLiabilityToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (liabilityToDelete) {
+      await deleteLiability(liabilityToDelete);
+      setLiabilityToDelete(null);
     }
+    setDeleteDialogOpen(false);
   };
 
   const handleDialogClose = (open: boolean) => {
@@ -123,17 +149,7 @@ export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
     }
   };
 
-  const formatCurrency = (value: number) => {
-    const currency = currentPortfolio?.currency || 'USD';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-    }).format(value);
-  };
-
-  const formatPercentage = (value: number) => {
-    return `${(value * 100).toFixed(2)}%`;
-  };
+  const currency = currentPortfolio?.currency || 'USD';
 
   const totalLiabilities = liabilities.reduce(
     (sum, liability) => sum + liability.balance,
@@ -144,9 +160,25 @@ export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Liabilities & Debt</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-semibold">Liabilities & Debt</h3>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-xs text-sm">
+                    Note: Historical net worth calculations currently use the current balance
+                    for all past dates. Future updates will calculate historical balances
+                    based on payment schedules and interest rates.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <p className="text-sm text-muted-foreground">
-            Total: {formatCurrency(totalLiabilities)}
+            Total: {formatCurrency(totalLiabilities, { currency })}
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
@@ -300,13 +332,13 @@ export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
               <TableRow key={liability.id}>
                 <TableCell className="font-medium">{liability.name}</TableCell>
                 <TableCell className="text-right">
-                  {formatCurrency(liability.balance)}
+                  {formatCurrency(liability.balance, { currency })}
                 </TableCell>
                 <TableCell className="text-right">
                   {formatPercentage(liability.interestRate)}
                 </TableCell>
                 <TableCell className="text-right">
-                  {formatCurrency(liability.payment)}
+                  {formatCurrency(liability.payment, { currency })}
                 </TableCell>
                 <TableCell>
                   {format(new Date(liability.startDate), 'MMM d, yyyy')}
@@ -323,7 +355,7 @@ export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDelete(liability.id)}
+                      onClick={() => handleDeleteClick(liability.id)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -334,6 +366,21 @@ export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
           </TableBody>
         </Table>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Liability</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this liability? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
