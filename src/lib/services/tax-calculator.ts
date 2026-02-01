@@ -74,7 +74,8 @@ export function detectAgingLots(
         const currentValue = lot.remainingQuantity.mul(currentPrice);
         const costBasis = lot.remainingQuantity.mul(lot.purchasePrice);
         const unrealizedGain = currentValue.sub(costBasis);
-        const unrealizedGainPercent = costBasis.isZero()
+        // Handle zero or negative cost basis (e.g., after dividends exceed investment)
+        const unrealizedGainPercent = costBasis.isZero() || costBasis.isNegative()
           ? 0
           : unrealizedGain.div(costBasis).mul(100).toNumber();
 

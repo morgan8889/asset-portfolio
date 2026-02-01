@@ -66,7 +66,7 @@ export const TaxExposureWidget = memo(function TaxExposureWidget({
           </span>
         </div>
         {hasAgingLots && (
-          <div className="flex items-center gap-1 pt-1 text-amber-600">
+          <div className="flex items-center gap-1 pt-1 text-amber-600" role="alert">
             <AlertCircle className="h-3 w-3" />
             <span>{metrics.agingLotsCount} lot(s) aging</span>
           </div>

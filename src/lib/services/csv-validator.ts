@@ -16,7 +16,7 @@ import type {
 } from '@/types/csv-import';
 import type { TransactionType } from '@/types/transaction';
 import { parseDate, validateTransactionDate } from '@/lib/utils/date-parser';
-import { TYPE_KEYWORDS, csvSymbolSchema } from '@/lib/utils/validation';
+import { TYPE_KEYWORDS, csvSymbolSchema, sanitizeForDisplay } from '@/lib/utils/validation';
 import { getMappingForField } from './column-detector';
 
 /**
@@ -238,10 +238,11 @@ export function validateRow(
     parsed.fees = new Decimal(0);
   }
 
-  // Notes (optional, no validation needed)
+  // Notes (optional, sanitize for XSS protection)
   const notesValue = getValue('notes');
   if (notesValue) {
-    parsed.notes = notesValue.slice(0, 1000); // Truncate if too long
+    const truncated = notesValue.slice(0, 1000); // Truncate if too long
+    parsed.notes = sanitizeForDisplay(truncated); // Sanitize to prevent XSS
   }
 
   // Tax Fields Validation (T022-T026)

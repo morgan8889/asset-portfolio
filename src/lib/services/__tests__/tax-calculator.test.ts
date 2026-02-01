@@ -463,4 +463,53 @@ describe('calculateTaxExposure', () => {
     expect(result.totalUnrealizedGain.toNumber()).toBe(0);
     expect(result.estimatedTaxLiability.toNumber()).toBe(0);
   });
+
+  it('should handle zero purchase price (free shares from grants)', () => {
+    const currentDate = new Date('2025-01-31');
+    const purchaseDate = new Date('2024-06-01');
+
+    // Zero purchase price lot (e.g., stock grants)
+    const lot = createMockLot('lot-1', purchaseDate, 100, 0);
+    const holding = createMockHolding('holding-1', 'asset-1', [lot]);
+    const asset = createMockAsset('asset-1', 'AAPL', 50); // Current price $50
+
+    const assetMap = new Map<string, Asset>([['asset-1', asset]]);
+
+    const result = calculateTaxExposure(
+      [holding],
+      assetMap,
+      DEFAULT_TAX_SETTINGS,
+      currentDate
+    );
+
+    // All gain is unrealized (100 shares * $50 = $5000)
+    expect(result.shortTermGains.toNumber()).toBe(5000);
+    expect(result.totalUnrealizedGain.toNumber()).toBe(5000);
+    // Tax should be calculated on gains
+    expect(result.estimatedTaxLiability.toNumber()).toBeGreaterThan(0);
+  });
+
+  it('should handle negative cost basis gracefully', () => {
+    const currentDate = new Date('2025-01-31');
+    const purchaseDate = new Date('2023-01-01'); // Long-term
+
+    // Simulate negative cost basis (e.g., after dividends exceed investment)
+    const lot = createMockLot('lot-1', purchaseDate, 100, -5); // Negative price
+    const holding = createMockHolding('holding-1', 'asset-1', [lot]);
+    const asset = createMockAsset('asset-1', 'AAPL', 50);
+
+    const assetMap = new Map<string, Asset>([['asset-1', asset]]);
+
+    // Should not throw error with negative cost basis
+    const result = calculateTaxExposure(
+      [holding],
+      assetMap,
+      DEFAULT_TAX_SETTINGS,
+      currentDate
+    );
+
+    // Should calculate gains properly
+    expect(result.longTermGains.toNumber()).toBeGreaterThan(0);
+    expect(result.estimatedTaxLiability.toNumber()).toBeGreaterThan(0);
+  });
 });
