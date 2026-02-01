@@ -96,7 +96,9 @@ export const createMockPortfolio = (overrides: any = {}) => ({
   ...overrides,
 });
 
-export const createMockHolding = (overrides: Partial<Holding> = {}): Holding => ({
+export const createMockHolding = (
+  overrides: Partial<Holding> = {}
+): Holding => ({
   id: `holding-${holdingIdCounter++}`,
   portfolioId: 'portfolio-1',
   assetId: 'asset-1',

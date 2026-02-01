@@ -4,10 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {
-  generateExportFilename,
-  getDateRangeBounds,
-} from '../export-service';
+import { generateExportFilename, getDateRangeBounds } from '../export-service';
 
 describe('ExportService Utilities', () => {
   describe('generateExportFilename', () => {
@@ -22,13 +19,25 @@ describe('ExportService Utilities', () => {
     });
 
     it('should generate filename for performance PDF report', () => {
-      const filename = generateExportFilename('performance', 'My Portfolio', 'pdf');
-      expect(filename).toBe('portfolio_performance_my_portfolio_2026-01-30.pdf');
+      const filename = generateExportFilename(
+        'performance',
+        'My Portfolio',
+        'pdf'
+      );
+      expect(filename).toBe(
+        'portfolio_performance_my_portfolio_2026-01-30.pdf'
+      );
     });
 
     it('should generate filename for transactions CSV export', () => {
-      const filename = generateExportFilename('transactions', 'Test Portfolio', 'csv');
-      expect(filename).toBe('transaction_history_test_portfolio_2026-01-30.csv');
+      const filename = generateExportFilename(
+        'transactions',
+        'Test Portfolio',
+        'csv'
+      );
+      expect(filename).toBe(
+        'transaction_history_test_portfolio_2026-01-30.csv'
+      );
     });
 
     it('should generate filename for holdings CSV export', () => {
@@ -37,13 +46,25 @@ describe('ExportService Utilities', () => {
     });
 
     it('should sanitize portfolio name with spaces', () => {
-      const filename = generateExportFilename('performance', 'My Test Portfolio', 'pdf');
-      expect(filename).toBe('portfolio_performance_my_test_portfolio_2026-01-30.pdf');
+      const filename = generateExportFilename(
+        'performance',
+        'My Test Portfolio',
+        'pdf'
+      );
+      expect(filename).toBe(
+        'portfolio_performance_my_test_portfolio_2026-01-30.pdf'
+      );
     });
 
     it('should sanitize portfolio name with special characters', () => {
-      const filename = generateExportFilename('transactions', 'Portfolio #1 (Growth)', 'csv');
-      expect(filename).toBe('transaction_history_portfolio_1_growth_2026-01-30.csv');
+      const filename = generateExportFilename(
+        'transactions',
+        'Portfolio #1 (Growth)',
+        'csv'
+      );
+      expect(filename).toBe(
+        'transaction_history_portfolio_1_growth_2026-01-30.csv'
+      );
     });
 
     it('should handle uppercase portfolio names', () => {

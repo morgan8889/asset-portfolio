@@ -74,12 +74,15 @@ class ExportService implements IExportService {
       });
 
       // Lazy load PDF libraries
-      const [{ default: jsPDF }, { default: html2canvas }, { default: autoTable }] =
-        await Promise.all([
-          import('jspdf'),
-          import('html2canvas'),
-          import('jspdf-autotable'),
-        ]);
+      const [
+        { default: jsPDF },
+        { default: html2canvas },
+        { default: autoTable },
+      ] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+        import('jspdf-autotable'),
+      ]);
 
       onProgress?.({
         status: 'generating',
@@ -95,7 +98,11 @@ class ExportService implements IExportService {
       pdf.text(data.portfolioName, 20, 20);
 
       pdf.setFontSize(12);
-      pdf.text(`Performance Report | ${data.generatedAt.toLocaleDateString()}`, 20, 30);
+      pdf.text(
+        `Performance Report | ${data.generatedAt.toLocaleDateString()}`,
+        20,
+        30
+      );
 
       pdf.setFontSize(10);
       const periodText = `Period: ${data.dateRange.start.toLocaleDateString()} - ${data.dateRange.end.toLocaleDateString()}`;
@@ -112,10 +119,18 @@ class ExportService implements IExportService {
       pdf.text(`Total Value: $${data.summary.totalValue}`, 20, yPos);
       pdf.text(`Total Cost: $${data.summary.totalCost}`, 110, yPos);
       yPos += 7;
-      pdf.text(`Total Gain/Loss: $${data.summary.totalGain} (${data.summary.totalGainPercent})`, 20, yPos);
+      pdf.text(
+        `Total Gain/Loss: $${data.summary.totalGain} (${data.summary.totalGainPercent})`,
+        20,
+        yPos
+      );
       yPos += 7;
       pdf.text(`Period Return: ${data.summary.periodReturn}`, 20, yPos);
-      pdf.text(`Annualized Return: ${data.summary.annualizedReturn}`, 110, yPos);
+      pdf.text(
+        `Annualized Return: ${data.summary.annualizedReturn}`,
+        110,
+        yPos
+      );
       yPos += 15;
 
       // Add top holdings table
@@ -167,7 +182,8 @@ class ExportService implements IExportService {
       onProgress?.({
         status: 'error',
         progress: 0,
-        error: error instanceof Error ? error.message : 'Failed to generate PDF',
+        error:
+          error instanceof Error ? error.message : 'Failed to generate PDF',
       });
       throw error;
     }
@@ -597,9 +613,10 @@ export function generateExportFilename(
 /**
  * Calculate date range bounds from preset
  */
-export function getDateRangeBounds(
-  preset: DateRangePreset
-): { start: Date; end: Date } {
+export function getDateRangeBounds(preset: DateRangePreset): {
+  start: Date;
+  end: Date;
+} {
   const end = new Date();
   let start: Date;
 
