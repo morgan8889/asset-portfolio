@@ -1,0 +1,1374 @@
+
+> portfolio-tracker@0.1.0 test
+> vitest --run
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+
+ RUN  v1.6.1 /workspace/asset-portfolio-013-tax-data-integration
+      Coverage enabled with v8
+
+ ✓ src/lib/stores/__tests__/csv-import.test.ts  (35 tests) 293ms
+stdout | src/lib/services/__tests__/dashboard-config.test.ts > Dashboard Configuration Service > Migration Logic > V1 → V2 Migration > should migrate v1 config to v2 with default layout settings
+Migrating dashboard config from v1 to v4
+
+stdout | src/lib/services/__tests__/dashboard-config.test.ts > Dashboard Configuration Service > Migration Logic > V2 → V3 Migration > should migrate v2 config to v3 with dense packing settings
+Migrating dashboard config from v2 to v4
+
+stdout | src/lib/services/__tests__/dashboard-config.test.ts > Dashboard Configuration Service > Migration Logic > V3 → V4 Migration > should migrate v3 config to v4 with RGL layouts
+Migrating dashboard config from v3 to v4
+
+stdout | src/lib/services/__tests__/dashboard-config.test.ts > Dashboard Configuration Service > Migration Logic > V3 → V4 Migration > should generate RGL layouts from widget spans during migration
+Migrating dashboard config from v3 to v4
+
+stderr | src/lib/services/__tests__/dashboard-config.test.ts > Dashboard Configuration Service > Edge Cases > should return default config if stored config is invalid
+Invalid dashboard config, using default: ZodError: [
+  {
+    "code": "invalid_literal",
+    "expected": 4,
+    "path": [
+      "version"
+    ],
+    "message": "Invalid literal value, expected 4"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "array",
+    "received": "undefined",
+    "path": [
+      "widgetOrder"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "undefined",
+    "path": [
+      "widgetVisibility"
+    ],
+    "message": "Required"
+  },
+  {
+    "expected": "'TODAY' | 'WEEK' | 'MONTH' | 'QUARTER' | 'YEAR' | 'THREE_YEAR' | 'ALL'",
+    "received": "undefined",
+    "code": "invalid_type",
+    "path": [
+      "timePeriod"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "undefined",
+    "path": [
+      "performerCount"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "undefined",
+    "path": [
+      "lastUpdated"
+    ],
+    "message": "Required"
+  },
+  {
+    "expected": "'grid' | 'stacking'",
+    "received": "undefined",
+    "code": "invalid_type",
+    "path": [
+      "layoutMode"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_union",
+    "unionErrors": [
+      {
+        "issues": [
+          {
+            "code": "invalid_literal",
+            "expected": 2,
+            "path": [
+              "gridColumns"
+            ],
+            "message": "Invalid literal value, expected 2"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "code": "invalid_literal",
+            "expected": 3,
+            "path": [
+              "gridColumns"
+            ],
+            "message": "Invalid literal value, expected 3"
+          }
+        ],
+        "name": "ZodError"
+      },
+      {
+        "issues": [
+          {
+            "code": "invalid_literal",
+            "expected": 4,
+            "path": [
+              "gridColumns"
+            ],
+            "message": "Invalid literal value, expected 4"
+          }
+        ],
+        "name": "ZodError"
+      }
+    ],
+    "path": [
+      "gridColumns"
+    ],
+    "message": "Invalid input"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "boolean",
+    "received": "undefined",
+    "path": [
+      "densePacking"
+    ],
+    "message": "Required"
+  },
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "undefined",
+    "path": [
+      "widgetSettings"
+    ],
+    "message": "Required"
+  }
+]
+    at Object.get error [as error] (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/zod/v3/types.js:39:31)
+    at Object.getConfig (/workspace/asset-portfolio-013-tax-data-integration/src/lib/services/dashboard-config.ts:323:71)
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/services/__tests__/dashboard-config.test.ts:1114:22
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7 {
+  issues: [
+    {
+      received: undefined,
+      code: 'invalid_literal',
+      expected: 4,
+      path: [Array],
+      message: 'Invalid literal value, expected 4'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'array',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'object',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      expected: "'TODAY' | 'WEEK' | 'MONTH' | 'QUARTER' | 'YEAR' | 'THREE_YEAR' | 'ALL'",
+      received: 'undefined',
+      code: 'invalid_type',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'number',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      expected: "'grid' | 'stacking'",
+      received: 'undefined',
+      code: 'invalid_type',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_union',
+      unionErrors: [Array],
+      path: [Array],
+      message: 'Invalid input'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'boolean',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'object',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    }
+  ],
+  addIssue: [Function (anonymous)],
+  addIssues: [Function (anonymous)],
+  errors: [
+    {
+      received: undefined,
+      code: 'invalid_literal',
+      expected: 4,
+      path: [Array],
+      message: 'Invalid literal value, expected 4'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'array',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'object',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      expected: "'TODAY' | 'WEEK' | 'MONTH' | 'QUARTER' | 'YEAR' | 'THREE_YEAR' | 'ALL'",
+      received: 'undefined',
+      code: 'invalid_type',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'number',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      expected: "'grid' | 'stacking'",
+      received: 'undefined',
+      code: 'invalid_type',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_union',
+      unionErrors: [Array],
+      path: [Array],
+      message: 'Invalid input'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'boolean',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    },
+    {
+      code: 'invalid_type',
+      expected: 'object',
+      received: 'undefined',
+      path: [Array],
+      message: 'Required'
+    }
+  ]
+}
+
+ ✓ src/lib/services/__tests__/dashboard-config.test.ts  (20 tests) 542ms
+stderr | src/lib/stores/__tests__/performance.test.ts > Performance Store > loadPerformanceData > should handle errors gracefully
+Failed to load performance data: Error: Failed to fetch snapshots
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/stores/__tests__/performance.test.ts:549:9
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+
+stderr | src/lib/stores/__tests__/performance.test.ts > Performance Store > loadPerformanceData > should handle non-Error exceptions
+Failed to load performance data: string error
+
+stderr | src/lib/stores/__tests__/performance.test.ts > Performance Store > loadBenchmarkData > should handle benchmark data fetch errors silently
+Failed to load benchmark data: Error: API error
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/stores/__tests__/performance.test.ts:612:9
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+
+ ✓ src/lib/stores/__tests__/performance.test.ts  (37 tests) 893ms
+ ✓ src/lib/services/__tests__/metrics-service.test.ts  (58 tests) 422ms
+ ✓ src/lib/services/__tests__/holdings-service.test.ts  (23 tests) 194ms
+ ✓ src/lib/db/__tests__/queries.test.ts  (40 tests) 4781ms
+ ✓ src/lib/services/__tests__/portfolio-service.test.ts  (21 tests) 136ms
+stderr | src/lib/services/__tests__/performance-calculator.test.ts > calculateAllPerformance > handles price lookup errors gracefully with zero fallback
+Error getting holding value at date for asset-1: Error: Price lookup failed
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/services/__tests__/performance-calculator.test.ts:351:30
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+    at withEnv (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:83:5)
+
+ ✓ src/lib/services/__tests__/performance-calculator.test.ts  (37 tests) 332ms
+stderr | src/lib/stores/__tests__/transaction.test.ts > Transaction Store > validateTransactionData > should allow zero quantity for fee type
+Failed to update performance snapshots: TypeError: Cannot read properties of undefined (reading 'length')
+    at computeSnapshots (/workspace/asset-portfolio-013-tax-data-integration/src/lib/services/snapshot-service.ts:212:20)
+    at Module.handleSnapshotTrigger (/workspace/asset-portfolio-013-tax-data-integration/src/lib/services/snapshot-service.ts:406:9)
+
+stderr | src/lib/stores/__tests__/transaction.test.ts > Transaction Store > validateTransactionData > should allow zero quantity for tax type
+Failed to update performance snapshots: TypeError: Cannot read properties of undefined (reading 'length')
+    at computeSnapshots (/workspace/asset-portfolio-013-tax-data-integration/src/lib/services/snapshot-service.ts:212:20)
+    at Module.handleSnapshotTrigger (/workspace/asset-portfolio-013-tax-data-integration/src/lib/services/snapshot-service.ts:406:9)
+
+stderr | src/lib/stores/__tests__/transaction.test.ts > Transaction Store > loadSummary > should handle summary load errors silently
+Failed to load transaction summary: Error: Summary failed
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/stores/__tests__/transaction.test.ts:313:9
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+
+stderr | src/lib/stores/__tests__/transaction.test.ts > Transaction Store > createTransaction > should create transaction and update holdings
+Failed to load transaction summary: Error: Summary failed
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/stores/__tests__/transaction.test.ts:313:9
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+Failed to update performance snapshots: Error: Database connection failed
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/stores/__tests__/transaction.test.ts:237:9
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+
+stderr | src/lib/stores/__tests__/transaction.test.ts > Transaction Store > createTransaction > should optimistically add transaction with current filter
+Failed to load transaction summary: Error: Summary failed
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/stores/__tests__/transaction.test.ts:313:9
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+Failed to update performance snapshots: Error: Database connection failed
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/stores/__tests__/transaction.test.ts:237:9
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+
+stderr | src/lib/stores/__tests__/transaction.test.ts > Transaction Store > createTransactions > should create multiple transactions and recalculate holdings
+Failed to load transaction summary: Error: Summary failed
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/stores/__tests__/transaction.test.ts:313:9
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+
+stderr | src/lib/stores/__tests__/transaction.test.ts > Transaction Store > createTransactions > should recalculate holdings for multiple portfolios
+Failed to load transaction summary: Error: Summary failed
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/stores/__tests__/transaction.test.ts:313:9
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+
+stderr | src/lib/stores/__tests__/transaction.test.ts > Transaction Store > updateTransaction > should update transaction and recalculate holdings
+Failed to update performance snapshots: Error: Database connection failed
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/stores/__tests__/transaction.test.ts:237:9
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+
+ ✓ src/lib/stores/__tests__/transaction.test.ts  (36 tests) 309ms
+ ✓ src/__tests__/integration/api-routes.test.ts  (26 tests) 20668ms
+ ✓ src/components/tables/__tests__/holdings-table.test.tsx  (34 tests | 2 skipped) 20247ms
+ ✓ src/lib/services/__tests__/csv-validator.test.ts  (48 tests) 369ms
+ ✓ src/lib/services/__tests__/column-detector.test.ts  (41 tests) 218ms
+stderr | src/components/forms/__tests__/add-transaction.test.tsx > AddTransactionDialog > should handle submission errors gracefully
+Failed to add transaction: Error: Submission failed
+    at /workspace/asset-portfolio-013-tax-data-integration/src/components/forms/__tests__/add-transaction.test.tsx:324:45
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+    at withEnv (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:83:5)
+
+stderr | src/lib/stores/__tests__/asset.test.ts > Asset Store > loadPrice > should handle price loading errors silently
+Failed to load price for asset: a1 Error: Price fetch failed
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/stores/__tests__/asset.test.ts:407:9
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+
+ ✓ src/lib/stores/__tests__/asset.test.ts  (34 tests) 530ms
+stderr | src/lib/stores/__tests__/price.test.ts > Price Store > Error Handling > should keep cached data on fetch error
+[2026-02-01T03:43:05.460Z] [WARN] Using cached price for AAPL due to fetch error
+[2026-02-01T03:43:05.529Z] [ERROR] Error fetching price for AAPL:
+
+stderr | src/lib/stores/__tests__/price.test.ts > Price Store > Error Handling > should set error state on fetch failure
+[2026-02-01T03:43:05.545Z] [ERROR] Error fetching price for AAPL:
+
+ ✓ src/lib/stores/__tests__/price.test.ts  (31 tests) 489ms
+ ✓ src/lib/db/__tests__/converters.test.ts  (26 tests) 202ms
+stderr | src/components/forms/__tests__/add-transaction.test.tsx > TransactionDialog - Edit Mode > should display Edit Transaction title in edit mode
+Failed to load asset: Error: Asset not found
+    at /workspace/asset-portfolio-013-tax-data-integration/src/components/forms/__tests__/add-transaction.test.tsx:649:7
+    at runNextTicks (node:internal/process/task_queues:60:5)
+    at listOnTimeout (node:internal/timers:545:9)
+    at processTimers (node:internal/timers:519:7)
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+
+ ❯ src/components/forms/__tests__/add-transaction.test.tsx  (21 tests | 2 failed) 41211ms
+   ❯ src/components/forms/__tests__/add-transaction.test.tsx > AddTransactionDialog > should handle submission errors gracefully
+     → expected "bound " to be called with arguments: [ Array(1) ]
+
+Received: 
+
+
+
+Number of calls: 0
+
+
+Ignored nodes: comments, script, style
+[36m<html[39m
+  [33mclass[39m=[32m"light"[39m
+  [33mstyle[39m=[32m"color-scheme: light;"[39m
+[36m>[39m
+  [36m<head />[39m
+  [36m<body[39m
+    [33mdata-scroll-locked[39m=[32m"1"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-radix-focus-guard[39m=[32m""[39m
+      [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+    [36m<div>[39m
+      [36m<button[39m
+        [33maria-controls[39m=[32m"radix-:r4k:"[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33maria-haspopup[39m=[32m"dialog"[39m
+        [33maria-hidden[39m=[32m"true"[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 gap-2"[39m
+        [33mdata-aria-hidden[39m=[32m"true"[39m
+        [33mdata-state[39m=[32m"open"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33mclass[39m=[32m"lucide lucide-plus h-4 w-4"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M5 12h14"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M12 5v14"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0mAdd Transaction[0m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-state[39m=[32m"open"[39m
+      [33mstyle[39m=[32m"pointer-events: auto;"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-describedby[39m=[32m"radix-:r4m:"[39m
+      [33maria-labelledby[39m=[32m"radix-:r4l:"[39m
+      [33mclass[39m=[32m"fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg max-h-[90vh] overflow-y-auto sm:max-w-[600px]"[39m
+      [33mdata-state[39m=[32m"open"[39m
+      [33mid[39m=[32m"radix-:r4k:"[39m
+      [33mrole[39m=[32m"dialog"[39m
+      [33mstyle[39m=[32m"pointer-events: auto;"[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col space-y-1.5 text-center sm:text-left"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-lg font-semibold leading-none tracking-tight flex items-center gap-2"[39m
+          [33mid[39m=[32m"radix-:r4l:"[39m
+        [36m>[39m
+          [0mAdd New Transaction[0m
+          [36m<div[39m
+            [33mclass[39m=[32m"inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-secondary/80 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"[39m
+          [36m>[39m
+            [0mBuy[0m
+          [36m</div>[39m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+          [33mid[39m=[32m"radix-:r4m:"[39m
+        [36m>[39m
+          [0mAdd a new transaction to your portfolio. All fields marked with * are required.[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"space-y-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-2"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+            [33mfor[39m=[32m"type"[39m
+          [36m>[39m
+            [0mTransaction Type *[0m
+          [36m</label>[39m
+          [36m<button[39m
+            [33maria-autocomplete[39m=[32m"none"[39m
+            [33maria-controls[39m=[32m"radix-:r4n:"[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33mclass[39m=[32m"flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1"[39m
+            [33mdata-state[39m=[32m"closed"[39m
+            [33mdir[39m=[32m"ltr"[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-secondary/80 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"[39m
+                [36m>[39m
+                  [0mBuy[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</span>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down h-4 w-4 opacity-50"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+    ...
+   ❯ src/components/forms/__tests__/add-transaction.test.tsx > AddTransactionDialog > should prevent submission when no portfolio is selected
+     → expected "bound " to be called with arguments: [ 'Please select a portfolio first' ]
+
+Received: 
+
+
+
+Number of calls: 0
+
+
+Ignored nodes: comments, script, style
+[36m<html[39m
+  [33mclass[39m=[32m"light"[39m
+  [33mstyle[39m=[32m"color-scheme: light;"[39m
+[36m>[39m
+  [36m<head />[39m
+  [36m<body[39m
+    [33mdata-scroll-locked[39m=[32m"1"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-radix-focus-guard[39m=[32m""[39m
+      [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+    [36m<div>[39m
+      [36m<button[39m
+        [33maria-controls[39m=[32m"radix-:r4v:"[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33maria-haspopup[39m=[32m"dialog"[39m
+        [33maria-hidden[39m=[32m"true"[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 gap-2"[39m
+        [33mdata-aria-hidden[39m=[32m"true"[39m
+        [33mdata-state[39m=[32m"open"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33mclass[39m=[32m"lucide lucide-plus h-4 w-4"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M5 12h14"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M12 5v14"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0mAdd Transaction[0m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-state[39m=[32m"open"[39m
+      [33mstyle[39m=[32m"pointer-events: auto;"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-describedby[39m=[32m"radix-:r51:"[39m
+      [33maria-labelledby[39m=[32m"radix-:r50:"[39m
+      [33mclass[39m=[32m"fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg max-h-[90vh] overflow-y-auto sm:max-w-[600px]"[39m
+      [33mdata-state[39m=[32m"open"[39m
+      [33mid[39m=[32m"radix-:r4v:"[39m
+      [33mrole[39m=[32m"dialog"[39m
+      [33mstyle[39m=[32m"pointer-events: auto;"[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col space-y-1.5 text-center sm:text-left"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-lg font-semibold leading-none tracking-tight flex items-center gap-2"[39m
+          [33mid[39m=[32m"radix-:r50:"[39m
+        [36m>[39m
+          [0mAdd New Transaction[0m
+          [36m<div[39m
+            [33mclass[39m=[32m"inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-secondary/80 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"[39m
+          [36m>[39m
+            [0mBuy[0m
+          [36m</div>[39m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+          [33mid[39m=[32m"radix-:r51:"[39m
+        [36m>[39m
+          [0mAdd a new transaction to your portfolio. All fields marked with * are required.[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"space-y-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-2"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+            [33mfor[39m=[32m"type"[39m
+          [36m>[39m
+            [0mTransaction Type *[0m
+          [36m</label>[39m
+          [36m<button[39m
+            [33maria-autocomplete[39m=[32m"none"[39m
+            [33maria-controls[39m=[32m"radix-:r52:"[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33mclass[39m=[32m"flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1"[39m
+            [33mdata-state[39m=[32m"closed"[39m
+            [33mdir[39m=[32m"ltr"[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-secondary/80 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"[39m
+                [36m>[39m
+                  [0mBuy[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</span>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down h-4 w-4 opacity-50"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+    ...
+ ✓ src/components/dashboard/widgets/__tests__/category-breakdown-widget.test.tsx  (20 tests) 3984ms
+ ✓ src/lib/services/__tests__/snapshot-service.test.ts  (20 tests) 468ms
+ ✓ src/lib/services/__tests__/tax-calculator.test.ts  (18 tests) 171ms
+ ✓ src/hooks/__tests__/useLivePriceMetrics.test.ts  (21 tests) 628ms
+ ✓ src/hooks/__tests__/useDashboardData.test.ts  (15 tests) 793ms
+ ✓ src/lib/stores/__tests__/portfolio.test.ts  (15 tests) 279ms
+ ✓ src/lib/services/__tests__/performance-analytics.test.ts  (20 tests) 181ms
+ ✓ src/lib/services/analysis/__tests__/target-model-service.test.ts  (15 tests) 913ms
+ ✓ src/lib/utils/__tests__/validation.test.ts  (43 tests) 1736ms
+stdout | src/lib/services/__tests__/price-polling.test.ts > PricePollingService > setOnline() > should update online state
+Network connection lost, using cached prices
+Network connection restored, refreshing prices...
+
+stdout | src/lib/services/__tests__/price-polling.test.ts > PricePollingService > setOnline() > should trigger network change callback
+Network connection lost, using cached prices
+Network connection restored, refreshing prices...
+
+stdout | src/lib/services/__tests__/price-polling.test.ts > PricePollingService > setOnline() > should refresh prices when connection is restored
+Network connection lost, using cached prices
+Network connection restored, refreshing prices...
+
+stdout | src/lib/services/__tests__/price-polling.test.ts > PricePollingService > setOnline() > should not refresh prices when going offline
+Network connection lost, using cached prices
+
+stdout | src/lib/services/__tests__/price-polling.test.ts > PricePollingService > setOnline() > should handle refresh errors gracefully
+Network connection lost, using cached prices
+Network connection restored, refreshing prices...
+
+stdout | src/lib/services/__tests__/price-polling.test.ts > PricePollingService > Offline Resilience > should not poll when offline
+Network connection lost, using cached prices
+
+stdout | src/lib/services/__tests__/price-polling.test.ts > PricePollingService > Offline Resilience > should resume polling when coming back online
+Network connection lost, using cached prices
+Network connection restored, refreshing prices...
+
+ ✓ src/lib/services/__tests__/price-polling.test.ts  (31 tests) 501ms
+ ✓ src/lib/services/__tests__/csv-importer.test.ts  (8 tests) 191ms
+ ✓ src/lib/services/allocation/__tests__/rebalancing-service.test.ts  (13 tests) 279ms
+ ✓ src/lib/services/__tests__/property-service.test.ts  (36 tests) 287ms
+ ✓ src/lib/services/__tests__/twr-calculator.test.ts  (32 tests) 108ms
+stderr | src/lib/stores/__tests__/dashboard.test.ts > Dashboard Store > setDensePacking > should rollback on persistence error
+[2026-02-01T03:44:05.496Z] [ERROR] Dashboard config update failed:
+
+stderr | src/lib/stores/__tests__/dashboard.test.ts > Dashboard Store > setWidgetRowSpan > should rollback on persistence error
+[2026-02-01T03:44:05.579Z] [ERROR] Dashboard config update failed:
+
+ ✓ src/lib/stores/__tests__/dashboard.test.ts  (21 tests) 437ms
+ ✓ src/__tests__/integration/portfolio-workflow.test.ts  (5 tests) 1191ms
+stderr | src/hooks/__tests__/usePerformanceData.test.ts > usePerformanceData > should return initial loading state
+Warning: An update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at TestComponent (/workspace/asset-portfolio-013-tax-data-integration/node_modules/@testing-library/react/dist/pure.js:329:5)
+Warning: An update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at TestComponent (/workspace/asset-portfolio-013-tax-data-integration/node_modules/@testing-library/react/dist/pure.js:329:5)
+
+stderr | src/hooks/__tests__/usePerformanceData.test.ts > usePerformanceData > should handle errors gracefully
+Error calculating performance metrics: Error: Failed to fetch historical data
+    at /workspace/asset-portfolio-013-tax-data-integration/src/hooks/__tests__/usePerformanceData.test.ts:137:7
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+    at withEnv (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:83:5)
+
+stderr | src/hooks/__tests__/usePerformanceData.test.ts > usePerformanceData > should recalculate metrics when period changes
+Warning: An update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at TestComponent (/workspace/asset-portfolio-013-tax-data-integration/node_modules/@testing-library/react/dist/pure.js:329:5)
+
+ ✓ src/lib/utils/__tests__/region-inference.test.ts  (25 tests) 209ms
+stderr | src/hooks/__tests__/usePerformanceData.test.ts > usePerformanceData > period mapping > should map 1M period to MONTH TimePeriod
+Warning: An update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at TestComponent (/workspace/asset-portfolio-013-tax-data-integration/node_modules/@testing-library/react/dist/pure.js:329:5)
+
+stderr | src/hooks/__tests__/usePerformanceData.test.ts > usePerformanceData > period mapping > should map 3M period to QUARTER TimePeriod
+Warning: An update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at TestComponent (/workspace/asset-portfolio-013-tax-data-integration/node_modules/@testing-library/react/dist/pure.js:329:5)
+
+stderr | src/hooks/__tests__/usePerformanceData.test.ts > usePerformanceData > period mapping > should map YTD period to YEAR TimePeriod
+Warning: An update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at TestComponent (/workspace/asset-portfolio-013-tax-data-integration/node_modules/@testing-library/react/dist/pure.js:329:5)
+
+stderr | src/hooks/__tests__/usePerformanceData.test.ts > usePerformanceData > period mapping > should map 1Y period to YEAR TimePeriod
+Warning: An update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at TestComponent (/workspace/asset-portfolio-013-tax-data-integration/node_modules/@testing-library/react/dist/pure.js:329:5)
+
+stderr | src/hooks/__tests__/usePerformanceData.test.ts > usePerformanceData > period mapping > should map 3Y period to THREE_YEAR TimePeriod
+Warning: An update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at TestComponent (/workspace/asset-portfolio-013-tax-data-integration/node_modules/@testing-library/react/dist/pure.js:329:5)
+
+stderr | src/hooks/__tests__/usePerformanceData.test.ts > usePerformanceData > period mapping > should map ALL period to ALL TimePeriod
+Warning: An update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at TestComponent (/workspace/asset-portfolio-013-tax-data-integration/node_modules/@testing-library/react/dist/pure.js:329:5)
+
+ ✓ src/hooks/__tests__/usePerformanceData.test.ts  (17 tests) 1948ms
+ ✓ src/lib/utils/__tests__/staleness.test.ts  (21 tests) 132ms
+ ✓ src/lib/services/__tests__/market-hours.test.ts  (22 tests) 372ms
+ ✓ src/app/(dashboard)/holdings/__tests__/page.test.tsx  (15 tests) 10700ms
+ ✓ src/lib/services/allocation/__tests__/target-service.test.ts  (16 tests) 159ms
+ ✓ src/lib/services/analysis/__tests__/scoring-service.test.ts  (8 tests) 146ms
+ ✓ src/lib/services/__tests__/csv-parser.test.ts  (21 tests) 191ms
+ ✓ src/lib/utils/__tests__/market-utils.test.ts  (28 tests) 162ms
+stderr | src/lib/services/__tests__/benchmark-service.test.ts > benchmark-service > calculateBenchmarkReturn > returns 0 when no data available
+Invalid benchmark data format for ^GSPC
+
+stderr | src/lib/services/__tests__/benchmark-service.test.ts > benchmark-service > calculateBenchmarkReturn > handles API errors gracefully
+Failed to fetch historical benchmark data for ^GSPC: 500
+
+stderr | src/lib/services/__tests__/benchmark-service.test.ts > benchmark-service > calculateBenchmarkReturn > handles network errors gracefully
+Error fetching historical benchmark data for ^GSPC: Error: Network error
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/services/__tests__/benchmark-service.test.ts:204:39
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:135:14
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:60:26
+    at runTest (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:781:17)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/@vitest/runner/dist/index.js:967:3)
+    at file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/vitest/dist/chunks/runtime-runBaseTests.oAvMKtQC.js:116:7
+
+stderr | src/lib/services/__tests__/benchmark-service.test.ts > benchmark-service > calculateBenchmarkReturn > handles malformed API response
+Invalid benchmark data format for ^GSPC
+
+ ✓ src/lib/services/__tests__/benchmark-service.test.ts  (14 tests) 146ms
+ ✓ src/lib/services/analysis/__tests__/rebalancing-service.test.ts  (5 tests) 212ms
+stderr | src/lib/utils/__tests__/portfolio-validation.test.ts > ensureValidPortfolio > should throw error if portfolio creation fails
+Unhandled rejection: DatabaseClosedError: DatabaseClosedError Database has been closed
+    at tempTransaction (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/functions/temp-transaction.ts:21:24)
+    at Table._trans (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/classes/table/table.ts:64:9)
+    at Collection._read (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/classes/collection/collection.ts:49:17)
+    at Collection.toArray (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/classes/collection/collection.ts:165:17)
+    at Object.getAll (/workspace/asset-portfolio-013-tax-data-integration/src/lib/db/queries.ts:30:48)
+    at Module.ensureValidPortfolio (/workspace/asset-portfolio-013-tax-data-integration/src/lib/utils/portfolio-validation.ts:35:45)
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/utils/__tests__/portfolio-validation.test.ts:134:18
+    at runNextTicks (node:internal/process/task_queues:60:5)
+From previous: 
+    at DexiePromise.then (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/helpers/promise.js:183:22)
+    at Collection._read (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/classes/collection/collection.ts:49:40)
+    at Collection.toArray (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/classes/collection/collection.ts:165:17)
+    at Object.getAll (/workspace/asset-portfolio-013-tax-data-integration/src/lib/db/queries.ts:30:48)
+    at Module.ensureValidPortfolio (/workspace/asset-portfolio-013-tax-data-integration/src/lib/utils/portfolio-validation.ts:35:45)
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/utils/__tests__/portfolio-validation.test.ts:134:18
+    at runNextTicks (node:internal/process/task_queues:60:5)
+    at processImmediate (node:internal/timers:454:9)
+From previous: DatabaseClosedError: DatabaseClosedError Database has been closed
+    at tempTransaction (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/functions/temp-transaction.ts:21:24)
+    at Table._trans (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/classes/table/table.ts:64:9)
+    at Collection._read (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/classes/collection/collection.ts:49:17)
+    at Collection.toArray (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/classes/collection/collection.ts:165:17)
+    at Object.getAll (/workspace/asset-portfolio-013-tax-data-integration/src/lib/db/queries.ts:30:48)
+    at Module.ensureValidPortfolio (/workspace/asset-portfolio-013-tax-data-integration/src/lib/utils/portfolio-validation.ts:35:45)
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/utils/__tests__/portfolio-validation.test.ts:134:18
+    at runNextTicks (node:internal/process/task_queues:60:5)
+From previous: 
+    at PromiseReject (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/helpers/promise.js:637:12)
+    at tempTransaction (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/functions/temp-transaction.ts:21:14)
+    at Table._trans (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/classes/table/table.ts:64:9)
+    at Collection._read (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/classes/collection/collection.ts:49:17)
+    at Collection.toArray (file:///workspace/asset-portfolio-013-tax-data-integration/node_modules/dexie/src/classes/collection/collection.ts:165:17)
+    at Object.getAll (/workspace/asset-portfolio-013-tax-data-integration/src/lib/db/queries.ts:30:48)
+    at Module.ensureValidPortfolio (/workspace/asset-portfolio-013-tax-data-integration/src/lib/utils/portfolio-validation.ts:35:45)
+    at /workspace/asset-portfolio-013-tax-data-integration/src/lib/utils/__tests__/portfolio-validation.test.ts:134:18
+
+ ✓ src/lib/utils/__tests__/portfolio-validation.test.ts  (11 tests) 723ms
+ ✓ src/lib/services/analysis/__tests__/recommendation-engine.test.ts  (3 tests) 92ms
+ ✓ src/components/dashboard/__tests__/MetricsCards.test.tsx  (7 tests) 2239ms
+ ✓ src/lib/services/__tests__/performance-analytics.yoy.test.ts  (6 tests) 81ms
+ ✓ src/lib/utils/__tests__/date-parser.test.ts  (26 tests) 257ms
+ ✓ src/lib/services/__tests__/export-service.test.ts  (11 tests) 132ms
+ ✓ src/lib/services/__tests__/historical-value.test.ts  (5 tests) 131ms
+ ✓ src/types/__tests__/time-period-configs.test.ts  (11 tests) 63ms
+ ✓ src/lib/test-utils/__tests__/historical-data-generator.test.ts  (4 tests) 32ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/forms/__tests__/add-transaction.test.tsx > AddTransactionDialog > should handle submission errors gracefully
+AssertionError: expected "bound " to be called with arguments: [ Array(1) ]
+
+Received: 
+
+
+
+Number of calls: 0
+
+
+Ignored nodes: comments, script, style
+[36m<html[39m
+  [33mclass[39m=[32m"light"[39m
+  [33mstyle[39m=[32m"color-scheme: light;"[39m
+[36m>[39m
+  [36m<head />[39m
+  [36m<body[39m
+    [33mdata-scroll-locked[39m=[32m"1"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-radix-focus-guard[39m=[32m""[39m
+      [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+    [36m<div>[39m
+      [36m<button[39m
+        [33maria-controls[39m=[32m"radix-:r4k:"[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33maria-haspopup[39m=[32m"dialog"[39m
+        [33maria-hidden[39m=[32m"true"[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 gap-2"[39m
+        [33mdata-aria-hidden[39m=[32m"true"[39m
+        [33mdata-state[39m=[32m"open"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33mclass[39m=[32m"lucide lucide-plus h-4 w-4"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M5 12h14"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M12 5v14"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0mAdd Transaction[0m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-state[39m=[32m"open"[39m
+      [33mstyle[39m=[32m"pointer-events: auto;"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-describedby[39m=[32m"radix-:r4m:"[39m
+      [33maria-labelledby[39m=[32m"radix-:r4l:"[39m
+      [33mclass[39m=[32m"fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg max-h-[90vh] overflow-y-auto sm:max-w-[600px]"[39m
+      [33mdata-state[39m=[32m"open"[39m
+      [33mid[39m=[32m"radix-:r4k:"[39m
+      [33mrole[39m=[32m"dialog"[39m
+      [33mstyle[39m=[32m"pointer-events: auto;"[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col space-y-1.5 text-center sm:text-left"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-lg font-semibold leading-none tracking-tight flex items-center gap-2"[39m
+          [33mid[39m=[32m"radix-:r4l:"[39m
+        [36m>[39m
+          [0mAdd New Transaction[0m
+          [36m<div[39m
+            [33mclass[39m=[32m"inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-secondary/80 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"[39m
+          [36m>[39m
+            [0mBuy[0m
+          [36m</div>[39m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+          [33mid[39m=[32m"radix-:r4m:"[39m
+        [36m>[39m
+          [0mAdd a new transaction to your portfolio. All fields marked with * are required.[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"space-y-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-2"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+            [33mfor[39m=[32m"type"[39m
+          [36m>[39m
+            [0mTransaction Type *[0m
+          [36m</label>[39m
+          [36m<button[39m
+            [33maria-autocomplete[39m=[32m"none"[39m
+            [33maria-controls[39m=[32m"radix-:r4n:"[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33mclass[39m=[32m"flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1"[39m
+            [33mdata-state[39m=[32m"closed"[39m
+            [33mdir[39m=[32m"ltr"[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-secondary/80 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"[39m
+                [36m>[39m
+                  [0mBuy[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</span>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down h-4 w-4 opacity-50"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+    ...
+ ❯ src/components/forms/__tests__/add-transaction.test.tsx:368:24
+    366| 
+    367|     await waitFor(() => {
+    368|       expect(alertSpy).toHaveBeenCalledWith(
+       |                        ^
+    369|         'Failed to add transaction. Please try again.'
+    370|       );
+ ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/components/forms/__tests__/add-transaction.test.tsx > AddTransactionDialog > should prevent submission when no portfolio is selected
+AssertionError: expected "bound " to be called with arguments: [ 'Please select a portfolio first' ]
+
+Received: 
+
+
+
+Number of calls: 0
+
+
+Ignored nodes: comments, script, style
+[36m<html[39m
+  [33mclass[39m=[32m"light"[39m
+  [33mstyle[39m=[32m"color-scheme: light;"[39m
+[36m>[39m
+  [36m<head />[39m
+  [36m<body[39m
+    [33mdata-scroll-locked[39m=[32m"1"[39m
+    [33mstyle[39m=[32m"pointer-events: none;"[39m
+  [36m>[39m
+    [36m<span[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-radix-focus-guard[39m=[32m""[39m
+      [33mstyle[39m=[32m"outline: none; opacity: 0; position: fixed; pointer-events: none;"[39m
+      [33mtabindex[39m=[32m"0"[39m
+    [36m/>[39m
+    [36m<div>[39m
+      [36m<button[39m
+        [33maria-controls[39m=[32m"radix-:r4v:"[39m
+        [33maria-expanded[39m=[32m"true"[39m
+        [33maria-haspopup[39m=[32m"dialog"[39m
+        [33maria-hidden[39m=[32m"true"[39m
+        [33mclass[39m=[32m"inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 gap-2"[39m
+        [33mdata-aria-hidden[39m=[32m"true"[39m
+        [33mdata-state[39m=[32m"open"[39m
+        [33mtype[39m=[32m"button"[39m
+      [36m>[39m
+        [36m<svg[39m
+          [33mclass[39m=[32m"lucide lucide-plus h-4 w-4"[39m
+          [33mfill[39m=[32m"none"[39m
+          [33mheight[39m=[32m"24"[39m
+          [33mstroke[39m=[32m"currentColor"[39m
+          [33mstroke-linecap[39m=[32m"round"[39m
+          [33mstroke-linejoin[39m=[32m"round"[39m
+          [33mstroke-width[39m=[32m"2"[39m
+          [33mviewBox[39m=[32m"0 0 24 24"[39m
+          [33mwidth[39m=[32m"24"[39m
+          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+        [36m>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M5 12h14"[39m
+          [36m/>[39m
+          [36m<path[39m
+            [33md[39m=[32m"M12 5v14"[39m
+          [36m/>[39m
+        [36m</svg>[39m
+        [0mAdd Transaction[0m
+      [36m</button>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33maria-hidden[39m=[32m"true"[39m
+      [33mclass[39m=[32m"fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"[39m
+      [33mdata-aria-hidden[39m=[32m"true"[39m
+      [33mdata-state[39m=[32m"open"[39m
+      [33mstyle[39m=[32m"pointer-events: auto;"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-describedby[39m=[32m"radix-:r51:"[39m
+      [33maria-labelledby[39m=[32m"radix-:r50:"[39m
+      [33mclass[39m=[32m"fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg max-h-[90vh] overflow-y-auto sm:max-w-[600px]"[39m
+      [33mdata-state[39m=[32m"open"[39m
+      [33mid[39m=[32m"radix-:r4v:"[39m
+      [33mrole[39m=[32m"dialog"[39m
+      [33mstyle[39m=[32m"pointer-events: auto;"[39m
+      [33mtabindex[39m=[32m"-1"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col space-y-1.5 text-center sm:text-left"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"text-lg font-semibold leading-none tracking-tight flex items-center gap-2"[39m
+          [33mid[39m=[32m"radix-:r50:"[39m
+        [36m>[39m
+          [0mAdd New Transaction[0m
+          [36m<div[39m
+            [33mclass[39m=[32m"inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-secondary/80 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"[39m
+          [36m>[39m
+            [0mBuy[0m
+          [36m</div>[39m
+        [36m</h2>[39m
+        [36m<p[39m
+          [33mclass[39m=[32m"text-sm text-muted-foreground"[39m
+          [33mid[39m=[32m"radix-:r51:"[39m
+        [36m>[39m
+          [0mAdd a new transaction to your portfolio. All fields marked with * are required.[0m
+        [36m</p>[39m
+      [36m</div>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"space-y-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-2"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"[39m
+            [33mfor[39m=[32m"type"[39m
+          [36m>[39m
+            [0mTransaction Type *[0m
+          [36m</label>[39m
+          [36m<button[39m
+            [33maria-autocomplete[39m=[32m"none"[39m
+            [33maria-controls[39m=[32m"radix-:r52:"[39m
+            [33maria-expanded[39m=[32m"false"[39m
+            [33mclass[39m=[32m"flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1"[39m
+            [33mdata-state[39m=[32m"closed"[39m
+            [33mdir[39m=[32m"ltr"[39m
+            [33mrole[39m=[32m"combobox"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mstyle[39m=[32m"pointer-events: none;"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent hover:bg-secondary/80 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"[39m
+                [36m>[39m
+                  [0mBuy[0m
+                [36m</div>[39m
+              [36m</div>[39m
+            [36m</span>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-down h-4 w-4 opacity-50"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+    ...
+ ❯ src/components/forms/__tests__/add-transaction.test.tsx:425:24
+    423| 
+    424|     await waitFor(() => {
+    425|       expect(alertSpy).toHaveBeenCalledWith('Please select a portfolio…
+       |                        ^
+    426|       expect(mockCreateTransaction).not.toHaveBeenCalled();
+    427|     });
+ ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+ Test Files  1 failed | 52 passed (53)
+      Tests  2 failed | 1173 passed | 2 skipped (1177)
+   Start at  21:41:45
+   Duration  204.10s (transform 11.36s, setup 52.65s, collect 72.46s, tests 122.11s, environment 226.79s, prepare 55.16s)
+

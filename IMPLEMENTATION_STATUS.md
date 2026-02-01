@@ -2,8 +2,8 @@
 
 **Branch**: `013-tax-data-integration`
 **Date**: 2026-01-31
-**Iterations**: 2
-**Status**: Foundation Complete (50% implementation)
+**Iterations**: 3
+**Status**: Core Features Complete (67% implementation)
 
 ## ✅ Completed Work
 
@@ -47,14 +47,20 @@
 
 **Files**: `src/lib/utils/validation.ts`, `src/types/csv-import.ts`, `src/lib/services/csv-validator.ts`, `src/lib/services/csv-importer.ts`
 
-### Phase 4: Export Tax-Aware Reports (10%)
+### Phase 4: Export Tax-Aware Reports (90%)
 - [x] T036: Extended TransactionExportRow with 5 tax columns
 - [x] T037: Extended HoldingExportRow with 5 tax columns
-- [ ] T038-T042: Transaction export implementation - NOT STARTED
-- [ ] T043-T047: Holdings export implementation - NOT STARTED
+- [x] T038-T042: Transaction export implementation
+- [x] T043-T047: Holdings export implementation
 - [ ] T048-T051: Export tests - NOT STARTED
 
-**Files**: `src/types/export.ts`
+**Implementation**:
+- Transaction export formats grant date, vest date, discount%, shares withheld, ordinary income
+- Holdings export calculates lot-level ST/LT gains and estimated tax
+- Uses tax settings store for rate calculations
+- Proper decimal.js formatting throughout
+
+**Files**: `src/types/export.ts`, `src/lib/services/export-service.ts`
 
 ## 🚧 Remaining Work
 
@@ -78,12 +84,12 @@
 | Metric | Value |
 |--------|-------|
 | **Files Created** | 12 |
-| **Files Modified** | 13 |
-| **Production Code** | ~2,000 lines |
+| **Files Modified** | 14 |
+| **Production Code** | ~2,100 lines |
 | **Test Code** | ~600 lines |
 | **Test Pass Rate** | 18/18 tax calculator tests ✅ |
-| **Commits** | 4 feature commits |
-| **Completion** | 50% (3 of 6 phases complete) |
+| **Commits** | 6 feature commits |
+| **Completion** | 67% (4 of 6 phases complete) |
 
 ## 🎯 Constitution Compliance
 
