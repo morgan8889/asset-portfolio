@@ -320,13 +320,13 @@ function TransactionDialog({
 
       const asset = await resolveAsset(data.assetSymbol, data.assetName, parseFloat(data.price));
 
-      if (mode === 'edit' && transaction) {
+      if (mode === 'edit' && transaction && asset) {
         await updateTransaction(transaction.id, { ...transactionData, assetId: asset.id });
         showSuccessNotification(
           'Transaction Updated',
           `Successfully updated transaction for ${asset.symbol}`
         );
-      } else {
+      } else if (asset) {
         await createTransaction({
           ...transactionData,
           portfolioId: currentPortfolio.id!,
