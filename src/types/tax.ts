@@ -62,6 +62,7 @@ export interface TaxLotAnalysis {
   lotType: 'standard' | 'espp' | 'rsu';
 
   // ESPP-specific (if applicable)
+  grantDate?: Date;                   // For disqualifying disposition checks
   bargainElement?: Decimal;
   adjustedCostBasis?: Decimal;        // costBasis + (bargainElement × quantity)
 }

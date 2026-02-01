@@ -169,9 +169,14 @@ export function calculateLotAnalysis(
   };
 
   // Add ESPP-specific fields if applicable
-  if (lotType === 'espp' && lot.bargainElement) {
-    analysis.bargainElement = lot.bargainElement;
-    analysis.adjustedCostBasis = costBasis.plus(lot.bargainElement.mul(quantity));
+  if (lotType === 'espp') {
+    if (lot.grantDate) {
+      analysis.grantDate = lot.grantDate;
+    }
+    if (lot.bargainElement) {
+      analysis.bargainElement = lot.bargainElement;
+      analysis.adjustedCostBasis = costBasis.plus(lot.bargainElement.mul(quantity));
+    }
   }
 
   return analysis;
