@@ -36,7 +36,7 @@ describe('calculateHoldingPeriod', () => {
   test('non-leap year boundary', () => {
     const purchase = new Date('2023-01-01');
     const sell365 = new Date('2023-12-31'); // 364 days in non-leap year
-    const sell366 = new Date('2024-01-01'); // 365 days
+    const sell366 = new Date('2024-01-02'); // 366 days
 
     expect(calculateHoldingPeriod(purchase, sell365)).toBe('short');
     expect(calculateHoldingPeriod(purchase, sell366)).toBe('long');
@@ -148,7 +148,8 @@ describe('getHoldingPeriodThreshold', () => {
     const purchase = new Date('2024-01-01');
     const threshold = getHoldingPeriodThreshold(purchase);
 
-    expect(threshold).toEqual(new Date('2025-01-02'));
+    // 2024 is a leap year, so 366 days from Jan 1, 2024 is Jan 1, 2025
+    expect(threshold).toEqual(new Date('2025-01-01'));
   });
 
   test('threshold date is first long-term day', () => {
@@ -165,7 +166,7 @@ describe('getHoldingPeriodThreshold', () => {
     const purchase = new Date('2024-02-29');
     const threshold = getHoldingPeriodThreshold(purchase);
 
-    // 366 days from Feb 29, 2024 should be March 1, 2025
+    // 366 days from Feb 29, 2024 should be Mar 1, 2025
     expect(threshold).toEqual(new Date('2025-03-01'));
   });
 
