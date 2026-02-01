@@ -91,24 +91,27 @@ export function deserializeDecimalArray<T extends object, K extends keyof T>(
  * Useful for update operations where not all decimal fields are provided.
  * Returns a record suitable for IndexedDB storage.
  */
-export function serializePartialDecimals<T extends object>(
+export function serializePartialDecimals<
+  T extends object,
+  K extends keyof T = keyof T
+>(
   updates: Partial<T>,
-  allDecimalFields: readonly string[]
-): Record<string, unknown> {
+  allDecimalFields: readonly K[]
+): Partial<Omit<T, K> & Record<K, string>> {
   const result: Record<string, unknown> = { ...updates };
 
   for (const field of allDecimalFields) {
-    const value = result[field];
+    const value = result[field as string];
     if (value === undefined) continue;
 
     if (value instanceof Decimal) {
-      result[field] = value.toString();
+      result[field as string] = value.toString();
     } else if (typeof value === 'number') {
-      result[field] = value.toString();
+      result[field as string] = value.toString();
     }
   }
 
-  return result;
+  return result as Partial<Omit<T, K> & Record<K, string>>;
 }
 
 /**

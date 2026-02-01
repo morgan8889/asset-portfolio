@@ -37,6 +37,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTransactionStore, usePortfolioStore } from '@/lib/stores';
+import { showSuccessNotification, showErrorNotification } from '@/lib/stores/ui';
 import { Transaction } from '@/types';
 import { assetQueries } from '@/lib/db';
 
@@ -143,6 +144,26 @@ interface TransactionDialogProps {
   trigger?: React.ReactNode;
 }
 
+/**
+ * TransactionDialog component
+ *
+ * Can be used in controlled or uncontrolled mode:
+ *
+ * Uncontrolled (component manages its own state):
+ * ```tsx
+ * <TransactionDialog trigger={<Button>Add Transaction</Button>} />
+ * ```
+ *
+ * Controlled (parent manages state):
+ * ```tsx
+ * <TransactionDialog
+ *   open={isOpen}
+ *   onOpenChange={setIsOpen}
+ *   mode="edit"
+ *   transaction={selectedTransaction}
+ * />
+ * ```
+ */
 function TransactionDialog({
   mode = 'create',
   transaction,
@@ -204,11 +225,13 @@ function TransactionDialog({
     if (!open || mode !== 'edit' || !transaction) return;
 
     let cancelled = false;
+    const controller = new AbortController();
+
     setLoadingAsset(true);
 
     assetQueries.getById(transaction.assetId)
       .then((asset) => {
-        if (cancelled) return;
+        if (cancelled || controller.signal.aborted) return;
         if (!asset) {
           console.error('Asset not found:', transaction.assetId);
           return;
@@ -217,13 +240,18 @@ function TransactionDialog({
         setValue('assetName', asset.name || '');
       })
       .catch((error) => {
-        if (!cancelled) console.error('Failed to load asset:', error);
+        if (!cancelled && !controller.signal.aborted) {
+          console.error('Failed to load asset:', error);
+        }
       })
       .finally(() => {
         if (!cancelled) setLoadingAsset(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
   }, [open, mode, transaction, setValue]);
 
   const watchedType = watch('type');
@@ -247,21 +275,31 @@ function TransactionDialog({
     const existing = await assetQueries.getBySymbol(symbol);
     if (existing) return existing;
 
-    const id = await assetQueries.create({
-      symbol: symbol.toUpperCase(),
-      name: name || symbol.toUpperCase(),
-      type: 'stock',
-      exchange: '',
-      currency: 'USD',
-      currentPrice: price ?? 0,
-      metadata: {},
-    });
-    return assetQueries.getById(id);
+    try {
+      const id = await assetQueries.create({
+        symbol: symbol.toUpperCase(),
+        name: name || symbol.toUpperCase(),
+        type: 'stock',
+        exchange: '',
+        currency: 'USD',
+        currentPrice: price ?? 0,
+        metadata: {},
+      });
+      return assetQueries.getById(id);
+    } catch (error) {
+      // Handle race condition - asset might have been created between check and create
+      const retryExisting = await assetQueries.getBySymbol(symbol);
+      if (retryExisting) return retryExisting;
+      throw error; // Re-throw if it's a different error
+    }
   };
 
   const onSubmit = async (data: TransactionFormValues) => {
     if (!currentPortfolio) {
-      alert('Please select a portfolio first');
+      showErrorNotification(
+        'No Portfolio Selected',
+        'Please select a portfolio first'
+      );
       return;
     }
 
@@ -280,21 +318,25 @@ function TransactionDialog({
         notes: data.notes || '',
       };
 
+      const asset = await resolveAsset(data.assetSymbol, data.assetName, parseFloat(data.price));
+
       if (mode === 'edit' && transaction) {
-        const asset = await resolveAsset(data.assetSymbol, data.assetName, parseFloat(data.price));
-        if (!asset) throw new Error('Failed to resolve asset');
-
         await updateTransaction(transaction.id, { ...transactionData, assetId: asset.id });
+        showSuccessNotification(
+          'Transaction Updated',
+          `Successfully updated transaction for ${asset.symbol}`
+        );
       } else {
-        const asset = await resolveAsset(data.assetSymbol, data.assetName, parseFloat(data.price));
-        if (!asset) throw new Error('Failed to resolve asset');
-
         await createTransaction({
           ...transactionData,
           portfolioId: currentPortfolio.id!,
           assetId: asset.id,
-          currency: 'USD',
+          currency: currentPortfolio.currency || 'USD',
         });
+        showSuccessNotification(
+          'Transaction Added',
+          `Successfully added ${data.type} transaction for ${asset.symbol}`
+        );
       }
 
       setOpen(false);
@@ -302,7 +344,15 @@ function TransactionDialog({
     } catch (error) {
       const action = mode === 'edit' ? 'update' : 'add';
       console.error(`Failed to ${action} transaction:`, error);
-      alert(`Failed to ${action} transaction. Please try again.`);
+
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'Please try again.';
+
+      showErrorNotification(
+        `Failed to ${action} transaction`,
+        errorMessage
+      );
     } finally {
       setIsSubmitting(false);
     }

@@ -6,6 +6,8 @@ import { useTransactionStore, usePortfolioStore } from '@/lib/stores';
 
 // Mock the stores
 const mockCreateTransaction = vi.fn();
+const mockUpdateTransaction = vi.fn();
+const mockImporting = false;
 const mockCurrentPortfolio = {
   id: 'portfolio-1',
   name: 'Test Portfolio',
@@ -18,6 +20,8 @@ const mockCurrentPortfolio = {
 vi.mock('@/lib/stores', () => ({
   useTransactionStore: vi.fn(() => ({
     createTransaction: mockCreateTransaction,
+    updateTransaction: mockUpdateTransaction,
+    importing: mockImporting,
   })),
   usePortfolioStore: vi.fn(() => ({
     currentPortfolio: mockCurrentPortfolio,
@@ -501,6 +505,183 @@ describe('AddTransactionDialog', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /adding/i })).toBeDisabled();
+    });
+  });
+});
+
+describe('TransactionDialog - Edit Mode', () => {
+  const mockTransaction = {
+    id: 'transaction-1',
+    portfolioId: 'portfolio-1',
+    assetId: 'asset-123',
+    type: 'buy' as const,
+    date: new Date('2025-01-15'),
+    quantity: new (require('decimal.js').Decimal)(100),
+    price: new (require('decimal.js').Decimal)(150),
+    totalAmount: new (require('decimal.js').Decimal)(15000),
+    fees: new (require('decimal.js').Decimal)(5),
+    currency: 'USD',
+    notes: 'Initial purchase',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(usePortfolioStore).mockReturnValue({
+      currentPortfolio: mockCurrentPortfolio,
+    } as any);
+  });
+
+  it('should load asset symbol when opening in edit mode', async () => {
+    const { assetQueries } = await import('@/lib/db');
+    const getByIdSpy = vi.spyOn(assetQueries, 'getById');
+
+    const { TransactionDialog } = await import('../add-transaction');
+    render(
+      <TransactionDialog
+        mode="edit"
+        transaction={mockTransaction}
+        open={true}
+        onOpenChange={() => {}}
+      />
+    );
+
+    await waitFor(() => {
+      expect(getByIdSpy).toHaveBeenCalledWith('asset-123');
+    });
+
+    await waitFor(() => {
+      const symbolInput = screen.getByRole('textbox', {
+        name: /asset symbol/i,
+      }) as HTMLInputElement;
+      expect(symbolInput.value).toBe('AAPL');
+    });
+  });
+
+  it('should call updateTransaction instead of createTransaction', async () => {
+    const user = userEvent.setup();
+    mockUpdateTransaction.mockResolvedValue(undefined);
+
+    const { TransactionDialog } = await import('../add-transaction');
+    render(
+      <TransactionDialog
+        mode="edit"
+        transaction={mockTransaction}
+        open={true}
+        onOpenChange={() => {}}
+      />
+    );
+
+    // Wait for asset to load
+    await waitFor(() => {
+      const symbolInput = screen.getByRole('textbox', {
+        name: /asset symbol/i,
+      }) as HTMLInputElement;
+      expect(symbolInput.value).toBe('AAPL');
+    });
+
+    // Change quantity
+    const quantityInput = screen.getByRole('spinbutton', { name: /quantity/i });
+    await user.clear(quantityInput);
+    await user.type(quantityInput, '150');
+
+    // Wait for form to become valid
+    await waitFor(
+      () => {
+        const submitButton = screen.getByRole('button', {
+          name: /update transaction/i,
+        });
+        expect(submitButton).not.toBeDisabled();
+      },
+      { timeout: 5000 }
+    );
+
+    const submitButton = screen.getByRole('button', {
+      name: /update transaction/i,
+    });
+    await user.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockUpdateTransaction).toHaveBeenCalledWith(
+        'transaction-1',
+        expect.objectContaining({
+          assetId: 'asset-123',
+          type: 'buy',
+        })
+      );
+      expect(mockCreateTransaction).not.toHaveBeenCalled();
+    });
+  });
+
+  it('should show loading state while fetching asset', async () => {
+    const { assetQueries } = await import('@/lib/db');
+    vi.spyOn(assetQueries, 'getById').mockImplementation(
+      () => new Promise((resolve) => setTimeout(() => resolve({
+        id: 'asset-123',
+        symbol: 'AAPL',
+        name: 'Apple Inc.',
+        type: 'stock',
+      } as any), 100))
+    );
+
+    const { TransactionDialog } = await import('../add-transaction');
+    render(
+      <TransactionDialog
+        mode="edit"
+        transaction={mockTransaction}
+        open={true}
+        onOpenChange={() => {}}
+      />
+    );
+
+    expect(screen.getByText('Loading asset data...')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.queryByText('Loading asset data...')).not.toBeInTheDocument();
+    }, { timeout: 3000 });
+  });
+
+  it('should handle asset loading errors gracefully', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { assetQueries } = await import('@/lib/db');
+    vi.spyOn(assetQueries, 'getById').mockRejectedValue(
+      new Error('Asset not found')
+    );
+
+    const { TransactionDialog } = await import('../add-transaction');
+    render(
+      <TransactionDialog
+        mode="edit"
+        transaction={mockTransaction}
+        open={true}
+        onOpenChange={() => {}}
+      />
+    );
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to load asset:',
+        expect.any(Error)
+      );
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+  it('should display Edit Transaction title in edit mode', async () => {
+    const { TransactionDialog } = await import('../add-transaction');
+    render(
+      <TransactionDialog
+        mode="edit"
+        transaction={mockTransaction}
+        open={true}
+        onOpenChange={() => {}}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Edit Transaction')).toBeInTheDocument();
     });
   });
 });
