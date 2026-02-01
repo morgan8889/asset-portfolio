@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { Decimal } from 'decimal.js';
+import { useMemo, useState, useEffect } from 'react';
+import Decimal from 'decimal.js';
 import {
   Card,
   Metric,
@@ -19,12 +19,24 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { ArrowUpDown, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { Holding } from '@/types/asset';
 import { estimateTaxLiability } from '@/lib/services/tax-estimator';
 import { useTaxSettingsStore } from '@/lib/stores/tax-settings';
 import { cn } from '@/lib/utils';
+import {
+  checkDispositionStatus,
+  getDispositionReason,
+  getTaxImplicationMessage,
+} from '@/lib/services/espp-validator';
 
 interface TaxAnalysisTabProps {
   holdings: Holding[];
@@ -64,6 +76,7 @@ export function TaxAnalysisTab({
   const { taxSettings } = useTaxSettingsStore();
   const [sortField, setSortField] = useState<SortField>('purchaseDate');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [isCalculating, setIsCalculating] = useState(true);
 
   // Calculate tax analysis
   const taxAnalysis = useMemo(
@@ -112,6 +125,13 @@ export function TaxAnalysisTab({
     });
   }, [taxAnalysis.lots, sortField, sortDirection]);
 
+  // Simulate calculation delay for loading state
+  useEffect(() => {
+    setIsCalculating(true);
+    const timer = setTimeout(() => setIsCalculating(false), 100);
+    return () => clearTimeout(timer);
+  }, [holdings, prices, taxSettings]);
+
   const SortButton = ({ field, label }: { field: SortField; label: string }) => (
     <Button
       variant="ghost"
@@ -126,6 +146,27 @@ export function TaxAnalysisTab({
       )} />
     </Button>
   );
+
+  // Loading state
+  if (isCalculating) {
+    return (
+      <div className="space-y-6">
+        <Grid numItemsMd={2} numItemsLg={4} className="gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="p-4">
+              <Skeleton className="h-4 w-32 mb-2" />
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-3 w-40 mt-2" />
+            </Card>
+          ))}
+        </Grid>
+        <Card className="p-6">
+          <Skeleton className="h-6 w-48 mb-4" />
+          <Skeleton className="h-64 w-full" />
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -216,12 +257,13 @@ export function TaxAnalysisTab({
                     <SortButton field="holdingPeriod" label="Period" />
                   </TableHead>
                   <TableHead>Type</TableHead>
+                  <TableHead>Warnings</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sortedLots.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center text-muted-foreground">
                       No tax lots to display
                     </TableCell>
                   </TableRow>
@@ -284,6 +326,92 @@ export function TaxAnalysisTab({
                             </span>
                           )}
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {lot.lotType === 'espp' && lot.grantDate ? (
+                          (() => {
+                            const hypotheticalSellDate = new Date();
+                            const dispositionCheck = checkDispositionStatus(
+                              lot.grantDate,
+                              lot.purchaseDate,
+                              hypotheticalSellDate
+                            );
+                            const reason = getDispositionReason(dispositionCheck);
+                            const bargainElementValue = lot.bargainElement || new Decimal(0);
+                            const message = getTaxImplicationMessage(dispositionCheck, bargainElementValue);
+                            
+                            // Calculate days manually
+                            const daysFromGrant = Math.floor(
+                              (hypotheticalSellDate.getTime() - lot.grantDate.getTime()) / (1000 * 60 * 60 * 24)
+                            );
+                            const daysFromPurchase = Math.floor(
+                              (hypotheticalSellDate.getTime() - lot.purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+                            );
+                            const daysUntilTwoYearsFromGrant = Math.max(
+                              0,
+                              Math.floor(
+                                (dispositionCheck.twoYearsFromGrant.getTime() - hypotheticalSellDate.getTime()) / (1000 * 60 * 60 * 24)
+                              )
+                            );
+                            const daysUntilOneYearFromPurchase = Math.max(
+                              0,
+                              Math.floor(
+                                (dispositionCheck.oneYearFromPurchase.getTime() - hypotheticalSellDate.getTime()) / (1000 * 60 * 60 * 24)
+                              )
+                            );
+
+                            if (dispositionCheck.isQualifying) {
+                              return (
+                                <Badge
+                                  variant="outline"
+                                  className="bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                >
+                                  Qualifying
+                                </Badge>
+                              );
+                            }
+
+                            return (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1 cursor-help">
+                                      <AlertTriangle className="h-4 w-4 text-amber-600" />
+                                      <Badge
+                                        variant="outline"
+                                        className="bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400"
+                                      >
+                                        Disqualifying
+                                      </Badge>
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <div className="space-y-2">
+                                      <p className="text-sm font-medium">{message}</p>
+                                      <div className="text-xs text-muted-foreground space-y-1">
+                                        <div>
+                                          Grant to today: {daysFromGrant} days (
+                                          {dispositionCheck.meetsGrantRequirement ? '✓' : '✗'} need{' '}
+                                          {daysUntilTwoYearsFromGrant} more)
+                                        </div>
+                                        <div>
+                                          Purchase to today: {daysFromPurchase} days (
+                                          {dispositionCheck.meetsPurchaseRequirement ? '✓' : '✗'} need{' '}
+                                          {daysUntilOneYearFromPurchase} more)
+                                        </div>
+                                      </div>
+                                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                                        If sold today, bargain element would be taxed as ordinary income
+                                      </p>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            );
+                          })()
+                        ) : (
+                          <span className="text-muted-foreground text-sm">—</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
