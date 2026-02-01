@@ -12,17 +12,17 @@ A modern, privacy-first financial portfolio tracking application with interactiv
 
 - ✅ **Multi-Asset Tracking**: Stocks, ETFs, Cryptocurrencies, Bonds, Real Estate, Commodities
 - ✅ **Real-Time Price Updates**: Yahoo Finance API with 5-minute cache
-- 🔄 **Transaction Management**: Forms exist, database integration needs verification
-- 🔄 **Tax Intelligence**: Calculation services ready, UI visualization incomplete
+- ✅ **Transaction Management**: Full CRUD operations with database integration
+- ✅ **Tax Intelligence**: ESPP/RSU tracking with capital gains analysis and aging lot detection
 - 🔄 **Interactive Visualizations**: Components built, real data integration pending
 - ✅ **Privacy-First**: All data stored locally in IndexedDB (no server persistence)
 
 ### Key Capabilities
 
 - 🔄 **Portfolio Analytics**: Services complete, visualization in progress
-- 🔄 **Tax Reporting**: Calculation logic ready, report generation missing
+- ✅ **Tax Reporting**: Short-term/long-term gains tracking with tax exposure dashboard widget
 - 🔄 **Interactive Charts**: Components exist, currently using mock data
-- 📋 **Data Import/Export**: CSV UI exists, backend parsing not implemented
+- ✅ **Data Import/Export**: CSV import/export with tax field support (ESPP, RSU, withholding)
 - ✅ **Dark Mode**: Theme switching functional
 - ✅ **Responsive Design**: Works on desktop, tablet, and mobile
 
@@ -69,6 +69,75 @@ npm run dev
    - Navigate to the Analytics tab
    - See performance metrics, risk analysis
    - Compare against benchmarks
+
+## 💼 Tax-Aware Portfolio Tracking
+
+### ESPP & RSU Import Examples
+
+The CSV import system supports tax-specific fields for employee stock compensation:
+
+#### ESPP Purchase Example
+
+```csv
+Date,Symbol,Type,Quantity,Price,Grant Date,Discount %,Ordinary Income
+2025-01-15,ACME,Buy,100,42.50,2024-07-15,15,750.00
+```
+
+**Fields:**
+- **Grant Date**: Offering period start (typically 6 months before purchase)
+- **Discount %**: ESPP discount percentage (e.g., 15 for 15%)
+- **Ordinary Income**: (FMV - Discounted Price) × Quantity
+
+#### RSU Vest Example (Net Shares)
+
+```csv
+Date,Symbol,Type,Quantity,Price,Vesting Date,Shares Withheld,Ordinary Income
+2025-02-01,ACME,Buy,78,50.00,2025-02-01,22,5000.00
+```
+
+**Fields:**
+- **Quantity**: Net shares received after tax withholding
+- **Shares Withheld**: Shares sold to cover taxes (Gross = Net + Withheld)
+- **Ordinary Income**: FMV at vest × Gross shares
+
+#### RSU Vest Example (Gross Shares)
+
+```csv
+Date,Symbol,Type,Quantity,Price,Vesting Date,Shares Withheld,Ordinary Income
+2025-02-01,ACME,Buy,100,50.00,2025-02-01,22,5000.00
+```
+
+The system automatically detects gross vs. net based on the presence of "Shares Withheld":
+- **With Shares Withheld**: Quantity is gross, net calculated as (Quantity - Shares Withheld)
+- **Without Shares Withheld**: Quantity is net
+
+### Tax Exposure Dashboard
+
+The Tax Exposure widget shows:
+- **Estimated Tax Liability**: Potential tax on unrealized gains
+- **Short-Term Gains**: Lots held ≤365 days (taxed at ordinary rates)
+- **Long-Term Gains**: Lots held >365 days (preferential tax rates)
+- **Aging Lots**: Holdings becoming long-term within 30 days
+
+### Tax-Optimized Selling Recommendations
+
+The Analysis page provides tax optimization recommendations:
+- **Lot Aging Alerts**: Notifies when lots are 7-30 days from long-term status
+- **Potential Savings**: Calculates tax savings by waiting for long-term treatment
+- **Disqualifying Disposition Warnings**: Flags ESPP sales within the holding period
+
+### Export with Tax Data
+
+Exports include comprehensive tax information for tax preparation:
+
+**Transaction Export Columns:**
+- Grant Date, Vest Date, Discount %, Shares Withheld, Ordinary Income
+
+**Holdings Export Columns:**
+- Holding Period (ST/LT/Mixed), Short-Term Gain, Long-Term Gain, Estimated Tax, Basis Adjustment
+
+**Example Use Case:**
+Export your transaction history at year-end and provide the CSV to your tax advisor with complete cost basis and compensation income details.
 
 ## 📁 Project Structure
 

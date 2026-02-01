@@ -21,6 +21,7 @@ import {
   Download,
   Upload,
   AlertTriangle,
+  Receipt,
 } from 'lucide-react';
 import { PriceSettings } from '@/components/settings/price-settings';
 import { CsvImportDialog } from '@/components/forms/csv-import-dialog';
@@ -150,7 +151,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Price Update Settings */}
         <PriceSettings />
 
@@ -188,6 +189,29 @@ export default function SettingsPage() {
                   setTheme(checked ? 'dark' : 'light')
                 }
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Receipt className="h-5 w-5" />
+              Tax Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Configure capital gains tax rates and ESPP/RSU tax tracking
+              </p>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => router.push('/settings/tax')}
+              >
+                Manage Tax Settings
+              </Button>
             </div>
           </CardContent>
         </Card>

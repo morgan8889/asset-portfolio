@@ -3,6 +3,13 @@ import { render, screen, fireEvent, waitFor } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
 import { AddTransactionDialog } from '../add-transaction';
 import { useTransactionStore, usePortfolioStore } from '@/lib/stores';
+import { showSuccessNotification, showErrorNotification } from '@/lib/stores/ui';
+
+// Mock notification functions - must be before vi.mock due to hoisting
+vi.mock('@/lib/stores/ui', () => ({
+  showSuccessNotification: vi.fn(),
+  showErrorNotification: vi.fn(),
+}));
 
 // Mock the stores
 const mockCreateTransaction = vi.fn();
@@ -323,9 +330,6 @@ describe('AddTransactionDialog', () => {
     const user = userEvent.setup();
     mockCreateTransaction.mockRejectedValue(new Error('Submission failed'));
 
-    // Mock window.alert
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
-
     render(<AddTransactionDialog />);
 
     await user.click(screen.getByRole('button', { name: /add transaction/i }));
@@ -365,12 +369,11 @@ describe('AddTransactionDialog', () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith(
-        'Failed to add transaction. Please try again.'
+      expect(showErrorNotification).toHaveBeenCalledWith(
+        'Failed to add transaction',
+        'Submission failed'
       );
     });
-
-    alertSpy.mockRestore();
   });
 
   it('should prevent submission when no portfolio is selected', async () => {
@@ -381,8 +384,6 @@ describe('AddTransactionDialog', () => {
       currentPortfolio: null,
     } as any);
 
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
-
     render(<AddTransactionDialog />);
 
     await user.click(screen.getByRole('button', { name: /add transaction/i }));
@@ -422,11 +423,12 @@ describe('AddTransactionDialog', () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith('Please select a portfolio first');
+      expect(showErrorNotification).toHaveBeenCalledWith(
+        'No Portfolio Selected',
+        'Please select a portfolio first'
+      );
       expect(mockCreateTransaction).not.toHaveBeenCalled();
     });
-
-    alertSpy.mockRestore();
   });
 
   it('should reset form when dialog is closed', async () => {
