@@ -89,6 +89,13 @@ async function seedMockData() {
       type: 'crypto' as const,
       sector: 'Cryptocurrency',
     },
+    {
+      id: 'ACME',
+      symbol: 'ACME',
+      name: 'ACME Corporation (Demo)',
+      type: 'stock' as const,
+      sector: 'Technology',
+    },
   ];
 
   const prices: Record<string, number> = {
@@ -98,6 +105,7 @@ async function seedMockData() {
     AMZN: 178.75,
     VTI: 245.3,
     BTC: 43250.0,
+    ACME: 125.0,
   };
 
   for (const asset of assets) {
@@ -161,6 +169,103 @@ async function seedMockData() {
       lastUpdated: new Date(),
     });
   }
+
+  // Add ESPP transaction (disqualifying - held < 2 years from grant)
+  const esppGrantDate = new Date();
+  esppGrantDate.setFullYear(esppGrantDate.getFullYear() - 1); // 1 year ago
+  const esppPurchaseDate = new Date();
+  esppPurchaseDate.setMonth(esppPurchaseDate.getMonth() - 6); // 6 months ago
+
+  await db.transactions.add({
+    id: generateTransactionId(),
+    portfolioId: portfolioId,
+    assetId: createAssetId('ACME'),
+    type: 'espp_purchase' as any,
+    date: esppPurchaseDate,
+    quantity: '100',
+    price: '85', // Discounted price (15% off $100)
+    totalAmount: '8500',
+    fees: '0',
+    currency: 'USD',
+    metadata: {
+      grantDate: esppGrantDate.toISOString(),
+      purchaseDate: esppPurchaseDate.toISOString(),
+      marketPriceAtGrant: '100',
+      marketPriceAtPurchase: '100',
+      discountPercent: '15',
+      bargainElement: '1500', // (100 - 85) * 100 = $1,500
+    },
+  });
+
+  // Add RSU vest transaction
+  const rsuVestDate = new Date();
+  rsuVestDate.setMonth(rsuVestDate.getMonth() - 3); // 3 months ago
+
+  await db.transactions.add({
+    id: generateTransactionId(),
+    portfolioId: portfolioId,
+    assetId: createAssetId('ACME'),
+    type: 'rsu_vest' as any,
+    date: rsuVestDate,
+    quantity: '38', // Net shares (50 gross - 12 withheld)
+    price: '120', // FMV at vesting
+    totalAmount: '4560', // 38 * 120
+    fees: '0',
+    currency: 'USD',
+    metadata: {
+      vestingDate: rsuVestDate.toISOString(),
+      grossSharesVested: '50',
+      sharesWithheldForTax: '12',
+      vestingPrice: '120',
+    },
+  });
+
+  // Add holding for ACME with ESPP and RSU lots
+  const acmeQuantity = new Decimal('138'); // 100 ESPP + 38 RSU
+  const acmeCostBasis = new Decimal('8500').plus('4560'); // ESPP cost + RSU cost
+  const acmeCurrentPrice = new Decimal('125');
+  const acmeCurrentValue = acmeQuantity.mul(acmeCurrentPrice);
+  const acmeUnrealizedGain = acmeCurrentValue.minus(acmeCostBasis);
+  const acmeGainPercent = acmeCostBasis.isZero()
+    ? 0
+    : acmeUnrealizedGain.dividedBy(acmeCostBasis).mul(100).toNumber();
+
+  await db.holdings.add({
+    id: generateHoldingId(),
+    portfolioId: portfolioId,
+    assetId: createAssetId('ACME'),
+    quantity: acmeQuantity.toString(),
+    costBasis: acmeCostBasis.toString(),
+    averageCost: acmeCostBasis.dividedBy(acmeQuantity).toString(),
+    currentValue: acmeCurrentValue.toString(),
+    unrealizedGain: acmeUnrealizedGain.toString(),
+    unrealizedGainPercent: acmeGainPercent,
+    lots: [
+      {
+        id: generateTransactionId(),
+        quantity: new Decimal('100'),
+        purchasePrice: new Decimal('85'),
+        purchaseDate: esppPurchaseDate,
+        soldQuantity: new Decimal('0'),
+        remainingQuantity: new Decimal('100'),
+        lotType: 'espp',
+        grantDate: esppGrantDate,
+        bargainElement: new Decimal('15'), // $15 per share
+      },
+      {
+        id: generateTransactionId(),
+        quantity: new Decimal('38'),
+        purchasePrice: new Decimal('120'),
+        purchaseDate: rsuVestDate,
+        soldQuantity: new Decimal('0'),
+        remainingQuantity: new Decimal('38'),
+        lotType: 'rsu',
+        vestingDate: rsuVestDate,
+        vestingPrice: new Decimal('120'),
+      },
+    ] as any,
+    lastUpdated: new Date(),
+  });
 
   return portfolioId;
 }
