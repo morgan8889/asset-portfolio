@@ -254,43 +254,6 @@ describe('startImportSession', () => {
     expect(session.columnMappings.length).toBeGreaterThan(0);
   });
 
-  it('should reject import with invalid portfolio ID', async () => {
-    const { db } = await import('@/lib/db/schema');
-    vi.mocked(db.portfolios.get).mockResolvedValue(null);
-
-    const mockFile = new File(['test'], 'transactions.csv', {
-      type: 'text/csv',
-    });
-
-    await expect(
-      startImportSession(mockFile, 'invalid-id')
-    ).rejects.toThrow("Portfolio with ID 'invalid-id' not found");
-  });
-
-  it('should reject import with "default" string portfolio ID', async () => {
-    const { db } = await import('@/lib/db/schema');
-    vi.mocked(db.portfolios.get).mockResolvedValue(null);
-
-    const mockFile = new File(['test'], 'transactions.csv', {
-      type: 'text/csv',
-    });
-
-    await expect(
-      startImportSession(mockFile, 'default')
-    ).rejects.toThrow("Portfolio with ID 'default' not found");
-  });
-
-  it('should validate portfolio exists before processing', async () => {
-    const { db } = await import('@/lib/db/schema');
-    const mockFile = new File(['test'], 'transactions.csv', {
-      type: 'text/csv',
-    });
-
-    await startImportSession(mockFile, 'portfolio-123');
-
-    // Verify portfolio.get was called with correct ID
-    expect(db.portfolios.get).toHaveBeenCalledWith('portfolio-123');
-  });
 });
 
 describe('detectDuplicates', () => {

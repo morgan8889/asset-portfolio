@@ -23,7 +23,7 @@ export async function ensureValidPortfolio(
   if (
     portfolioId &&
     portfolioId !== 'default' &&
-    (typeof portfolioId !== 'string' || portfolioId.trim() !== '')
+    portfolioId.trim() !== ''
   ) {
     const portfolio = await portfolioQueries.getById(portfolioId);
     if (portfolio) {

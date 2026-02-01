@@ -85,6 +85,7 @@ export function CsvImportDialog({
   const [showMappingEditor, setShowMappingEditor] = useState(false);
   const [validatedPortfolioId, setValidatedPortfolioId] = useState<string | null>(null);
   const [portfolioAutoCreated, setPortfolioAutoCreated] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const { setCurrentPortfolio } = usePortfolioStore();
 
   const getCurrentStep = (): DialogStep => {
@@ -100,40 +101,56 @@ export function CsvImportDialog({
 
   // Validate portfolio on dialog open
   useEffect(() => {
+    let mounted = true;
+
     async function validatePortfolioOnOpen() {
       if (!open) {
         // Reset state when dialog closes
         setPortfolioAutoCreated(false);
         setValidatedPortfolioId(null);
+        setIsValidating(false);
         return;
       }
 
+      setIsValidating(true);
+
       try {
         const result = await ensureValidPortfolio(portfolioId);
+        if (!mounted) return; // Prevent state update after unmount
+
         setValidatedPortfolioId(result.portfolioId);
         setPortfolioAutoCreated(result.wasCreated);
+        setIsValidating(false);
 
         // Update store if portfolio was auto-created
         if (result.wasCreated) {
           setCurrentPortfolio(result.portfolio);
         }
       } catch (err) {
+        if (!mounted) return; // Prevent state update after unmount
+
         console.error('Portfolio validation error:', err);
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
         useCsvImportStore.setState({
           error: `Failed to validate portfolio: ${errorMessage}`,
         });
+        setIsValidating(false);
         // Still allow dialog to show with error message
       }
     }
 
     validatePortfolioOnOpen();
+    return () => {
+      mounted = false;
+    };
   }, [open, portfolioId, setCurrentPortfolio]);
 
   const handleFileSelect = useCallback(
     async (file: File) => {
       if (!validatedPortfolioId) {
-        useCsvImportStore.setState({ error: 'No valid portfolio available' });
+        useCsvImportStore.setState({
+          error: 'Portfolio validation is still in progress. Please try again.',
+        });
         return;
       }
       await startImport(file, validatedPortfolioId);
@@ -266,7 +283,7 @@ export function CsvImportDialog({
           {currentStep === 'upload' && (
             <CsvFileUpload
               onFileSelect={handleFileSelect}
-              disabled={isProcessing}
+              disabled={isProcessing || isValidating || !validatedPortfolioId}
             />
           )}
 

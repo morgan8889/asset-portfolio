@@ -43,14 +43,6 @@ export async function startImportSession(
 ): Promise<ImportSession> {
   const sessionId = uuidv4();
 
-  // VALIDATION: Verify portfolio exists
-  const portfolio = await db.portfolios.get(portfolioId);
-  if (!portfolio) {
-    throw new Error(
-      `Portfolio with ID '${portfolioId}' not found. Import cannot proceed without a valid portfolio.`
-    );
-  }
-
   // Parse the CSV file
   const parseResult = await parseCsvFile(file);
 
