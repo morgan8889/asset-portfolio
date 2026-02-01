@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -37,15 +37,24 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTransactionStore, usePortfolioStore } from '@/lib/stores';
+import { showSuccessNotification, showErrorNotification } from '@/lib/stores/ui';
+import { Transaction } from '@/types';
+import { assetQueries } from '@/lib/db';
 
 const transactionSchema = z.object({
   type: z.enum([
     'buy',
     'sell',
     'dividend',
+    'interest',
     'split',
     'transfer_in',
     'transfer_out',
+    'fee',
+    'tax',
+    'spinoff',
+    'merger',
+    'reinvestment',
   ]),
   assetSymbol: z
     .string()
@@ -127,11 +136,54 @@ const transactionTypes = [
   },
 ];
 
-export function AddTransactionDialog() {
-  const [open, setOpen] = useState(false);
+interface TransactionDialogProps {
+  mode?: 'create' | 'edit';
+  transaction?: Transaction;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  trigger?: React.ReactNode;
+}
+
+/**
+ * TransactionDialog component
+ *
+ * Can be used in controlled or uncontrolled mode:
+ *
+ * Uncontrolled (component manages its own state):
+ * ```tsx
+ * <TransactionDialog trigger={<Button>Add Transaction</Button>} />
+ * ```
+ *
+ * Controlled (parent manages state):
+ * ```tsx
+ * <TransactionDialog
+ *   open={isOpen}
+ *   onOpenChange={setIsOpen}
+ *   mode="edit"
+ *   transaction={selectedTransaction}
+ * />
+ * ```
+ */
+function TransactionDialog({
+  mode = 'create',
+  transaction,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+  trigger,
+}: TransactionDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { createTransaction } = useTransactionStore();
+  const [loadingAsset, setLoadingAsset] = useState(false);
+  const { createTransaction, updateTransaction, importing } =
+    useTransactionStore();
   const { currentPortfolio } = usePortfolioStore();
+
+  // Use controlled state if provided, otherwise use internal state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen =
+    controlledOnOpenChange !== undefined
+      ? controlledOnOpenChange
+      : setInternalOpen;
 
   const {
     register,
@@ -140,21 +192,67 @@ export function AddTransactionDialog() {
     reset,
     setValue,
     watch,
-    trigger,
+    trigger: triggerValidation,
   } = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
-    defaultValues: {
-      type: 'buy',
-      assetSymbol: '',
-      assetName: '',
-      date: new Date(),
-      quantity: '',
-      price: '',
-      fees: '0',
-      notes: '',
-    },
+    defaultValues:
+      mode === 'edit' && transaction
+        ? {
+            type: transaction.type,
+            assetSymbol: transaction.assetId,
+            assetName: '',
+            date: new Date(transaction.date),
+            quantity: transaction.quantity.toString(),
+            price: transaction.price.toString(),
+            fees: transaction.fees.toString(),
+            notes: transaction.notes || '',
+          }
+        : {
+            type: 'buy',
+            assetSymbol: '',
+            assetName: '',
+            date: new Date(),
+            quantity: '',
+            price: '',
+            fees: '0',
+            notes: '',
+          },
     mode: 'onChange',
   });
+
+  // Load asset symbol when dialog opens in edit mode
+  useEffect(() => {
+    if (!open || mode !== 'edit' || !transaction) return;
+
+    let cancelled = false;
+    const controller = new AbortController();
+
+    setLoadingAsset(true);
+
+    assetQueries.getById(transaction.assetId)
+      .then((asset) => {
+        if (cancelled || controller.signal.aborted) return;
+        if (!asset) {
+          console.error('Asset not found:', transaction.assetId);
+          return;
+        }
+        setValue('assetSymbol', asset.symbol, { shouldValidate: true });
+        setValue('assetName', asset.name || '');
+      })
+      .catch((error) => {
+        if (!cancelled && !controller.signal.aborted) {
+          console.error('Failed to load asset:', error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingAsset(false);
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [open, mode, transaction, setValue]);
 
   const watchedType = watch('type');
   const watchedDate = watch('date');
@@ -172,32 +270,89 @@ export function AddTransactionDialog() {
     return watchedType === 'buy' ? subtotal + fees : subtotal - fees;
   };
 
+  // Resolve asset by symbol, creating if needed
+  const resolveAsset = async (symbol: string, name?: string, price?: number) => {
+    const existing = await assetQueries.getBySymbol(symbol);
+    if (existing) return existing;
+
+    try {
+      const id = await assetQueries.create({
+        symbol: symbol.toUpperCase(),
+        name: name || symbol.toUpperCase(),
+        type: 'stock',
+        exchange: '',
+        currency: 'USD',
+        currentPrice: price ?? 0,
+        metadata: {},
+      });
+      return assetQueries.getById(id);
+    } catch (error) {
+      // Handle race condition - asset might have been created between check and create
+      const retryExisting = await assetQueries.getBySymbol(symbol);
+      if (retryExisting) return retryExisting;
+      throw error; // Re-throw if it's a different error
+    }
+  };
+
   const onSubmit = async (data: TransactionFormValues) => {
     if (!currentPortfolio) {
-      alert('Please select a portfolio first');
+      showErrorNotification(
+        'No Portfolio Selected',
+        'Please select a portfolio first'
+      );
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await createTransaction({
-        portfolioId: currentPortfolio.id!,
-        assetId: data.assetSymbol.toUpperCase(),
-        type: data.type as any,
+      // Build common transaction fields
+      const quantity = new Decimal(data.quantity);
+      const price = new Decimal(data.price);
+      const transactionData = {
+        type: data.type as Transaction['type'],
         date: data.date,
-        quantity: new Decimal(data.quantity),
-        price: new Decimal(data.price),
-        totalAmount: new Decimal(data.quantity).mul(new Decimal(data.price)),
+        quantity,
+        price,
+        totalAmount: quantity.mul(price),
         fees: new Decimal(data.fees || '0'),
-        currency: 'USD',
         notes: data.notes || '',
-      });
+      };
+
+      const asset = await resolveAsset(data.assetSymbol, data.assetName, parseFloat(data.price));
+
+      if (mode === 'edit' && transaction) {
+        await updateTransaction(transaction.id, { ...transactionData, assetId: asset.id });
+        showSuccessNotification(
+          'Transaction Updated',
+          `Successfully updated transaction for ${asset.symbol}`
+        );
+      } else {
+        await createTransaction({
+          ...transactionData,
+          portfolioId: currentPortfolio.id!,
+          assetId: asset.id,
+          currency: currentPortfolio.currency || 'USD',
+        });
+        showSuccessNotification(
+          'Transaction Added',
+          `Successfully added ${data.type} transaction for ${asset.symbol}`
+        );
+      }
 
       setOpen(false);
       reset();
     } catch (error) {
-      console.error('Failed to add transaction:', error);
-      alert('Failed to add transaction. Please try again.');
+      const action = mode === 'edit' ? 'update' : 'add';
+      console.error(`Failed to ${action} transaction:`, error);
+
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'Please try again.';
+
+      showErrorNotification(
+        `Failed to ${action} transaction`,
+        errorMessage
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -207,31 +362,45 @@ export function AddTransactionDialog() {
     (t) => t.value === watchedType
   );
 
+  const dialogTitle = mode === 'edit' ? 'Edit Transaction' : 'Add New Transaction';
+  const submitButtonText =
+    mode === 'edit' ? 'Update Transaction' : 'Add Transaction';
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Transaction
-        </Button>
-      </DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      {!trigger && mode === 'create' && (
+        <DialogTrigger asChild>
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Transaction
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            Add New Transaction
-            {selectedTypeInfo && (
-              <Badge className={selectedTypeInfo.color} variant="secondary">
-                {selectedTypeInfo.label}
-              </Badge>
-            )}
-          </DialogTitle>
-          <DialogDescription>
-            Add a new transaction to your portfolio. All fields marked with *
-            are required.
-          </DialogDescription>
-        </DialogHeader>
+        {loadingAsset ? (
+          <div className="flex items-center justify-center p-8">
+            <div className="text-muted-foreground">Loading asset data...</div>
+          </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {dialogTitle}
+                {selectedTypeInfo && (
+                  <Badge className={selectedTypeInfo.color} variant="secondary">
+                    {selectedTypeInfo.label}
+                  </Badge>
+                )}
+              </DialogTitle>
+              <DialogDescription>
+                {mode === 'edit'
+                  ? 'Update the transaction details below. All fields marked with * are required.'
+                  : 'Add a new transaction to your portfolio. All fields marked with * are required.'}
+              </DialogDescription>
+            </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Transaction Type */}
           <div className="space-y-2">
             <Label htmlFor="type">Transaction Type *</Label>
@@ -429,14 +598,30 @@ export function AddTransactionDialog() {
             </Button>
             <Button
               type="submit"
-              disabled={!isValid || isSubmitting}
+              disabled={!isValid || isSubmitting || importing}
               className="min-w-[100px]"
             >
-              {isSubmitting ? 'Adding...' : 'Add Transaction'}
+              {importing
+                ? 'Import in progress...'
+                : isSubmitting
+                  ? mode === 'edit'
+                    ? 'Updating...'
+                    : 'Adding...'
+                  : submitButtonText}
             </Button>
           </DialogFooter>
         </form>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
 }
+
+// Export wrapper for backward compatibility
+export function AddTransactionDialog() {
+  return <TransactionDialog mode="create" />;
+}
+
+// Export the full component for edit mode usage
+export { TransactionDialog };
