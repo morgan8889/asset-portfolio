@@ -281,6 +281,12 @@ export function holdingToStorage(holding: Holding): HoldingStorage {
       soldQuantity: lotSerialized.soldQuantity as string,
       remainingQuantity: lotSerialized.remainingQuantity as string,
       notes: lot.notes,
+      // Tax-specific fields
+      lotType: lot.lotType,
+      grantDate: lot.grantDate,
+      bargainElement: lotSerialized.bargainElement as string | undefined,
+      vestingDate: lot.vestingDate,
+      vestingPrice: lotSerialized.vestingPrice as string | undefined,
     };
   });
 
