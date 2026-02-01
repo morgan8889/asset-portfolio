@@ -96,8 +96,11 @@ describe('Dashboard Configuration Service', () => {
         expect(config.useReactGridLayout).toBe(false);
         expect(config.rglLayouts).toBeDefined();
 
-        // Should preserve v1 settings
-        expect(config.widgetVisibility).toEqual(v1Config.widgetVisibility);
+        // Should preserve v1 settings (with new widgets added)
+        expect(config.widgetVisibility).toEqual({
+          ...v1Config.widgetVisibility,
+          'tax-exposure': true, // New widget added with default visibility
+        });
         expect(config.widgetOrder).toEqual(v1Config.widgetOrder);
         expect(config.timePeriod).toBe(v1Config.timePeriod);
         expect(config.performerCount).toBe(v1Config.performerCount);

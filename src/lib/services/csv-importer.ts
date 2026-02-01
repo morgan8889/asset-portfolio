@@ -360,6 +360,12 @@ async function createTransactionFromRow(
     currency: 'USD',
     notes: parsed.notes || undefined,
     importSource: importSessionId,
+    // Tax fields (T027)
+    grantDate: parsed.grantDate || undefined,
+    vestingDate: parsed.vestingDate || undefined,
+    discountPercent: parsed.discountPercent || undefined,
+    sharesWithheld: parsed.sharesWithheld || undefined,
+    ordinaryIncomeAmount: parsed.ordinaryIncomeAmount || undefined,
   };
 
   // Convert domain type to storage format with serialized Decimal fields
