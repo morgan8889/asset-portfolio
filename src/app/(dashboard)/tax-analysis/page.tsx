@@ -68,7 +68,7 @@ export default function TaxAnalysisPage() {
         <Alert>
           <InfoIcon className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
-            <span>You don't have any holdings yet. Add some transactions to see tax analysis.</span>
+            <span>You don&apos;t have any holdings yet. Add some transactions to see tax analysis.</span>
             <Link href="/transactions">
               <Button variant="outline" size="sm">
                 Add Transactions
