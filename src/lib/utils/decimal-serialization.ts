@@ -157,6 +157,9 @@ export const TRANSACTION_DECIMAL_FIELDS = [
   'price',
   'totalAmount',
   'fees',
+  'discountPercent',
+  'sharesWithheld',
+  'ordinaryIncomeAmount',
 ] as const;
 
 export const PRICE_HISTORY_DECIMAL_FIELDS = [
