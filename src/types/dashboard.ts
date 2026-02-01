@@ -468,6 +468,7 @@ export const WidgetIdSchema = z.enum([
   'top-performers',
   'biggest-losers',
   'recent-activity',
+  'tax-exposure',
 ]);
 
 export const TimePeriodSchema = z.enum([
@@ -536,6 +537,7 @@ const baseConfigFields = {
     'top-performers': z.boolean(),
     'biggest-losers': z.boolean(),
     'recent-activity': z.boolean(),
+    'tax-exposure': z.boolean().optional().default(true),
   }),
   timePeriod: TimePeriodSchema,
   performerCount: z
@@ -704,6 +706,14 @@ export const WIDGET_DEFINITIONS: Record<WidgetId, WidgetDefinition> = {
     description: 'Latest transactions',
     colSpan: 2,
     minHeight: 300,
+    canHide: true,
+  },
+  'tax-exposure': {
+    id: 'tax-exposure',
+    displayName: 'Tax Exposure',
+    description: 'Estimated tax liability and aging lots',
+    colSpan: 1,
+    minHeight: 200,
     canHide: true,
   },
 };

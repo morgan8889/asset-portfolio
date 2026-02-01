@@ -11,6 +11,7 @@ export default defineConfig({
     setupFiles: ['./src/test-setup.ts'],
     include: ['src/**/*.{test,spec}.{js,ts,tsx}'],
     exclude: ['node_modules', 'dist', 'build', 'tests/e2e/**'],
+    testTimeout: 10000, // 10 seconds (increased from default 5s for coverage overhead)
     coverage: {
       enabled: true,
       provider: 'v8',

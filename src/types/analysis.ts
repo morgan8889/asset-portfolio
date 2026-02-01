@@ -77,7 +77,8 @@ export type RecommendationType =
   | 'concentration'
   | 'high_risk'
   | 'region_concentration'
-  | 'sector_concentration';
+  | 'sector_concentration'
+  | 'tax_lot_aging';
 
 export type RecommendationSeverity = 'high' | 'medium' | 'low';
 
@@ -91,6 +92,21 @@ export interface Recommendation {
   actionUrl?: string;
   relatedAssetIds?: string[];
   metadata?: Record<string, unknown>;
+}
+
+/**
+ * Metadata for tax lot aging recommendations.
+ * Provides details about holdings approaching long-term capital gains status.
+ */
+export interface TaxRecommendationMetadata {
+  /** Symbol of the asset with aging lots */
+  assetSymbol: string;
+  /** Number of lots turning long-term within 30 days */
+  agingLotsCount: number;
+  /** Days until the nearest lot becomes long-term */
+  daysUntilLongTerm: number;
+  /** Potential tax savings if held until long-term (difference between ST and LT rates) */
+  potentialSavings: number;
 }
 
 // =============================================================================
