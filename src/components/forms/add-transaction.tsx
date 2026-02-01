@@ -38,10 +38,13 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTransactionStore, usePortfolioStore } from '@/lib/stores';
 import { showSuccessNotification, showErrorNotification } from '@/lib/stores/ui';
-import { Transaction } from '@/types';
+import { Transaction, ESPPTransactionMetadata, RSUTransactionMetadata } from '@/types';
 import { assetQueries } from '@/lib/db';
+import { ESPPTransactionFormFields } from './espp-transaction-form';
+import { RSUTransactionFormFields } from './rsu-transaction-form';
+import { FormProvider } from 'react-hook-form';
 
-const transactionSchema = z.object({
+const baseTransactionSchema = z.object({
   type: z.enum([
     'buy',
     'sell',
@@ -55,6 +58,8 @@ const transactionSchema = z.object({
     'spinoff',
     'merger',
     'reinvestment',
+    'espp_purchase',
+    'rsu_vest',
   ]),
   assetSymbol: z
     .string()
@@ -96,7 +101,127 @@ const transactionSchema = z.object({
       }
     ),
   notes: z.string().max(500, 'Notes too long').optional(),
+  // ESPP-specific fields (conditional)
+  grantDate: z.date().optional(),
+  marketPriceAtGrant: z.string().optional(),
+  marketPriceAtPurchase: z.string().optional(),
+  discountPercent: z.string().optional(),
+  // RSU-specific fields (conditional)
+  vestingDate: z.date().optional(),
+  grossSharesVested: z.string().optional(),
+  sharesWithheld: z.string().optional(),
+  vestingPrice: z.string().optional(),
+  taxWithheldAmount: z.string().optional(),
 });
+
+// Refined schema with conditional validation
+const transactionSchema = baseTransactionSchema.refine(
+  (data) => {
+    if (data.type !== 'espp_purchase') return true;
+    return data.grantDate !== undefined;
+  },
+  {
+    message: 'Grant date is required for ESPP transactions',
+    path: ['grantDate'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'espp_purchase') return true;
+    if (!data.marketPriceAtGrant) return false;
+    const num = parseFloat(data.marketPriceAtGrant);
+    return !isNaN(num) && num > 0;
+  },
+  {
+    message: 'Market price at grant is required for ESPP transactions',
+    path: ['marketPriceAtGrant'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'espp_purchase') return true;
+    if (!data.marketPriceAtPurchase) return false;
+    const num = parseFloat(data.marketPriceAtPurchase);
+    return !isNaN(num) && num > 0;
+  },
+  {
+    message: 'Market price at purchase is required for ESPP transactions',
+    path: ['marketPriceAtPurchase'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'espp_purchase') return true;
+    if (!data.discountPercent) return false;
+    const num = parseFloat(data.discountPercent);
+    return !isNaN(num) && num >= 0 && num <= 100;
+  },
+  {
+    message: 'Discount percentage must be between 0 and 100',
+    path: ['discountPercent'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'espp_purchase') return true;
+    if (!data.grantDate || !data.date) return true;
+    return data.grantDate < data.date;
+  },
+  {
+    message: 'Grant date must be before purchase date',
+    path: ['grantDate'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'rsu_vest') return true;
+    return data.vestingDate !== undefined;
+  },
+  {
+    message: 'Vesting date is required for RSU transactions',
+    path: ['vestingDate'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'rsu_vest') return true;
+    if (!data.grossSharesVested) return false;
+    const num = parseFloat(data.grossSharesVested);
+    return !isNaN(num) && num > 0;
+  },
+  {
+    message: 'Gross shares vested is required for RSU transactions',
+    path: ['grossSharesVested'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'rsu_vest') return true;
+    if (!data.sharesWithheld) return false;
+    const num = parseFloat(data.sharesWithheld);
+    return !isNaN(num) && num >= 0;
+  },
+  {
+    message: 'Shares withheld must be 0 or greater',
+    path: ['sharesWithheld'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'rsu_vest') return true;
+    if (!data.vestingPrice) return false;
+    const num = parseFloat(data.vestingPrice);
+    return !isNaN(num) && num > 0;
+  },
+  {
+    message: 'Vesting price is required for RSU transactions',
+    path: ['vestingPrice'],
+  }
+).refine(
+  (data) => {
+    if (data.type !== 'rsu_vest') return true;
+    if (!data.grossSharesVested || !data.sharesWithheld) return true;
+    const gross = parseFloat(data.grossSharesVested);
+    const withheld = parseFloat(data.sharesWithheld);
+    return withheld <= gross;
+  },
+  {
+    message: 'Shares withheld cannot exceed gross shares vested',
+    path: ['sharesWithheld'],
+  }
+);
 
 type TransactionFormValues = z.infer<typeof transactionSchema>;
 
@@ -121,6 +246,18 @@ const transactionTypes = [
     label: 'Stock Split',
     color:
       'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+  },
+  {
+    value: 'espp_purchase',
+    label: 'ESPP Purchase',
+    color:
+      'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
+  },
+  {
+    value: 'rsu_vest',
+    label: 'RSU Vest',
+    color:
+      'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300',
   },
   {
     value: 'transfer_in',
@@ -185,15 +322,7 @@ function TransactionDialog({
       ? controlledOnOpenChange
       : setInternalOpen;
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isValid },
-    reset,
-    setValue,
-    watch,
-    trigger: triggerValidation,
-  } = useForm<TransactionFormValues>({
+  const form = useForm<TransactionFormValues>({
     resolver: zodResolver(transactionSchema),
     defaultValues:
       mode === 'edit' && transaction
@@ -206,6 +335,17 @@ function TransactionDialog({
             price: transaction.price.toString(),
             fees: transaction.fees.toString(),
             notes: transaction.notes || '',
+            // ESPP fields
+            grantDate: undefined,
+            marketPriceAtGrant: '',
+            marketPriceAtPurchase: '',
+            discountPercent: '',
+            // RSU fields
+            vestingDate: undefined,
+            grossSharesVested: '',
+            sharesWithheld: '',
+            vestingPrice: '',
+            taxWithheldAmount: '',
           }
         : {
             type: 'buy',
@@ -216,9 +356,30 @@ function TransactionDialog({
             price: '',
             fees: '0',
             notes: '',
+            // ESPP fields
+            grantDate: undefined,
+            marketPriceAtGrant: '',
+            marketPriceAtPurchase: '',
+            discountPercent: '',
+            // RSU fields
+            vestingDate: undefined,
+            grossSharesVested: '',
+            sharesWithheld: '',
+            vestingPrice: '',
+            taxWithheldAmount: '',
           },
     mode: 'onChange',
   });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+    reset,
+    setValue,
+    watch,
+    trigger: triggerValidation,
+  } = form;
 
   // Load asset symbol when dialog opens in edit mode
   useEffect(() => {
@@ -308,7 +469,7 @@ function TransactionDialog({
       // Build common transaction fields
       const quantity = new Decimal(data.quantity);
       const price = new Decimal(data.price);
-      const transactionData = {
+      const transactionData: any = {
         type: data.type as Transaction['type'],
         date: data.date,
         quantity,
@@ -318,7 +479,40 @@ function TransactionDialog({
         notes: data.notes || '',
       };
 
+      // Add ESPP metadata if applicable
+      if (data.type === 'espp_purchase') {
+        const marketPriceAtPurchase = new Decimal(data.marketPriceAtPurchase || '0');
+        const bargainElement = marketPriceAtPurchase.minus(price);
+
+        const esppMetadata: ESPPTransactionMetadata = {
+          grantDate: data.grantDate!.toISOString(),
+          purchaseDate: data.date.toISOString(),
+          marketPriceAtGrant: data.marketPriceAtGrant || '0',
+          marketPriceAtPurchase: data.marketPriceAtPurchase || '0',
+          discountPercent: parseFloat(data.discountPercent || '0'),
+          bargainElement: bargainElement.toString(),
+        };
+        transactionData.metadata = esppMetadata;
+      }
+
+      // Add RSU metadata if applicable
+      if (data.type === 'rsu_vest') {
+        const rsuMetadata: RSUTransactionMetadata = {
+          vestingDate: data.vestingDate!.toISOString(),
+          grossSharesVested: data.grossSharesVested || '0',
+          sharesWithheld: data.sharesWithheld || '0',
+          netShares: quantity.toString(),
+          vestingPrice: data.vestingPrice || '0',
+          taxWithheldAmount: data.taxWithheldAmount,
+        };
+        transactionData.metadata = rsuMetadata;
+      }
+
       const asset = await resolveAsset(data.assetSymbol, data.assetName, parseFloat(data.price));
+
+      if (!asset) {
+        throw new Error('Failed to resolve asset');
+      }
 
       if (mode === 'edit' && transaction) {
         await updateTransaction(transaction.id, { ...transactionData, assetId: asset.id });
@@ -568,6 +762,20 @@ function TransactionDialog({
               </div>
             </div>
           </div>
+
+          {/* ESPP-specific fields */}
+          {watchedType === 'espp_purchase' && (
+            <FormProvider {...form}>
+              <ESPPTransactionFormFields />
+            </FormProvider>
+          )}
+
+          {/* RSU-specific fields */}
+          {watchedType === 'rsu_vest' && (
+            <FormProvider {...form}>
+              <RSUTransactionFormFields />
+            </FormProvider>
+          )}
 
           {/* Notes */}
           <div className="space-y-2">

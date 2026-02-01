@@ -61,6 +61,12 @@ export interface TransactionExportRow {
   price: string;
   fees: string;
   total: string;
+  // Tax export columns (T036)
+  grantDate: string;
+  vestDate: string;
+  discountPercent: string;
+  sharesWithheld: string;
+  ordinaryIncome: string;
 }
 
 /**
@@ -77,6 +83,12 @@ export interface HoldingExportRow {
   marketValue: string;
   unrealizedGain: string;
   unrealizedGainPercent: string;
+  // Tax export columns (T037)
+  holdingPeriod: string;
+  shortTermGain: string;
+  longTermGain: string;
+  estimatedTax: string;
+  basisAdjustment: string;
 }
 
 /**
@@ -133,6 +145,11 @@ export const TRANSACTION_CSV_COLUMNS = [
   { key: 'price', header: 'Price' },
   { key: 'fees', header: 'Fees' },
   { key: 'total', header: 'Total' },
+  { key: 'grantDate', header: 'Grant Date' },
+  { key: 'vestDate', header: 'Vest Date' },
+  { key: 'discountPercent', header: 'Discount %' },
+  { key: 'sharesWithheld', header: 'Shares Withheld' },
+  { key: 'ordinaryIncome', header: 'Ordinary Income' },
 ] as const;
 
 /**
@@ -149,4 +166,9 @@ export const HOLDINGS_CSV_COLUMNS = [
   { key: 'marketValue', header: 'Market Value' },
   { key: 'unrealizedGain', header: 'Unrealized Gain/Loss' },
   { key: 'unrealizedGainPercent', header: 'Gain/Loss %' },
+  { key: 'holdingPeriod', header: 'Holding Period' },
+  { key: 'shortTermGain', header: 'ST Gain' },
+  { key: 'longTermGain', header: 'LT Gain' },
+  { key: 'estimatedTax', header: 'Est. Tax' },
+  { key: 'basisAdjustment', header: 'Basis Adj.' },
 ] as const;

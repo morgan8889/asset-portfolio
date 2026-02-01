@@ -27,7 +27,7 @@ export function PerformanceReport({
     >
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{data.portfolioName}</h1>
+        <h1 className="mb-2 text-3xl font-bold">{data.portfolioName}</h1>
         <p className="text-gray-600">
           Performance Report | {format(data.generatedAt, 'MMMM d, yyyy')}
         </p>
@@ -38,17 +38,17 @@ export function PerformanceReport({
       </div>
 
       {/* Summary Metrics */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-gray-50 p-4 rounded">
-          <p className="text-sm text-gray-600 mb-1">Total Value</p>
+      <div className="mb-8 grid grid-cols-3 gap-4">
+        <div className="rounded bg-gray-50 p-4">
+          <p className="mb-1 text-sm text-gray-600">Total Value</p>
           <p className="text-2xl font-bold">${data.summary.totalValue}</p>
         </div>
-        <div className="bg-gray-50 p-4 rounded">
-          <p className="text-sm text-gray-600 mb-1">Total Cost</p>
+        <div className="rounded bg-gray-50 p-4">
+          <p className="mb-1 text-sm text-gray-600">Total Cost</p>
           <p className="text-2xl font-bold">${data.summary.totalCost}</p>
         </div>
-        <div className="bg-gray-50 p-4 rounded">
-          <p className="text-sm text-gray-600 mb-1">Total Gain/Loss</p>
+        <div className="rounded bg-gray-50 p-4">
+          <p className="mb-1 text-sm text-gray-600">Total Gain/Loss</p>
           <p
             className={`text-2xl font-bold ${
               data.summary.totalGain.startsWith('-')
@@ -62,13 +62,13 @@ export function PerformanceReport({
       </div>
 
       {/* Performance Metrics */}
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-gray-50 p-4 rounded">
-          <p className="text-sm text-gray-600 mb-1">Period Return</p>
+      <div className="mb-8 grid grid-cols-2 gap-4">
+        <div className="rounded bg-gray-50 p-4">
+          <p className="mb-1 text-sm text-gray-600">Period Return</p>
           <p className="text-xl font-semibold">{data.summary.periodReturn}</p>
         </div>
-        <div className="bg-gray-50 p-4 rounded">
-          <p className="text-sm text-gray-600 mb-1">Annualized Return</p>
+        <div className="rounded bg-gray-50 p-4">
+          <p className="mb-1 text-sm text-gray-600">Annualized Return</p>
           <p className="text-xl font-semibold">
             {data.summary.annualizedReturn}
           </p>
@@ -78,11 +78,11 @@ export function PerformanceReport({
       {/* Charts Section */}
       {(chartImageUrl || donutImageUrl) && (
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Performance Charts</h2>
+          <h2 className="mb-4 text-xl font-bold">Performance Charts</h2>
           <div className="grid grid-cols-2 gap-4">
             {chartImageUrl && (
               <div>
-                <p className="text-sm font-medium mb-2">Portfolio Value</p>
+                <p className="mb-2 text-sm font-medium">Portfolio Value</p>
                 <img
                   src={chartImageUrl}
                   alt="Portfolio Value Chart"
@@ -92,7 +92,7 @@ export function PerformanceReport({
             )}
             {donutImageUrl && (
               <div>
-                <p className="text-sm font-medium mb-2">Asset Allocation</p>
+                <p className="mb-2 text-sm font-medium">Asset Allocation</p>
                 <img
                   src={donutImageUrl}
                   alt="Asset Allocation"
@@ -106,7 +106,7 @@ export function PerformanceReport({
 
       {/* Top Holdings Table */}
       <div>
-        <h2 className="text-xl font-bold mb-4">Top 10 Holdings</h2>
+        <h2 className="mb-4 text-xl font-bold">Top 10 Holdings</h2>
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-100">
@@ -125,14 +125,15 @@ export function PerformanceReport({
               <th className="border border-gray-300 px-4 py-2 text-right">
                 Gain/Loss
               </th>
-              <th className="border border-gray-300 px-4 py-2 text-right">
-                %
-              </th>
+              <th className="border border-gray-300 px-4 py-2 text-right">%</th>
             </tr>
           </thead>
           <tbody>
             {data.topHoldings.map((holding, idx) => (
-              <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+              <tr
+                key={idx}
+                className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+              >
                 <td className="border border-gray-300 px-4 py-2 font-medium">
                   {holding.symbol}
                 </td>

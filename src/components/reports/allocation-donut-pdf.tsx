@@ -6,13 +6,27 @@
  * @feature 011-export-functionality
  */
 
-import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 
 interface AllocationDonutForPdfProps {
   data: Array<{ category: string; value: number; percentage: number }>;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+const COLORS = [
+  '#0088FE',
+  '#00C49F',
+  '#FFBB28',
+  '#FF8042',
+  '#8884D8',
+  '#82CA9D',
+];
 
 export function AllocationDonutForPdf({ data }: AllocationDonutForPdfProps) {
   return (
@@ -24,7 +38,9 @@ export function AllocationDonutForPdf({ data }: AllocationDonutForPdfProps) {
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ category, percentage }) => `${category}: ${percentage.toFixed(1)}%`}
+            label={({ category, percentage }) =>
+              `${category}: ${percentage.toFixed(1)}%`
+            }
             outerRadius={80}
             innerRadius={40}
             fill="#8884d8"
@@ -32,7 +48,10 @@ export function AllocationDonutForPdf({ data }: AllocationDonutForPdfProps) {
             isAnimationActive={false}
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
             ))}
           </Pie>
           <Tooltip formatter={(value: number) => `$${value.toFixed(2)}`} />

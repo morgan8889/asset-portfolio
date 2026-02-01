@@ -70,7 +70,12 @@ export type TransactionField =
   | 'quantity'
   | 'price'
   | 'fees'
-  | 'notes';
+  | 'notes'
+  | 'grantDate'
+  | 'vestingDate'
+  | 'discountPercent'
+  | 'sharesWithheld'
+  | 'ordinaryIncomeAmount';
 
 export const REQUIRED_FIELDS: TransactionField[] = [
   'date',
@@ -79,7 +84,16 @@ export const REQUIRED_FIELDS: TransactionField[] = [
   'price',
 ];
 
-export const OPTIONAL_FIELDS: TransactionField[] = ['type', 'fees', 'notes'];
+export const OPTIONAL_FIELDS: TransactionField[] = [
+  'type',
+  'fees',
+  'notes',
+  'grantDate',
+  'vestingDate',
+  'discountPercent',
+  'sharesWithheld',
+  'ordinaryIncomeAmount',
+];
 
 export const ALL_FIELDS: TransactionField[] = [
   ...REQUIRED_FIELDS,
@@ -97,6 +111,11 @@ export const FIELD_LABELS: Record<TransactionField, string> = {
   price: 'Price',
   fees: 'Fees/Commission',
   notes: 'Notes',
+  grantDate: 'Grant Date',
+  vestingDate: 'Vesting Date',
+  discountPercent: 'Discount %',
+  sharesWithheld: 'Shares Withheld',
+  ordinaryIncomeAmount: 'Ordinary Income',
 };
 
 export interface ColumnMapping {
@@ -122,6 +141,12 @@ export interface ParsedRow {
     price: Decimal | null;
     fees: Decimal | null;
     notes: string | null;
+    // Tax fields
+    grantDate: Date | null;
+    vestingDate: Date | null;
+    discountPercent: Decimal | null;
+    sharesWithheld: Decimal | null;
+    ordinaryIncomeAmount: Decimal | null;
   };
   isValid: boolean;
   errors: FieldError[];
