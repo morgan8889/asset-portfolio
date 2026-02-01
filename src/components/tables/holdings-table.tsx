@@ -34,6 +34,7 @@ import {
   DollarSign,
   Edit,
   Globe2,
+  Eye,
 } from 'lucide-react';
 import { usePortfolioStore, usePriceStore } from '@/lib/stores';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
@@ -44,6 +45,7 @@ import { isUKSymbol } from '@/lib/utils/market-utils';
 import { ManualPriceUpdateDialog } from '@/components/forms/manual-price-update-dialog';
 import { RegionOverrideDialog } from '@/components/forms/region-override-dialog';
 import { getAssetAnnualYield } from '@/lib/services/property-service';
+import { HoldingDetailModal } from '@/components/holdings/holding-detail-modal';
 
 interface HoldingDisplayData {
   id: string;
@@ -75,6 +77,12 @@ const HoldingsTableComponent = () => {
   const [regionUpdateAsset, setRegionUpdateAsset] = useState<Asset | null>(
     null
   );
+  const [selectedHolding, setSelectedHolding] = useState<{
+    holding: Holding;
+    symbol: string;
+    name: string;
+    currentPrice?: number;
+  } | null>(null);
 
   const { holdings, assets, currentPortfolio, loading, error, clearError } =
     usePortfolioStore();
@@ -466,6 +474,24 @@ const HoldingsTableComponent = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => {
+                              const holdingData = holdings.find(
+                                (h) => h.id === holding.id
+                              );
+                              if (holdingData) {
+                                setSelectedHolding({
+                                  holding: holdingData,
+                                  symbol: holding.symbol,
+                                  name: holding.name,
+                                  currentPrice: holding.currentPrice,
+                                });
+                              }
+                            }}
+                          >
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem>
                           {holding.asset?.valuationMethod === 'MANUAL' && (
                             <DropdownMenuItem
                               onClick={() =>
@@ -512,6 +538,18 @@ const HoldingsTableComponent = () => {
           asset={regionUpdateAsset}
           open={!!regionUpdateAsset}
           onOpenChange={(open) => !open && setRegionUpdateAsset(null)}
+        />
+      )}
+
+      {/* Holding Detail Modal */}
+      {selectedHolding && (
+        <HoldingDetailModal
+          holding={selectedHolding.holding}
+          assetSymbol={selectedHolding.symbol}
+          assetName={selectedHolding.name}
+          currentPrice={selectedHolding.currentPrice}
+          open={!!selectedHolding}
+          onOpenChange={(open) => !open && setSelectedHolding(null)}
         />
       )}
     </Card>
