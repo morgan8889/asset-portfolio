@@ -392,6 +392,8 @@ Make change → Tell user "done" → User finds visual issue → Repeat
 - Fallback to manual price entry if APIs fail
 
 ## Active Technologies
+- TypeScript 5.3 with Next.js 14.2 (App Router) + React 18 + Dexie.js 3.2 (IndexedDB), decimal.js 10.4 (financial precision), Zod 3.25 (validation), React Hook Form 7.63, shadcn/ui + Radix UI, Recharts 2.15 (012-tax-features-stock)
+- Browser IndexedDB via Dexie.js (privacy-first, no server persistence) (012-tax-features-stock)
 
 **Core Stack:**
 - TypeScript 5.3 with Next.js 14.2 (App Router) + React 18
