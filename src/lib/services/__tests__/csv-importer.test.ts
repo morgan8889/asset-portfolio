@@ -23,6 +23,18 @@ vi.mock('@/lib/db/schema', () => {
     name: 'Apple',
     type: 'stock',
   };
+  const mockPortfolio = {
+    id: 'portfolio-123',
+    name: 'Test Portfolio',
+    type: 'taxable',
+    currency: 'USD',
+    settings: {
+      rebalanceThreshold: 5,
+      taxStrategy: 'fifo',
+      autoRebalance: false,
+      dividendReinvestment: true,
+    },
+  };
   return {
     db: {
       transactions: {
@@ -46,6 +58,9 @@ vi.mock('@/lib/db/schema', () => {
         }),
         add: vi.fn().mockResolvedValue('asset-id'),
         get: vi.fn().mockResolvedValue(mockAsset),
+      },
+      portfolios: {
+        get: vi.fn().mockResolvedValue(mockPortfolio),
       },
     },
   };
@@ -195,8 +210,22 @@ function createImportSession(
 }
 
 describe('startImportSession', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    // Reset portfolio mock to return valid portfolio by default
+    const { db } = await import('@/lib/db/schema');
+    vi.mocked(db.portfolios.get).mockResolvedValue({
+      id: 'portfolio-123',
+      name: 'Test Portfolio',
+      type: 'taxable',
+      currency: 'USD',
+      settings: {
+        rebalanceThreshold: 5,
+        taxStrategy: 'fifo',
+        autoRebalance: false,
+        dividendReinvestment: true,
+      },
+    });
   });
 
   it('creates an import session with correct initial state', async () => {
@@ -224,6 +253,7 @@ describe('startImportSession', () => {
     expect(session.columnMappings).toBeDefined();
     expect(session.columnMappings.length).toBeGreaterThan(0);
   });
+
 });
 
 describe('detectDuplicates', () => {
@@ -287,6 +317,20 @@ describe('executeImport', () => {
     // Reset the db mock for each test
     const { db } = await import('@/lib/db/schema');
     const createdAssets = new Map<string, any>();
+
+    // Reset portfolio mock to return valid portfolio
+    vi.mocked(db.portfolios.get).mockResolvedValue({
+      id: 'portfolio-123',
+      name: 'Test Portfolio',
+      type: 'taxable',
+      currency: 'USD',
+      settings: {
+        rebalanceThreshold: 5,
+        taxStrategy: 'fifo',
+        autoRebalance: false,
+        dividendReinvestment: true,
+      },
+    });
 
     vi.mocked(db.transactions.add).mockResolvedValue('transaction-id');
 
@@ -391,6 +435,24 @@ describe('executeImport', () => {
     await executeImport(session, validRows, [], 'skip', progressCallback);
 
     expect(progressCallback).toHaveBeenCalled();
+  });
+
+  it('should fail import if portfolio is deleted during import', async () => {
+    const { db } = await import('@/lib/db/schema');
+
+    // Simulate portfolio being deleted during import
+    // Return null on all calls to simulate deletion
+    vi.mocked(db.portfolios.get).mockResolvedValue(null);
+
+    const session = createImportSession({ portfolioId: 'portfolio-123' });
+    const validRows: ParsedRow[] = [createParsedRow({ rowNumber: 1 })];
+
+    const result = await executeImport(session, validRows, [], 'skip');
+
+    // executeImport catches the error and returns failure result
+    expect(result.success).toBe(false);
+    expect(result.errorCount).toBe(1);
+    expect(result.importedCount).toBe(0);
   });
 });
 

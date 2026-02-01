@@ -275,6 +275,14 @@ async function createTransactionFromRow(
 ): Promise<Transaction> {
   const { parsed } = row;
 
+  // VALIDATION: Double-check portfolio still exists
+  const portfolio = await db.portfolios.get(portfolioId);
+  if (!portfolio) {
+    throw new Error(
+      `Portfolio '${portfolioId}' was deleted during import. Transaction creation aborted.`
+    );
+  }
+
   if (!parsed.date || !parsed.symbol || !parsed.quantity || !parsed.price) {
     throw new Error('Missing required fields');
   }
