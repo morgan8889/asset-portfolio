@@ -1,5 +1,5 @@
 import { Decimal } from 'decimal.js';
-import { Transaction, Holding } from '@/types';
+import { Transaction, Holding, TaxLot } from '@/types';
 import { db } from './schema';
 import { assetQueries, holdingQueries } from './queries';
 
@@ -163,7 +163,7 @@ export class HoldingsCalculator {
       currentValue: calculation.currentValue,
       unrealizedGain: calculation.unrealizedGain,
       unrealizedGainPercent: calculation.unrealizedGainPercent,
-      lots: [], // TODO: Implement tax lot tracking
+      lots: this.buildTaxLotsFromTransactions(sortedTransactions),
       lastUpdated: new Date(),
     };
 
@@ -189,6 +189,8 @@ export class HoldingsCalculator {
         case 'buy':
         case 'transfer_in':
         case 'reinvestment':
+        case 'espp_purchase':
+        case 'rsu_vest':
           totalQuantity = totalQuantity.plus(transaction.quantity);
           totalCostBasis = totalCostBasis.plus(transaction.totalAmount);
           totalShares = totalShares.plus(transaction.quantity);
@@ -283,6 +285,63 @@ export class HoldingsCalculator {
       unrealizedGain,
       unrealizedGainPercent,
     };
+  }
+
+  /**
+   * Build tax lots from purchase transactions
+   */
+  private static buildTaxLotsFromTransactions(
+    transactions: Transaction[]
+  ): TaxLot[] {
+    const lots: TaxLot[] = [];
+
+    for (const transaction of transactions) {
+      // Only build lots for purchase transactions
+      if (
+        !['buy', 'espp_purchase', 'rsu_vest', 'transfer_in'].includes(
+          transaction.type
+        )
+      ) {
+        continue;
+      }
+
+      const lot: TaxLot = {
+        id: transaction.id, // Use transaction ID as lot ID
+        quantity: transaction.quantity,
+        purchasePrice: transaction.price,
+        purchaseDate: new Date(transaction.date),
+        soldQuantity: new Decimal(0), // Will be updated by sell transactions in future
+        remainingQuantity: transaction.quantity, // Initial = full quantity
+        notes: transaction.notes,
+      };
+
+      // Detect lot type and extract metadata
+      if (transaction.type === 'espp_purchase') {
+        lot.lotType = 'espp';
+        const metadata = transaction.metadata as any;
+        if (metadata?.grantDate) {
+          lot.grantDate = new Date(metadata.grantDate);
+        }
+        if (metadata?.bargainElement !== undefined) {
+          lot.bargainElement = new Decimal(metadata.bargainElement);
+        }
+      } else if (transaction.type === 'rsu_vest') {
+        lot.lotType = 'rsu';
+        const metadata = transaction.metadata as any;
+        if (metadata?.vestingDate) {
+          lot.vestingDate = new Date(metadata.vestingDate);
+        }
+        if (metadata?.vestingPrice !== undefined) {
+          lot.vestingPrice = new Decimal(metadata.vestingPrice);
+        }
+      } else {
+        lot.lotType = 'standard';
+      }
+
+      lots.push(lot);
+    }
+
+    return lots;
   }
 
   /**
