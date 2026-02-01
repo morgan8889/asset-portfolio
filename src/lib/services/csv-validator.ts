@@ -86,6 +86,12 @@ export function validateRow(
     price: null,
     fees: null,
     notes: null,
+    // Tax fields
+    grantDate: null,
+    vestingDate: null,
+    discountPercent: null,
+    sharesWithheld: null,
+    ordinaryIncomeAmount: null,
   };
 
   // Extract values based on mappings
@@ -236,6 +242,138 @@ export function validateRow(
   const notesValue = getValue('notes');
   if (notesValue) {
     parsed.notes = notesValue.slice(0, 1000); // Truncate if too long
+  }
+
+  // Tax Fields Validation (T022-T026)
+  
+  // Grant Date (optional)
+  const grantDateValue = getValue('grantDate');
+  if (grantDateValue) {
+    const parsedGrantDate = parseDate(grantDateValue);
+    if (!parsedGrantDate) {
+      errors.push({
+        field: 'grantDate',
+        value: grantDateValue,
+        message: `Could not parse grant date '${grantDateValue}'`,
+      });
+    } else if (parsedGrantDate > new Date()) {
+      errors.push({
+        field: 'grantDate',
+        value: grantDateValue,
+        message: 'Grant date cannot be in the future',
+      });
+    } else {
+      parsed.grantDate = parsedGrantDate;
+    }
+  }
+
+  // Vesting Date (optional, must be >= grantDate and <= transaction date)
+  const vestingDateValue = getValue('vestingDate');
+  if (vestingDateValue) {
+    const parsedVestingDate = parseDate(vestingDateValue);
+    if (!parsedVestingDate) {
+      errors.push({
+        field: 'vestingDate',
+        value: vestingDateValue,
+        message: `Could not parse vesting date '${vestingDateValue}'`,
+      });
+    } else if (parsedVestingDate > new Date()) {
+      errors.push({
+        field: 'vestingDate',
+        value: vestingDateValue,
+        message: 'Vesting date cannot be in the future',
+      });
+    } else if (parsed.grantDate && parsedVestingDate < parsed.grantDate) {
+      errors.push({
+        field: 'vestingDate',
+        value: vestingDateValue,
+        message: 'Vesting date must be on or after grant date',
+      });
+    } else if (parsed.date && parsedVestingDate > parsed.date) {
+      errors.push({
+        field: 'vestingDate',
+        value: vestingDateValue,
+        message: 'Vesting date must be on or before transaction date',
+      });
+    } else {
+      parsed.vestingDate = parsedVestingDate;
+    }
+  }
+
+  // Discount Percent (optional, 0.0-0.5 range for ESPP)
+  const discountPercentValue = getValue('discountPercent');
+  if (discountPercentValue) {
+    const parsedDiscount = parseNumericValue(discountPercentValue);
+    if (parsedDiscount === null) {
+      errors.push({
+        field: 'discountPercent',
+        value: discountPercentValue,
+        message: `Discount percent '${discountPercentValue}' is not a valid number`,
+      });
+    } else {
+      // Normalize: if > 1, assume percentage format (15 → 0.15)
+      const normalizedDiscount = parsedDiscount.greaterThan(1)
+        ? parsedDiscount.div(100)
+        : parsedDiscount;
+      
+      if (normalizedDiscount.isNegative() || normalizedDiscount.greaterThan(0.5)) {
+        errors.push({
+          field: 'discountPercent',
+          value: discountPercentValue,
+          message: 'Discount percent must be between 0% and 50%',
+        });
+      } else {
+        parsed.discountPercent = normalizedDiscount;
+      }
+    }
+  }
+
+  // Shares Withheld (optional, must be <= quantity)
+  const sharesWithheldValue = getValue('sharesWithheld');
+  if (sharesWithheldValue) {
+    const parsedSharesWithheld = parseNumericValue(sharesWithheldValue);
+    if (parsedSharesWithheld === null) {
+      errors.push({
+        field: 'sharesWithheld',
+        value: sharesWithheldValue,
+        message: `Shares withheld '${sharesWithheldValue}' is not a valid number`,
+      });
+    } else if (parsedSharesWithheld.isNegative()) {
+      errors.push({
+        field: 'sharesWithheld',
+        value: sharesWithheldValue,
+        message: 'Shares withheld cannot be negative',
+      });
+    } else if (parsed.quantity && parsedSharesWithheld.greaterThan(parsed.quantity)) {
+      errors.push({
+        field: 'sharesWithheld',
+        value: sharesWithheldValue,
+        message: 'Shares withheld cannot exceed quantity',
+      });
+    } else {
+      parsed.sharesWithheld = parsedSharesWithheld;
+    }
+  }
+
+  // Ordinary Income Amount (optional, must be >= 0)
+  const ordinaryIncomeValue = getValue('ordinaryIncomeAmount');
+  if (ordinaryIncomeValue) {
+    const parsedOrdinaryIncome = parseNumericValue(ordinaryIncomeValue);
+    if (parsedOrdinaryIncome === null) {
+      errors.push({
+        field: 'ordinaryIncomeAmount',
+        value: ordinaryIncomeValue,
+        message: `Ordinary income '${ordinaryIncomeValue}' is not a valid number`,
+      });
+    } else if (parsedOrdinaryIncome.isNegative()) {
+      errors.push({
+        field: 'ordinaryIncomeAmount',
+        value: ordinaryIncomeValue,
+        message: 'Ordinary income cannot be negative',
+      });
+    } else {
+      parsed.ordinaryIncomeAmount = parsedOrdinaryIncome;
+    }
   }
 
   return {
