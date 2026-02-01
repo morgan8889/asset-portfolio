@@ -150,6 +150,8 @@ export const TAX_LOT_DECIMAL_FIELDS = [
   'purchasePrice',
   'soldQuantity',
   'remainingQuantity',
+  'bargainElement',
+  'vestingPrice',
 ] as const;
 
 export const TRANSACTION_DECIMAL_FIELDS = [

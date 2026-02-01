@@ -33,6 +33,7 @@ interface PriceDisplayProps {
   showMarketState?: boolean;
   showChange?: boolean;
   size?: 'sm' | 'md' | 'lg';
+  align?: 'left' | 'right';
   className?: string;
 }
 
@@ -136,6 +137,7 @@ export function PriceDisplay({
   showMarketState = false,
   showChange = true,
   size = 'md',
+  align = 'left',
   className,
 }: PriceDisplayProps) {
   const classes = sizeClasses[size];
@@ -197,9 +199,20 @@ export function PriceDisplay({
     : 'text-red-600 dark:text-red-400';
 
   return (
-    <div className={cn('flex flex-col', className)}>
+    <div
+      className={cn(
+        'flex flex-col',
+        align === 'right' ? 'items-end' : 'items-start',
+        className
+      )}
+    >
       {/* Main price row */}
-      <div className="flex items-center gap-2">
+      <div
+        className={cn(
+          'flex items-center gap-2',
+          align === 'right' ? 'justify-end' : 'justify-start'
+        )}
+      >
         {/* Staleness indicator dot */}
         {showStaleness && (
           <span
@@ -230,7 +243,12 @@ export function PriceDisplay({
       {/* Change row */}
       {showChange && (
         <div
-          className={cn('flex items-center gap-1', classes.change, changeColor)}
+          className={cn(
+            'flex items-center gap-1',
+            classes.change,
+            changeColor,
+            align === 'right' ? 'justify-end' : 'justify-start'
+          )}
         >
           <span>
             {isPositive ? '+' : ''}
@@ -249,7 +267,8 @@ export function PriceDisplay({
           className={cn(
             'flex items-center gap-1',
             classes.timestamp,
-            getStalenessColor(priceData.staleness)
+            getStalenessColor(priceData.staleness),
+            align === 'right' ? 'justify-end' : 'justify-start'
           )}
         >
           <span>Updated {formattedAge}</span>
