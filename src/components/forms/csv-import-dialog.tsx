@@ -83,7 +83,9 @@ export function CsvImportDialog({
   } | null>(null);
 
   const [showMappingEditor, setShowMappingEditor] = useState(false);
-  const [validatedPortfolioId, setValidatedPortfolioId] = useState<string | null>(null);
+  const [validatedPortfolioId, setValidatedPortfolioId] = useState<
+    string | null
+  >(null);
   const [portfolioAutoCreated, setPortfolioAutoCreated] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const { setCurrentPortfolio } = usePortfolioStore();
@@ -130,7 +132,8 @@ export function CsvImportDialog({
         if (!mounted) return; // Prevent state update after unmount
 
         console.error('Portfolio validation error:', err);
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Unknown error';
         useCsvImportStore.setState({
           error: `Failed to validate portfolio: ${errorMessage}`,
         });
@@ -266,7 +269,8 @@ export function CsvImportDialog({
             <Alert className="mb-4 border-green-200 bg-green-50">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                No portfolio found. Created "My Portfolio" for your transactions.
+                No portfolio found. Created "My Portfolio" for your
+                transactions.
               </AlertDescription>
             </Alert>
           )}

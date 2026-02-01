@@ -15,7 +15,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
-import { Settings, RefreshCw, Download, Upload, AlertTriangle } from 'lucide-react';
+import {
+  Settings,
+  RefreshCw,
+  Download,
+  Upload,
+  AlertTriangle,
+} from 'lucide-react';
 import { PriceSettings } from '@/components/settings/price-settings';
 import { CsvImportDialog } from '@/components/forms/csv-import-dialog';
 import { ResetConfirmationDialog } from '@/components/settings/reset-confirmation-dialog';
@@ -178,7 +184,9 @@ export default function SettingsPage() {
               </div>
               <Switch
                 checked={theme === 'dark'}
-                onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                onCheckedChange={(checked) =>
+                  setTheme(checked ? 'dark' : 'light')
+                }
               />
             </div>
           </CardContent>
