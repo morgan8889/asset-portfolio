@@ -67,6 +67,8 @@ As an investor, I want to simulate how major changes (like a large purchase or a
 - Q: How should the FIRE target be calculated? → A: Safe Withdrawal Rate (SWR) - The system calculates the target as `Annual Expenses / Withdrawal Rate`. Users can customize the rate (default 4%).
 - Q: How should inflation be handled in long-term projections? → A: Inflation-Adjusted (Real) - All projections are shown in "today's dollars" (purchasing power) by adjusting expected returns for a standard inflation rate (default 3%).
 - Q: Where is the primary interface for this feature? → A: Dedicated Planning Page - A full-page dashboard with dedicated sections for Net Worth History, FIRE Projection, and Scenario simulation.
+- Q: How often should net worth history be aggregated? → A: Monthly Aggregates - Snapshots are calculated and stored monthly (e.g., last day of each month) to optimize performance and storage.
+- Q: What simulation method should be used for projections? → A: Standard Curve - Use a deterministic compound interest calculation rather than Monte Carlo simulations for clarity and simplicity.
 
 ## Requirements *(mandatory)*
 
@@ -75,10 +77,10 @@ As an investor, I want to simulate how major changes (like a large purchase or a
 - **FR-001**: System MUST provide a dedicated "Planning" page accessible from the sidebar.
 - **FR-002**: System MUST aggregate total value of all holdings, properties, and cash to calculate "Total Assets".
 - **FR-003**: System MUST allow users to add "Liabilities" (Manual entries for Debt, Mortgage, Loans) with balance and interest rate.
-- **FR-004**: System MUST generate a historical time-series of "Net Worth" (Assets - Liabilities).
+- **FR-004**: System MUST generate a historical time-series of "Net Worth" (Assets - Liabilities) aggregated on a monthly basis.
 - **FR-005**: System MUST allow users to input "Target Retirement Income" and "Monthly Savings Amount".
 - **FR-006**: System MUST calculate the "FIRE Number" using a customizable Safe Withdrawal Rate (SWR), defaulting to 4%.
-- **FR-007**: System MUST project net worth growth in inflation-adjusted "today's dollars" using compound interest adjusted for inflation.
+- **FR-007**: System MUST project net worth growth in inflation-adjusted "today's dollars" using a standard deterministic compound interest model.
 - **FR-008**: System MUST allow users to define "Scenarios" (temporary or permanent changes to returns, savings, or one-time events).
 - **FR-009**: System MUST display a "Countdown to FIRE" widget on the main dashboard.
 - **FR-010**: System MUST persist goal settings, liabilities, and inflation assumptions in IndexedDB.
