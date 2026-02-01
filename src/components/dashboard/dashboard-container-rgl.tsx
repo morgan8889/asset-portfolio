@@ -24,6 +24,7 @@ import {
   useDashboardStore,
   usePortfolioStore,
   usePriceStore,
+  useTaxSettingsStore,
 } from '@/lib/stores';
 import { useLivePriceMetrics, LiveHolding } from '@/hooks';
 import {
@@ -36,6 +37,7 @@ import {
 } from '@/types/dashboard';
 import { Holding, Asset } from '@/types';
 import { cn } from '@/lib/utils';
+import { calculateTaxExposure } from '@/lib/services/tax-calculator';
 import { WidgetWrapperRGL } from './widget-wrapper-rgl';
 import { StaleDataBanner } from './stale-data-banner';
 import {
@@ -45,6 +47,7 @@ import {
   CategoryBreakdownWidget,
   GrowthChartWidget,
   RecentActivityWidget,
+  TaxExposureWidget,
 } from './widgets';
 import {
   TopPerformersWidget,
@@ -283,6 +286,17 @@ const DashboardContainerRGLComponent = ({
     [metrics, liveMetrics]
   );
 
+  // Tax exposure calculation (T059)
+  const taxSettings = useTaxSettingsStore((state) => state.settings);
+  const taxExposure = useMemo(() => {
+    if (!holdings || holdings.length === 0 || !assets || assets.length === 0) {
+      return null;
+    }
+
+    const assetMap = new Map(assets.map((a) => [a.id, a]));
+    return calculateTaxExposure(holdings, assetMap, taxSettings);
+  }, [holdings, assets, taxSettings]);
+
   const renderWidget = useCallback(
     (widgetId: WidgetId) => {
       switch (widgetId) {
@@ -329,6 +343,12 @@ const DashboardContainerRGLComponent = ({
           );
         case 'recent-activity':
           return <RecentActivityWidget />;
+        case 'tax-exposure':
+          return taxExposure ? (
+            <TaxExposureWidget metrics={taxExposure} />
+          ) : (
+            <TaxExposureEmptyState />
+          );
         default: {
           const _exhaustiveCheck: never = widgetId;
           return (
@@ -339,7 +359,7 @@ const DashboardContainerRGLComponent = ({
         }
       }
     },
-    [derivedMetrics, categoryAllocations, config?.timePeriod, liveMetrics]
+    [derivedMetrics, categoryAllocations, config?.timePeriod, liveMetrics, taxExposure]
   );
 
   if (!config || !holdings || holdings.length === 0) {
