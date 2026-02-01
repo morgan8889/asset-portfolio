@@ -24,6 +24,17 @@ vi.mock('@/lib/stores', () => ({
   })),
 }));
 
+// Mock assetQueries for asset resolution
+vi.mock('@/lib/db', () => ({
+  assetQueries: {
+    getBySymbol: vi.fn().mockResolvedValue(null),
+    getById: vi.fn().mockImplementation((id: string) =>
+      Promise.resolve({ id, symbol: 'AAPL', name: 'Apple Inc.', type: 'stock' })
+    ),
+    create: vi.fn().mockResolvedValue('asset-123'),
+  },
+}));
+
 // Mock Decimal.js
 vi.mock('decimal.js', () => ({
   Decimal: vi.fn().mockImplementation((value) => ({
@@ -296,7 +307,7 @@ describe('AddTransactionDialog', () => {
       expect(mockCreateTransaction).toHaveBeenCalledWith(
         expect.objectContaining({
           portfolioId: 'portfolio-1',
-          assetId: 'AAPL',
+          assetId: 'asset-123', // Asset UUID from resolved/created asset
           type: 'buy',
           currency: 'USD',
         })
