@@ -1,11 +1,11 @@
 # 012-tax-features-stock Progress Checkpoint
 
-**Date**: 2026-02-01 07:45 UTC
+**Date**: 2026-02-01 07:50 UTC
 **Branch**: 012-tax-features-stock
-**Iteration**: 3/30
-**Status**: Core Features Complete, Integration Needed
+**Iteration**: 4/30
+**Status**: Core Features Complete, Testing Required
 
-## Completed Tasks (25/46)
+## Completed Tasks (26/46)
 
 ### Phase 1: Setup ✅ (T001-T006)
 - Extended TransactionType with espp_purchase, rsu_vest
@@ -28,12 +28,14 @@
 - Conditional Zod validation for both transaction types
 - Metadata serialization for ESPP and RSU
 
-### Phase 4: Tax Analysis UI ✅ (T029-T032)
+### Phase 4: Tax Analysis UI ✅ (T029-T032, T035-T036)
 - TaxSettingsPanel with sliders/inputs for ST/LT rates
 - Tax Settings page at /settings/tax
 - TaxAnalysisTab with Tremor summary cards
 - Sortable tax lot table with holding period badges
 - Lot type indicators (Standard, ESPP, RSU)
+- Tax Analysis page at /tax-analysis with full integration
+- Connected to real portfolio data stores
 
 ### Unit Tests ✅ (T013, T026-T027)
 - HoldingPeriodCalculator: 23 tests
@@ -41,7 +43,7 @@
 - ESPPValidator: 22 tests
 - **Total: 55/55 unit tests passing** ✅
 
-## Remaining Tasks (21/46)
+## Remaining Tasks (20/46)
 
 ### High Priority (Integration & Testing)
 1. T014: E2E test for ESPP workflow
@@ -83,7 +85,7 @@
 - T014, T028: E2E tests for workflows
 
 **Status**: NOT DONE - Cannot output completion promise yet
-- 21 tasks remaining (54% complete)
-- Integration work needed
-- E2E tests required
-- Holdings page integration missing
+- 20 tasks remaining (57% complete)
+- E2E tests required (T014, T020, T028)
+- Holdings page metadata display needed (T018-T019, T023-T025)
+- Polish tasks remaining (T038-T046)
