@@ -2,8 +2,8 @@
 
 **Branch**: `013-tax-data-integration`
 **Date**: 2026-01-31
-**Iterations**: 3
-**Status**: Core Features Complete (67% implementation)
+**Iterations**: 4
+**Status**: Major Features Complete (75% implementation)
 
 ## ✅ Completed Work
 
@@ -64,12 +64,19 @@
 
 ## 🚧 Remaining Work
 
-### Phase 5: Tax Alerts on Dashboard & Analysis (0%)
-- [ ] T052-T059: Dashboard TaxExposureWidget component
-- [ ] T060-T065: Analysis page tax recommendations
-- [ ] T066-T070: UI and E2E tests
+### Phase 5: Tax Alerts on Dashboard & Analysis (50%)
+- [x] T052-T059: Dashboard TaxExposureWidget component
+- [ ] T060-T065: Analysis page tax recommendations - NOT STARTED
+- [ ] T066-T070: UI and E2E tests - NOT STARTED
 
-**Estimated Effort**: 1-2 days
+**Completed Features**:
+- TaxExposureWidget displays estimated tax liability
+- Shows short-term and long-term gains separately
+- Highlights aging lots with alert icon
+- Integrated into dashboard with proper layout constraints
+- Uses tax settings store for rate calculations
+
+**Files**: `src/components/dashboard/widgets/tax-exposure-widget.tsx`, `src/components/dashboard/dashboard-container-rgl.tsx`, `src/types/dashboard.ts`
 
 ### Phase 6: Polish & Integration (0%)
 - [ ] T071-T073: Documentation updates
@@ -83,13 +90,13 @@
 
 | Metric | Value |
 |--------|-------|
-| **Files Created** | 12 |
-| **Files Modified** | 14 |
-| **Production Code** | ~2,100 lines |
+| **Files Created** | 13 |
+| **Files Modified** | 16 |
+| **Production Code** | ~2,200 lines |
 | **Test Code** | ~600 lines |
 | **Test Pass Rate** | 18/18 tax calculator tests ✅ |
-| **Commits** | 6 feature commits |
-| **Completion** | 67% (4 of 6 phases complete) |
+| **Commits** | 10 feature commits |
+| **Completion** | 75% (4.5 of 6 phases complete) |
 
 ## 🎯 Constitution Compliance
 
