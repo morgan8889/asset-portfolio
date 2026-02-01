@@ -375,7 +375,6 @@ describe('TWR Calculator', () => {
     });
   });
 
-
   describe('Decimal precision', () => {
     it('should maintain precision for large values', () => {
       const startValue = new Decimal('1000000.123456789');

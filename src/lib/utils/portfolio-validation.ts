@@ -20,11 +20,7 @@ export async function ensureValidPortfolio(
 ): Promise<PortfolioValidationResult> {
   // Step 1: Check if provided portfolio ID is valid
   // Treat empty string same as null (defensive handling)
-  if (
-    portfolioId &&
-    portfolioId !== 'default' &&
-    portfolioId.trim() !== ''
-  ) {
+  if (portfolioId && portfolioId !== 'default' && portfolioId.trim() !== '') {
     const portfolio = await portfolioQueries.getById(portfolioId);
     if (portfolio) {
       return { portfolioId, wasCreated: false, portfolio };

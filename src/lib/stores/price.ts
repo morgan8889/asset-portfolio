@@ -533,7 +533,10 @@ export const usePriceStore = create<PriceState>()(
       updateStaleness: () => {
         const currentPrices = get().prices;
         const refreshInterval = get().preferences.refreshInterval;
-        const prices = recalculatePriceStaleness(currentPrices, refreshInterval);
+        const prices = recalculatePriceStaleness(
+          currentPrices,
+          refreshInterval
+        );
 
         // Only update if staleness actually changed
         let updated = false;

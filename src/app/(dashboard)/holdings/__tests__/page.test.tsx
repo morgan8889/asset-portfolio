@@ -53,16 +53,22 @@ describe('HoldingsPage', () => {
     it('should render page header and description', () => {
       render(<HoldingsPage />);
 
-      expect(screen.getByRole('heading', { name: 'Holdings' })).toBeInTheDocument();
       expect(
-        screen.getByText('Manage your investment positions across all asset types')
+        screen.getByRole('heading', { name: 'Holdings' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Manage your investment positions across all asset types'
+        )
       ).toBeInTheDocument();
     });
 
     it('should render Add Holding button', () => {
       render(<HoldingsPage />);
 
-      expect(screen.getByRole('button', { name: /add holding/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /add holding/i })
+      ).toBeInTheDocument();
     });
   });
 
@@ -74,7 +80,9 @@ describe('HoldingsPage', () => {
 
       expect(screen.getByText('No Portfolio Selected')).toBeInTheDocument();
       expect(
-        screen.getByText('Please select or create a portfolio to view your holdings.')
+        screen.getByText(
+          'Please select or create a portfolio to view your holdings.'
+        )
       ).toBeInTheDocument();
     });
 
@@ -87,7 +95,9 @@ describe('HoldingsPage', () => {
     });
 
     it('should render HoldingsTable when portfolio is selected', () => {
-      mockPortfolioStore.currentPortfolio = createMockPortfolio({ id: 'portfolio-1' });
+      mockPortfolioStore.currentPortfolio = createMockPortfolio({
+        id: 'portfolio-1',
+      });
 
       render(<HoldingsPage />);
 
@@ -95,17 +105,23 @@ describe('HoldingsPage', () => {
     });
 
     it('should not show "No Portfolio Selected" when portfolio exists', () => {
-      mockPortfolioStore.currentPortfolio = createMockPortfolio({ id: 'portfolio-1' });
+      mockPortfolioStore.currentPortfolio = createMockPortfolio({
+        id: 'portfolio-1',
+      });
 
       render(<HoldingsPage />);
 
-      expect(screen.queryByText('No Portfolio Selected')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('No Portfolio Selected')
+      ).not.toBeInTheDocument();
     });
   });
 
   describe('Add Holding Menu', () => {
     beforeEach(() => {
-      mockPortfolioStore.currentPortfolio = createMockPortfolio({ id: 'portfolio-1' });
+      mockPortfolioStore.currentPortfolio = createMockPortfolio({
+        id: 'portfolio-1',
+      });
     });
 
     it('should show dropdown menu with asset type options', async () => {
@@ -130,7 +146,9 @@ describe('HoldingsPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Real Estate')).toBeInTheDocument();
-        expect(screen.getByText('Property with manual valuation')).toBeInTheDocument();
+        expect(
+          screen.getByText('Property with manual valuation')
+        ).toBeInTheDocument();
       });
     });
 
@@ -142,7 +160,9 @@ describe('HoldingsPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Manual Asset')).toBeInTheDocument();
-        expect(screen.getByText('Art, collectibles, bonds, etc.')).toBeInTheDocument();
+        expect(
+          screen.getByText('Art, collectibles, bonds, etc.')
+        ).toBeInTheDocument();
       });
     });
 
@@ -158,14 +178,18 @@ describe('HoldingsPage', () => {
       });
 
       // The menu item itself has disabled attribute (empty string or any value indicates disabled)
-      const menuItem = screen.getByText('Stock / ETF / Crypto').closest('[role="menuitem"]');
+      const menuItem = screen
+        .getByText('Stock / ETF / Crypto')
+        .closest('[role="menuitem"]');
       expect(menuItem).toHaveAttribute('data-disabled');
     });
   });
 
   describe('Dialog Management', () => {
     beforeEach(() => {
-      mockPortfolioStore.currentPortfolio = createMockPortfolio({ id: 'test-portfolio-123' });
+      mockPortfolioStore.currentPortfolio = createMockPortfolio({
+        id: 'test-portfolio-123',
+      });
     });
 
     it('should open property dialog when Real Estate option clicked', async () => {
@@ -222,7 +246,9 @@ describe('HoldingsPage', () => {
     });
 
     it('should pass correct portfolioId to property dialog', async () => {
-      mockPortfolioStore.currentPortfolio = createMockPortfolio({ id: 'custom-id-456' });
+      mockPortfolioStore.currentPortfolio = createMockPortfolio({
+        id: 'custom-id-456',
+      });
 
       render(<HoldingsPage />);
 
@@ -239,7 +265,9 @@ describe('HoldingsPage', () => {
     });
 
     it('should pass correct portfolioId to manual asset dialog', async () => {
-      mockPortfolioStore.currentPortfolio = createMockPortfolio({ id: 'another-id-789' });
+      mockPortfolioStore.currentPortfolio = createMockPortfolio({
+        id: 'another-id-789',
+      });
 
       render(<HoldingsPage />);
 

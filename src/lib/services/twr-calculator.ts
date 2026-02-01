@@ -438,4 +438,3 @@ export function calculateVolatility(dailyReturns: number[]): number {
   // Standard deviation scales with the square root of time
   return stdDev * Math.sqrt(TRADING_DAYS_PER_YEAR) * 100;
 }
-
