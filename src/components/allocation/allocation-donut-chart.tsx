@@ -185,13 +185,14 @@ const AllocationDonutChartComponent = ({
         </ResponsiveContainer>
 
         {/* Center Text */}
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <div className="text-3xl font-bold md:text-4xl">
+        <div
+          className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
+          style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))' }}
+        >
+          <div className="text-3xl font-bold text-white md:text-4xl">
             {formatCurrency(totalValue)}
           </div>
-          <div className="text-sm text-muted-foreground md:text-base">
-            Total Value
-          </div>
+          <div className="text-sm text-white md:text-base">Total Value</div>
         </div>
       </div>
 

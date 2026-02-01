@@ -214,11 +214,14 @@ const AllocationDonutComponent = () => {
           </ResponsiveContainer>
 
           {/* Center Text */}
-          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-2xl font-bold">
+          <div
+            className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
+            style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))' }}
+          >
+            <div className="text-2xl font-bold text-white">
               {formatCurrency(totalValue)}
             </div>
-            <div className="text-xs text-muted-foreground">Total Value</div>
+            <div className="text-xs text-white">Total Value</div>
           </div>
         </div>
 
