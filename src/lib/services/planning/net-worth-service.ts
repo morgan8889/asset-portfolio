@@ -19,18 +19,25 @@ export async function calculateNetWorthAtDate(
   let totalAssets = new Decimal(0);
   let totalLiabilities = new Decimal(0);
 
+  // Batch load all assets and price histories to avoid N+1 queries
+  const assetIds = holdings.map(h => h.assetId);
+  const assets = await db.assets.bulkGet(assetIds);
+  const priceHistories = await Promise.all(
+    assetIds.map(id => db.getPriceHistoryByAsset(id, undefined, date))
+  );
+
+  // Create maps for efficient lookup
+  const assetMap = new Map(assetIds.map((id, i) => [id, assets[i]]));
+  const priceHistoryMap = new Map(assetIds.map((id, i) => [id, priceHistories[i]]));
+
   // Calculate total asset value
   for (const holding of holdings) {
-    // Get the asset details
-    const asset = await db.assets.get(holding.assetId);
+    // Get the asset details from the pre-loaded map
+    const asset = assetMap.get(holding.assetId);
     if (!asset) continue;
 
-    // Get price at or before the specified date
-    const priceHistory = await db.getPriceHistoryByAsset(
-      holding.assetId,
-      undefined,
-      date
-    );
+    // Get price history from the pre-loaded map
+    const priceHistory = priceHistoryMap.get(holding.assetId) || [];
 
     let price: Decimal;
     if (priceHistory.length > 0) {
