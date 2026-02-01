@@ -19,12 +19,12 @@
 
 **Purpose**: Extend existing TypeScript types and database schema for tax features
 
-- [ ] T001 Extend TransactionType union to include 'espp_purchase' | 'rsu_vest' in src/types/transaction.ts
-- [ ] T002 [P] Create TaxLot interface extensions in src/types/asset.ts with optional fields: lotType, grantDate, bargainElement, vestingDate, vestingPrice
-- [ ] T003 [P] Create new types file src/types/tax.ts with TaxSettings, TaxAnalysis, TaxLotAnalysis, DisqualifyingDisposition, DisqualifyingReason interfaces
-- [ ] T004 [P] Create ESPPTransactionMetadata and RSUTransactionMetadata interfaces in src/types/transaction.ts
-- [ ] T005 Update Dexie serialization hooks in src/lib/db/schema.ts to handle new Decimal fields: bargainElement, vestingPrice
-- [ ] T006 [P] Add TAX_LOT_DECIMAL_FIELDS constant in src/lib/db/schema.ts with new decimal fields for serialization
+- [x] T001 Extend TransactionType union to include 'espp_purchase' | 'rsu_vest' in src/types/transaction.ts
+- [x] T002 [P] Create TaxLot interface extensions in src/types/asset.ts with optional fields: lotType, grantDate, bargainElement, vestingDate, vestingPrice
+- [x] T003 [P] Create new types file src/types/tax.ts with TaxSettings, TaxAnalysis, TaxLotAnalysis, DisqualifyingDisposition, DisqualifyingReason interfaces
+- [x] T004 [P] Create ESPPTransactionMetadata and RSUTransactionMetadata interfaces in src/types/transaction.ts
+- [x] T005 Update Dexie serialization hooks in src/lib/db/schema.ts to handle new Decimal fields: bargainElement, vestingPrice
+- [x] T006 [P] Add TAX_LOT_DECIMAL_FIELDS constant in src/lib/db/schema.ts with new decimal fields for serialization
 
 ---
 
@@ -34,12 +34,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Create HoldingPeriodCalculator service in src/lib/services/holding-period.ts with calculateHoldingPeriod(), calculateHoldingDays(), getHoldingPeriodThreshold() functions
-- [ ] T008 [P] Create Zod validation schemas in src/types/tax.ts: TaxLotSchema, TaxSettingsSchema with refinement validators
-- [ ] T009 [P] Create Zod validation schemas in src/types/transaction.ts: ESPPTransactionSchema, RSUTransactionSchema with cross-field validation
-- [ ] T010 [P] Create TaxSettings Zustand store in src/lib/stores/tax-settings.ts with getters/setters for shortTermRate and longTermRate
-- [ ] T011 Create TaxEstimator service in src/lib/services/tax-estimator.ts with estimateTaxLiability(), estimateForHolding(), calculateLotAnalysis() functions
-- [ ] T012 [P] Create ESPPValidator service in src/lib/services/espp-validator.ts with isDisqualifyingDisposition(), checkDispositionStatus(), getDispositionReason(), getTaxImplicationMessage() functions
+- [x] T007 Create HoldingPeriodCalculator service in src/lib/services/holding-period.ts with calculateHoldingPeriod(), calculateHoldingDays(), getHoldingPeriodThreshold() functions
+- [x] T008 [P] Create Zod validation schemas in src/types/tax.ts: TaxLotSchema, TaxSettingsSchema with refinement validators
+- [x] T009 [P] Create Zod validation schemas in src/types/transaction.ts: ESPPTransactionSchema, RSUTransactionSchema with cross-field validation
+- [x] T010 [P] Create TaxSettings Zustand store in src/lib/stores/tax-settings.ts with getters/setters for shortTermRate and longTermRate
+- [x] T011 Create TaxEstimator service in src/lib/services/tax-estimator.ts with estimateTaxLiability(), estimateForHolding(), calculateLotAnalysis() functions
+- [x] T012 [P] Create ESPPValidator service in src/lib/services/espp-validator.ts with isDisqualifyingDisposition(), checkDispositionStatus(), getDispositionReason(), getTaxImplicationMessage() functions
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -55,16 +55,16 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T013 [P] [US1] Create unit tests for HoldingPeriodCalculator in tests/unit/holding-period.test.ts with 12 test cases covering boundary conditions (365 days, 366 days, leap years, same-day, invalid dates)
-- [ ] T014 [P] [US1] Create E2E test for ESPP workflow in tests/e2e/espp-workflow.spec.ts testing transaction entry form, cost basis verification, and holdings display
+- [x] T013 [P] [US1] Create unit tests for HoldingPeriodCalculator in tests/unit/holding-period.test.ts with 12 test cases covering boundary conditions (365 days, 366 days, leap years, same-day, invalid dates)
+- [x] T014 [P] [US1] Create E2E test for ESPP workflow in tests/e2e/espp-workflow.spec.ts testing transaction entry form, cost basis verification, and holdings display
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Create ESPPTransactionForm component in src/components/forms/espp-transaction-form.tsx with fields for Grant Date, Purchase Date, Market Price at Grant, Market Price at Purchase, Discount %, using React Hook Form + Zod validation
-- [ ] T016 [US1] Implement ESPP transaction creation logic in transaction store/service to create TaxLot with lotType: 'espp', grantDate, and calculated bargainElement
-- [ ] T017 [US1] Update Add Transaction dialog in src/components/forms/transaction-form.tsx to include "ESPP Purchase" option and conditionally render ESPPTransactionForm
-- [ ] T018 [US1] Update Holdings detail view to display ESPP-specific metadata: Acquisition Cost vs Market Value at Purchase, Bargain Element in src/components/holdings/holding-detail.tsx
-- [ ] T019 [US1] Add ESPP lot type badge/indicator in holdings table to distinguish ESPP lots from standard lots
+- [x] T015 [P] [US1] Create ESPPTransactionForm component in src/components/forms/espp-transaction-form.tsx with fields for Grant Date, Purchase Date, Market Price at Grant, Market Price at Purchase, Discount %, using React Hook Form + Zod validation
+- [x] T016 [US1] Implement ESPP transaction creation logic in transaction store/service to create TaxLot with lotType: 'espp', grantDate, and calculated bargainElement
+- [x] T017 [US1] Update Add Transaction dialog in src/components/forms/transaction-form.tsx to include "ESPP Purchase" option and conditionally render ESPPTransactionForm
+- [x] T018 [US1] Update Holdings detail view to display ESPP-specific metadata: Acquisition Cost vs Market Value at Purchase, Bargain Element in src/components/holdings/holding-detail.tsx
+- [x] T019 [US1] Add ESPP lot type badge/indicator in holdings table to distinguish ESPP lots from standard lots
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - users can enter ESPP transactions and view bargain element tracking
 
@@ -78,15 +78,15 @@
 
 ### Tests for User Story 2
 
-- [ ] T020 [P] [US2] Create E2E test for RSU workflow in tests/e2e/rsu-workflow.spec.ts testing vesting transaction entry, net shares calculation, and cost basis verification
+- [x] T020 [P] [US2] Create E2E test for RSU workflow in tests/e2e/rsu-workflow.spec.ts testing vesting transaction entry, net shares calculation, and cost basis verification
 
 ### Implementation for User Story 2
 
-- [ ] T021 [P] [US2] Create RSUTransactionForm component in src/components/forms/rsu-transaction-form.tsx with fields for Vesting Date, Gross Shares Vested, Shares Withheld for Tax, Vesting Price (FMV), using React Hook Form + Zod validation with auto-calculated Net Shares display
-- [ ] T022 [US2] Implement RSU transaction creation logic to create TaxLot with lotType: 'rsu', vestingDate, vestingPrice matching purchasePrice, and quantity = netShares
-- [ ] T023 [US2] Update Add Transaction dialog to include "RSU Vest" option and conditionally render RSUTransactionForm
-- [ ] T024 [US2] Update Holdings detail view to display RSU-specific metadata: Gross Shares, Withheld Shares, Vesting Price in src/components/holdings/holding-detail.tsx
-- [ ] T025 [US2] Add RSU lot type badge/indicator in holdings table to distinguish RSU lots from standard/ESPP lots
+- [x] T021 [P] [US2] Create RSUTransactionForm component in src/components/forms/rsu-transaction-form.tsx with fields for Vesting Date, Gross Shares Vested, Shares Withheld for Tax, Vesting Price (FMV), using React Hook Form + Zod validation with auto-calculated Net Shares display
+- [x] T022 [US2] Implement RSU transaction creation logic to create TaxLot with lotType: 'rsu', vestingDate, vestingPrice matching purchasePrice, and quantity = netShares
+- [x] T023 [US2] Update Add Transaction dialog to include "RSU Vest" option and conditionally render RSUTransactionForm
+- [x] T024 [US2] Update Holdings detail view to display RSU-specific metadata: Gross Shares, Withheld Shares, Vesting Price in src/components/holdings/holding-detail.tsx
+- [x] T025 [US2] Add RSU lot type badge/indicator in holdings table to distinguish RSU lots from standard/ESPP lots
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - ESPP and RSU tracking fully functional
 
@@ -100,21 +100,21 @@
 
 ### Tests for User Story 3
 
-- [ ] T026 [P] [US3] Create unit tests for TaxEstimator in tests/unit/tax-estimator.test.ts with 8 test cases covering ST/LT gain calculation, loss handling, ESPP adjusted basis, zero quantities, missing prices
-- [ ] T027 [P] [US3] Create unit tests for ESPPValidator in tests/unit/espp-validator.test.ts with 15 test cases covering disqualifying disposition rules, boundary conditions (exactly 1 year, exactly 2 years), invalid inputs
-- [ ] T028 [P] [US3] Create E2E test for tax analysis view in tests/e2e/tax-analysis.spec.ts testing mixed ST/LT lot display, tax liability accuracy, settings integration
+- [x] T026 [P] [US3] Create unit tests for TaxEstimator in tests/unit/tax-estimator.test.ts with 8 test cases covering ST/LT gain calculation, loss handling, ESPP adjusted basis, zero quantities, missing prices
+- [x] T027 [P] [US3] Create unit tests for ESPPValidator in tests/unit/espp-validator.test.ts with 15 test cases covering disqualifying disposition rules, boundary conditions (exactly 1 year, exactly 2 years), invalid inputs
+- [x] T028 [P] [US3] Create E2E test for tax analysis view in tests/e2e/tax-analysis.spec.ts testing mixed ST/LT lot display, tax liability accuracy, settings integration
 
 ### Implementation for User Story 3
 
-- [ ] T029 [P] [US3] Create TaxSettingsPanel component in src/components/settings/tax-settings-panel.tsx with sliders/inputs for Short-Term Rate (0-100%) and Long-Term Rate (0-100%) with percentage display and Decimal storage
-- [ ] T030 [P] [US3] Create Tax Settings page in src/app/(dashboard)/settings/tax/page.tsx rendering TaxSettingsPanel
-- [ ] T031 [US3] Implement tax settings persistence: save to IndexedDB userSettings table with key 'tax_rates', load defaults if not exists (ST: 24%, LT: 15%)
-- [ ] T032 [P] [US3] Create TaxAnalysisTab component in src/components/holdings/tax-analysis-tab.tsx with Summary Cards (Tremor) for Unrealized ST/LT Gains, Estimated Tax Liability
-- [ ] T033 [US3] Implement Tax Lot Table in TaxAnalysisTab with columns: Purchase Date, Quantity, Cost Basis, Current Value, Gain/Loss, Holding Period (ST/LT badge), Lot Type, sortable with color coding (green for LT, yellow for ST)
-- [ ] T034 [US3] Add disqualifying disposition detection for ESPP lots: display warning badge with tooltip in Tax Lot Table when sale date violates 2-year grant OR 1-year purchase requirements
-- [ ] T035 [US3] Integrate TaxAnalysisTab into Holdings detail page as new tab option alongside existing tabs
-- [ ] T036 [US3] Wire up TaxEstimator service to calculate analysis on-demand when Tax Analysis tab is viewed, using current prices from price store and tax settings from settings store
-- [ ] T037 [US3] Add loading state with skeleton loaders for tax calculations (target <100ms but good UX)
+- [x] T029 [P] [US3] Create TaxSettingsPanel component in src/components/settings/tax-settings-panel.tsx with sliders/inputs for Short-Term Rate (0-100%) and Long-Term Rate (0-100%) with percentage display and Decimal storage
+- [x] T030 [P] [US3] Create Tax Settings page in src/app/(dashboard)/settings/tax/page.tsx rendering TaxSettingsPanel
+- [x] T031 [US3] Implement tax settings persistence: save to IndexedDB userSettings table with key 'tax_rates', load defaults if not exists (ST: 24%, LT: 15%)
+- [x] T032 [P] [US3] Create TaxAnalysisTab component in src/components/holdings/tax-analysis-tab.tsx with Summary Cards (Tremor) for Unrealized ST/LT Gains, Estimated Tax Liability
+- [x] T033 [US3] Implement Tax Lot Table in TaxAnalysisTab with columns: Purchase Date, Quantity, Cost Basis, Current Value, Gain/Loss, Holding Period (ST/LT badge), Lot Type, sortable with color coding (green for LT, yellow for ST)
+- [x] T034 [US3] Add disqualifying disposition detection for ESPP lots: display warning badge with tooltip in Tax Lot Table when sale date violates 2-year grant OR 1-year purchase requirements
+- [x] T035 [US3] Integrate TaxAnalysisTab into Holdings detail page as new tab option alongside existing tabs
+- [x] T036 [US3] Wire up TaxEstimator service to calculate analysis on-demand when Tax Analysis tab is viewed, using current prices from price store and tax settings from settings store
+- [x] T037 [US3] Add loading state with skeleton loaders for tax calculations (target <100ms but good UX)
 
 **Checkpoint**: All user stories should now be independently functional - complete ESPP/RSU tracking with tax liability estimation
 
@@ -124,12 +124,12 @@
 
 **Purpose**: Improvements that affect multiple user stories and ensure production readiness
 
-- [ ] T038 [P] Update CLAUDE.md with Tax Features section documenting ESPP/RSU workflows, holding period calculation, tax estimation, common debugging scenarios
-- [ ] T039 [P] Add tax features to mock data generator in test page for development/testing with sample ESPP/RSU lots
-- [ ] T040 Add comprehensive JSDoc comments to all tax service functions (holding-period.ts, tax-estimator.ts, espp-validator.ts)
-- [ ] T041 [P] Verify all Decimal.js arithmetic uses .mul(), .minus(), .plus(), .div() methods (no operators) in tax calculation paths
-- [ ] T042 [P] Verify date handling uses date-fns functions (no manual date arithmetic) in holding period and ESPP validation logic
-- [ ] T043 Run type-check (npm run type-check) and fix any TypeScript errors in tax-related files
+- [x] T038 [P] Update CLAUDE.md with Tax Features section documenting ESPP/RSU workflows, holding period calculation, tax estimation, common debugging scenarios
+- [x] T039 [P] Add tax features to mock data generator in test page for development/testing with sample ESPP/RSU lots
+- [x] T040 Add comprehensive JSDoc comments to all tax service functions (holding-period.ts, tax-estimator.ts, espp-validator.ts)
+- [x] T041 [P] Verify all Decimal.js arithmetic uses .mul(), .minus(), .plus(), .div() methods (no operators) in tax calculation paths
+- [x] T042 [P] Verify date handling uses date-fns functions (no manual date arithmetic) in holding period and ESPP validation logic
+- [x] T043 Run type-check (npm run type-check) and fix any TypeScript errors in tax-related files
 - [ ] T044 Run linter (npm run lint) and fix any issues in new components and services
 - [ ] T045 Validate quickstart.md examples work correctly with current implementation
 - [ ] T046 Run full test suite (npm run test && npm run test:e2e) and achieve 90%+ coverage on tax services
