@@ -269,7 +269,7 @@ export function CsvImportDialog({
             <Alert className="mb-4 border-green-200 bg-green-50">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                No portfolio found. Created &ldquo;My Portfolio&rdquo; for your transactions.
+                No portfolio found. Created &quot;My Portfolio&quot; for your transactions.
               </AlertDescription>
             </Alert>
           )}

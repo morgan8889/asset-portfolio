@@ -29,6 +29,8 @@ import {
   PERFORMANCE_SNAPSHOT_DECIMAL_FIELDS,
 } from '@/types/performance';
 
+import { Liability } from '@/types/planning';
+
 import {
   serializeDecimalFields,
   deserializeDecimalFields,
@@ -61,6 +63,7 @@ export class PortfolioDatabase extends Dexie {
   dividendRecords!: Table<DividendRecordStorage>;
   userSettings!: Table<UserSettings>;
   performanceSnapshots!: Table<PerformanceSnapshotStorage>;
+  liabilities!: Table<Liability>;
 
   constructor() {
     super('PortfolioTrackerDB');
@@ -94,6 +97,23 @@ export class PortfolioDatabase extends Dexie {
         '++id, assetId, portfolioId, paymentDate, [assetId+paymentDate]',
       userSettings: '++id, key',
       performanceSnapshots: '++id, portfolioId, date, [portfolioId+date]',
+    });
+
+    // Define schema version 3 - add liabilities table
+    this.version(3).stores({
+      portfolios: '++id, name, type, createdAt, updatedAt',
+      assets: '++id, symbol, name, type, exchange, currency',
+      holdings:
+        '++id, portfolioId, assetId, [portfolioId+assetId], lastUpdated',
+      transactions:
+        '++id, portfolioId, assetId, date, type, [portfolioId+date], [assetId+date], [portfolioId+assetId]',
+      priceHistory: '++id, assetId, date, [assetId+date], source',
+      priceSnapshots: '++id, assetId, timestamp, [assetId+timestamp], source',
+      dividendRecords:
+        '++id, assetId, portfolioId, paymentDate, [assetId+paymentDate]',
+      userSettings: '++id, key',
+      performanceSnapshots: '++id, portfolioId, date, [portfolioId+date]',
+      liabilities: '++id, portfolioId, name, startDate',
     });
 
     // Add hooks for data transformation
@@ -637,6 +657,43 @@ export class PortfolioDatabase extends Dexie {
 
     await this.performanceSnapshots.bulkDelete(toDelete.map((s) => s.id));
     return toDelete.length;
+  }
+
+  // ==========================================================================
+  // Liability Helper Methods
+  // ==========================================================================
+
+  async getLiabilitiesByPortfolio(portfolioId: string): Promise<Liability[]> {
+    return this.liabilities
+      .where('portfolioId')
+      .equals(portfolioId)
+      .toArray();
+  }
+
+  async getLiability(id: string): Promise<Liability | undefined> {
+    return this.liabilities.get(id);
+  }
+
+  async addLiability(liability: Omit<Liability, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+    const now = new Date().toISOString();
+    const id = await this.liabilities.add({
+      ...liability,
+      id: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+    } as Liability);
+    return id as string;
+  }
+
+  async updateLiability(id: string, updates: Partial<Omit<Liability, 'id' | 'createdAt'>>): Promise<void> {
+    await this.liabilities.update(id, {
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  async deleteLiability(id: string): Promise<void> {
+    await this.liabilities.delete(id);
   }
 }
 
