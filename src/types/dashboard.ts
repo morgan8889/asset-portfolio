@@ -72,6 +72,7 @@ export const WIDGET_SIZE_CONSTRAINTS: Record<WidgetId, WidgetSizeConstraints> =
     'top-performers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
     'biggest-losers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
     'recent-activity': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
+    'tax-exposure': { minW: 1, maxW: 2, minH: 2, maxH: 4 },
   };
 
 /**
@@ -106,7 +107,8 @@ export type WidgetId =
   | 'growth-chart'
   | 'top-performers'
   | 'biggest-losers'
-  | 'recent-activity';
+  | 'recent-activity'
+  | 'tax-exposure';
 
 /**
  * Static definition of a widget type.
