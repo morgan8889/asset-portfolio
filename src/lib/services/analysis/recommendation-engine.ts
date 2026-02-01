@@ -10,9 +10,12 @@ import {
   Recommendation,
   RecommendationThresholds,
   DEFAULT_RECOMMENDATION_THRESHOLDS,
+  TaxRecommendationMetadata,
 } from '@/types/analysis';
 import { AssetType } from '@/types/portfolio';
 import { Holding, Asset } from '@/types';
+import { detectAgingLots } from '@/lib/services/tax-calculator';
+import { useTaxSettingsStore } from '@/lib/stores/tax-settings';
 
 interface RecommendationInput {
   holdings: Holding[];
@@ -51,6 +54,9 @@ export function generateRecommendations(
 
   const sectorConc = checkSectorConcentration(input, thresholds);
   if (sectorConc) recommendations.push(sectorConc);
+
+  const taxLotAging = checkTaxLotAging(input);
+  if (taxLotAging) recommendations.push(taxLotAging);
 
   return recommendations;
 }
@@ -288,4 +294,62 @@ function checkSectorConcentration(
   }
 
   return null;
+}
+
+/**
+ * Check for tax lots approaching long-term capital gains status
+ *
+ * Detects holdings with lots that will become long-term (held >365 days) within the next 30 days.
+ * Recommends holding these positions to benefit from lower long-term capital gains tax rates.
+ */
+function checkTaxLotAging(
+  input: RecommendationInput
+): Recommendation | null {
+  // Create asset map for detectAgingLots
+  const assetMap = new Map(input.assets.map(asset => [asset.id, asset]));
+
+  const agingLots = detectAgingLots(input.holdings, assetMap);
+
+  if (agingLots.length === 0) {
+    return null;
+  }
+
+  // Get tax settings for calculating potential savings
+  const taxSettings = useTaxSettingsStore.getState().settings;
+  const shortTermRate = taxSettings.shortTermTaxRate;
+  const longTermRate = taxSettings.longTermTaxRate;
+  const rateDiff = shortTermRate - longTermRate;
+
+  // Find the lot closest to becoming long-term
+  const nearestLot = agingLots.reduce((nearest, lot) =>
+    lot.daysUntilLongTerm < nearest.daysUntilLongTerm ? lot : nearest
+  );
+
+  // Calculate potential savings on unrealized gains
+  const totalUnrealizedGains = agingLots.reduce(
+    (sum, lot) => sum.plus(lot.unrealizedGain),
+    new Decimal(0)
+  );
+  const potentialSavings = totalUnrealizedGains.mul(rateDiff).toNumber();
+
+  const metadata: TaxRecommendationMetadata = {
+    agingLotsCount: agingLots.length,
+    totalUnrealizedGain: totalUnrealizedGains.toString(),
+    earliestLotDaysRemaining: nearestLot.daysUntilLongTerm,
+    affectedAssetIds: [...new Set(agingLots.map(lot => lot.assetId))],
+  };
+
+  const daysText = nearestLot.daysUntilLongTerm === 1 ? 'day' : 'days';
+  const lotsText = agingLots.length === 1 ? 'lot' : 'lots';
+
+  return {
+    id: 'tax-lot-aging',
+    type: 'tax_lot_aging',
+    title: 'Tax Lots Approaching Long-Term Status',
+    description: `You have ${agingLots.length} ${lotsText} that will qualify for lower long-term capital gains rates within 30 days. The nearest lot (${nearestLot.assetSymbol}) becomes long-term in ${nearestLot.daysUntilLongTerm} ${daysText}. Holding until then could save approximately $${potentialSavings.toFixed(2)} in taxes.`,
+    severity: nearestLot.daysUntilLongTerm <= 7 ? 'high' : 'medium',
+    actionLabel: 'View Tax Exposure',
+    actionUrl: '/analysis',
+    metadata,
+  };
 }

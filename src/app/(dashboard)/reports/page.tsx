@@ -16,9 +16,11 @@ export default function ReportsPage() {
   const { updateProgress, resetProgress } = useExportStore();
   const { toast } = useToast();
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-  const [isGeneratingTransactionsCsv, setIsGeneratingTransactionsCsv] = useState(false);
+  const [isGeneratingTransactionsCsv, setIsGeneratingTransactionsCsv] =
+    useState(false);
   const [isGeneratingHoldingsCsv, setIsGeneratingHoldingsCsv] = useState(false);
-  const [transactionDateRange, setTransactionDateRange] = useState<DateRangePreset>('YTD');
+  const [transactionDateRange, setTransactionDateRange] =
+    useState<DateRangePreset>('YTD');
 
   const handleGeneratePerformancePdf = async () => {
     if (!currentPortfolio) {
@@ -49,7 +51,8 @@ export default function ReportsPage() {
     } catch (error) {
       toast({
         title: 'Export Failed',
-        description: error instanceof Error ? error.message : 'Failed to generate PDF',
+        description:
+          error instanceof Error ? error.message : 'Failed to generate PDF',
         variant: 'destructive',
       });
     } finally {
@@ -87,7 +90,10 @@ export default function ReportsPage() {
     } catch (error) {
       toast({
         title: 'Export Failed',
-        description: error instanceof Error ? error.message : 'Failed to export transactions',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Failed to export transactions',
         variant: 'destructive',
       });
     } finally {
@@ -110,12 +116,9 @@ export default function ReportsPage() {
     resetProgress();
 
     try {
-      await exportService.exportHoldingsCsv(
-        currentPortfolio.id,
-        (progress) => {
-          updateProgress(progress);
-        }
-      );
+      await exportService.exportHoldingsCsv(currentPortfolio.id, (progress) => {
+        updateProgress(progress);
+      });
 
       toast({
         title: 'Success',
@@ -124,7 +127,8 @@ export default function ReportsPage() {
     } catch (error) {
       toast({
         title: 'Export Failed',
-        description: error instanceof Error ? error.message : 'Failed to export holdings',
+        description:
+          error instanceof Error ? error.message : 'Failed to export holdings',
         variant: 'destructive',
       });
     } finally {

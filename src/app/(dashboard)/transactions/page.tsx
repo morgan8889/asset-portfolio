@@ -26,10 +26,7 @@ export default function TransactionsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setImportDialogOpen(true)}
-          >
+          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
             <Import className="mr-2 h-4 w-4" />
             Import CSV
           </Button>

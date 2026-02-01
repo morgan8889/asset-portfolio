@@ -74,12 +74,15 @@ class ExportService implements IExportService {
       });
 
       // Lazy load PDF libraries
-      const [{ default: jsPDF }, { default: html2canvas }, { default: autoTable }] =
-        await Promise.all([
-          import('jspdf'),
-          import('html2canvas'),
-          import('jspdf-autotable'),
-        ]);
+      const [
+        { default: jsPDF },
+        { default: html2canvas },
+        { default: autoTable },
+      ] = await Promise.all([
+        import('jspdf'),
+        import('html2canvas'),
+        import('jspdf-autotable'),
+      ]);
 
       onProgress?.({
         status: 'generating',
@@ -95,7 +98,11 @@ class ExportService implements IExportService {
       pdf.text(data.portfolioName, 20, 20);
 
       pdf.setFontSize(12);
-      pdf.text(`Performance Report | ${data.generatedAt.toLocaleDateString()}`, 20, 30);
+      pdf.text(
+        `Performance Report | ${data.generatedAt.toLocaleDateString()}`,
+        20,
+        30
+      );
 
       pdf.setFontSize(10);
       const periodText = `Period: ${data.dateRange.start.toLocaleDateString()} - ${data.dateRange.end.toLocaleDateString()}`;
@@ -112,10 +119,18 @@ class ExportService implements IExportService {
       pdf.text(`Total Value: $${data.summary.totalValue}`, 20, yPos);
       pdf.text(`Total Cost: $${data.summary.totalCost}`, 110, yPos);
       yPos += 7;
-      pdf.text(`Total Gain/Loss: $${data.summary.totalGain} (${data.summary.totalGainPercent})`, 20, yPos);
+      pdf.text(
+        `Total Gain/Loss: $${data.summary.totalGain} (${data.summary.totalGainPercent})`,
+        20,
+        yPos
+      );
       yPos += 7;
       pdf.text(`Period Return: ${data.summary.periodReturn}`, 20, yPos);
-      pdf.text(`Annualized Return: ${data.summary.annualizedReturn}`, 110, yPos);
+      pdf.text(
+        `Annualized Return: ${data.summary.annualizedReturn}`,
+        110,
+        yPos
+      );
       yPos += 15;
 
       // Add top holdings table
@@ -167,7 +182,8 @@ class ExportService implements IExportService {
       onProgress?.({
         status: 'error',
         progress: 0,
-        error: error instanceof Error ? error.message : 'Failed to generate PDF',
+        error:
+          error instanceof Error ? error.message : 'Failed to generate PDF',
       });
       throw error;
     }
@@ -357,6 +373,19 @@ class ExportService implements IExportService {
         const fees = new Decimal(tx.fees || 0);
         const total = new Decimal(tx.totalAmount);
 
+        // Tax fields (T038-T042)
+        const grantDate = tx.grantDate ? format(new Date(tx.grantDate), 'yyyy-MM-dd') : '';
+        const vestDate = tx.vestingDate ? format(new Date(tx.vestingDate), 'yyyy-MM-dd') : '';
+        const discountPercent = tx.discountPercent
+          ? `${new Decimal(tx.discountPercent).mul(100).toFixed(2)}%`
+          : '';
+        const sharesWithheld = tx.sharesWithheld
+          ? new Decimal(tx.sharesWithheld).toFixed(4)
+          : '';
+        const ordinaryIncome = tx.ordinaryIncomeAmount
+          ? `$${new Decimal(tx.ordinaryIncomeAmount).toFixed(2)}`
+          : '';
+
         return {
           date: format(new Date(tx.date), 'yyyy-MM-dd'),
           type: tx.type.charAt(0).toUpperCase() + tx.type.slice(1),
@@ -366,6 +395,11 @@ class ExportService implements IExportService {
           price: price.toFixed(2),
           fees: fees.toFixed(2),
           total: total.toFixed(2),
+          grantDate,
+          vestDate,
+          discountPercent,
+          sharesWithheld,
+          ordinaryIncome,
         };
       }
     );
@@ -383,6 +417,16 @@ class ExportService implements IExportService {
   async prepareHoldingsData(portfolioId: string): Promise<HoldingExportRow[]> {
     const { db } = await import('@/lib/db');
     const Decimal = (await import('decimal.js')).default;
+    const { determineMixedHoldingPeriod } = await import('@/types/tax');
+    const { formatHoldingPeriodAbbr } = await import('@/lib/utils/tax-formatters');
+    const { useTaxSettingsStore } = await import('@/lib/stores/tax-settings');
+
+    // Get tax settings
+    const taxSettings = useTaxSettingsStore.getState().settings;
+    const combinedTaxRate = {
+      st: taxSettings.shortTermTaxRate + taxSettings.stateRate,
+      lt: taxSettings.longTermTaxRate + taxSettings.stateRate,
+    };
 
     // Get all holdings for portfolio
     const holdings = await db.holdings.where({ portfolioId }).toArray();
@@ -391,6 +435,8 @@ class ExportService implements IExportService {
     const assetIds = [...new Set(holdings.map((h) => h.assetId))];
     const assets = await db.assets.where('id').anyOf(assetIds).toArray();
     const assetMap = new Map(assets.map((a) => [a.id, a]));
+
+    const currentDate = new Date();
 
     // Format for CSV export
     const exportRows: HoldingExportRow[] = holdings.map((holding) => {
@@ -411,6 +457,42 @@ class ExportService implements IExportService {
         ? new Decimal(0)
         : marketValue.div(quantity);
 
+      // Tax calculations (T043-T047)
+      const holdingPeriod = determineMixedHoldingPeriod(holding.lots, currentDate);
+      let shortTermGain = new Decimal(0);
+      let longTermGain = new Decimal(0);
+
+      // Calculate ST/LT gains from lots
+      for (const lot of holding.lots) {
+        if (lot.remainingQuantity.isZero()) continue;
+
+        const lotValue = lot.remainingQuantity.mul(currentPrice);
+        const lotCost = lot.remainingQuantity.mul(lot.purchasePrice);
+        const lotGain = lotValue.sub(lotCost);
+
+        const daysHeld = Math.floor(
+          (currentDate.getTime() - lot.purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+
+        if (daysHeld >= 365) {
+          longTermGain = longTermGain.add(lotGain);
+        } else {
+          shortTermGain = shortTermGain.add(lotGain);
+        }
+      }
+
+      // Calculate estimated tax (only on gains, not losses)
+      const stTax = shortTermGain.greaterThan(0)
+        ? shortTermGain.mul(combinedTaxRate.st)
+        : new Decimal(0);
+      const ltTax = longTermGain.greaterThan(0)
+        ? longTermGain.mul(combinedTaxRate.lt)
+        : new Decimal(0);
+      const estimatedTax = stTax.add(ltTax);
+
+      // Basis adjustment (placeholder for ESPP disqualifying dispositions)
+      const basisAdjustment = new Decimal(0);
+
       return {
         symbol: asset?.symbol || 'N/A',
         name: asset?.name || asset?.symbol || 'Unknown',
@@ -422,6 +504,11 @@ class ExportService implements IExportService {
         marketValue: marketValue.toFixed(2),
         unrealizedGain: unrealizedGain.toFixed(2),
         unrealizedGainPercent: unrealizedGainPercent.toFixed(2) + '%',
+        holdingPeriod: formatHoldingPeriodAbbr(holdingPeriod),
+        shortTermGain: `$${shortTermGain.toFixed(2)}`,
+        longTermGain: `$${longTermGain.toFixed(2)}`,
+        estimatedTax: `$${estimatedTax.toFixed(2)}`,
+        basisAdjustment: `$${basisAdjustment.toFixed(2)}`,
       };
     });
 
@@ -597,9 +684,10 @@ export function generateExportFilename(
 /**
  * Calculate date range bounds from preset
  */
-export function getDateRangeBounds(
-  preset: DateRangePreset
-): { start: Date; end: Date } {
+export function getDateRangeBounds(preset: DateRangePreset): {
+  start: Date;
+  end: Date;
+} {
   const end = new Date();
   let start: Date;
 

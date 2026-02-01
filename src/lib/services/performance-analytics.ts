@@ -30,10 +30,7 @@ import {
 } from '@/types/performance';
 import { db } from '@/lib/db/schema';
 import { getSnapshots, getAggregatedSnapshots } from './snapshot-service';
-import {
-  calculateVolatility,
-  annualizeReturn,
-} from './twr-calculator';
+import { calculateVolatility, annualizeReturn } from './twr-calculator';
 import { calculateSharpeRatio } from './metrics-service';
 
 // =============================================================================

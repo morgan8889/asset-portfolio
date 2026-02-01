@@ -253,7 +253,6 @@ describe('startImportSession', () => {
     expect(session.columnMappings).toBeDefined();
     expect(session.columnMappings.length).toBeGreaterThan(0);
   });
-
 });
 
 describe('detectDuplicates', () => {
