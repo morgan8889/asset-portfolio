@@ -17,21 +17,21 @@ export function serializeDecimalFields<T extends object, K extends keyof T>(
   obj: T,
   fields: K[]
 ): Omit<T, K> & Record<K, string> {
-  const result = { ...obj } as any;
+  const result: Record<string, unknown> = { ...obj };
 
   for (const field of fields) {
     const value = obj[field];
     if (value instanceof Decimal) {
-      result[field] = value.toString();
+      result[field as string] = value.toString();
     } else if (typeof value === 'number') {
-      result[field] = value.toString();
+      result[field as string] = value.toString();
     } else if (value !== undefined && value !== null) {
       // Already a string or other serializable type
-      result[field] = String(value);
+      result[field as string] = String(value);
     }
   }
 
-  return result;
+  return result as Omit<T, K> & Record<K, string>;
 }
 
 /**
@@ -46,21 +46,21 @@ export function deserializeDecimalFields<T extends object, K extends keyof T>(
   fields: K[],
   defaultValue: Decimal = new Decimal(0)
 ): Omit<T, K> & Record<K, Decimal> {
-  const result = { ...obj } as any;
+  const result: Record<string, unknown> = { ...obj };
 
   for (const field of fields) {
     const value = obj[field];
     if (value instanceof Decimal) {
       // Already a Decimal, keep it
-      result[field] = value;
+      result[field as string] = value;
     } else if (value !== undefined && value !== null && value !== '') {
-      result[field] = new Decimal(value as string | number);
+      result[field as string] = new Decimal(value as string | number);
     } else {
-      result[field] = defaultValue;
+      result[field as string] = defaultValue;
     }
   }
 
-  return result;
+  return result as Omit<T, K> & Record<K, Decimal>;
 }
 
 /**

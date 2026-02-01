@@ -11,7 +11,7 @@ import { Decimal } from 'decimal.js';
 import { detectAgingLots, calculateTaxExposure } from '../tax-calculator';
 import { Holding, TaxLot } from '@/types/asset';
 import { Asset } from '@/types';
-import { TaxSettings } from '@/types/settings';
+import { DEFAULT_TAX_SETTINGS } from '@/types/settings';
 
 /**
  * Generate test holdings with tax lots for performance testing
@@ -111,10 +111,7 @@ describe('Tax Calculator Performance', () => {
   it('should calculate tax exposure in <200ms for 500 holdings', () => {
     const { holdings, assetMap } = generateTestHoldings(500);
 
-    const taxSettings: TaxSettings = {
-      shortTermRate: 0.24,
-      longTermRate: 0.15,
-    };
+    const taxSettings = DEFAULT_TAX_SETTINGS;
 
     const startTime = performance.now();
     const taxExposure = calculateTaxExposure(holdings, assetMap, taxSettings);
