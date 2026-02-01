@@ -26,7 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { ArrowUpDown, AlertTriangle } from 'lucide-react';
+import { ArrowUpDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { Holding } from '@/types/asset';
 import { estimateTaxLiability } from '@/lib/services/tax-estimator';
@@ -169,9 +169,9 @@ export function TaxAnalysisTab({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Summary Cards */}
-      <Grid numItemsMd={2} numItemsLg={4} className="gap-6">
+    <div className="space-y-4">
+      {/* Summary Cards - Reduced to 3 for compactness */}
+      <Grid numItemsMd={2} numItemsLg={3} className="gap-4">
         <Card>
           <Text>Total Unrealized Gains</Text>
           <Metric>
@@ -185,25 +185,15 @@ export function TaxAnalysisTab({
         </Card>
 
         <Card>
-          <Text>Short-Term Gains</Text>
-          <Metric className="text-yellow-600">
-            ${taxAnalysis.shortTermGains.toFixed(2)}
+          <Text>Short-Term / Long-Term</Text>
+          <Metric className="text-sm">
+            <span className="text-yellow-600">${taxAnalysis.shortTermGains.toFixed(0)}</span>
+            {' / '}
+            <span className="text-green-600">${taxAnalysis.longTermGains.toFixed(0)}</span>
           </Metric>
           <Flex className="mt-2">
             <Text className="truncate text-sm">
-              Taxed at {taxSettings.shortTermRate.mul(100).toFixed(1)}%
-            </Text>
-          </Flex>
-        </Card>
-
-        <Card>
-          <Text>Long-Term Gains</Text>
-          <Metric className="text-green-600">
-            ${taxAnalysis.longTermGains.toFixed(2)}
-          </Metric>
-          <Flex className="mt-2">
-            <Text className="truncate text-sm">
-              Taxed at {taxSettings.longTermRate.mul(100).toFixed(1)}%
+              {taxSettings.shortTermRate.mul(100).toFixed(1)}% / {taxSettings.longTermRate.mul(100).toFixed(1)}%
             </Text>
           </Flex>
         </Card>
@@ -223,8 +213,8 @@ export function TaxAnalysisTab({
 
       {/* Tax Lot Table */}
       <Card>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-4 pt-4">
             <div>
               <h3 className="text-lg font-semibold">Tax Lot Analysis</h3>
               <p className="text-sm text-muted-foreground">
@@ -233,31 +223,31 @@ export function TaxAnalysisTab({
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="max-h-[500px] overflow-y-auto">
             <Table>
-              <TableHeader>
+              <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
-                  <TableHead>Asset</TableHead>
-                  <TableHead>
-                    <SortButton field="purchaseDate" label="Purchase Date" />
+                  <TableHead className="w-20">Asset</TableHead>
+                  <TableHead className="w-28">
+                    <SortButton field="purchaseDate" label="Date" />
                   </TableHead>
-                  <TableHead className="text-right">
-                    <SortButton field="quantity" label="Quantity" />
+                  <TableHead className="text-right w-20">
+                    <SortButton field="quantity" label="Qty" />
                   </TableHead>
-                  <TableHead className="text-right">
-                    <SortButton field="costBasis" label="Cost Basis" />
+                  <TableHead className="text-right w-24">
+                    <SortButton field="costBasis" label="Cost" />
                   </TableHead>
-                  <TableHead className="text-right">
-                    <SortButton field="currentValue" label="Current Value" />
+                  <TableHead className="text-right w-24">
+                    <SortButton field="currentValue" label="Value" />
                   </TableHead>
-                  <TableHead className="text-right">
-                    <SortButton field="unrealizedGain" label="Gain/Loss" />
+                  <TableHead className="text-right w-24">
+                    <SortButton field="unrealizedGain" label="Gain" />
                   </TableHead>
-                  <TableHead>
+                  <TableHead className="w-24">
                     <SortButton field="holdingPeriod" label="Period" />
                   </TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Warnings</TableHead>
+                  <TableHead className="w-20">Type</TableHead>
+                  <TableHead className="w-28">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -270,24 +260,24 @@ export function TaxAnalysisTab({
                 ) : (
                   sortedLots.map((lot, index) => (
                     <TableRow key={`${lot.lotId}-${index}`}>
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium py-2">
                         {lot.assetSymbol}
                       </TableCell>
-                      <TableCell>
-                        {format(lot.purchaseDate, 'MMM dd, yyyy')}
+                      <TableCell className="py-2 text-sm">
+                        {format(lot.purchaseDate, 'MM/dd/yy')}
                       </TableCell>
-                      <TableCell className="text-right">
-                        {lot.quantity.toFixed(4)}
+                      <TableCell className="text-right py-2 text-sm">
+                        {lot.quantity.toFixed(2)}
                       </TableCell>
-                      <TableCell className="text-right">
-                        ${lot.costBasis.toFixed(2)}
+                      <TableCell className="text-right py-2 text-sm">
+                        ${lot.costBasis.toFixed(0)}
                       </TableCell>
-                      <TableCell className="text-right">
-                        ${lot.currentValue.toFixed(2)}
+                      <TableCell className="text-right py-2 text-sm">
+                        ${lot.currentValue.toFixed(0)}
                       </TableCell>
                       <TableCell
                         className={cn(
-                          'text-right font-medium',
+                          'text-right py-2 font-medium text-sm',
                           lot.unrealizedGain.greaterThan(0)
                             ? 'text-green-600'
                             : lot.unrealizedGain.lessThan(0)
@@ -295,39 +285,42 @@ export function TaxAnalysisTab({
                               : ''
                         )}
                       >
-                        ${lot.unrealizedGain.toFixed(2)}
+                        ${lot.unrealizedGain.toFixed(0)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-2">
                         <Badge
-                          className={
+                          variant="outline"
+                          className={cn(
+                            'text-xs',
                             lot.holdingPeriod === 'long'
                               ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                               : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-                          }
+                          )}
+                          aria-label={lot.holdingPeriod === 'long' ? 'Long-term' : 'Short-term'}
                         >
-                          {lot.holdingPeriod === 'long' ? 'Long-Term' : 'Short-Term'}
+                          {lot.holdingPeriod === 'long' ? 'LT' : 'ST'}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">
-                            {lot.lotType === 'espp'
-                              ? 'ESPP'
+                      <TableCell className="py-2">
+                        <Badge
+                          variant="outline"
+                          className="text-xs"
+                          aria-label={
+                            lot.lotType === 'espp'
+                              ? 'ESPP (Employee Stock Purchase Plan)'
                               : lot.lotType === 'rsu'
-                                ? 'RSU'
-                                : 'Standard'}
-                          </Badge>
-                          {lot.lotType === 'espp' && lot.bargainElement && (
-                            <span
-                              className="text-xs text-muted-foreground"
-                              title={`Bargain element: $${lot.bargainElement.toFixed(2)}`}
-                            >
-                              💰
-                            </span>
-                          )}
-                        </div>
+                                ? 'RSU (Restricted Stock Unit)'
+                                : 'Standard'
+                          }
+                        >
+                          {lot.lotType === 'espp'
+                            ? 'ESPP'
+                            : lot.lotType === 'rsu'
+                              ? 'RSU'
+                              : 'Std'}
+                        </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-2">
                         {lot.lotType === 'espp' && lot.grantDate ? (
                           (() => {
                             const hypotheticalSellDate = new Date();
@@ -339,7 +332,7 @@ export function TaxAnalysisTab({
                             const reason = getDispositionReason(dispositionCheck);
                             const bargainElementValue = lot.bargainElement || new Decimal(0);
                             const message = getTaxImplicationMessage(dispositionCheck, bargainElementValue);
-                            
+
                             // Calculate days manually
                             const daysFromGrant = Math.floor(
                               (hypotheticalSellDate.getTime() - lot.grantDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -364,9 +357,10 @@ export function TaxAnalysisTab({
                               return (
                                 <Badge
                                   variant="outline"
-                                  className="bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+                                  className="bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400 text-xs"
+                                  aria-label="Qualifying disposition"
                                 >
-                                  Qualifying
+                                  ✓
                                 </Badge>
                               );
                             }
@@ -375,15 +369,13 @@ export function TaxAnalysisTab({
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <div className="flex items-center gap-1 cursor-help">
-                                      <AlertTriangle className="h-4 w-4 text-amber-600" />
-                                      <Badge
-                                        variant="outline"
-                                        className="bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400"
-                                      >
-                                        Disqualifying
-                                      </Badge>
-                                    </div>
+                                    <Badge
+                                      variant="outline"
+                                      className="bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400 cursor-help text-xs"
+                                      aria-label="Disqualifying disposition warning"
+                                    >
+                                      ⚠️
+                                    </Badge>
                                   </TooltipTrigger>
                                   <TooltipContent className="max-w-xs">
                                     <div className="space-y-2">
