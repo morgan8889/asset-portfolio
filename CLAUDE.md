@@ -263,7 +263,7 @@ src/components/forms/
 ```
 
 ### Import Flow
-1. **File Upload**: User selects/drops CSV file (max 10MB)
+1. **File Upload**: User selects/drops CSV file (max 5MB)
 2. **Parsing**: PapaParse extracts headers and rows with delimiter auto-detection
 3. **Column Detection**: Headers matched against known patterns (Date, Symbol, Quantity, etc.)
 4. **Validation**: Each row validated with detailed error messages
