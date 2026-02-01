@@ -19,7 +19,9 @@ import {
 } from '@/types';
 import {
   serializeDecimalFields,
+  serializePartialDecimals,
   HOLDING_DECIMAL_FIELDS,
+  TRANSACTION_DECIMAL_FIELDS,
 } from '@/lib/utils/decimal-serialization';
 
 // Portfolio queries
@@ -192,20 +194,8 @@ export const holdingQueries = {
   },
 
   async update(id: string, updates: Partial<Holding>): Promise<void> {
-    // Use the serialization utility to convert Decimal values
-    const decimalFields = HOLDING_DECIMAL_FIELDS.filter(
-      (field) => updates[field as keyof Holding] !== undefined
-    );
-
-    const serializedUpdates =
-      decimalFields.length > 0
-        ? serializeDecimalFields(updates, decimalFields as (keyof Holding)[])
-        : updates;
-
-    await db.holdings.update(id, {
-      ...serializedUpdates,
-      lastUpdated: new Date(),
-    });
+    const serialized = serializePartialDecimals(updates, HOLDING_DECIMAL_FIELDS);
+    await db.holdings.update(id, { ...serialized, lastUpdated: new Date() });
   },
 
   async delete(id: string): Promise<void> {
@@ -291,18 +281,28 @@ export const transactionQueries = {
 
   async create(transaction: Omit<Transaction, 'id'>): Promise<string> {
     const newId = generateTransactionId();
+    const serialized = serializeDecimalFields(
+      transaction,
+      [...TRANSACTION_DECIMAL_FIELDS] as (keyof typeof transaction)[]
+    );
     await db.transactions.add({
-      ...transaction,
+      ...serialized,
       id: newId,
     } as unknown as TransactionStorage);
     return newId;
   },
 
   async createMany(transactions: Omit<Transaction, 'id'>[]): Promise<string[]> {
-    const transactionsWithIds = transactions.map((t) => ({
-      ...t,
-      id: generateTransactionId(),
-    }));
+    const transactionsWithIds = transactions.map((t) => {
+      const serialized = serializeDecimalFields(
+        t,
+        [...TRANSACTION_DECIMAL_FIELDS] as (keyof typeof t)[]
+      );
+      return {
+        ...serialized,
+        id: generateTransactionId(),
+      };
+    });
 
     await db.transactions.bulkAdd(
       transactionsWithIds as unknown as TransactionStorage[]
@@ -311,7 +311,8 @@ export const transactionQueries = {
   },
 
   async update(id: string, updates: Partial<Transaction>): Promise<void> {
-    await db.transactions.update(id, updates as Partial<TransactionStorage>);
+    const serialized = serializePartialDecimals(updates, TRANSACTION_DECIMAL_FIELDS);
+    await db.transactions.update(id, serialized as Partial<TransactionStorage>);
   },
 
   async delete(id: string): Promise<void> {
