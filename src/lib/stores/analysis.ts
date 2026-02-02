@@ -25,6 +25,7 @@ import { generateRecommendations } from '@/lib/services/analysis/recommendation-
 import { calculateRebalancing } from '@/lib/services/analysis/rebalancing-service';
 import { PREDEFINED_TARGET_MODELS } from '@/lib/data/target-models';
 import Decimal from 'decimal.js';
+import { logger } from '@/lib/utils/logger';
 
 export const useAnalysisStore = create<AnalysisState>()(
   devtools(
@@ -72,10 +73,13 @@ export const useAnalysisStore = create<AnalysisState>()(
               return;
             }
 
+            // Create asset map for O(1) lookups
+            const assetMap = new Map(assets.map((a) => [a.id, a]));
+
             const input: HealthScoreInput = {
               holdings: holdings
                 .map((h) => {
-                  const asset = assets.find((a) => a.id === h.assetId);
+                  const asset = assetMap.get(h.assetId);
                   return {
                     assetId: h.assetId,
                     value: h.currentValue.isNegative()
@@ -109,7 +113,7 @@ export const useAnalysisStore = create<AnalysisState>()(
               error instanceof Error
                 ? error.message
                 : `Failed to calculate health score: ${String(error)}`;
-            console.error('[Analysis Store] Health calculation error:', error);
+            logger.error('Health calculation error', error);
             set({
               error: errorMessage,
               isCalculating: false,
@@ -153,10 +157,7 @@ export const useAnalysisStore = create<AnalysisState>()(
               error instanceof Error
                 ? error.message
                 : `Failed to generate recommendations: ${String(error)}`;
-            console.error(
-              '[Analysis Store] Recommendation generation error:',
-              error
-            );
+            logger.error('Recommendation generation error', error);
             set({
               error: errorMessage,
               isCalculating: false,
