@@ -1,7 +1,108 @@
 import Decimal from 'decimal.js';
 import { db } from '@/lib/db/schema';
-import { NetWorthPoint } from '@/types/planning';
-import { endOfMonth, startOfMonth, eachMonthOfInterval, format } from 'date-fns';
+import { Holding, Asset, PriceHistory } from '@/types/asset';
+import { NetWorthPoint, Liability } from '@/types/planning';
+import { endOfMonth, eachMonthOfInterval } from 'date-fns';
+
+// Cached data structure for batch calculations
+interface CachedPortfolioData {
+  holdings: Holding[];
+  liabilities: Liability[];
+  assetMap: Map<string, Asset | undefined>;
+  // Price history sorted by date descending for efficient lookup
+  priceHistoryMap: Map<string, PriceHistory[]>;
+}
+
+/**
+ * Load all portfolio data once for batch net worth calculations
+ */
+async function loadPortfolioData(portfolioId: string): Promise<CachedPortfolioData> {
+  // Load all data in parallel
+  const [holdings, liabilities] = await Promise.all([
+    db.getHoldingsByPortfolio(portfolioId),
+    db.getLiabilitiesByPortfolio(portfolioId),
+  ]);
+
+  const assetIds = holdings.map(h => h.assetId);
+
+  // Load assets and ALL price history in parallel
+  const [assets, priceHistories] = await Promise.all([
+    db.assets.bulkGet(assetIds),
+    Promise.all(assetIds.map(id => db.getPriceHistoryByAsset(id))),
+  ]);
+
+  // Create maps and pre-sort price history by date descending
+  const assetMap = new Map(assetIds.map((id, i) => [id, assets[i]]));
+  const priceHistoryMap = new Map(
+    assetIds.map((id, i) => [
+      id,
+      (priceHistories[i] || []).sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      ),
+    ])
+  );
+
+  return { holdings, liabilities, assetMap, priceHistoryMap };
+}
+
+/**
+ * Find the most recent price on or before a given date from sorted price history
+ */
+function findPriceAtDate(
+  priceHistory: PriceHistory[],
+  targetDate: Date,
+  fallbackPrice: Decimal
+): Decimal {
+  const targetTime = targetDate.getTime();
+
+  // Price history is sorted descending, find first price <= target date
+  for (const price of priceHistory) {
+    if (new Date(price.date).getTime() <= targetTime) {
+      return new Decimal(price.close);
+    }
+  }
+
+  return fallbackPrice;
+}
+
+/**
+ * Calculate net worth from cached data (no DB calls)
+ */
+function calculateNetWorthFromCache(
+  data: CachedPortfolioData,
+  date: Date
+): { assets: Decimal; liabilities: Decimal; netWorth: Decimal } {
+  let totalAssets = new Decimal(0);
+  let totalLiabilities = new Decimal(0);
+
+  for (const holding of data.holdings) {
+    const asset = data.assetMap.get(holding.assetId);
+    if (!asset) continue;
+
+    const priceHistory = data.priceHistoryMap.get(holding.assetId) || [];
+    const fallbackPrice = asset.currentPrice ? new Decimal(asset.currentPrice) : new Decimal(0);
+    const price = findPriceAtDate(priceHistory, date, fallbackPrice);
+
+    const quantity = new Decimal(holding.quantity);
+    const value = price.mul(quantity);
+
+    const ownershipPercent = new Decimal(holding.ownershipPercentage || 100).div(100);
+    const adjustedValue = value.mul(ownershipPercent);
+
+    totalAssets = totalAssets.plus(adjustedValue);
+  }
+
+  for (const liability of data.liabilities) {
+    const balance = new Decimal(liability.balance);
+    totalLiabilities = totalLiabilities.plus(balance);
+  }
+
+  return {
+    assets: totalAssets,
+    liabilities: totalLiabilities,
+    netWorth: totalAssets.minus(totalLiabilities),
+  };
+}
 
 /**
  * Aggregates assets and liabilities to calculate net worth at a specific date
@@ -10,106 +111,38 @@ export async function calculateNetWorthAtDate(
   portfolioId: string,
   date: Date
 ): Promise<{ assets: Decimal; liabilities: Decimal; netWorth: Decimal }> {
-  // Get all holdings for the portfolio
-  const holdings = await db.getHoldingsByPortfolio(portfolioId);
-
-  // Get all liabilities for the portfolio
-  const liabilities = await db.getLiabilitiesByPortfolio(portfolioId);
-
-  let totalAssets = new Decimal(0);
-  let totalLiabilities = new Decimal(0);
-
-  // Batch load all assets and price histories to avoid N+1 queries
-  const assetIds = holdings.map(h => h.assetId);
-  const assets = await db.assets.bulkGet(assetIds);
-  const priceHistories = await Promise.all(
-    assetIds.map(id => db.getPriceHistoryByAsset(id, undefined, date))
-  );
-
-  // Create maps for efficient lookup
-  const assetMap = new Map(assetIds.map((id, i) => [id, assets[i]]));
-  const priceHistoryMap = new Map(assetIds.map((id, i) => [id, priceHistories[i]]));
-
-  // Calculate total asset value
-  for (const holding of holdings) {
-    // Get the asset details from the pre-loaded map
-    const asset = assetMap.get(holding.assetId);
-    if (!asset) continue;
-
-    // Get price history from the pre-loaded map
-    const priceHistory = priceHistoryMap.get(holding.assetId) || [];
-
-    let price: Decimal;
-    if (priceHistory.length > 0) {
-      // Find the most recent price without sorting the entire array
-      const latestPrice = priceHistory.reduce((latest, current) =>
-        new Date(current.date) > new Date(latest.date) ? current : latest
-      );
-      price = new Decimal(latestPrice.close);
-    } else {
-      // Fallback to current price if no historical data
-      price = asset.currentPrice ? new Decimal(asset.currentPrice) : new Decimal(0);
-    }
-
-    // Calculate holding value
-    const quantity = new Decimal(holding.quantity);
-    const value = price.mul(quantity);
-
-    // Apply ownership percentage if partial ownership
-    const ownershipPercent = new Decimal(holding.ownershipPercentage || 100).div(100);
-    const adjustedValue = value.mul(ownershipPercent);
-
-    totalAssets = totalAssets.plus(adjustedValue);
-  }
-
-  // Calculate total liabilities
-  for (const liability of liabilities) {
-    // For now, use current balance. In future, could calculate historical balance
-    // based on payment schedule and interest rate
-    const balance = new Decimal(liability.balance);
-    totalLiabilities = totalLiabilities.plus(balance);
-  }
-
-  const netWorth = totalAssets.minus(totalLiabilities);
-
-  return {
-    assets: totalAssets,
-    liabilities: totalLiabilities,
-    netWorth,
-  };
+  const data = await loadPortfolioData(portfolioId);
+  return calculateNetWorthFromCache(data, date);
 }
 
 /**
  * Generates a monthly time series of net worth from start to end date
+ * Optimized: loads all data once, then calculates each month from cache
  */
 export async function getNetWorthHistory(
   portfolioId: string,
   startDate: Date,
   endDate: Date
 ): Promise<NetWorthPoint[]> {
-  const history: NetWorthPoint[] = [];
+  // Load all data once upfront
+  const data = await loadPortfolioData(portfolioId);
 
   // Generate array of month-end dates
   const monthEnds = eachMonthOfInterval({ start: startDate, end: endDate }).map(
     (date) => endOfMonth(date)
   );
 
-  // Calculate net worth for each month
-  for (const monthEnd of monthEnds) {
-    const { assets, liabilities, netWorth } = await calculateNetWorthAtDate(
-      portfolioId,
-      monthEnd
-    );
+  // Calculate net worth for each month from cached data (no DB calls in loop)
+  return monthEnds.map((monthEnd) => {
+    const { assets, liabilities, netWorth } = calculateNetWorthFromCache(data, monthEnd);
 
-    history.push({
+    return {
       date: monthEnd,
       assets: assets.toNumber(),
       liabilities: liabilities.toNumber(),
       netWorth: netWorth.toNumber(),
-    });
-  }
-
-  return history;
+    };
+  });
 }
 
 /**
