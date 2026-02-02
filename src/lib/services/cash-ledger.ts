@@ -7,14 +7,39 @@
  * - Trading fees and taxes
  * - Buy and sell transactions
  * - Deposits and withdrawals
+ *
+ * KNOWN LIMITATION: Cash accounts are not yet persisted to the database.
+ * Cash balances are calculated on-demand by replaying all transactions.
+ * This ensures accuracy but may have performance implications for portfolios
+ * with thousands of transactions. A future enhancement will add a cashAccounts
+ * table to store current balances for faster access.
+ *
+ * @see docs/implementation/014-net-worth-cash-ledger-implementation.md
  */
 
 import { Decimal } from 'decimal.js';
 import { Transaction, TransactionType } from '@/types/transaction';
 import { db } from '@/lib/db/schema';
 
-// TODO: Add getCashAccount and updateCashBalance to database schema
-// Temporary stubs until cash account table is implemented
+/**
+ * IMPLEMENTATION NOTE: Cash Account Persistence
+ *
+ * The functions below are placeholders for future cash account table implementation.
+ * Until schema v5 adds the cashAccounts table, all cash balance calculations
+ * are performed on-demand by replaying transactions via calculateCashBalanceAtDate().
+ *
+ * Future enhancement (schema v5):
+ * - Add cashAccounts table with fields: id, portfolioId, currency, balance, updatedAt
+ * - Implement getCashAccount() to read from database
+ * - Implement updateCashBalance() to persist balances
+ * - Add triggers/hooks to update cash balance on transaction add/edit/delete
+ *
+ * Current behavior:
+ * - getCashAccount() always returns null (no persisted cash accounts)
+ * - updateCashBalance() is a no-op (nothing to persist)
+ * - getCashBalanceHistory() calculates balances by replaying all transactions
+ * - updateCashAccountBalance() calculates current balance but does not persist it
+ */
 interface CashAccount {
   portfolioId: string;
   currency: string;
@@ -22,7 +47,8 @@ interface CashAccount {
 }
 
 async function getCashAccount(_portfolioId: string): Promise<CashAccount | null> {
-  // Placeholder: Cash account table not yet implemented
+  // Placeholder: Cash account table not yet implemented (pending schema v5)
+  // Returns null to indicate no persisted cash account exists
   return null;
 }
 
@@ -31,7 +57,9 @@ async function updateCashBalance(
   _currency: string,
   _balance: Decimal
 ): Promise<void> {
-  // Placeholder: Cash account table not yet implemented
+  // Placeholder: Cash account table not yet implemented (pending schema v5)
+  // This function currently does nothing as there is no table to persist to
+  // When cashAccounts table is added, this will update the balance in the database
 }
 
 /**
