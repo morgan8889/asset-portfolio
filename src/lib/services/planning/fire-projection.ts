@@ -36,6 +36,15 @@ export function calculateRealReturn(
 }
 
 /**
+ * Calculates monthly return rate from configuration
+ * Centralized to avoid duplicate calculations
+ */
+function getMonthlyReturnRate(config: FireConfig): number {
+  const realReturn = calculateRealReturn(config.expectedReturn, config.inflationRate);
+  return realReturn / 12;
+}
+
+/**
  * Configuration-driven scenario handlers for each scenario type
  */
 const SCENARIO_HANDLERS: Record<
@@ -141,13 +150,8 @@ export function generateFireProjection(
     modifiedConfig.withdrawalRate
   );
 
-  // Calculate real return rate
-  const realReturn = calculateRealReturn(
-    modifiedConfig.expectedReturn,
-    modifiedConfig.inflationRate
-  );
-
-  const monthlyReturn = realReturn / 12;
+  // Calculate monthly return rate
+  const monthlyReturn = getMonthlyReturnRate(modifiedConfig);
 
   let currentBalance = new Decimal(currentNetWorth);
   const monthlySavings = new Decimal(modifiedConfig.monthlySavings);
@@ -280,12 +284,7 @@ export function calculateFireMetrics(
     : undefined;
 
   // Calculate monthly progress
-  const realReturn = calculateRealReturn(
-    modifiedConfig.expectedReturn,
-    modifiedConfig.inflationRate
-  );
-  const monthlyReturn = realReturn / 12;
-
+  const monthlyReturn = getMonthlyReturnRate(modifiedConfig);
   const currentBalanceDecimal = new Decimal(currentNetWorth);
   const monthlySavings = new Decimal(modifiedConfig.monthlySavings);
 
