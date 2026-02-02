@@ -152,11 +152,11 @@ export interface TaxExposureMetrics {
 }
 
 /**
- * Tax Recommendation Metadata
+ * Tax Aging Lots Metadata
  *
- * Metadata for tax optimization recommendations.
+ * Portfolio-level summary metadata for tax lots approaching long-term status.
  */
-export interface TaxRecommendationMetadata {
+export interface TaxAgingLotsMetadata {
   agingLotsCount: number;
   totalUnrealizedGain: string; // Serialized Decimal
   earliestLotDaysRemaining: number;
