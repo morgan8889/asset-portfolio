@@ -18,7 +18,7 @@ import { useUIStore, usePriceStore } from '@/lib/stores';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
-  const { toggleSidebar } = useUIStore();
+  const { setMobileMenuOpen } = useUIStore();
   const { isOnline, refreshAllPrices, loading: priceLoading } = usePriceStore();
   const [mounted, setMounted] = useState(false);
 
@@ -38,8 +38,9 @@ export function Header() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={toggleSidebar}
+            onClick={() => setMobileMenuOpen(true)}
             className="md:hidden"
+            aria-label="Toggle sidebar"
           >
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle sidebar</span>
