@@ -8,6 +8,7 @@ import { Decimal } from 'decimal.js';
 
 export interface CurrencyFormatOptions {
   currency?: string;
+  locale?: string;
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
   notation?: 'standard' | 'compact';
@@ -28,6 +29,7 @@ export interface CurrencyFormatOptions {
  *    ```typescript
  *    formatCurrency(1234567.89, {
  *      currency: 'USD',
+ *      locale: 'en-US',
  *      notation: 'compact',
  *      minimumFractionDigits: 1,
  *      maximumFractionDigits: 1,
@@ -63,12 +65,13 @@ export function formatCurrency(
   if (typeof currencyOrOptions === 'object') {
     const {
       currency = 'USD',
+      locale: optionsLocale = 'en-US',
       minimumFractionDigits = 0,
       maximumFractionDigits = 0,
       notation = 'standard',
     } = currencyOrOptions;
 
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(optionsLocale, {
       style: 'currency',
       currency,
       minimumFractionDigits,

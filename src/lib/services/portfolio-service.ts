@@ -374,8 +374,11 @@ export function calculateProjectedIncome(
   const incomeByAsset: Array<{ symbol: string; income: Decimal }> = [];
   const totalValue = calculateTotalValue(holdings);
 
+  // Create asset map for O(1) lookups
+  const assetMap = new Map(assets.map((a) => [a.id, a]));
+
   for (const holding of holdings) {
-    const asset = assets.find((a) => a.id === holding.assetId);
+    const asset = assetMap.get(holding.assetId);
     if (!asset) continue;
 
     const dividendYield = asset.metadata.dividendYield || 0;
