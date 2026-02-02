@@ -21,159 +21,130 @@ Create a pull request with project-specific validation and integration with the 
 
 ### 1. Check Current State
 
-First, gather information about the current git state:
+Use the Bash tool to gather information about the current git state:
 
-```bash
-# Get current branch
-CURRENT_BRANCH=$(git branch --show-current)
-
-# Get git status
-git status --short
-
-# Get all changes (staged and unstaged)
-git diff HEAD
-```
+1. Get the current branch name with `git branch --show-current`
+2. Get git status with `git status --short` to see modified/untracked files
+3. Get all changes (staged and unstaged) with `git diff HEAD` to understand what changed
 
 ### 2. Detect Feature Branch Pattern
 
 Check if the current branch follows the speckit pattern (`[number]-[feature-name]`):
 
-```bash
-# Check if branch matches pattern: 001-feature-name
-if [[ "$CURRENT_BRANCH" =~ ^([0-9]+)-(.+)$ ]]; then
-  FEATURE_NUM="${BASH_REMATCH[1]}"
-  FEATURE_NAME="${BASH_REMATCH[2]}"
-  SPEC_DIR="specs/${FEATURE_NUM}-${FEATURE_NAME}"
-
-  echo "📋 Feature branch detected: $FEATURE_NUM-$FEATURE_NAME"
-
-  # Check if spec directory exists
-  if [ -d "$SPEC_DIR" ]; then
-    echo "✅ Spec directory found: $SPEC_DIR"
-    IS_FEATURE_BRANCH=true
-    SPEC_FILE="$SPEC_DIR/spec.md"
-    TASKS_FILE="$SPEC_DIR/tasks.md"
-  else
-    echo "⚠️  Spec directory not found (expected: $SPEC_DIR)"
-    IS_FEATURE_BRANCH=false
-  fi
-else
-  echo "ℹ️  Regular branch (not speckit feature)"
-  IS_FEATURE_BRANCH=false
-fi
-```
+1. Use a regex to test if the branch name matches `^([0-9]+)-(.+)$` pattern
+2. If it matches:
+   - Extract the feature number and name (e.g., "012-tax-features-stock" → num="012", name="tax-features-stock")
+   - Construct the spec directory path: `specs/{number}-{name}`
+   - Use the Bash tool to check if this directory exists with `test -d "specs/{number}-{name}" && echo "exists" || echo "not found"`
+   - If the directory exists:
+     - Mark this as a feature branch
+     - Set SPEC_FILE path to `specs/{number}-{name}/spec.md`
+     - Set TASKS_FILE path to `specs/{number}-{name}/tasks.md`
+     - Report: "📋 Feature branch detected: {number}-{name}"
+   - If the directory doesn't exist:
+     - Mark as regular branch
+     - Report: "⚠️ Spec directory not found (expected: specs/{number}-{name})"
+3. If it doesn't match the pattern:
+   - Mark as regular branch
+   - Report: "ℹ️ Regular branch (not speckit feature)"
 
 ### 3. Run Project Validations
 
-Run the project's validation suite to ensure code quality:
+Run the project's validation suite using the Bash tool to ensure code quality:
 
-```bash
-echo "🔍 Running project validations..."
+1. Report "🔍 Running project validations..."
 
-# Type checking
-echo "  → Type checking..."
-npm run type-check
-TYPE_CHECK_EXIT=$?
+2. **Type checking**: Run `npm run type-check` using the Bash tool
+   - Capture the exit code
+   - Report " → Type checking..." before running
 
-# Linting
-echo "  → Linting..."
-npm run lint
-LINT_EXIT=$?
+3. **Linting**: Run `npm run lint` using the Bash tool
+   - Capture the exit code
+   - Report " → Linting..." before running
 
-# Unit tests
-echo "  → Running tests..."
-npm run test:run
-TEST_EXIT=$?
+4. **Unit tests**: Run `npm run test:run` using the Bash tool
+   - Capture the exit code
+   - Report " → Running tests..." before running
 
-# Check results
-if [ $TYPE_CHECK_EXIT -ne 0 ] || [ $LINT_EXIT -ne 0 ] || [ $TEST_EXIT -ne 0 ]; then
-  echo ""
-  echo "⚠️  Validation Failures Detected:"
-  [ $TYPE_CHECK_EXIT -ne 0 ] && echo "  ❌ Type checking failed (exit code: $TYPE_CHECK_EXIT)"
-  [ $LINT_EXIT -ne 0 ] && echo "  ❌ Linting failed (exit code: $LINT_EXIT)"
-  [ $TEST_EXIT -ne 0 ] && echo "  ❌ Tests failed (exit code: $TEST_EXIT)"
-  echo ""
-  echo "Do you want to proceed with creating the PR anyway? (yes/no)"
-
-  # Wait for user response
-  # If user says no, exit with error
-  # If user says yes, continue with warning
-else
-  echo "✅ All validations passed!"
-fi
-```
-
-**Important**: If validations fail, ask the user if they want to proceed. Use the `AskUserQuestion` tool if needed.
+5. **Check results**:
+   - If all three commands succeeded (exit code 0):
+     - Report "✅ All validations passed!"
+     - Proceed to step 4
+   - If any command failed (exit code ≠ 0):
+     - Report "⚠️ Validation Failures Detected:"
+     - List which validations failed with their exit codes
+     - Use the **AskUserQuestion tool** to ask: "Some validations failed. Do you want to proceed with creating the PR anyway?"
+     - Provide two options:
+       - "Yes, proceed anyway" (description: "Create the PR despite validation failures. You can fix issues in a follow-up commit.")
+       - "No, abort" (description: "Stop the PR creation process so you can fix the issues first.")
+     - If user selects "No, abort": Stop execution and report "PR creation aborted. Please fix the validation issues and try again."
+     - If user selects "Yes, proceed anyway": Continue to step 4 and note the failures in the PR description
 
 ### 4. Create Branch if on Main
 
 If currently on the `main` branch, create a feature branch first:
 
-```bash
-if [ "$CURRENT_BRANCH" = "main" ]; then
-  echo "⚠️  Cannot create PR from main branch"
-  echo "Creating a new feature branch..."
-
-  # Generate branch name from changes or prompt user
-  # Example: feature/description-from-commit
-
-  BRANCH_NAME="feature/update-from-main"
-  git checkout -b "$BRANCH_NAME"
-  echo "✅ Created and switched to branch: $BRANCH_NAME"
-fi
-```
+1. Check if the current branch is "main"
+2. If yes:
+   - Report "⚠️ Cannot create PR from main branch"
+   - Analyze the git diff output from step 1 to understand what changes exist
+   - Generate a descriptive branch name based on the changes:
+     - Look for the primary file or component being modified
+     - Create a name like `feature/{component}-{action}` or `fix/{component}-{issue}`
+     - Examples: `feature/dashboard-widget`, `fix/transaction-form-validation`
+   - Use the Bash tool to create and switch to the branch: `git checkout -b "{branch-name}"`
+   - Report "✅ Created and switched to branch: {branch-name}"
+3. If not on main:
+   - Continue with the current branch
 
 ### 5. Stage and Commit Changes
 
 Stage all modified files and create a commit:
 
-```bash
-# Get list of modified files
-MODIFIED_FILES=$(git status --short | grep '^ M' | awk '{print $2}')
-UNTRACKED_FILES=$(git status --short | grep '^??' | awk '{print $2}')
+1. **Parse git status** from step 1 output:
+   - Extract modified files (lines starting with ` M`)
+   - Extract untracked files (lines starting with `??`)
 
-# Stage modified files
-if [ -n "$MODIFIED_FILES" ]; then
-  echo "📝 Staging modified files..."
-  git add $MODIFIED_FILES
-fi
+2. **Stage modified files**:
+   - If there are modified files:
+     - Report "📝 Staging modified files..."
+     - Use the Bash tool to stage them: `git add -- "{file1}" "{file2}" ...` (quote each filename to handle spaces)
+   - If there are untracked files:
+     - Report "📄 Untracked files found: {list}"
+     - Use the **AskUserQuestion tool** to ask: "Should these untracked files be included in the commit?"
+     - For each untracked file, show it as an option with multiSelect enabled
+     - Stage only the selected files using `git add -- "{file}"` (quote each filename)
 
-# Stage new files (ask user first if there are untracked files)
-if [ -n "$UNTRACKED_FILES" ]; then
-  echo "📄 Untracked files found:"
-  echo "$UNTRACKED_FILES"
-  # Consider asking user which files to stage
-fi
+3. **Generate commit message**:
+   - Report "💬 Generating commit message..."
+   - Use the Bash tool to get recent commits for style reference: `git log --format=%B -n 5`
+   - Analyze the `git diff HEAD` output from step 1 to understand the changes:
+     - Look for new files, modified files, deleted files
+     - Identify the main component or area being changed
+     - Determine the type of change: feat, fix, docs, style, refactor, test, chore
+   - If this is a feature branch AND the spec file exists:
+     - Use the Read tool to read the spec file
+     - Extract the content under "## Feature Summary" heading for context
+     - Use this to inform the commit message
+   - If this is a regular branch:
+     - Base the message on the git diff analysis
+   - Create a commit message following conventional commits format:
+     ```
+     {type}({scope}): {short description}
 
-# Generate commit message
-echo "💬 Generating commit message..."
+     {detailed explanation of what changed and why}
 
-# Get recent commit style for reference
-git log --format=%B -n 5 > /tmp/recent_commits.txt
+     Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+     ```
+   - Use the Bash tool to commit with the generated message using a heredoc:
+     ```bash
+     git commit -m "$(cat <<'EOF'
+     {generated message}
+     EOF
+     )"
+     ```
 
-# Analyze changes
-COMMIT_SUMMARY=$(git diff --cached --stat | head -1)
-
-# Load spec summary if feature branch
-if [ "$IS_FEATURE_BRANCH" = true ] && [ -f "$SPEC_FILE" ]; then
-  SPEC_SUMMARY=$(grep -A 5 "^## Feature Summary" "$SPEC_FILE" | tail -n +2 | head -3)
-fi
-
-# Create commit with appropriate message
-# Format: feat|fix|docs|style|refactor|test|chore: description
-# Include Co-Authored-By attribution
-
-git commit -m "$(cat <<EOF
-feat: [generated from analysis]
-
-[Detailed description based on git diff and spec file]
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
-EOF
-)"
-```
-
-**Note**: The actual commit message should be generated by analyzing the `git diff HEAD` output and extracting meaningful changes. For feature branches, incorporate the spec.md summary if available.
+**Note**: Always quote filenames when using `git add` to handle filenames with spaces. The commit message should explain the "why" not just the "what".
 
 ### 6. Generate PR Description
 
@@ -208,8 +179,10 @@ Create a PR description based on branch type:
 ## Constitution Compliance
 
 - [ ] **Privacy-First**: No data sent to server (all data in IndexedDB)
-- [ ] **Financial Precision**: Uses Decimal.js for monetary calculations
-- [ ] **Type Safety**: TypeScript strict mode, no type assertions without validation
+- [ ] **Financial Precision**: Uses Decimal.js for all monetary calculations (no floating-point arithmetic)
+- [ ] **Type Safety**: TypeScript strict mode, no `any` types, no type assertions without validation
+- [ ] **No Over-Engineering**: Changes are focused and minimal, only what was requested
+- [ ] **Testing**: Unit tests for business logic, E2E tests for user workflows
 
 ## Additional Notes
 
@@ -250,52 +223,106 @@ Create a PR description based on branch type:
 
 Push the branch and create the pull request:
 
-```bash
-# Push branch to remote
-echo "⬆️  Pushing branch to origin..."
-git push -u origin "$CURRENT_BRANCH"
+1. **Push branch to remote**:
+   - Report "⬆️ Pushing branch to origin..."
+   - Use the Bash tool: `git push -u origin "{branch-name}"`
+   - If this fails, report the error and suggest checking remote tracking configuration
 
-# Create PR with gh CLI
-echo "🚀 Creating pull request..."
+2. **Extract PR title**:
+   - **For feature branches**:
+     - If spec file exists and was read in step 5, extract the title from the first line after "## Feature Summary" heading
+     - If no spec file, use the first line of the commit message
+   - **For regular branches**:
+     - Use the first line of the commit message generated in step 5
+   - Ensure the title is concise (< 72 characters)
+   - Use present tense ("Add feature" not "Added feature")
 
-# Extract title from commit message or spec
-PR_TITLE="[Generated title from commit or spec]"
+3. **Create PR**:
+   - Report "🚀 Creating pull request..."
+   - Use the Bash tool with `gh pr create` using a heredoc for the body (to avoid temp file issues):
+     ```bash
+     gh pr create --title "{title}" --body "$(cat <<'EOF'
+     {generated PR description from step 6}
+     EOF
+     )"
+     ```
+   - This approach avoids the need for temporary file cleanup
 
-# Save PR body to temp file
-PR_BODY_FILE=$(mktemp)
-cat > "$PR_BODY_FILE" <<'EOF'
-[Generated PR description from above]
-EOF
+4. **Get PR URL**:
+   - Use the Bash tool: `gh pr view --json url -q .url`
+   - Report "✅ Pull request created: {URL}"
 
-# Create PR
-gh pr create --title "$PR_TITLE" --body-file "$PR_BODY_FILE"
-
-# Get PR URL
-PR_URL=$(gh pr view --json url -q .url)
-
-echo "✅ Pull request created: $PR_URL"
-
-# Cleanup
-rm "$PR_BODY_FILE"
-```
+**Note**: Using heredoc instead of temp files eliminates the need for cleanup and prevents issues if the command fails midway.
 
 ## Guidelines
 
 ### Commit Message Generation
 
-- Analyze `git diff HEAD` to understand changes
-- Use conventional commit format: `type(scope): description`
-- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-- Keep first line under 72 characters
-- Include detailed body explaining the "why" not just the "what"
-- Always include `Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>`
+Follow these steps to generate a meaningful commit message:
+
+1. **Analyze the changes**: Review the `git diff HEAD` output from step 1:
+   - Identify which files were modified, added, or deleted
+   - Look for patterns: Are changes in tests? UI components? Services? Database?
+   - Understand the nature of changes: new functionality, bug fixes, refactoring, documentation
+
+2. **Determine commit type**:
+   - `feat`: New feature or functionality added
+   - `fix`: Bug fix or correction
+   - `docs`: Documentation only changes
+   - `style`: Code formatting (no logic changes)
+   - `refactor`: Code restructuring (no behavior change)
+   - `test`: Adding or updating tests
+   - `chore`: Build process, dependencies, tooling
+
+3. **Extract scope**: The component or area affected (e.g., `dashboard`, `transaction`, `api`, `tax`)
+
+4. **Write description**:
+   - First line: `{type}({scope}): {concise description}` (< 72 chars)
+   - Body: Explain WHY the change was made, not just WHAT changed
+   - For feature branches: Incorporate context from spec.md if available
+   - For bug fixes: Reference the issue being fixed
+   - Always end with: `Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>`
+
+5. **Example analysis**:
+   ```
+   git diff shows:
+   - Modified: src/components/forms/add-transaction.tsx (added liability_payment to schema)
+   - Modified: src/components/tables/transaction-table.tsx (added liability_payment display)
+
+   Type: fix (fixing TypeScript errors)
+   Scope: transaction
+   Description: add liability_payment to transaction form and table
+
+   Final commit:
+   fix(transaction): add liability_payment to transaction form and table
+
+   Fixes TypeScript compilation errors introduced by recent liability service work.
+   Adds liability_payment type to Zod schema and display configuration to ensure
+   the transaction table can properly render liability payment transactions.
+
+   Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+   ```
 
 ### PR Title Generation
 
-- For feature branches: Extract from spec.md "Feature Summary" heading
-- For regular branches: Use first line of commit message
-- Keep concise (< 72 characters)
-- Use present tense ("Add feature" not "Added feature")
+Extract the PR title based on branch type:
+
+1. **For feature branches** (001-name pattern):
+   - **Primary method**: Read the spec.md file and extract the title from the first paragraph after "## Feature Summary"
+     - Look for the first non-empty line after the `## Feature Summary` heading
+     - This is usually a concise description of the feature
+   - **Fallback**: If no spec.md or no Feature Summary found, use the first line of the commit message
+   - Example: "Tax-Aware Portfolio Tracking (ESPP/RSU)" from spec.md
+
+2. **For regular branches** (feature/*, fix/*, etc.):
+   - Use the first line of the commit message (before the colon and description)
+   - Transform to title case if needed
+   - Example: "fix(transaction): add liability_payment..." becomes "Fix: Add liability_payment to transaction form"
+
+3. **Validation**:
+   - Ensure title is < 72 characters
+   - Use present tense ("Add" not "Added")
+   - Remove conventional commit prefix for cleaner PR title ("feat(tax): ..." → "Tax: ..." or just the description)
 
 ### Spec File Parsing
 
@@ -309,12 +336,26 @@ SPEC_SUMMARY=$(awk '/^## Feature Summary/{flag=1; next} /^##/{flag=0} flag' "$SP
 USER_SCENARIOS=$(awk '/^## User Scenarios/{flag=1; next} /^##/{flag=0} flag' "$SPEC_FILE")
 ```
 
+### Base Branch Detection
+
+Automatically detect the base branch for the PR instead of assuming `main`:
+
+1. Use the Bash tool: `git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'`
+   - This extracts the default branch from the remote (usually `main` or `master`)
+2. If the command fails or returns empty:
+   - Fallback: Use the Bash tool `git branch -r | grep -E 'origin/(main|master)' | head -1 | sed 's@origin/@@'`
+   - This finds either `main` or `master` from remote branches
+3. If still no match:
+   - Default to `main`
+4. When creating the PR with `gh pr create`, specify the base branch: `--base "{detected-base}"`
+
 ### Error Handling
 
 - If `git push` fails: Check for remote tracking branch, suggest `git push --set-upstream origin $BRANCH`
-- If `gh pr create` fails: Check if PR already exists, verify gh CLI authentication
-- If validation fails: Present clear options to user (proceed or abort)
-- If no changes staged: Error with message "No changes to commit"
+- If `gh pr create` fails: Check if PR already exists with `gh pr list --head "{branch}"`, verify gh CLI authentication
+- If validation fails: Present clear options to user (proceed or abort) using AskUserQuestion
+- If no changes staged: Error with message "No changes to commit. Use `git status` to see repository state."
+- If base branch detection fails: Report "⚠️ Could not detect base branch, defaulting to 'main'"
 
 ## Best Practices
 
