@@ -1,8 +1,9 @@
 import Decimal from 'decimal.js';
-import { db } from '@/lib/db/schema';
+import { db, LiabilityPayment } from '@/lib/db/schema';
 import { Holding, Asset, PriceHistory } from '@/types/asset';
 import { NetWorthPoint, Liability } from '@/types/planning';
 import { endOfMonth, eachMonthOfInterval } from 'date-fns';
+import { calculateLiabilityBalanceAtDate } from './liability-service';
 
 // Cached data structure for batch calculations
 interface CachedPortfolioData {
@@ -11,6 +12,8 @@ interface CachedPortfolioData {
   assetMap: Map<string, Asset | undefined>;
   // Price history sorted by date descending for efficient lookup
   priceHistoryMap: Map<string, PriceHistory[]>;
+  // Liability payments mapped by liability ID for historical balance calculations
+  liabilityPaymentsMap: Map<string, LiabilityPayment[]>;
 }
 
 /**
@@ -25,10 +28,11 @@ async function loadPortfolioData(portfolioId: string): Promise<CachedPortfolioDa
 
   const assetIds = holdings.map(h => h.assetId);
 
-  // Load assets and ALL price history in parallel
-  const [assets, priceHistories] = await Promise.all([
+  // Load assets, price history, and liability payments in parallel
+  const [assets, priceHistories, liabilityPaymentArrays] = await Promise.all([
     db.assets.bulkGet(assetIds),
     Promise.all(assetIds.map(id => db.getPriceHistoryByAsset(id))),
+    Promise.all(liabilities.map(l => db.getLiabilityPayments(l.id))),
   ]);
 
   // Create maps and pre-sort price history by date descending
@@ -42,7 +46,12 @@ async function loadPortfolioData(portfolioId: string): Promise<CachedPortfolioDa
     ])
   );
 
-  return { holdings, liabilities, assetMap, priceHistoryMap };
+  // Map liability payments by liability ID
+  const liabilityPaymentsMap = new Map(
+    liabilities.map((l, i) => [l.id, liabilityPaymentArrays[i]])
+  );
+
+  return { holdings, liabilities, assetMap, priceHistoryMap, liabilityPaymentsMap };
 }
 
 /**
@@ -92,9 +101,11 @@ function calculateNetWorthFromCache(
     totalAssets = totalAssets.plus(adjustedValue);
   }
 
+  // Calculate historical liability balances using payment history
   for (const liability of data.liabilities) {
-    const balance = new Decimal(liability.balance);
-    totalLiabilities = totalLiabilities.plus(balance);
+    const payments = data.liabilityPaymentsMap.get(liability.id) || [];
+    const balanceAtDate = calculateLiabilityBalanceAtDate(liability, payments, date);
+    totalLiabilities = totalLiabilities.plus(balanceAtDate);
   }
 
   return {

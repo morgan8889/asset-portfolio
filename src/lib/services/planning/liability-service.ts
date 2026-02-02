@@ -83,15 +83,13 @@ export function calculateLiabilityBalanceAtDate(
       `Target date ${targetDate.toISOString()} is before first recorded payment ` +
       `${firstPaymentDate.toISOString()} for liability ${liability.id}. ` +
       `Historical balance will be inaccurate. Consider recording payment history ` +
-      `from the liability start date or implementing payment extrapolation.`
+      `from the liability start date.`
     );
-    // Return current balance + all recorded principal payments
-    // This is still inaccurate but at least accounts for known payments
-    let estimatedBalance = balance;
-    for (const payment of sortedPayments) {
-      estimatedBalance = estimatedBalance.plus(new Decimal(payment.principalPaid));
-    }
-    return estimatedBalance;
+
+    // Return current balance as best estimate
+    // This is inaccurate but avoids compounding the error by adding incorrect values
+    // Future enhancement: Use monthlyPayment and interestRate for extrapolation
+    return balance;
   }
 
   // Find payments that occurred AFTER target date
