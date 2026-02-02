@@ -198,10 +198,16 @@ export async function getTotalLiabilitiesAtDate(
 ): Promise<Decimal> {
   const liabilities = await db.getLiabilitiesByPortfolio(portfolioId);
 
+  // Batch load all payments to avoid N+1 query pattern
+  const allPayments = await Promise.all(
+    liabilities.map((l) => db.getLiabilityPayments(l.id))
+  );
+
   let totalLiabilities = new Decimal(0);
 
-  for (const liability of liabilities) {
-    const payments = await db.getLiabilityPayments(liability.id);
+  for (let i = 0; i < liabilities.length; i++) {
+    const liability = liabilities[i];
+    const payments = allPayments[i];
     const balanceAtDate = calculateLiabilityBalanceAtDate(
       liability,
       payments,
@@ -234,8 +240,37 @@ export async function recordLiabilityPayment(
     throw new Error(`Liability not found: ${liabilityId}`);
   }
 
+  // Validation: Check for negative values
+  if (principalPaid.isNegative()) {
+    throw new Error('Principal paid cannot be negative');
+  }
+  if (interestPaid.isNegative()) {
+    throw new Error('Interest paid cannot be negative');
+  }
+
+  // Validation: Ensure at least one payment component is positive
+  if (principalPaid.isZero() && interestPaid.isZero()) {
+    throw new Error('Payment must include principal or interest amount');
+  }
+
+  // Validation: Principal cannot exceed current balance
+  const currentBalance = new Decimal(liability.balance);
+  if (principalPaid.greaterThan(currentBalance)) {
+    throw new Error(
+      `Principal paid ($${principalPaid.toString()}) exceeds current balance ($${currentBalance.toString()})`
+    );
+  }
+
+  // Validation: Payment date cannot be before liability start date
+  const startDate = new Date(liability.startDate);
+  if (paymentDate < startDate) {
+    throw new Error(
+      `Payment date (${paymentDate.toISOString()}) cannot be before liability start date (${startDate.toISOString()})`
+    );
+  }
+
   // Calculate new balance
-  const newBalance = new Decimal(liability.balance).minus(principalPaid);
+  const newBalance = currentBalance.minus(principalPaid);
 
   // Record payment
   const paymentId = await db.addLiabilityPayment(

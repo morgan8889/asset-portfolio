@@ -148,12 +148,13 @@ describe('getCashImpact', () => {
       expect(impact.toNumber()).toBe(-8510); // -(100 * 85 + 10)
     });
 
-    it('should calculate negative cash impact for RSU vest', () => {
-      // RSU typically has shares withheld for taxes, but net shares are what's recorded
+    it('should have zero cash impact for RSU vest', () => {
+      // RSUs vest with no cash outlay - shares appear in account
+      // Taxes withheld via share sales, not cash deduction
       const tx = createTransaction('rsu_vest', 100, 78, 0); // 78 net shares @ $100 FMV
       const impact = getCashImpact(tx);
 
-      expect(impact.toNumber()).toBe(-7800); // -(78 * 100)
+      expect(impact.toNumber()).toBe(0); // No cash impact
     });
   });
 
@@ -214,7 +215,7 @@ describe('affectsCash', () => {
       'deposit',
       'withdrawal',
       'espp_purchase',
-      'rsu_vest',
+      'liability_payment',
     ];
 
     cashTypes.forEach((type) => {
@@ -230,6 +231,7 @@ describe('affectsCash', () => {
       'spinoff',
       'merger',
       'reinvestment',
+      'rsu_vest', // RSUs vest with no cash outlay
     ];
 
     nonCashTypes.forEach((type) => {

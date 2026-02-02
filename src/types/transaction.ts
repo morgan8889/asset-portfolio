@@ -17,7 +17,8 @@ export type TransactionType =
   | 'espp_purchase'
   | 'rsu_vest'
   | 'deposit'
-  | 'withdrawal';
+  | 'withdrawal'
+  | 'liability_payment';
 
 export interface Transaction {
   id: string; // UUID
