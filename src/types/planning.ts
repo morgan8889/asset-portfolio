@@ -26,6 +26,7 @@ export interface FireConfig {
   expectedReturn: number; // Expected annual return (default 0.07 for 7%)
   inflationRate: number; // Expected annual inflation (default 0.03 for 3%)
   retirementAge?: number; // Optional target retirement age
+  currentAge?: number; // Optional current age for context
 }
 
 /**
@@ -48,6 +49,9 @@ export interface ProjectionPoint {
   netWorth: number;
   fireTarget: number;
   isProjected: boolean;
+  calendarYear?: number; // Actual year (2025, 2026, ...)
+  userAge?: number; // User's age at this point (if currentAge provided)
+  yearsToRetirement?: number; // Years until retirement (if retirementAge provided)
 }
 
 /**
@@ -87,6 +91,9 @@ export interface FireCalculation {
   yearsToFire: number;
   projectedFireDate: Date | null;
   monthlyProgress: number; // How much closer to FIRE each month
+  retirementAge?: number; // Target retirement age
+  ageAtFire?: number; // User's age when reaching FIRE
+  yearsBeforeRetirement?: number; // Years before retirement age (negative if after)
 }
 
 /**

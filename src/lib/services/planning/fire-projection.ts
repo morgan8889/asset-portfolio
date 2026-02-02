@@ -36,40 +36,93 @@ export function calculateRealReturn(
 }
 
 /**
+ * Configuration-driven scenario handlers for each scenario type
+ */
+const SCENARIO_HANDLERS: Record<
+  string,
+  (config: FireConfig, value: number) => Partial<FireConfig>
+> = {
+  market_correction: (config, value) => ({
+    expectedReturn: config.expectedReturn - value / 100,
+  }),
+  expense_increase: (config, value) => ({
+    annualExpenses: config.annualExpenses * (1 + value / 100),
+  }),
+  income_change: (config, value) => ({
+    monthlySavings: config.monthlySavings * (1 + value / 100),
+  }),
+  // one_time_expense is handled differently in projection
+};
+
+/**
  * Applies active scenarios to modify projection parameters
  */
 export function applyScenarios(
   config: FireConfig,
   scenarios: Scenario[]
 ): FireConfig {
-  let modifiedConfig = { ...config };
-
   const activeScenarios = scenarios.filter((s) => s.isActive);
 
-  for (const scenario of activeScenarios) {
-    switch (scenario.type) {
-      case 'market_correction':
-        // Reduce expected return by the scenario value (percentage)
-        modifiedConfig.expectedReturn -= scenario.value / 100;
-        break;
+  return activeScenarios.reduce((modifiedConfig, scenario) => {
+    const handler = SCENARIO_HANDLERS[scenario.type];
+    if (!handler) return modifiedConfig;
 
-      case 'expense_increase':
-        // Increase annual expenses by the scenario value (percentage)
-        modifiedConfig.annualExpenses *= 1 + scenario.value / 100;
-        break;
+    return { ...modifiedConfig, ...handler(modifiedConfig, scenario.value) };
+  }, { ...config });
+}
 
-      case 'income_change':
-        // Adjust monthly savings by the scenario value (percentage)
-        modifiedConfig.monthlySavings *= 1 + scenario.value / 100;
-        break;
+/**
+ * Age context information for projection points
+ */
+interface AgeContext {
+  ageAtStart: number;
+  yearsToRetirement?: number;
+}
 
-      // one_time_expense is handled differently in projection
-      default:
-        break;
-    }
+/**
+ * Builds age context from user configuration
+ * Returns age information if currentAge is provided
+ * Returns yearsToRetirement only if both ages are provided
+ */
+function buildAgeContext(
+  currentAge: number | undefined,
+  retirementAge: number | undefined,
+  yearOffset: number
+): AgeContext | null {
+  if (!currentAge) return null;
+
+  const ageAtStart = currentAge + yearOffset;
+  const context: AgeContext = { ageAtStart };
+
+  if (retirementAge !== undefined) {
+    context.yearsToRetirement = retirementAge - ageAtStart;
   }
 
-  return modifiedConfig;
+  return context;
+}
+
+/**
+ * Creates a projection point with consistent structure
+ */
+function createProjectionPoint(
+  date: Date,
+  year: number,
+  netWorth: Decimal,
+  fireTarget: Decimal,
+  calendarYear: number,
+  isProjected: boolean,
+  ageContext: AgeContext | null
+): ProjectionPoint {
+  return {
+    date,
+    year,
+    netWorth: netWorth.toNumber(),
+    fireTarget: fireTarget.toNumber(),
+    isProjected,
+    calendarYear,
+    userAge: ageContext?.ageAtStart,
+    yearsToRetirement: ageContext?.yearsToRetirement,
+  };
 }
 
 /**
@@ -101,15 +154,21 @@ export function generateFireProjection(
 
   const projection: ProjectionPoint[] = [];
   const startDate = new Date();
+  const currentYear = startDate.getFullYear();
 
-  // Add current point
-  projection.push({
-    date: startDate,
-    year: 0,
-    netWorth: currentBalance.toNumber(),
-    fireTarget: fireTarget.toNumber(),
-    isProjected: false,
-  });
+  // Add current point with context
+  const initialAgeContext = buildAgeContext(config.currentAge, config.retirementAge, 0);
+  projection.push(
+    createProjectionPoint(
+      startDate,
+      0,
+      currentBalance,
+      fireTarget,
+      currentYear,
+      false,
+      initialAgeContext
+    )
+  );
 
   // Project forward month by month
   let month = 0;
@@ -136,25 +195,37 @@ export function generateFireProjection(
 
     // Add annual data points (every 12 months)
     if (month % 12 === 0) {
-      projection.push({
-        date: addMonths(startDate, month),
-        year: month / 12,
-        netWorth: currentBalance.toNumber(),
-        fireTarget: fireTarget.toNumber(),
-        isProjected: true,
-      });
+      const yearOffset = month / 12;
+      const ageContext = buildAgeContext(config.currentAge, config.retirementAge, yearOffset);
+      projection.push(
+        createProjectionPoint(
+          addMonths(startDate, month),
+          yearOffset,
+          currentBalance,
+          fireTarget,
+          currentYear + yearOffset,
+          true,
+          ageContext
+        )
+      );
     }
   }
 
   // Add final point if we reached FIRE
   if (currentBalance.greaterThanOrEqualTo(fireTarget) && month % 12 !== 0) {
-    projection.push({
-      date: addMonths(startDate, month),
-      year: month / 12,
-      netWorth: currentBalance.toNumber(),
-      fireTarget: fireTarget.toNumber(),
-      isProjected: true,
-    });
+    const yearOffset = month / 12;
+    const ageContext = buildAgeContext(config.currentAge, config.retirementAge, yearOffset);
+    projection.push(
+      createProjectionPoint(
+        addMonths(startDate, month),
+        yearOffset,
+        currentBalance,
+        fireTarget,
+        currentYear + yearOffset,
+        true,
+        ageContext
+      )
+    );
   }
 
   return projection;
@@ -185,6 +256,11 @@ export function calculateFireMetrics(
       yearsToFire: 0,
       projectedFireDate: new Date(),
       monthlyProgress: 0,
+      retirementAge: config.retirementAge,
+      ageAtFire: config.currentAge,
+      yearsBeforeRetirement: config.retirementAge && config.currentAge
+        ? config.retirementAge - config.currentAge
+        : undefined,
     };
   }
 
@@ -196,6 +272,12 @@ export function calculateFireMetrics(
 
   const yearsToFire = firePoint ? firePoint.year : Infinity;
   const projectedFireDate = firePoint ? firePoint.date : null;
+  const ageAtFire = firePoint && config.currentAge
+    ? config.currentAge + yearsToFire
+    : undefined;
+  const yearsBeforeRetirement = config.retirementAge && ageAtFire
+    ? config.retirementAge - ageAtFire
+    : undefined;
 
   // Calculate monthly progress
   const realReturn = calculateRealReturn(
@@ -217,6 +299,9 @@ export function calculateFireMetrics(
     yearsToFire,
     projectedFireDate,
     monthlyProgress: monthlyProgress.toNumber(),
+    retirementAge: config.retirementAge,
+    ageAtFire,
+    yearsBeforeRetirement,
   };
 }
 
