@@ -1,14 +1,7 @@
 import { Decimal } from 'decimal.js';
 import { Holding, TaxLot } from '@/types/asset';
-import {
-  TaxSettings,
-  TaxAnalysis,
-  TaxLotAnalysis,
-} from '@/types/tax';
-import {
-  calculateHoldingPeriod,
-  calculateHoldingDays,
-} from './holding-period';
+import { TaxSettings, TaxAnalysis, TaxLotAnalysis } from '@/types/tax';
+import { calculateHoldingPeriod, calculateHoldingDays } from './holding-period';
 
 /**
  * Tax Estimator Service
@@ -69,12 +62,19 @@ export function estimateTaxLiability(
         continue;
       }
 
-      const lotAnalysis = calculateLotAnalysis(lot, assetSymbol, currentPrice, now);
+      const lotAnalysis = calculateLotAnalysis(
+        lot,
+        assetSymbol,
+        currentPrice,
+        now
+      );
       lots.push(lotAnalysis);
 
       // Accumulate gains/losses
       if (lotAnalysis.unrealizedGain.greaterThan(0)) {
-        totalUnrealizedGain = totalUnrealizedGain.plus(lotAnalysis.unrealizedGain);
+        totalUnrealizedGain = totalUnrealizedGain.plus(
+          lotAnalysis.unrealizedGain
+        );
         if (lotAnalysis.holdingPeriod === 'short') {
           shortTermGains = shortTermGains.plus(lotAnalysis.unrealizedGain);
         } else {
@@ -175,7 +175,9 @@ export function calculateLotAnalysis(
     }
     if (lot.bargainElement) {
       analysis.bargainElement = lot.bargainElement;
-      analysis.adjustedCostBasis = costBasis.plus(lot.bargainElement.mul(quantity));
+      analysis.adjustedCostBasis = costBasis.plus(
+        lot.bargainElement.mul(quantity)
+      );
     }
   }
 

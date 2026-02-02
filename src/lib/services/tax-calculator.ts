@@ -70,14 +70,18 @@ export function detectAgingLots(
       // Only include lots that are:
       // 1. Still short-term (< 365 days)
       // 2. Within lookback window of becoming long-term
-      if (daysHeld < longTermThresholdDays && daysUntilLongTerm <= lookbackDays) {
+      if (
+        daysHeld < longTermThresholdDays &&
+        daysUntilLongTerm <= lookbackDays
+      ) {
         const currentValue = lot.remainingQuantity.mul(currentPrice);
         const costBasis = lot.remainingQuantity.mul(lot.purchasePrice);
         const unrealizedGain = currentValue.sub(costBasis);
         // Handle zero or negative cost basis (e.g., after dividends exceed investment)
-        const unrealizedGainPercent = costBasis.isZero() || costBasis.isNegative()
-          ? 0
-          : unrealizedGain.div(costBasis).mul(100).toNumber();
+        const unrealizedGainPercent =
+          costBasis.isZero() || costBasis.isNegative()
+            ? 0
+            : unrealizedGain.div(costBasis).mul(100).toNumber();
 
         agingLots.push({
           holdingId: holding.id,

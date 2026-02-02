@@ -67,9 +67,9 @@ export function RSUTransactionFormFields() {
         <div className="flex-1 text-sm text-indigo-900 dark:text-indigo-100">
           <strong>RSU Vesting Event</strong>
           <p className="mt-1 text-indigo-700 dark:text-indigo-300">
-            Restricted Stock Units vest over time. When they vest, you receive shares
-            but some are typically withheld to cover taxes. The FMV at vesting becomes
-            your cost basis.
+            Restricted Stock Units vest over time. When they vest, you receive
+            shares but some are typically withheld to cover taxes. The FMV at
+            vesting becomes your cost basis.
           </p>
         </div>
       </div>
@@ -116,7 +116,9 @@ export function RSUTransactionFormFields() {
           </PopoverContent>
         </Popover>
         {errors.vestingDate && (
-          <p className="text-sm text-red-600">{String(errors.vestingDate.message)}</p>
+          <p className="text-sm text-red-600">
+            {String(errors.vestingDate.message)}
+          </p>
         )}
         <p className="text-xs text-muted-foreground">
           The date when your RSUs vested and became yours
@@ -189,7 +191,9 @@ export function RSUTransactionFormFields() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="taxWithheldAmount">Tax Amount Withheld (Optional)</Label>
+          <Label htmlFor="taxWithheldAmount">
+            Tax Amount Withheld (Optional)
+          </Label>
           <Input
             id="taxWithheldAmount"
             type="number"
@@ -219,17 +223,20 @@ export function RSUTransactionFormFields() {
             {calculatedTaxValue > 0 && (
               <>
                 <br />
-                <strong>Estimated Tax Withheld:</strong> ${calculatedTaxValue.toFixed(2)}
+                <strong>Estimated Tax Withheld:</strong> $
+                {calculatedTaxValue.toFixed(2)}
                 {watchedTaxWithheld && parseFloat(watchedTaxWithheld) > 0 && (
                   <span className="text-xs text-muted-foreground">
-                    {' '}(Entered: ${parseFloat(watchedTaxWithheld).toFixed(2)})
+                    {' '}
+                    (Entered: ${parseFloat(watchedTaxWithheld).toFixed(2)})
                   </span>
                 )}
               </>
             )}
             <br />
             <span className="text-xs text-muted-foreground">
-              The vesting price becomes your cost basis for tax purposes when you sell.
+              The vesting price becomes your cost basis for tax purposes when
+              you sell.
             </span>
           </AlertDescription>
         </Alert>

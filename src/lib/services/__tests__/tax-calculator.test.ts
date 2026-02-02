@@ -76,7 +76,10 @@ describe('detectAgingLots', () => {
     id,
     portfolioId: 'portfolio-1',
     assetId,
-    quantity: lots.reduce((sum, lot) => sum.add(lot.remainingQuantity), new Decimal(0)),
+    quantity: lots.reduce(
+      (sum, lot) => sum.add(lot.remainingQuantity),
+      new Decimal(0)
+    ),
     costBasis: new Decimal(0),
     averageCost: new Decimal(0),
     currentValue: new Decimal(0),
@@ -192,7 +195,11 @@ describe('detectAgingLots', () => {
     const lot2 = createMockLot('lot-2', purchaseDate2, 50, 40);
     const lot3 = createMockLot('lot-3', purchaseDate3, 75, 45);
 
-    const holding = createMockHolding('holding-1', 'asset-1', [lot1, lot2, lot3]);
+    const holding = createMockHolding('holding-1', 'asset-1', [
+      lot1,
+      lot2,
+      lot3,
+    ]);
     const asset = createMockAsset('asset-1', 'AAPL', 150);
 
     const assetMap = new Map<string, Asset>([['asset-1', asset]]);
@@ -249,7 +256,10 @@ describe('calculateTaxExposure', () => {
     id,
     portfolioId: 'portfolio-1',
     assetId,
-    quantity: lots.reduce((sum, lot) => sum.add(lot.remainingQuantity), new Decimal(0)),
+    quantity: lots.reduce(
+      (sum, lot) => sum.add(lot.remainingQuantity),
+      new Decimal(0)
+    ),
     costBasis: new Decimal(0),
     averageCost: new Decimal(0),
     currentValue: new Decimal(0),
@@ -405,7 +415,11 @@ describe('calculateTaxExposure', () => {
     const lot2 = createMockLot('lot-2', purchaseDateAging2, 50, 40);
     const lot3 = createMockLot('lot-3', purchaseDateNotAging, 75, 45);
 
-    const holding = createMockHolding('holding-1', 'asset-1', [lot1, lot2, lot3]);
+    const holding = createMockHolding('holding-1', 'asset-1', [
+      lot1,
+      lot2,
+      lot3,
+    ]);
     const asset = createMockAsset('asset-1', 'AAPL', 60);
 
     const assetMap = new Map<string, Asset>([['asset-1', asset]]);

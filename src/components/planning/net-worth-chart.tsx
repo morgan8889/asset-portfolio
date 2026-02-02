@@ -24,28 +24,32 @@ interface NetWorthChartProps {
 
 export const NetWorthChart = memo(function NetWorthChart({
   data,
-  className
+  className,
 }: NetWorthChartProps) {
-
   const formatDate = (date: Date) => {
     return format(date, 'MMM yyyy');
   };
 
   // Memoize chart data transformation to prevent recalculation on every render
   const chartData = useMemo(
-    () => data.map((point) => ({
-      date: point.date,
-      dateLabel: formatDate(point.date),
-      assets: point.assets,
-      liabilities: point.liabilities,
-      netWorth: point.netWorth,
-    })),
+    () =>
+      data.map((point) => ({
+        date: point.date,
+        dateLabel: formatDate(point.date),
+        assets: point.assets,
+        liabilities: point.liabilities,
+        netWorth: point.netWorth,
+      })),
     [data]
   );
 
   // Memoize Y-axis domain calculation
   const yDomain = useMemo(() => {
-    const allValues = data.flatMap((d) => [d.assets, d.liabilities, d.netWorth]);
+    const allValues = data.flatMap((d) => [
+      d.assets,
+      d.liabilities,
+      d.netWorth,
+    ]);
     const minValue = Math.min(...allValues);
     const maxValue = Math.max(...allValues);
     const padding = (maxValue - minValue) * 0.1;
@@ -57,7 +61,11 @@ export const NetWorthChart = memo(function NetWorthChart({
 
   // Memoize min value check for reference line
   const minValue = useMemo(() => {
-    const allValues = data.flatMap((d) => [d.assets, d.liabilities, d.netWorth]);
+    const allValues = data.flatMap((d) => [
+      d.assets,
+      d.liabilities,
+      d.netWorth,
+    ]);
     return Math.min(...allValues);
   }, [data]);
 
@@ -145,7 +153,10 @@ export const NetWorthChart = memo(function NetWorthChart({
                   borderRadius: '6px',
                 }}
                 labelFormatter={(label) => label}
-                formatter={(value: number) => [formatCompactCurrency(value), '']}
+                formatter={(value: number) => [
+                  formatCompactCurrency(value),
+                  '',
+                ]}
               />
               <Legend />
               {/* Add reference line at zero if there are negative values */}

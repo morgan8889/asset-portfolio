@@ -99,7 +99,9 @@ export const useTaxSettingsStore = create<TaxSettingsState>()(
           state: {
             ...parsed.state,
             taxSettings: {
-              shortTermRate: new Decimal(parsed.state.taxSettings.shortTermRate),
+              shortTermRate: new Decimal(
+                parsed.state.taxSettings.shortTermRate
+              ),
               longTermRate: new Decimal(parsed.state.taxSettings.longTermRate),
               updatedAt: new Date(parsed.state.taxSettings.updatedAt),
             },

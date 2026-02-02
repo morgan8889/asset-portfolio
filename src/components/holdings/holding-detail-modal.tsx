@@ -63,7 +63,7 @@ export function HoldingDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-6xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {assetSymbol} - Holding Details
@@ -78,10 +78,10 @@ export function HoldingDetailModal({
             <TabsTrigger value="tax">Tax Analysis</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <TabsContent value="overview" className="mt-4 space-y-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">
+                <div className="mb-1 text-sm text-muted-foreground">
                   Quantity
                 </div>
                 <div className="text-2xl font-bold">
@@ -90,7 +90,7 @@ export function HoldingDetailModal({
               </Card>
 
               <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">
+                <div className="mb-1 text-sm text-muted-foreground">
                   Average Cost
                 </div>
                 <div className="text-2xl font-bold">
@@ -99,7 +99,7 @@ export function HoldingDetailModal({
               </Card>
 
               <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">
+                <div className="mb-1 text-sm text-muted-foreground">
                   Cost Basis
                 </div>
                 <div className="text-2xl font-bold">
@@ -108,7 +108,7 @@ export function HoldingDetailModal({
               </Card>
 
               <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-1">
+                <div className="mb-1 text-sm text-muted-foreground">
                   Current Value
                 </div>
                 <div className="text-2xl font-bold">
@@ -120,11 +120,11 @@ export function HoldingDetailModal({
             <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm text-muted-foreground mb-1">
+                  <div className="mb-1 text-sm text-muted-foreground">
                     Unrealized Gain/Loss
                   </div>
                   <div
-                    className={`text-3xl font-bold flex items-center gap-2 ${
+                    className={`flex items-center gap-2 text-3xl font-bold ${
                       unrealizedGain.greaterThanOrEqualTo(0)
                         ? 'text-green-600 dark:text-green-400'
                         : 'text-red-600 dark:text-red-400'
@@ -139,7 +139,7 @@ export function HoldingDetailModal({
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-muted-foreground mb-1">
+                  <div className="mb-1 text-sm text-muted-foreground">
                     Percentage
                   </div>
                   <div
@@ -158,7 +158,7 @@ export function HoldingDetailModal({
 
             <div className="grid grid-cols-2 gap-4">
               <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-2">
+                <div className="mb-2 text-sm text-muted-foreground">
                   Last Updated
                 </div>
                 <div className="text-lg font-medium">
@@ -167,7 +167,7 @@ export function HoldingDetailModal({
               </Card>
 
               <Card className="p-4">
-                <div className="text-sm text-muted-foreground mb-2">
+                <div className="mb-2 text-sm text-muted-foreground">
                   Number of Lots
                 </div>
                 <div className="text-lg font-medium">{holding.lots.length}</div>
@@ -175,17 +175,17 @@ export function HoldingDetailModal({
             </div>
           </TabsContent>
 
-          <TabsContent value="lots" className="space-y-4 mt-4">
+          <TabsContent value="lots" className="mt-4 space-y-4">
             {holding.lots.length === 0 ? (
               <Card className="p-8">
-                <p className="text-muted-foreground text-center">
+                <p className="text-center text-muted-foreground">
                   No tax lots found for this holding
                 </p>
               </Card>
             ) : (
               holding.lots.map((lot) => (
                 <Card key={lot.id} className="p-4">
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="mb-3 flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
@@ -219,7 +219,7 @@ export function HoldingDetailModal({
 
                   {/* ESPP-specific metadata */}
                   {lot.lotType === 'espp' && (
-                    <div className="grid grid-cols-2 gap-3 p-3 bg-purple-50 dark:bg-purple-950/20 rounded mb-3">
+                    <div className="mb-3 grid grid-cols-2 gap-3 rounded bg-purple-50 p-3 dark:bg-purple-950/20">
                       {lot.grantDate && (
                         <div>
                           <div className="text-xs text-muted-foreground">
@@ -245,7 +245,7 @@ export function HoldingDetailModal({
 
                   {/* RSU-specific metadata */}
                   {lot.lotType === 'rsu' && (
-                    <div className="grid grid-cols-2 gap-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded mb-3">
+                    <div className="mb-3 grid grid-cols-2 gap-3 rounded bg-blue-50 p-3 dark:bg-blue-950/20">
                       {lot.vestingDate && (
                         <div>
                           <div className="text-xs text-muted-foreground">
@@ -269,12 +269,14 @@ export function HoldingDetailModal({
                     </div>
                   )}
 
-                  <div className="grid grid-cols-3 gap-3 pt-3 border-t text-xs">
+                  <div className="grid grid-cols-3 gap-3 border-t pt-3 text-xs">
                     <div>
                       <div className="text-muted-foreground">Total Cost</div>
                       <div className="font-medium">
                         {formatCurrency(
-                          lot.purchasePrice.mul(lot.remainingQuantity).toNumber()
+                          lot.purchasePrice
+                            .mul(lot.remainingQuantity)
+                            .toNumber()
                         )}
                       </div>
                     </div>
@@ -293,8 +295,8 @@ export function HoldingDetailModal({
                   </div>
 
                   {lot.notes && (
-                    <div className="mt-3 pt-3 border-t">
-                      <div className="text-xs text-muted-foreground mb-1">
+                    <div className="mt-3 border-t pt-3">
+                      <div className="mb-1 text-xs text-muted-foreground">
                         Notes
                       </div>
                       <div className="text-sm">{lot.notes}</div>

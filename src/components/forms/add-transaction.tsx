@@ -37,8 +37,15 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useTransactionStore, usePortfolioStore } from '@/lib/stores';
-import { showSuccessNotification, showErrorNotification } from '@/lib/stores/ui';
-import { Transaction, ESPPTransactionMetadata, RSUTransactionMetadata } from '@/types';
+import {
+  showSuccessNotification,
+  showErrorNotification,
+} from '@/lib/stores/ui';
+import {
+  Transaction,
+  ESPPTransactionMetadata,
+  RSUTransactionMetadata,
+} from '@/types';
 import { assetQueries } from '@/lib/db';
 import { ESPPTransactionFormFields } from './espp-transaction-form';
 import { RSUTransactionFormFields } from './rsu-transaction-form';
@@ -118,113 +125,123 @@ const baseTransactionSchema = z.object({
 });
 
 // Refined schema with conditional validation
-const transactionSchema = baseTransactionSchema.refine(
-  (data) => {
-    if (data.type !== 'espp_purchase') return true;
-    return data.grantDate !== undefined;
-  },
-  {
-    message: 'Grant date is required for ESPP transactions',
-    path: ['grantDate'],
-  }
-).refine(
-  (data) => {
-    if (data.type !== 'espp_purchase') return true;
-    if (!data.marketPriceAtGrant) return false;
-    const num = parseFloat(data.marketPriceAtGrant);
-    return !isNaN(num) && num > 0;
-  },
-  {
-    message: 'Market price at grant is required for ESPP transactions',
-    path: ['marketPriceAtGrant'],
-  }
-).refine(
-  (data) => {
-    if (data.type !== 'espp_purchase') return true;
-    if (!data.marketPriceAtPurchase) return false;
-    const num = parseFloat(data.marketPriceAtPurchase);
-    return !isNaN(num) && num > 0;
-  },
-  {
-    message: 'Market price at purchase is required for ESPP transactions',
-    path: ['marketPriceAtPurchase'],
-  }
-).refine(
-  (data) => {
-    if (data.type !== 'espp_purchase') return true;
-    if (!data.discountPercent) return false;
-    const num = parseFloat(data.discountPercent);
-    return !isNaN(num) && num >= 0 && num <= 100;
-  },
-  {
-    message: 'Discount percentage must be between 0 and 100',
-    path: ['discountPercent'],
-  }
-).refine(
-  (data) => {
-    if (data.type !== 'espp_purchase') return true;
-    if (!data.grantDate || !data.date) return true;
-    return data.grantDate < data.date;
-  },
-  {
-    message: 'Grant date must be before purchase date',
-    path: ['grantDate'],
-  }
-).refine(
-  (data) => {
-    if (data.type !== 'rsu_vest') return true;
-    return data.vestingDate !== undefined;
-  },
-  {
-    message: 'Vesting date is required for RSU transactions',
-    path: ['vestingDate'],
-  }
-).refine(
-  (data) => {
-    if (data.type !== 'rsu_vest') return true;
-    if (!data.grossSharesVested) return false;
-    const num = parseFloat(data.grossSharesVested);
-    return !isNaN(num) && num > 0;
-  },
-  {
-    message: 'Gross shares vested is required for RSU transactions',
-    path: ['grossSharesVested'],
-  }
-).refine(
-  (data) => {
-    if (data.type !== 'rsu_vest') return true;
-    if (!data.sharesWithheld) return false;
-    const num = parseFloat(data.sharesWithheld);
-    return !isNaN(num) && num >= 0;
-  },
-  {
-    message: 'Shares withheld must be 0 or greater',
-    path: ['sharesWithheld'],
-  }
-).refine(
-  (data) => {
-    if (data.type !== 'rsu_vest') return true;
-    if (!data.vestingPrice) return false;
-    const num = parseFloat(data.vestingPrice);
-    return !isNaN(num) && num > 0;
-  },
-  {
-    message: 'Vesting price is required for RSU transactions',
-    path: ['vestingPrice'],
-  }
-).refine(
-  (data) => {
-    if (data.type !== 'rsu_vest') return true;
-    if (!data.grossSharesVested || !data.sharesWithheld) return true;
-    const gross = parseFloat(data.grossSharesVested);
-    const withheld = parseFloat(data.sharesWithheld);
-    return withheld <= gross;
-  },
-  {
-    message: 'Shares withheld cannot exceed gross shares vested',
-    path: ['sharesWithheld'],
-  }
-);
+const transactionSchema = baseTransactionSchema
+  .refine(
+    (data) => {
+      if (data.type !== 'espp_purchase') return true;
+      return data.grantDate !== undefined;
+    },
+    {
+      message: 'Grant date is required for ESPP transactions',
+      path: ['grantDate'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.type !== 'espp_purchase') return true;
+      if (!data.marketPriceAtGrant) return false;
+      const num = parseFloat(data.marketPriceAtGrant);
+      return !isNaN(num) && num > 0;
+    },
+    {
+      message: 'Market price at grant is required for ESPP transactions',
+      path: ['marketPriceAtGrant'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.type !== 'espp_purchase') return true;
+      if (!data.marketPriceAtPurchase) return false;
+      const num = parseFloat(data.marketPriceAtPurchase);
+      return !isNaN(num) && num > 0;
+    },
+    {
+      message: 'Market price at purchase is required for ESPP transactions',
+      path: ['marketPriceAtPurchase'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.type !== 'espp_purchase') return true;
+      if (!data.discountPercent) return false;
+      const num = parseFloat(data.discountPercent);
+      return !isNaN(num) && num >= 0 && num <= 100;
+    },
+    {
+      message: 'Discount percentage must be between 0 and 100',
+      path: ['discountPercent'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.type !== 'espp_purchase') return true;
+      if (!data.grantDate || !data.date) return true;
+      return data.grantDate < data.date;
+    },
+    {
+      message: 'Grant date must be before purchase date',
+      path: ['grantDate'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.type !== 'rsu_vest') return true;
+      return data.vestingDate !== undefined;
+    },
+    {
+      message: 'Vesting date is required for RSU transactions',
+      path: ['vestingDate'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.type !== 'rsu_vest') return true;
+      if (!data.grossSharesVested) return false;
+      const num = parseFloat(data.grossSharesVested);
+      return !isNaN(num) && num > 0;
+    },
+    {
+      message: 'Gross shares vested is required for RSU transactions',
+      path: ['grossSharesVested'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.type !== 'rsu_vest') return true;
+      if (!data.sharesWithheld) return false;
+      const num = parseFloat(data.sharesWithheld);
+      return !isNaN(num) && num >= 0;
+    },
+    {
+      message: 'Shares withheld must be 0 or greater',
+      path: ['sharesWithheld'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.type !== 'rsu_vest') return true;
+      if (!data.vestingPrice) return false;
+      const num = parseFloat(data.vestingPrice);
+      return !isNaN(num) && num > 0;
+    },
+    {
+      message: 'Vesting price is required for RSU transactions',
+      path: ['vestingPrice'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.type !== 'rsu_vest') return true;
+      if (!data.grossSharesVested || !data.sharesWithheld) return true;
+      const gross = parseFloat(data.grossSharesVested);
+      const withheld = parseFloat(data.sharesWithheld);
+      return withheld <= gross;
+    },
+    {
+      message: 'Shares withheld cannot exceed gross shares vested',
+      path: ['sharesWithheld'],
+    }
+  );
 
 type TransactionFormValues = z.infer<typeof transactionSchema>;
 
@@ -253,8 +270,7 @@ const transactionTypes = [
   {
     value: 'espp_purchase',
     label: 'ESPP Purchase',
-    color:
-      'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
+    color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
   },
   {
     value: 'rsu_vest',
@@ -393,7 +409,8 @@ function TransactionDialog({
 
     setLoadingAsset(true);
 
-    assetQueries.getById(transaction.assetId)
+    assetQueries
+      .getById(transaction.assetId)
       .then((asset) => {
         if (cancelled || controller.signal.aborted) return;
         if (!asset) {
@@ -435,7 +452,11 @@ function TransactionDialog({
   };
 
   // Resolve asset by symbol, creating if needed
-  const resolveAsset = async (symbol: string, name?: string, price?: number) => {
+  const resolveAsset = async (
+    symbol: string,
+    name?: string,
+    price?: number
+  ) => {
     const existing = await assetQueries.getBySymbol(symbol);
     if (existing) return existing;
 
@@ -484,7 +505,9 @@ function TransactionDialog({
 
       // Add ESPP metadata if applicable
       if (data.type === 'espp_purchase') {
-        const marketPriceAtPurchase = new Decimal(data.marketPriceAtPurchase || '0');
+        const marketPriceAtPurchase = new Decimal(
+          data.marketPriceAtPurchase || '0'
+        );
         const bargainElement = marketPriceAtPurchase.minus(price);
 
         const esppMetadata: ESPPTransactionMetadata = {
@@ -511,10 +534,17 @@ function TransactionDialog({
         transactionData.metadata = rsuMetadata;
       }
 
-      const asset = await resolveAsset(data.assetSymbol, data.assetName, parseFloat(data.price));
+      const asset = await resolveAsset(
+        data.assetSymbol,
+        data.assetName,
+        parseFloat(data.price)
+      );
 
       if (mode === 'edit' && transaction && asset) {
-        await updateTransaction(transaction.id, { ...transactionData, assetId: asset.id });
+        await updateTransaction(transaction.id, {
+          ...transactionData,
+          assetId: asset.id,
+        });
         showSuccessNotification(
           'Transaction Updated',
           `Successfully updated transaction for ${asset.symbol}`
@@ -538,14 +568,10 @@ function TransactionDialog({
       const action = mode === 'edit' ? 'update' : 'add';
       console.error(`Failed to ${action} transaction:`, error);
 
-      const errorMessage = error instanceof Error
-        ? error.message
-        : 'Please try again.';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Please try again.';
 
-      showErrorNotification(
-        `Failed to ${action} transaction`,
-        errorMessage
-      );
+      showErrorNotification(`Failed to ${action} transaction`, errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -555,7 +581,8 @@ function TransactionDialog({
     (t) => t.value === watchedType
   );
 
-  const dialogTitle = mode === 'edit' ? 'Edit Transaction' : 'Add New Transaction';
+  const dialogTitle =
+    mode === 'edit' ? 'Edit Transaction' : 'Add New Transaction';
   const submitButtonText =
     mode === 'edit' ? 'Update Transaction' : 'Add Transaction';
 
@@ -594,230 +621,236 @@ function TransactionDialog({
             </DialogHeader>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Transaction Type */}
-          <div className="space-y-2">
-            <Label htmlFor="type">Transaction Type *</Label>
-            <Select
-              value={watchedType}
-              onValueChange={(value: string) =>
-                setValue('type', value as any, { shouldValidate: true })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select transaction type" />
-              </SelectTrigger>
-              <SelectContent>
-                {transactionTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    <div className="flex items-center gap-2">
-                      <Badge className={type.color} variant="secondary">
-                        {type.label}
-                      </Badge>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.type && (
-              <p className="text-sm text-red-600">{errors.type.message}</p>
-            )}
-          </div>
-
-          {/* Asset Information */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="assetSymbol">Asset Symbol *</Label>
-              <Input
-                id="assetSymbol"
-                placeholder="AAPL, BTC, SPY"
-                {...register('assetSymbol')}
-                onChange={(e) => {
-                  const value = e.target.value.toUpperCase();
-                  setValue('assetSymbol', value, { shouldValidate: true });
-                }}
-                className={errors.assetSymbol ? 'border-red-500' : ''}
-              />
-              {errors.assetSymbol && (
-                <p className="text-sm text-red-600">
-                  {errors.assetSymbol.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="assetName">Asset Name (Optional)</Label>
-              <Input
-                id="assetName"
-                placeholder="Apple Inc."
-                {...register('assetName')}
-              />
-            </div>
-          </div>
-
-          {/* Date */}
-          <div className="space-y-2">
-            <Label>Transaction Date *</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    'w-full justify-start text-left font-normal',
-                    !watchedDate && 'text-muted-foreground',
-                    errors.date && 'border-red-500'
-                  )}
+              {/* Transaction Type */}
+              <div className="space-y-2">
+                <Label htmlFor="type">Transaction Type *</Label>
+                <Select
+                  value={watchedType}
+                  onValueChange={(value: string) =>
+                    setValue('type', value as any, { shouldValidate: true })
+                  }
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {watchedDate ? format(watchedDate, 'PPP') : 'Pick a date'}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <div className="p-4">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select transaction type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {transactionTypes.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        <div className="flex items-center gap-2">
+                          <Badge className={type.color} variant="secondary">
+                            {type.label}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.type && (
+                  <p className="text-sm text-red-600">{errors.type.message}</p>
+                )}
+              </div>
+
+              {/* Asset Information */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="assetSymbol">Asset Symbol *</Label>
                   <Input
-                    type="date"
-                    value={watchedDate ? format(watchedDate, 'yyyy-MM-dd') : ''}
+                    id="assetSymbol"
+                    placeholder="AAPL, BTC, SPY"
+                    {...register('assetSymbol')}
                     onChange={(e) => {
-                      if (e.target.value) {
-                        setValue('date', new Date(e.target.value), {
-                          shouldValidate: true,
-                        });
-                      }
+                      const value = e.target.value.toUpperCase();
+                      setValue('assetSymbol', value, { shouldValidate: true });
                     }}
-                    max={format(new Date(), 'yyyy-MM-dd')}
-                    min="1900-01-01"
+                    className={errors.assetSymbol ? 'border-red-500' : ''}
+                  />
+                  {errors.assetSymbol && (
+                    <p className="text-sm text-red-600">
+                      {errors.assetSymbol.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="assetName">Asset Name (Optional)</Label>
+                  <Input
+                    id="assetName"
+                    placeholder="Apple Inc."
+                    {...register('assetName')}
                   />
                 </div>
-              </PopoverContent>
-            </Popover>
-            {errors.date && (
-              <p className="text-sm text-red-600">{errors.date.message}</p>
-            )}
-          </div>
-
-          {/* Quantity and Price */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="quantity">
-                Quantity *{watchedType === 'dividend' && ' (Shares held)'}
-              </Label>
-              <Input
-                id="quantity"
-                type="number"
-                step="any"
-                placeholder="100"
-                {...register('quantity')}
-                className={errors.quantity ? 'border-red-500' : ''}
-              />
-              {errors.quantity && (
-                <p className="text-sm text-red-600">
-                  {errors.quantity.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price">
-                {watchedType === 'dividend'
-                  ? 'Dividend per Share *'
-                  : 'Price per Share *'}
-              </Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                placeholder="150.00"
-                {...register('price')}
-                className={errors.price ? 'border-red-500' : ''}
-              />
-              {errors.price && (
-                <p className="text-sm text-red-600">{errors.price.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Fees and Total */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="fees">Fees & Commissions</Label>
-              <Input
-                id="fees"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                {...register('fees')}
-                className={errors.fees ? 'border-red-500' : ''}
-              />
-              {errors.fees && (
-                <p className="text-sm text-red-600">{errors.fees.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Total Transaction Value</Label>
-              <div className="rounded-md bg-muted p-3">
-                <span className="text-lg font-semibold">
-                  ${calculateTotal().toFixed(2)}
-                </span>
               </div>
-            </div>
-          </div>
 
-          {/* ESPP-specific fields */}
-          {watchedType === 'espp_purchase' && (
-            <FormProvider {...form}>
-              <ESPPTransactionFormFields />
-            </FormProvider>
-          )}
+              {/* Date */}
+              <div className="space-y-2">
+                <Label>Transaction Date *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        'w-full justify-start text-left font-normal',
+                        !watchedDate && 'text-muted-foreground',
+                        errors.date && 'border-red-500'
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {watchedDate ? format(watchedDate, 'PPP') : 'Pick a date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <div className="p-4">
+                      <Input
+                        type="date"
+                        value={
+                          watchedDate ? format(watchedDate, 'yyyy-MM-dd') : ''
+                        }
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            setValue('date', new Date(e.target.value), {
+                              shouldValidate: true,
+                            });
+                          }
+                        }}
+                        max={format(new Date(), 'yyyy-MM-dd')}
+                        min="1900-01-01"
+                      />
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                {errors.date && (
+                  <p className="text-sm text-red-600">{errors.date.message}</p>
+                )}
+              </div>
 
-          {/* RSU-specific fields */}
-          {watchedType === 'rsu_vest' && (
-            <FormProvider {...form}>
-              <RSUTransactionFormFields />
-            </FormProvider>
-          )}
+              {/* Quantity and Price */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="quantity">
+                    Quantity *{watchedType === 'dividend' && ' (Shares held)'}
+                  </Label>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    step="any"
+                    placeholder="100"
+                    {...register('quantity')}
+                    className={errors.quantity ? 'border-red-500' : ''}
+                  />
+                  {errors.quantity && (
+                    <p className="text-sm text-red-600">
+                      {errors.quantity.message}
+                    </p>
+                  )}
+                </div>
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes (Optional)</Label>
-            <Textarea
-              id="notes"
-              placeholder="Additional notes about this transaction..."
-              rows={3}
-              {...register('notes')}
-              className={errors.notes ? 'border-red-500' : ''}
-            />
-            {errors.notes && (
-              <p className="text-sm text-red-600">{errors.notes.message}</p>
-            )}
-          </div>
+                <div className="space-y-2">
+                  <Label htmlFor="price">
+                    {watchedType === 'dividend'
+                      ? 'Dividend per Share *'
+                      : 'Price per Share *'}
+                  </Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    placeholder="150.00"
+                    {...register('price')}
+                    className={errors.price ? 'border-red-500' : ''}
+                  />
+                  {errors.price && (
+                    <p className="text-sm text-red-600">
+                      {errors.price.message}
+                    </p>
+                  )}
+                </div>
+              </div>
 
-          <DialogFooter className="gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setOpen(false);
-                reset();
-              }}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={!isValid || isSubmitting || importing}
-              className="min-w-[100px]"
-            >
-              {importing
-                ? 'Import in progress...'
-                : isSubmitting
-                  ? mode === 'edit'
-                    ? 'Updating...'
-                    : 'Adding...'
-                  : submitButtonText}
-            </Button>
-          </DialogFooter>
-        </form>
+              {/* Fees and Total */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fees">Fees & Commissions</Label>
+                  <Input
+                    id="fees"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    {...register('fees')}
+                    className={errors.fees ? 'border-red-500' : ''}
+                  />
+                  {errors.fees && (
+                    <p className="text-sm text-red-600">
+                      {errors.fees.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Total Transaction Value</Label>
+                  <div className="rounded-md bg-muted p-3">
+                    <span className="text-lg font-semibold">
+                      ${calculateTotal().toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ESPP-specific fields */}
+              {watchedType === 'espp_purchase' && (
+                <FormProvider {...form}>
+                  <ESPPTransactionFormFields />
+                </FormProvider>
+              )}
+
+              {/* RSU-specific fields */}
+              {watchedType === 'rsu_vest' && (
+                <FormProvider {...form}>
+                  <RSUTransactionFormFields />
+                </FormProvider>
+              )}
+
+              {/* Notes */}
+              <div className="space-y-2">
+                <Label htmlFor="notes">Notes (Optional)</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Additional notes about this transaction..."
+                  rows={3}
+                  {...register('notes')}
+                  className={errors.notes ? 'border-red-500' : ''}
+                />
+                {errors.notes && (
+                  <p className="text-sm text-red-600">{errors.notes.message}</p>
+                )}
+              </div>
+
+              <DialogFooter className="gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setOpen(false);
+                    reset();
+                  }}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={!isValid || isSubmitting || importing}
+                  className="min-w-[100px]"
+                >
+                  {importing
+                    ? 'Import in progress...'
+                    : isSubmitting
+                      ? mode === 'edit'
+                        ? 'Updating...'
+                        : 'Adding...'
+                      : submitButtonText}
+                </Button>
+              </DialogFooter>
+            </form>
           </>
         )}
       </DialogContent>

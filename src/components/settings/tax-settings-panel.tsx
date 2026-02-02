@@ -84,9 +84,9 @@ export function TaxSettingsPanel() {
       <Alert>
         <InfoIcon className="h-4 w-4" />
         <AlertDescription>
-          Configure your tax rates for capital gains calculations. These rates are used
-          to estimate tax liability on unrealized gains. Consult a tax professional for
-          accurate rates based on your situation.
+          Configure your tax rates for capital gains calculations. These rates
+          are used to estimate tax liability on unrealized gains. Consult a tax
+          professional for accurate rates based on your situation.
         </AlertDescription>
       </Alert>
 
@@ -94,8 +94,9 @@ export function TaxSettingsPanel() {
         <CardHeader>
           <CardTitle>Capital Gains Tax Rates</CardTitle>
           <CardDescription>
-            Set your marginal tax rates for short-term and long-term capital gains.
-            These rates will be used to estimate your tax liability on investment gains.
+            Set your marginal tax rates for short-term and long-term capital
+            gains. These rates will be used to estimate your tax liability on
+            investment gains.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">
@@ -103,7 +104,10 @@ export function TaxSettingsPanel() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <Label htmlFor="short-term-rate" className="text-base font-semibold">
+                <Label
+                  htmlFor="short-term-rate"
+                  className="text-base font-semibold"
+                >
                   Short-Term Capital Gains Rate
                 </Label>
                 <p className="text-sm text-muted-foreground">
@@ -118,7 +122,9 @@ export function TaxSettingsPanel() {
                   max="100"
                   step="0.1"
                   value={shortTermPercent}
-                  onChange={(e) => handleShortTermChange(parseFloat(e.target.value))}
+                  onChange={(e) =>
+                    handleShortTermChange(parseFloat(e.target.value))
+                  }
                   className="w-24 text-right"
                 />
                 <span className="text-sm font-medium">%</span>
@@ -145,7 +151,10 @@ export function TaxSettingsPanel() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <Label htmlFor="long-term-rate" className="text-base font-semibold">
+                <Label
+                  htmlFor="long-term-rate"
+                  className="text-base font-semibold"
+                >
                   Long-Term Capital Gains Rate
                 </Label>
                 <p className="text-sm text-muted-foreground">
@@ -160,7 +169,9 @@ export function TaxSettingsPanel() {
                   max="100"
                   step="0.1"
                   value={longTermPercent}
-                  onChange={(e) => handleLongTermChange(parseFloat(e.target.value))}
+                  onChange={(e) =>
+                    handleLongTermChange(parseFloat(e.target.value))
+                  }
                   className="w-24 text-right"
                 />
                 <span className="text-sm font-medium">%</span>
@@ -189,16 +200,22 @@ export function TaxSettingsPanel() {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-muted-foreground">Short-Term:</p>
-                <p className="text-lg font-semibold">{shortTermPercent.toFixed(2)}%</p>
+                <p className="text-lg font-semibold">
+                  {shortTermPercent.toFixed(2)}%
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  $10,000 gain = ${(10000 * shortTermPercent / 100).toFixed(2)} tax
+                  $10,000 gain = $
+                  {((10000 * shortTermPercent) / 100).toFixed(2)} tax
                 </p>
               </div>
               <div>
                 <p className="text-muted-foreground">Long-Term:</p>
-                <p className="text-lg font-semibold">{longTermPercent.toFixed(2)}%</p>
+                <p className="text-lg font-semibold">
+                  {longTermPercent.toFixed(2)}%
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  $10,000 gain = ${(10000 * longTermPercent / 100).toFixed(2)} tax
+                  $10,000 gain = ${((10000 * longTermPercent) / 100).toFixed(2)}{' '}
+                  tax
                 </p>
               </div>
             </div>
@@ -219,8 +236,9 @@ export function TaxSettingsPanel() {
           <strong>Default Rates:</strong> Short-Term: 24% | Long-Term: 15%
         </p>
         <p className="mt-1">
-          <strong>Note:</strong> These are typical federal rates for middle-income earners.
-          Actual rates depend on your income bracket and may include state taxes.
+          <strong>Note:</strong> These are typical federal rates for
+          middle-income earners. Actual rates depend on your income bracket and
+          may include state taxes.
         </p>
       </div>
     </div>

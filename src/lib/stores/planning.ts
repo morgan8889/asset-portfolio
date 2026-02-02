@@ -20,8 +20,13 @@ interface PlanningState {
   // Liabilities
   liabilities: Liability[];
   loadLiabilities: (portfolioId: string) => Promise<void>;
-  addLiability: (liability: Omit<Liability, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  updateLiability: (id: string, updates: Partial<Omit<Liability, 'id' | 'createdAt'>>) => Promise<void>;
+  addLiability: (
+    liability: Omit<Liability, 'id' | 'createdAt' | 'updatedAt'>
+  ) => Promise<void>;
+  updateLiability: (
+    id: string,
+    updates: Partial<Omit<Liability, 'id' | 'createdAt'>>
+  ) => Promise<void>;
   deleteLiability: (id: string) => Promise<void>;
 
   // Scenarios
@@ -88,7 +93,9 @@ export const usePlanningStore = create<PlanningState>()(
         try {
           await db.addLiability(liability);
           // Reload liabilities for the portfolio
-          const liabilities = await db.getLiabilitiesByPortfolio(liability.portfolioId);
+          const liabilities = await db.getLiabilitiesByPortfolio(
+            liability.portfolioId
+          );
           set({ liabilities });
         } catch (error) {
           console.error('Failed to add liability:', error);
@@ -162,7 +169,8 @@ export const usePlanningStore = create<PlanningState>()(
       // Ephemeral data setters
       setNetWorthHistory: (history) => set({ netWorthHistory: history }),
       setFireProjection: (projection) => set({ fireProjection: projection }),
-      setFireCalculation: (calculation) => set({ fireCalculation: calculation }),
+      setFireCalculation: (calculation) =>
+        set({ fireCalculation: calculation }),
     }),
     {
       name: 'planning-storage',

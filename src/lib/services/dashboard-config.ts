@@ -322,7 +322,10 @@ export const dashboardConfigService = {
     // Try to migrate from v3
     const v3Result = DashboardConfigurationSchemaV3.safeParse(stored);
     if (v3Result.success) {
-      logger.info('Migrating dashboard config from v3 to v4', { component: 'DashboardConfig', operation: 'migration' });
+      logger.info('Migrating dashboard config from v3 to v4', {
+        component: 'DashboardConfig',
+        operation: 'migration',
+      });
       const migrated = migrateV3ToV4(v3Result.data);
       // Persist the migrated config
       await settingsQueries.set(STORAGE_KEY, migrated);
@@ -332,7 +335,10 @@ export const dashboardConfigService = {
     // Try to migrate from v2
     const v2Result = DashboardConfigurationSchemaV2.safeParse(stored);
     if (v2Result.success) {
-      logger.info('Migrating dashboard config from v2 to v4', { component: 'DashboardConfig', operation: 'migration' });
+      logger.info('Migrating dashboard config from v2 to v4', {
+        component: 'DashboardConfig',
+        operation: 'migration',
+      });
       const v3Config = migrateV2ToV3(v2Result.data);
       const migrated = migrateV3ToV4(v3Config);
       // Persist the migrated config
@@ -343,7 +349,10 @@ export const dashboardConfigService = {
     // Try to migrate from v1
     const v1Result = DashboardConfigurationSchemaV1.safeParse(stored);
     if (v1Result.success) {
-      logger.info('Migrating dashboard config from v1 to v4', { component: 'DashboardConfig', operation: 'migration' });
+      logger.info('Migrating dashboard config from v1 to v4', {
+        component: 'DashboardConfig',
+        operation: 'migration',
+      });
       const v2Config = migrateV1ToV2(v1Result.data);
       const v3Config = migrateV2ToV3(v2Config);
       const migrated = migrateV3ToV4(v3Config);
@@ -353,7 +362,10 @@ export const dashboardConfigService = {
     }
 
     // None of the versions valid - use defaults
-    logger.warn('Invalid dashboard config, using default', { component: 'DashboardConfig', error: v4Result.error });
+    logger.warn('Invalid dashboard config, using default', {
+      component: 'DashboardConfig',
+      error: v4Result.error,
+    });
     return { ...DEFAULT_DASHBOARD_CONFIG };
   },
 

@@ -2,13 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
-import {
-  Card,
-  Metric,
-  Text,
-  Flex,
-  Grid,
-} from '@tremor/react';
+import { Card, Metric, Text, Flex, Grid } from '@tremor/react';
 import {
   Table,
   TableBody,
@@ -101,8 +95,7 @@ export function TaxAnalysisTab({
 
       switch (sortField) {
         case 'purchaseDate':
-          comparison =
-            a.purchaseDate.getTime() - b.purchaseDate.getTime();
+          comparison = a.purchaseDate.getTime() - b.purchaseDate.getTime();
           break;
         case 'quantity':
           comparison = a.quantity.minus(b.quantity).toNumber();
@@ -117,7 +110,12 @@ export function TaxAnalysisTab({
           comparison = a.unrealizedGain.minus(b.unrealizedGain).toNumber();
           break;
         case 'holdingPeriod':
-          comparison = a.holdingPeriod === b.holdingPeriod ? 0 : a.holdingPeriod === 'long' ? 1 : -1;
+          comparison =
+            a.holdingPeriod === b.holdingPeriod
+              ? 0
+              : a.holdingPeriod === 'long'
+                ? 1
+                : -1;
           break;
       }
 
@@ -132,7 +130,13 @@ export function TaxAnalysisTab({
     return () => clearTimeout(timer);
   }, [holdings, prices, taxSettings]);
 
-  const SortButton = ({ field, label }: { field: SortField; label: string }) => (
+  const SortButton = ({
+    field,
+    label,
+  }: {
+    field: SortField;
+    label: string;
+  }) => (
     <Button
       variant="ghost"
       size="sm"
@@ -140,10 +144,9 @@ export function TaxAnalysisTab({
       className="h-8 px-2 hover:bg-transparent"
     >
       {label}
-      <ArrowUpDown className={cn(
-        "ml-2 h-4 w-4",
-        sortField === field && "text-primary"
-      )} />
+      <ArrowUpDown
+        className={cn('ml-2 h-4 w-4', sortField === field && 'text-primary')}
+      />
     </Button>
   );
 
@@ -154,14 +157,14 @@ export function TaxAnalysisTab({
         <Grid numItemsMd={2} numItemsLg={4} className="gap-6">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="p-4">
-              <Skeleton className="h-4 w-32 mb-2" />
+              <Skeleton className="mb-2 h-4 w-32" />
               <Skeleton className="h-8 w-24" />
-              <Skeleton className="h-3 w-40 mt-2" />
+              <Skeleton className="mt-2 h-3 w-40" />
             </Card>
           ))}
         </Grid>
         <Card className="p-6">
-          <Skeleton className="h-6 w-48 mb-4" />
+          <Skeleton className="mb-4 h-6 w-48" />
           <Skeleton className="h-64 w-full" />
         </Card>
       </div>
@@ -174,26 +177,27 @@ export function TaxAnalysisTab({
       <Grid numItemsMd={2} numItemsLg={3} className="gap-4">
         <Card>
           <Text>Total Unrealized Gains</Text>
-          <Metric>
-            ${taxAnalysis.totalUnrealizedGain.toFixed(2)}
-          </Metric>
+          <Metric>${taxAnalysis.totalUnrealizedGain.toFixed(2)}</Metric>
           <Flex className="mt-2">
-            <Text className="truncate text-sm">
-              Net after losses
-            </Text>
+            <Text className="truncate text-sm">Net after losses</Text>
           </Flex>
         </Card>
 
         <Card>
           <Text>Short-Term / Long-Term</Text>
           <Metric className="text-sm">
-            <span className="text-yellow-600">${taxAnalysis.shortTermGains.toFixed(0)}</span>
+            <span className="text-yellow-600">
+              ${taxAnalysis.shortTermGains.toFixed(0)}
+            </span>
             {' / '}
-            <span className="text-green-600">${taxAnalysis.longTermGains.toFixed(0)}</span>
+            <span className="text-green-600">
+              ${taxAnalysis.longTermGains.toFixed(0)}
+            </span>
           </Metric>
           <Flex className="mt-2">
             <Text className="truncate text-sm">
-              {taxSettings.shortTermRate.mul(100).toFixed(1)}% / {taxSettings.longTermRate.mul(100).toFixed(1)}%
+              {taxSettings.shortTermRate.mul(100).toFixed(1)}% /{' '}
+              {taxSettings.longTermRate.mul(100).toFixed(1)}%
             </Text>
           </Flex>
         </Card>
@@ -204,9 +208,7 @@ export function TaxAnalysisTab({
             ${taxAnalysis.totalEstimatedTax.toFixed(2)}
           </Metric>
           <Flex className="mt-2">
-            <Text className="truncate text-sm">
-              If all sold today
-            </Text>
+            <Text className="truncate text-sm">If all sold today</Text>
           </Flex>
         </Card>
       </Grid>
@@ -218,29 +220,30 @@ export function TaxAnalysisTab({
             <div>
               <h3 className="text-lg font-semibold">Tax Lot Analysis</h3>
               <p className="text-sm text-muted-foreground">
-                {sortedLots.length} lot{sortedLots.length !== 1 ? 's' : ''} across all holdings
+                {sortedLots.length} lot{sortedLots.length !== 1 ? 's' : ''}{' '}
+                across all holdings
               </p>
             </div>
           </div>
 
           <div className="max-h-[500px] overflow-y-auto">
             <Table>
-              <TableHeader className="sticky top-0 bg-background z-10">
+              <TableHeader className="sticky top-0 z-10 bg-background">
                 <TableRow>
                   <TableHead className="w-20">Asset</TableHead>
                   <TableHead className="w-28">
                     <SortButton field="purchaseDate" label="Date" />
                   </TableHead>
-                  <TableHead className="text-right w-20">
+                  <TableHead className="w-20 text-right">
                     <SortButton field="quantity" label="Qty" />
                   </TableHead>
-                  <TableHead className="text-right w-24">
+                  <TableHead className="w-24 text-right">
                     <SortButton field="costBasis" label="Cost" />
                   </TableHead>
-                  <TableHead className="text-right w-24">
+                  <TableHead className="w-24 text-right">
                     <SortButton field="currentValue" label="Value" />
                   </TableHead>
-                  <TableHead className="text-right w-24">
+                  <TableHead className="w-24 text-right">
                     <SortButton field="unrealizedGain" label="Gain" />
                   </TableHead>
                   <TableHead className="w-24">
@@ -253,31 +256,34 @@ export function TaxAnalysisTab({
               <TableBody>
                 {sortedLots.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={9}
+                      className="text-center text-muted-foreground"
+                    >
                       No tax lots to display
                     </TableCell>
                   </TableRow>
                 ) : (
                   sortedLots.map((lot, index) => (
                     <TableRow key={`${lot.lotId}-${index}`}>
-                      <TableCell className="font-medium py-2">
+                      <TableCell className="py-2 font-medium">
                         {lot.assetSymbol}
                       </TableCell>
                       <TableCell className="py-2 text-sm">
                         {format(lot.purchaseDate, 'MM/dd/yy')}
                       </TableCell>
-                      <TableCell className="text-right py-2 text-sm">
+                      <TableCell className="py-2 text-right text-sm">
                         {lot.quantity.toFixed(2)}
                       </TableCell>
-                      <TableCell className="text-right py-2 text-sm">
+                      <TableCell className="py-2 text-right text-sm">
                         ${lot.costBasis.toFixed(0)}
                       </TableCell>
-                      <TableCell className="text-right py-2 text-sm">
+                      <TableCell className="py-2 text-right text-sm">
                         ${lot.currentValue.toFixed(0)}
                       </TableCell>
                       <TableCell
                         className={cn(
-                          'text-right py-2 font-medium text-sm',
+                          'py-2 text-right text-sm font-medium',
                           lot.unrealizedGain.greaterThan(0)
                             ? 'text-green-600'
                             : lot.unrealizedGain.lessThan(0)
@@ -296,7 +302,11 @@ export function TaxAnalysisTab({
                               ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                               : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
                           )}
-                          aria-label={lot.holdingPeriod === 'long' ? 'Long-term' : 'Short-term'}
+                          aria-label={
+                            lot.holdingPeriod === 'long'
+                              ? 'Long-term'
+                              : 'Short-term'
+                          }
                         >
                           {lot.holdingPeriod === 'long' ? 'LT' : 'ST'}
                         </Badge>
@@ -329,27 +339,40 @@ export function TaxAnalysisTab({
                               lot.purchaseDate,
                               hypotheticalSellDate
                             );
-                            const reason = getDispositionReason(dispositionCheck);
-                            const bargainElementValue = lot.bargainElement || new Decimal(0);
-                            const message = getTaxImplicationMessage(dispositionCheck, bargainElementValue);
+                            const reason =
+                              getDispositionReason(dispositionCheck);
+                            const bargainElementValue =
+                              lot.bargainElement || new Decimal(0);
+                            const message = getTaxImplicationMessage(
+                              dispositionCheck,
+                              bargainElementValue
+                            );
 
                             // Calculate days manually
                             const daysFromGrant = Math.floor(
-                              (hypotheticalSellDate.getTime() - lot.grantDate.getTime()) / (1000 * 60 * 60 * 24)
+                              (hypotheticalSellDate.getTime() -
+                                lot.grantDate.getTime()) /
+                                (1000 * 60 * 60 * 24)
                             );
                             const daysFromPurchase = Math.floor(
-                              (hypotheticalSellDate.getTime() - lot.purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+                              (hypotheticalSellDate.getTime() -
+                                lot.purchaseDate.getTime()) /
+                                (1000 * 60 * 60 * 24)
                             );
                             const daysUntilTwoYearsFromGrant = Math.max(
                               0,
                               Math.floor(
-                                (dispositionCheck.twoYearsFromGrant.getTime() - hypotheticalSellDate.getTime()) / (1000 * 60 * 60 * 24)
+                                (dispositionCheck.twoYearsFromGrant.getTime() -
+                                  hypotheticalSellDate.getTime()) /
+                                  (1000 * 60 * 60 * 24)
                               )
                             );
                             const daysUntilOneYearFromPurchase = Math.max(
                               0,
                               Math.floor(
-                                (dispositionCheck.oneYearFromPurchase.getTime() - hypotheticalSellDate.getTime()) / (1000 * 60 * 60 * 24)
+                                (dispositionCheck.oneYearFromPurchase.getTime() -
+                                  hypotheticalSellDate.getTime()) /
+                                  (1000 * 60 * 60 * 24)
                               )
                             );
 
@@ -357,7 +380,7 @@ export function TaxAnalysisTab({
                               return (
                                 <Badge
                                   variant="outline"
-                                  className="bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400 text-xs"
+                                  className="bg-green-50 text-xs text-green-800 dark:bg-green-900/20 dark:text-green-400"
                                   aria-label="Qualifying disposition"
                                 >
                                   ✓
@@ -371,7 +394,7 @@ export function TaxAnalysisTab({
                                   <TooltipTrigger asChild>
                                     <Badge
                                       variant="outline"
-                                      className="bg-amber-50 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400 cursor-help text-xs"
+                                      className="cursor-help bg-amber-50 text-xs text-amber-800 dark:bg-amber-900/20 dark:text-amber-400"
                                       aria-label="Disqualifying disposition warning"
                                     >
                                       ⚠️
@@ -379,21 +402,31 @@ export function TaxAnalysisTab({
                                   </TooltipTrigger>
                                   <TooltipContent className="max-w-xs">
                                     <div className="space-y-2">
-                                      <p className="text-sm font-medium">{message}</p>
-                                      <div className="text-xs text-muted-foreground space-y-1">
+                                      <p className="text-sm font-medium">
+                                        {message}
+                                      </p>
+                                      <div className="space-y-1 text-xs text-muted-foreground">
                                         <div>
                                           Grant to today: {daysFromGrant} days (
-                                          {dispositionCheck.meetsGrantRequirement ? '✓' : '✗'} need{' '}
-                                          {daysUntilTwoYearsFromGrant} more)
+                                          {dispositionCheck.meetsGrantRequirement
+                                            ? '✓'
+                                            : '✗'}{' '}
+                                          need {daysUntilTwoYearsFromGrant}{' '}
+                                          more)
                                         </div>
                                         <div>
-                                          Purchase to today: {daysFromPurchase} days (
-                                          {dispositionCheck.meetsPurchaseRequirement ? '✓' : '✗'} need{' '}
-                                          {daysUntilOneYearFromPurchase} more)
+                                          Purchase to today: {daysFromPurchase}{' '}
+                                          days (
+                                          {dispositionCheck.meetsPurchaseRequirement
+                                            ? '✓'
+                                            : '✗'}{' '}
+                                          need {daysUntilOneYearFromPurchase}{' '}
+                                          more)
                                         </div>
                                       </div>
                                       <p className="text-xs text-amber-600 dark:text-amber-400">
-                                        If sold today, bargain element would be taxed as ordinary income
+                                        If sold today, bargain element would be
+                                        taxed as ordinary income
                                       </p>
                                     </div>
                                   </TooltipContent>
@@ -402,7 +435,9 @@ export function TaxAnalysisTab({
                             );
                           })()
                         ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
+                          <span className="text-sm text-muted-foreground">
+                            —
+                          </span>
                         )}
                       </TableCell>
                     </TableRow>
