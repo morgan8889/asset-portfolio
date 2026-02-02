@@ -39,17 +39,25 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Badge } from '@/components/ui/badge';
 
-const scenarioSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  type: z.enum([
-    'market_correction',
-    'expense_increase',
-    'income_change',
-    'one_time_expense',
-  ]),
-  value: z.coerce.number(),
-  durationMonths: z.coerce.number().optional(),
-});
+const scenarioSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required'),
+    type: z.enum([
+      'market_correction',
+      'expense_increase',
+      'income_change',
+      'one_time_expense',
+    ]),
+    value: z.coerce.number().min(-100, 'Value cannot be less than -100%').max(1000, 'Value cannot exceed 1000'),
+    durationMonths: z.coerce.number().min(0, 'Duration must be positive').optional(),
+  })
+  .refine(
+    (data) => data.type !== 'one_time_expense' || data.durationMonths !== undefined,
+    {
+      message: 'Duration is required for one-time expenses',
+      path: ['durationMonths'],
+    }
+  );
 
 type ScenarioFormData = z.infer<typeof scenarioSchema>;
 

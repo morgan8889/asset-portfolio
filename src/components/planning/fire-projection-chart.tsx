@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useMemo } from 'react';
 import { ProjectionPoint, FireCalculation } from '@/types/planning';
 import {
   Area,
@@ -24,66 +25,72 @@ interface FireProjectionChartProps {
   isLoading?: boolean;
 }
 
-export function FireProjectionChart({
+// Strategy pattern for label formatting with priority-ordered formatters
+// Defined outside component to avoid recreation and dependency issues
+type LabelFormatter = (point: ProjectionPoint) => string | null;
+
+const labelFormatters: LabelFormatter[] = [
+  // Priority 1: Age-based (most intuitive for retirement planning)
+  (point) => {
+    if (point.userAge === undefined) return null;
+    return point.year === 0 ? `Age ${Math.round(point.userAge)}` : `${Math.round(point.userAge)}`;
+  },
+  // Priority 2: Calendar year
+  (point) => {
+    if (point.calendarYear === undefined) return null;
+    return point.year === 0 ? `${point.calendarYear}` : `'${String(point.calendarYear).slice(-2)}`;
+  },
+  // Priority 3: Years to retirement
+  (point) => {
+    if (point.yearsToRetirement === undefined) return null;
+    if (point.yearsToRetirement === 0) return 'Retirement';
+    if (point.yearsToRetirement > 0) return `-${Math.round(point.yearsToRetirement)}Y`;
+    return `+${Math.abs(Math.round(point.yearsToRetirement))}Y`;
+  },
+  // Fallback: Relative years
+  (point) => (point.year === 0 ? 'Now' : `+${point.year}Y`),
+];
+
+const formatYear = (value: number, dataPoint?: ProjectionPoint): string => {
+  if (!dataPoint) return value.toString();
+
+  for (const formatter of labelFormatters) {
+    const result = formatter(dataPoint);
+    if (result !== null) return result;
+  }
+  return value.toString();
+};
+
+export const FireProjectionChart = memo(function FireProjectionChart({
   projection,
   fireCalculation,
   className,
   isLoading = false,
 }: FireProjectionChartProps) {
-
-  // Strategy pattern for label formatting with priority-ordered formatters
-  type LabelFormatter = (point: ProjectionPoint) => string | null;
-
-  const labelFormatters: LabelFormatter[] = [
-    // Priority 1: Age-based (most intuitive for retirement planning)
-    (point) => {
-      if (point.userAge === undefined) return null;
-      return point.year === 0 ? `Age ${Math.round(point.userAge)}` : `${Math.round(point.userAge)}`;
-    },
-    // Priority 2: Calendar year
-    (point) => {
-      if (point.calendarYear === undefined) return null;
-      return point.year === 0 ? `${point.calendarYear}` : `'${String(point.calendarYear).slice(-2)}`;
-    },
-    // Priority 3: Years to retirement
-    (point) => {
-      if (point.yearsToRetirement === undefined) return null;
-      if (point.yearsToRetirement === 0) return 'Retirement';
-      if (point.yearsToRetirement > 0) return `-${Math.round(point.yearsToRetirement)}Y`;
-      return `+${Math.abs(Math.round(point.yearsToRetirement))}Y`;
-    },
-    // Fallback: Relative years
-    (point) => (point.year === 0 ? 'Now' : `+${point.year}Y`),
-  ];
-
-  const formatYear = (value: number, dataPoint?: ProjectionPoint) => {
-    if (!dataPoint) return value.toString();
-
-    for (const formatter of labelFormatters) {
-      const result = formatter(dataPoint);
-      if (result !== null) return result;
-    }
-    return value.toString();
-  };
-
   // Determine best label format based on available data
   const hasAgeData = projection.some(p => p.userAge !== undefined);
   const hasCalendarYear = projection.some(p => p.calendarYear !== undefined);
 
-  // Transform data for Recharts
-  const chartData = projection.map((point) => ({
-    year: point.year,
-    yearLabel: formatYear(point.year, point),
-    netWorth: point.netWorth,
-    fireTarget: point.fireTarget,
-    isProjected: point.isProjected,
-    userAge: point.userAge,
-    calendarYear: point.calendarYear,
-    yearsToRetirement: point.yearsToRetirement,
-  }));
+  // Memoize chart data transformation to prevent recalculation on every render
+  const chartData = useMemo(() =>
+    projection.map((point) => ({
+      year: point.year,
+      yearLabel: formatYear(point.year, point),
+      netWorth: point.netWorth,
+      fireTarget: point.fireTarget,
+      isProjected: point.isProjected,
+      userAge: point.userAge,
+      calendarYear: point.calendarYear,
+      yearsToRetirement: point.yearsToRetirement,
+    })),
+    [projection]
+  );
 
   // Find crossover point
-  const crossoverPoint = projection.find((p) => p.netWorth >= p.fireTarget);
+  const crossoverPoint = useMemo(
+    () => projection.find((p) => p.netWorth >= p.fireTarget),
+    [projection]
+  );
 
   const formatMonthlyProgress = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -110,7 +117,7 @@ export function FireProjectionChart({
               <Calendar className="mt-1 h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">Years to FIRE</p>
-                <p className="text-xl font-bold">
+                <p data-testid="years-to-fire" className="text-xl font-bold">
                   {fireCalculation.yearsToFire === Infinity
                     ? '∞'
                     : fireCalculation.yearsToFire.toFixed(1)}
@@ -140,7 +147,7 @@ export function FireProjectionChart({
               <DollarSign className="mt-1 h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-sm text-muted-foreground">FIRE Target</p>
-                <p className="text-xl font-bold">
+                <p data-testid="fire-target" className="text-xl font-bold">
                   {formatCompactCurrency(fireCalculation.fireNumber)}
                 </p>
               </div>
@@ -268,4 +275,4 @@ export function FireProjectionChart({
       </CardContent>
     </Card>
   );
-}
+});

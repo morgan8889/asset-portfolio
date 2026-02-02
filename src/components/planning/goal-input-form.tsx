@@ -48,6 +48,7 @@ export function GoalInputForm() {
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FireConfigFormData>({
     resolver: zodResolver(fireConfigSchema),
