@@ -67,7 +67,11 @@ export interface NetWorthPoint {
 /**
  * "What-If" scenario type
  */
-export type ScenarioType = 'market_correction' | 'expense_increase' | 'income_change' | 'one_time_expense';
+export type ScenarioType =
+  | 'market_correction'
+  | 'expense_increase'
+  | 'income_change'
+  | 'one_time_expense';
 
 /**
  * A financial planning scenario
@@ -101,10 +105,10 @@ export interface FireCalculation {
  */
 export const PLANNING_CONSTRAINTS = {
   MIN_WITHDRAWAL_RATE: 0.01, // 1%
-  MAX_WITHDRAWAL_RATE: 0.10, // 10%
-  MIN_EXPECTED_RETURN: -0.20, // -20%
-  MAX_EXPECTED_RETURN: 0.30, // 30%
+  MAX_WITHDRAWAL_RATE: 0.1, // 10%
+  MIN_EXPECTED_RETURN: -0.2, // -20%
+  MAX_EXPECTED_RETURN: 0.3, // 30%
   MIN_INFLATION_RATE: -0.05, // -5%
-  MAX_INFLATION_RATE: 0.20, // 20%
+  MAX_INFLATION_RATE: 0.2, // 20%
   MAX_PROJECTION_YEARS: 50,
 };

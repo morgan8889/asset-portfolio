@@ -318,11 +318,9 @@ function checkSectorConcentration(
  * Detects holdings with lots that will become long-term (held >365 days) within the next 30 days.
  * Recommends holding these positions to benefit from lower long-term capital gains tax rates.
  */
-function checkTaxLotAging(
-  input: RecommendationInput
-): Recommendation | null {
+function checkTaxLotAging(input: RecommendationInput): Recommendation | null {
   // Create asset map for detectAgingLots
-  const assetMap = new Map(input.assets.map(asset => [asset.id, asset]));
+  const assetMap = new Map(input.assets.map((asset) => [asset.id, asset]));
 
   const agingLots = detectAgingLots(input.holdings, assetMap);
 

@@ -53,7 +53,7 @@ export function calculateLiabilityBalanceAtDate(
   if (targetDate < startDate) {
     throw new Error(
       `Cannot calculate liability balance before start date. ` +
-      `Target: ${targetDate.toISOString()}, Start: ${startDate.toISOString()}`
+        `Target: ${targetDate.toISOString()}, Start: ${startDate.toISOString()}`
     );
   }
 
@@ -65,8 +65,8 @@ export function calculateLiabilityBalanceAtDate(
     if (targetDate < new Date()) {
       console.warn(
         `No payment history available for liability ${liability.id}. ` +
-        `Historical balance calculation may be inaccurate. ` +
-        `Returning current balance: ${balance.toString()}`
+          `Historical balance calculation may be inaccurate. ` +
+          `Returning current balance: ${balance.toString()}`
       );
     }
     return balance;
@@ -81,9 +81,9 @@ export function calculateLiabilityBalanceAtDate(
   if (targetDate < firstPaymentDate) {
     console.warn(
       `Target date ${targetDate.toISOString()} is before first recorded payment ` +
-      `${firstPaymentDate.toISOString()} for liability ${liability.id}. ` +
-      `Historical balance will be inaccurate. Consider recording payment history ` +
-      `from the liability start date.`
+        `${firstPaymentDate.toISOString()} for liability ${liability.id}. ` +
+        `Historical balance will be inaccurate. Consider recording payment history ` +
+        `from the liability start date.`
     );
 
     // Return current balance as best estimate

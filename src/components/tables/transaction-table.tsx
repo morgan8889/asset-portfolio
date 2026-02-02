@@ -100,8 +100,7 @@ export const getTransactionTypeBadge = (type: TransactionType) => {
     },
     espp_purchase: {
       label: 'ESPP Purchase',
-      color:
-        'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
+      color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
     },
     rsu_vest: {
       label: 'RSU Vest',
@@ -115,8 +114,7 @@ export const getTransactionTypeBadge = (type: TransactionType) => {
     },
     withdrawal: {
       label: 'Withdrawal',
-      color:
-        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+      color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
     },
     liability_payment: {
       label: 'Liability Payment',

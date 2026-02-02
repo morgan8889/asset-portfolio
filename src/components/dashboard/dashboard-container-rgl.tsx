@@ -371,7 +371,13 @@ const DashboardContainerRGLComponent = ({
         }
       }
     },
-    [derivedMetrics, categoryAllocations, config?.timePeriod, liveMetrics, taxExposure]
+    [
+      derivedMetrics,
+      categoryAllocations,
+      config?.timePeriod,
+      liveMetrics,
+      taxExposure,
+    ]
   );
 
   if (!config || !holdings || holdings.length === 0) {

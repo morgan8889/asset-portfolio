@@ -694,17 +694,16 @@ export class PortfolioDatabase extends Dexie {
   // ==========================================================================
 
   async getLiabilitiesByPortfolio(portfolioId: string): Promise<Liability[]> {
-    return this.liabilities
-      .where('portfolioId')
-      .equals(portfolioId)
-      .toArray();
+    return this.liabilities.where('portfolioId').equals(portfolioId).toArray();
   }
 
   async getLiability(id: string): Promise<Liability | undefined> {
     return this.liabilities.get(id);
   }
 
-  async addLiability(liability: Omit<Liability, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async addLiability(
+    liability: Omit<Liability, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<string> {
     const now = new Date().toISOString();
     const id = await this.liabilities.add({
       ...liability,
@@ -715,7 +714,10 @@ export class PortfolioDatabase extends Dexie {
     return id as string;
   }
 
-  async updateLiability(id: string, updates: Partial<Omit<Liability, 'id' | 'createdAt'>>): Promise<void> {
+  async updateLiability(
+    id: string,
+    updates: Partial<Omit<Liability, 'id' | 'createdAt'>>
+  ): Promise<void> {
     await this.liabilities.update(id, {
       ...updates,
       updatedAt: new Date().toISOString(),
@@ -760,7 +762,9 @@ export class PortfolioDatabase extends Dexie {
     return id.toString();
   }
 
-  async deleteLiabilityPaymentsByLiability(liabilityId: string): Promise<number> {
+  async deleteLiabilityPaymentsByLiability(
+    liabilityId: string
+  ): Promise<number> {
     return this.liabilityPayments
       .where('liabilityId')
       .equals(liabilityId)

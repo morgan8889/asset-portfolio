@@ -104,7 +104,7 @@ export function FireCountdownWidget() {
           </div>
           {fireCalculation.projectedFireDate && (
             <p className="text-sm text-muted-foreground">
-              <Calendar className="inline h-3 w-3 mr-1" />
+              <Calendar className="mr-1 inline h-3 w-3" />
               {formatDate(fireCalculation.projectedFireDate)}
             </p>
           )}

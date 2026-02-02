@@ -221,7 +221,10 @@ export const holdingQueries = {
       await db.holdings.update(id, serialized);
     } else {
       // No lots to serialize, use the simpler partial serialization
-      const serialized = serializePartialDecimals(updates, HOLDING_DECIMAL_FIELDS);
+      const serialized = serializePartialDecimals(
+        updates,
+        HOLDING_DECIMAL_FIELDS
+      );
       await db.holdings.update(id, { ...serialized, lastUpdated: new Date() });
     }
   },
@@ -309,10 +312,9 @@ export const transactionQueries = {
 
   async create(transaction: Omit<Transaction, 'id'>): Promise<string> {
     const newId = generateTransactionId();
-    const serialized = serializeDecimalFields(
-      transaction,
-      [...TRANSACTION_DECIMAL_FIELDS] as (keyof typeof transaction)[]
-    );
+    const serialized = serializeDecimalFields(transaction, [
+      ...TRANSACTION_DECIMAL_FIELDS,
+    ] as (keyof typeof transaction)[]);
     await db.transactions.add({
       ...serialized,
       id: newId,
@@ -322,10 +324,9 @@ export const transactionQueries = {
 
   async createMany(transactions: Omit<Transaction, 'id'>[]): Promise<string[]> {
     const transactionsWithIds = transactions.map((t) => {
-      const serialized = serializeDecimalFields(
-        t,
-        [...TRANSACTION_DECIMAL_FIELDS] as (keyof typeof t)[]
-      );
+      const serialized = serializeDecimalFields(t, [
+        ...TRANSACTION_DECIMAL_FIELDS,
+      ] as (keyof typeof t)[]);
       return {
         ...serialized,
         id: generateTransactionId(),
@@ -339,7 +340,10 @@ export const transactionQueries = {
   },
 
   async update(id: string, updates: Partial<Transaction>): Promise<void> {
-    const serialized = serializePartialDecimals(updates, TRANSACTION_DECIMAL_FIELDS);
+    const serialized = serializePartialDecimals(
+      updates,
+      TRANSACTION_DECIMAL_FIELDS
+    );
     await db.transactions.update(id, serialized as Partial<TransactionStorage>);
   },
 

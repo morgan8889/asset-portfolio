@@ -51,7 +51,9 @@ function generateTestHoldings(count: number): {
     for (let j = 0; j < lotCount; j++) {
       // Mix of short-term, long-term, and aging lots
       const daysOld = (i * 10 + j * 100) % 400; // 0-400 days old
-      const purchaseDate = new Date(now.getTime() - daysOld * 24 * 60 * 60 * 1000);
+      const purchaseDate = new Date(
+        now.getTime() - daysOld * 24 * 60 * 60 * 1000
+      );
       const quantity = new Decimal(10 + j * 5);
       const purchasePrice = new Decimal(90 + i + j * 5);
 
@@ -69,7 +71,9 @@ function generateTestHoldings(count: number): {
     }
 
     const costBasis = totalCost;
-    const averageCost = totalQuantity.isZero() ? new Decimal(0) : costBasis.div(totalQuantity);
+    const averageCost = totalQuantity.isZero()
+      ? new Decimal(0)
+      : costBasis.div(totalQuantity);
     const currentValue = totalQuantity.times(asset.currentPrice ?? 0);
     const unrealizedGain = currentValue.minus(costBasis);
 
@@ -82,7 +86,9 @@ function generateTestHoldings(count: number): {
       averageCost,
       currentValue,
       unrealizedGain,
-      unrealizedGainPercent: costBasis.isZero() ? 0 : unrealizedGain.div(costBasis).times(100).toNumber(),
+      unrealizedGainPercent: costBasis.isZero()
+        ? 0
+        : unrealizedGain.div(costBasis).times(100).toNumber(),
       lots,
       lastUpdated: new Date(),
     });
@@ -105,7 +111,9 @@ describe('Tax Calculator Performance', () => {
     expect(duration).toBeLessThan(200);
 
     // Should find some aging lots (probabilistic due to random date distribution)
-    console.log(`Detected ${agingLots.length} aging lots in ${duration.toFixed(2)}ms`);
+    console.log(
+      `Detected ${agingLots.length} aging lots in ${duration.toFixed(2)}ms`
+    );
   });
 
   it('should calculate tax exposure in <200ms for 500 holdings', () => {
@@ -131,7 +139,9 @@ describe('Tax Calculator Performance', () => {
     console.log(`Calculated tax exposure in ${duration.toFixed(2)}ms`);
     console.log(`  - ST Gains: $${taxExposure.netShortTerm.toFixed(2)}`);
     console.log(`  - LT Gains: $${taxExposure.netLongTerm.toFixed(2)}`);
-    console.log(`  - Tax Liability: $${taxExposure.estimatedTaxLiability.toFixed(2)}`);
+    console.log(
+      `  - Tax Liability: $${taxExposure.estimatedTaxLiability.toFixed(2)}`
+    );
   });
 
   it('should handle combined tax operations in <200ms', () => {
@@ -156,9 +166,13 @@ describe('Tax Calculator Performance', () => {
     // Combined operations should still complete in <200ms
     expect(duration).toBeLessThan(200);
 
-    console.log(`Combined tax operations completed in ${duration.toFixed(2)}ms`);
+    console.log(
+      `Combined tax operations completed in ${duration.toFixed(2)}ms`
+    );
     console.log(`  - Aging lots: ${agingLots.length}`);
-    console.log(`  - Tax liability: $${taxExposure.estimatedTaxLiability.toFixed(2)}`);
+    console.log(
+      `  - Tax liability: $${taxExposure.estimatedTaxLiability.toFixed(2)}`
+    );
   });
 
   it('should scale well with 1000 holdings', () => {
@@ -181,7 +195,9 @@ describe('Tax Calculator Performance', () => {
     // Should still complete in reasonable time (< 400ms for 2x data)
     expect(duration).toBeLessThan(400);
 
-    console.log(`Stress test (1000 holdings) completed in ${duration.toFixed(2)}ms`);
+    console.log(
+      `Stress test (1000 holdings) completed in ${duration.toFixed(2)}ms`
+    );
     console.log(`  - Aging lots: ${agingLots.length}`);
   });
 });

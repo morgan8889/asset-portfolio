@@ -60,8 +60,9 @@ export function ESPPTransactionFormFields() {
         <div className="flex-1 text-sm text-blue-900 dark:text-blue-100">
           <strong>ESPP Transaction</strong>
           <p className="mt-1 text-blue-700 dark:text-blue-300">
-            Employee Stock Purchase Plans allow you to buy company stock at a discount.
-            The discount is taxed differently depending on how long you hold the shares.
+            Employee Stock Purchase Plans allow you to buy company stock at a
+            discount. The discount is taxed differently depending on how long
+            you hold the shares.
           </p>
         </div>
       </div>
@@ -112,10 +113,13 @@ export function ESPPTransactionFormFields() {
           </PopoverContent>
         </Popover>
         {errors.grantDate && (
-          <p className="text-sm text-red-600">{String(errors.grantDate.message)}</p>
+          <p className="text-sm text-red-600">
+            {String(errors.grantDate.message)}
+          </p>
         )}
         <p className="text-xs text-muted-foreground">
-          The date when your ESPP offering period began (typically 6 months before purchase)
+          The date when your ESPP offering period began (typically 6 months
+          before purchase)
         </p>
       </div>
 
@@ -142,7 +146,9 @@ export function ESPPTransactionFormFields() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="marketPriceAtPurchase">Market Price at Purchase *</Label>
+          <Label htmlFor="marketPriceAtPurchase">
+            Market Price at Purchase *
+          </Label>
           <Input
             id="marketPriceAtPurchase"
             type="number"
@@ -174,10 +180,7 @@ export function ESPPTransactionFormFields() {
             max="100"
             placeholder="15"
             {...register('discountPercent')}
-            className={cn(
-              'flex-1',
-              errors.discountPercent && 'border-red-500'
-            )}
+            className={cn('flex-1', errors.discountPercent && 'border-red-500')}
           />
           <span className="text-sm text-muted-foreground">%</span>
         </div>
@@ -195,11 +198,13 @@ export function ESPPTransactionFormFields() {
       {bargainElement > 0 && (
         <Alert className="bg-green-50 dark:bg-green-950">
           <AlertDescription className="text-sm">
-            <strong>Bargain Element:</strong> ${bargainElement.toFixed(2)} per share
+            <strong>Bargain Element:</strong> ${bargainElement.toFixed(2)} per
+            share
             <br />
             <span className="text-xs text-muted-foreground">
-              This is the discount you received. It may be taxed as ordinary income depending
-              on when you sell the shares (qualifying vs. disqualifying disposition).
+              This is the discount you received. It may be taxed as ordinary
+              income depending on when you sell the shares (qualifying vs.
+              disqualifying disposition).
             </span>
           </AlertDescription>
         </Alert>

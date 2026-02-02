@@ -48,11 +48,18 @@ const scenarioSchema = z
       'income_change',
       'one_time_expense',
     ]),
-    value: z.coerce.number().min(-100, 'Value cannot be less than -100%').max(1000, 'Value cannot exceed 1000'),
-    durationMonths: z.coerce.number().min(0, 'Duration must be positive').optional(),
+    value: z.coerce
+      .number()
+      .min(-100, 'Value cannot be less than -100%')
+      .max(1000, 'Value cannot exceed 1000'),
+    durationMonths: z.coerce
+      .number()
+      .min(0, 'Duration must be positive')
+      .optional(),
   })
   .refine(
-    (data) => data.type !== 'one_time_expense' || data.durationMonths !== undefined,
+    (data) =>
+      data.type !== 'one_time_expense' || data.durationMonths !== undefined,
     {
       message: 'Duration is required for one-time expenses',
       path: ['durationMonths'],
@@ -125,7 +132,8 @@ export function ScenarioControls() {
   };
 
   // Helper for consistent percentage formatting
-  const formatPercentageScenario = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
+  const formatPercentageScenario = (value: number) =>
+    `${value > 0 ? '+' : ''}${value}%`;
 
   const getValueLabel = (scenario: Scenario) => {
     switch (scenario.type) {
@@ -339,12 +347,15 @@ export function ScenarioControls() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Scenario</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this scenario? This action cannot be undone.
+              Are you sure you want to delete this scenario? This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete}>
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

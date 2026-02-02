@@ -374,8 +374,12 @@ class ExportService implements IExportService {
         const total = new Decimal(tx.totalAmount);
 
         // Tax fields (T038-T042)
-        const grantDate = tx.grantDate ? format(new Date(tx.grantDate), 'yyyy-MM-dd') : '';
-        const vestDate = tx.vestingDate ? format(new Date(tx.vestingDate), 'yyyy-MM-dd') : '';
+        const grantDate = tx.grantDate
+          ? format(new Date(tx.grantDate), 'yyyy-MM-dd')
+          : '';
+        const vestDate = tx.vestingDate
+          ? format(new Date(tx.vestingDate), 'yyyy-MM-dd')
+          : '';
         const discountPercent = tx.discountPercent
           ? `${new Decimal(tx.discountPercent).mul(100).toFixed(2)}%`
           : '';
@@ -418,7 +422,9 @@ class ExportService implements IExportService {
     const { db } = await import('@/lib/db');
     const Decimal = (await import('decimal.js')).default;
     const { determineMixedHoldingPeriod } = await import('@/types/tax');
-    const { formatHoldingPeriodAbbr } = await import('@/lib/utils/tax-formatters');
+    const { formatHoldingPeriodAbbr } = await import(
+      '@/lib/utils/tax-formatters'
+    );
     const { useTaxSettingsStore } = await import('@/lib/stores/tax-settings');
 
     // Get tax settings (adapt store format with Decimal rates to numbers)
@@ -458,7 +464,10 @@ class ExportService implements IExportService {
         : marketValue.div(quantity);
 
       // Tax calculations (T043-T047)
-      const holdingPeriod = determineMixedHoldingPeriod(holding.lots, currentDate);
+      const holdingPeriod = determineMixedHoldingPeriod(
+        holding.lots,
+        currentDate
+      );
       let shortTermGain = new Decimal(0);
       let longTermGain = new Decimal(0);
 
@@ -475,7 +484,8 @@ class ExportService implements IExportService {
         const lotGain = lotValue.sub(lotCost);
 
         const daysHeld = Math.floor(
-          (currentDate.getTime() - lot.purchaseDate.getTime()) / (1000 * 60 * 60 * 24)
+          (currentDate.getTime() - lot.purchaseDate.getTime()) /
+            (1000 * 60 * 60 * 24)
         );
 
         if (daysHeld >= 365) {
