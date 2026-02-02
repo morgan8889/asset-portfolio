@@ -51,6 +51,17 @@ export interface UserSettings {
   updatedAt: Date;
 }
 
+// Liability payment interface for tracking loan/mortgage payments
+export interface LiabilityPayment {
+  id?: number;
+  liabilityId: string;
+  date: Date;
+  principalPaid: string; // Stored as string for Decimal precision
+  interestPaid: string;
+  remainingBalance: string;
+  createdAt: Date;
+}
+
 // Extend Dexie with type information
 export class PortfolioDatabase extends Dexie {
   // Declare tables with storage types
@@ -64,6 +75,7 @@ export class PortfolioDatabase extends Dexie {
   userSettings!: Table<UserSettings>;
   performanceSnapshots!: Table<PerformanceSnapshotStorage>;
   liabilities!: Table<Liability>;
+  liabilityPayments!: Table<LiabilityPayment>;
 
   constructor() {
     super('PortfolioTrackerDB');
@@ -114,6 +126,24 @@ export class PortfolioDatabase extends Dexie {
       userSettings: '++id, key',
       performanceSnapshots: '++id, portfolioId, date, [portfolioId+date]',
       liabilities: '++id, portfolioId, name, startDate',
+    });
+
+    // Define schema version 4 - add liabilityPayments table
+    this.version(4).stores({
+      portfolios: '++id, name, type, createdAt, updatedAt',
+      assets: '++id, symbol, name, type, exchange, currency',
+      holdings:
+        '++id, portfolioId, assetId, [portfolioId+assetId], lastUpdated',
+      transactions:
+        '++id, portfolioId, assetId, date, type, [portfolioId+date], [assetId+date], [portfolioId+assetId]',
+      priceHistory: '++id, assetId, date, [assetId+date], source',
+      priceSnapshots: '++id, assetId, timestamp, [assetId+timestamp], source',
+      dividendRecords:
+        '++id, assetId, portfolioId, paymentDate, [assetId+paymentDate]',
+      userSettings: '++id, key',
+      performanceSnapshots: '++id, portfolioId, date, [portfolioId+date]',
+      liabilities: '++id, portfolioId, name, startDate',
+      liabilityPayments: '++id, liabilityId, date, [liabilityId+date]',
     });
 
     // Add hooks for data transformation
@@ -694,6 +724,47 @@ export class PortfolioDatabase extends Dexie {
 
   async deleteLiability(id: string): Promise<void> {
     await this.liabilities.delete(id);
+  }
+
+  // ==========================================================================
+  // Liability Payment Helper Methods
+  // ==========================================================================
+
+  async getLiabilityPayments(liabilityId: string): Promise<LiabilityPayment[]> {
+    const payments = await this.liabilityPayments
+      .where('liabilityId')
+      .equals(liabilityId)
+      .toArray();
+
+    // Sort by date ascending
+    return payments.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  }
+
+  async addLiabilityPayment(
+    liabilityId: string,
+    date: Date,
+    principalPaid: Decimal,
+    interestPaid: Decimal,
+    remainingBalance: Decimal
+  ): Promise<string> {
+    const id = await this.liabilityPayments.add({
+      liabilityId,
+      date,
+      principalPaid: principalPaid.toString(),
+      interestPaid: interestPaid.toString(),
+      remainingBalance: remainingBalance.toString(),
+      createdAt: new Date(),
+    });
+    return id.toString();
+  }
+
+  async deleteLiabilityPaymentsByLiability(liabilityId: string): Promise<number> {
+    return this.liabilityPayments
+      .where('liabilityId')
+      .equals(liabilityId)
+      .delete();
   }
 }
 
