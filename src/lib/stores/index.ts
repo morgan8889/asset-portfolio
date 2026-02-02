@@ -12,3 +12,4 @@ export {
 export { useCsvImportStore } from './csv-import';
 export { useDashboardStore } from './dashboard';
 export { usePriceStore } from './price';
+export { useTaxSettingsStore } from './tax-settings';
