@@ -29,14 +29,6 @@ export function DashboardHeader() {
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          {config?.useReactGridLayout && (
-            <Badge
-              variant="secondary"
-              className="border-blue-200 bg-blue-100 px-1.5 py-0.5 text-[10px] text-blue-700"
-            >
-              Beta Layout
-            </Badge>
-          )}
         </div>
         <div className="flex items-center gap-2">
           <p className="text-muted-foreground">Portfolio:</p>
