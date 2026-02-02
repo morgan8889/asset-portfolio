@@ -32,8 +32,8 @@ test.describe('Dashboard React Grid Layout (RGL)', () => {
       const modal = page.locator('[role="dialog"]');
       await expect(modal).toBeVisible({ timeout: 2000 });
 
-      // Should see React Grid Layout toggle label
-      const rglLabel = modal.getByText(/React Grid Layout/i);
+      // Should see New Layout System toggle label
+      const rglLabel = modal.getByText(/New Layout System/i);
       await expect(rglLabel).toBeVisible();
     });
 
@@ -440,25 +440,9 @@ test.describe('Dashboard React Grid Layout (RGL)', () => {
       // Start at desktop
       await page.setViewportSize({ width: 1280, height: 720 });
 
-      // Enable RGL mode
-      const settingsButton = page.locator('[data-testid="dashboard-settings-btn"]');
-      await expect(settingsButton).toBeVisible({ timeout: 5000 });
-      await settingsButton.click();
-
-      const modal = page.locator('[role="dialog"]');
-      await expect(modal).toBeVisible({ timeout: 2000 });
-
-      const rglSwitch = modal.locator('#use-react-grid-layout');
-      if (await rglSwitch.isVisible()) {
-        const isChecked = await rglSwitch.getAttribute('data-state');
-        if (isChecked !== 'checked') {
-          await rglSwitch.click();
-          await page.waitForTimeout(500);
-        }
-      }
-
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(200);
+      // RGL is now the default implementation, no need to enable it
+      // Wait for widgets to render
+      await page.waitForTimeout(500);
 
       // Get widget count at desktop
       const desktopWidgets = page.locator('.react-grid-item');
@@ -478,7 +462,7 @@ test.describe('Dashboard React Grid Layout (RGL)', () => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.waitForTimeout(500);
 
-      const mobileWidgets = page.locator('[data-widget-id]');
+      const mobileWidgets = page.locator('[data-widget]');
       const mobileCount = await mobileWidgets.count();
 
       // Should still have same number of widgets
@@ -534,28 +518,12 @@ test.describe('Dashboard React Grid Layout (RGL)', () => {
 
   test.describe('Widget Order', () => {
     test('should update widget order based on layout', async ({ page }) => {
-      // Enable RGL mode
-      const settingsButton = page.locator('[data-testid="dashboard-settings-btn"]');
-      await expect(settingsButton).toBeVisible({ timeout: 5000 });
-      await settingsButton.click();
-
-      const modal = page.locator('[role="dialog"]');
-      await expect(modal).toBeVisible({ timeout: 2000 });
-
-      const rglSwitch = modal.locator('#use-react-grid-layout');
-      if (await rglSwitch.isVisible()) {
-        const isChecked = await rglSwitch.getAttribute('data-state');
-        if (isChecked !== 'checked') {
-          await rglSwitch.click();
-          await page.waitForTimeout(500);
-        }
-      }
-
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(200);
+      // RGL is now the default implementation, no need to enable it
+      // Wait for widgets to render
+      await page.waitForTimeout(500);
 
       // Get initial widget order
-      const widgets = page.locator('[data-widget-id]');
+      const widgets = page.locator('[data-widget]');
       const count = await widgets.count();
       expect(count).toBeGreaterThan(0);
 
