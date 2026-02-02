@@ -17,7 +17,7 @@ export function serializeDecimalFields<T extends object, K extends keyof T>(
   obj: T,
   fields: K[]
 ): Omit<T, K> & Record<K, string> {
-  const result: Record<string, unknown> = { ...obj };
+  const result: Record<string, unknown> = { ...obj } as Record<string, unknown>;
 
   for (const field of fields) {
     const value = obj[field];
@@ -46,7 +46,7 @@ export function deserializeDecimalFields<T extends object, K extends keyof T>(
   fields: K[],
   defaultValue: Decimal = new Decimal(0)
 ): Omit<T, K> & Record<K, Decimal> {
-  const result: Record<string, unknown> = { ...obj };
+  const result: Record<string, unknown> = { ...obj } as Record<string, unknown>;
 
   for (const field of fields) {
     const value = obj[field];

@@ -15,7 +15,10 @@ export type TransactionType =
   | 'merger'
   | 'reinvestment'
   | 'espp_purchase'
-  | 'rsu_vest';
+  | 'rsu_vest'
+  | 'deposit'
+  | 'withdrawal'
+  | 'liability_payment';
 
 export interface Transaction {
   id: string; // UUID
