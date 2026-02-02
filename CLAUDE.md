@@ -93,20 +93,155 @@ src/
 ### Key Patterns
 
 #### Database Operations
-All database operations go through Dexie.js in `src/lib/db/`. The schema is defined in `schema.ts` with these main tables:
+All database operations go through Dexie.js in `src/lib/db/`. The schema is defined in `schema.ts` (current version: v4) with these tables:
+
+**Core Tables:**
 - `portfolios`: Investment portfolios
-- `assets`: Stocks, ETFs, crypto, etc.
-- `holdings`: Current positions
-- `transactions`: Buy/sell/dividend records
+- `assets`: Stocks, ETFs, crypto, real estate
+- `holdings`: Current positions with tax lot tracking
+- `transactions`: Buy/sell/dividend records with tax metadata
+
+**Tax & Performance Tables:**
 - `priceHistory`: Historical price data cache
-- `userSettings`: User preferences
+- `priceSnapshots`: Real-time price snapshots with market state
+- `dividendRecords`: Dividend payment tracking
+
+**Planning Tables (v4):**
+- `liabilities`: Mortgages, loans, credit cards for net worth tracking
+- `liabilityPayments`: Payment history for accurate balance reconstruction
+
+**Performance & Settings:**
+- `performanceSnapshots`: Historical performance data
+- `userSettings`: User preferences and configuration
 
 #### State Management
-Zustand stores provide global state management with TypeScript support. Key stores:
-- **portfolioStore**: Active portfolio, portfolio list
-- **assetStore**: Asset data, price updates
-- **transactionStore**: Transaction history
-- **uiStore**: UI state, modals, notifications
+
+Zustand stores provide global state management with TypeScript support. The application uses 13 specialized stores for different domains.
+
+**Store Reference:**
+
+**Core Portfolio Stores:**
+- **portfolioStore** (`src/lib/stores/portfolio.ts`): Portfolio CRUD, holdings management, asset tracking
+  - State: portfolios, currentPortfolio, holdings, assets, metrics
+  - Actions: loadPortfolios(), createPortfolio(), loadHoldings(), calculateMetrics()
+  - Persistence: currentPortfolio only
+  - Usage: Primary store for portfolio operations
+
+- **assetStore** (`src/lib/stores/asset.ts`): Asset management and data
+  - State: Asset metadata, prices, exchange information
+  - Actions: Asset CRUD operations
+  - Usage: Manage individual asset definitions
+
+- **transactionStore** (`src/lib/stores/transaction.ts`): Transaction history and CRUD
+  - State: Transaction list, filters
+  - Actions: createTransaction(), updateTransaction(), deleteTransaction()
+  - Usage: Buy/sell/dividend transaction management
+
+- **performance** (`src/lib/stores/performance.ts`): Performance data and calculations
+  - State: Performance metrics, benchmarks, time-weighted returns
+  - Actions: calculatePerformance(), loadBenchmarks()
+  - Usage: Portfolio performance analytics
+
+**Market Data Stores:**
+- **priceStore** (`src/lib/stores/price.ts`): Live price polling and market data
+  - State: livePriceData, pollingEnabled, updatePreferences
+  - Actions: startPolling(), stopPolling(), refreshPrice(), updatePreferences()
+  - Persistence: updatePreferences
+  - Features: Automatic price polling (15s-60s intervals), staleness detection, offline handling
+  - Usage: Real-time price updates for US/UK markets
+
+**Tax & Planning Stores:**
+- **taxSettingsStore** (`src/lib/stores/tax-settings.ts`): Tax rate configuration
+  - State: shortTermRate (default 24%), longTermRate (default 15%)
+  - Actions: setShortTermRate(), setLongTermRate(), resetToDefaults()
+  - Persistence: localStorage
+  - Usage: User tax rate preferences for capital gains estimates
+
+- **planningStore** (`src/lib/stores/planning.ts`): FIRE planning and liability management
+  - State: fireConfig, liabilities, scenarios, liabilityPayments
+  - Actions: addLiability(), recordPayment(), updateFireConfig(), createScenario()
+  - Features: Net worth tracking, FIRE calculations, scenario modeling
+  - Usage: Financial independence planning and debt tracking
+
+- **allocation** (`src/lib/stores/allocation.ts`): Asset allocation and rebalancing
+  - State: Target allocations, current allocations, rebalancing suggestions
+  - Actions: setTargetAllocation(), calculateDrift(), getRebalancingPlan()
+  - Usage: Asset allocation planning and monitoring
+
+**Dashboard & Analysis Stores:**
+- **dashboardStore** (`src/lib/stores/dashboard.ts`): Dashboard widget configuration
+  - State: Widget visibility, order, layout, time periods
+  - Actions: setWidgetVisibility(), setTimePeriod(), setLayoutMode()
+  - Persistence: IndexedDB via dashboardConfigService
+  - Features: react-grid-layout integration, dense packing, responsive layouts
+  - Usage: Dashboard personalization and layout management
+
+- **analysisStore** (`src/lib/stores/analysis.ts`): Analysis state management
+  - State: Analysis results, filters, selected metrics
+  - Actions: runAnalysis(), setFilters()
+  - Usage: Portfolio analysis views
+
+**UI & Workflow Stores:**
+- **uiStore** (`src/lib/stores/ui.ts`): UI state, modals, notifications
+  - State: Modal state, notification queue, loading indicators
+  - Actions: showModal(), hideModal(), addNotification(), clearNotifications()
+  - Usage: Global UI state coordination
+
+- **csvImportStore** (`src/lib/stores/csv-import.ts`): CSV import workflow state
+  - State: Import progress, column mappings, validation errors
+  - Actions: setFile(), setMappings(), startImport(), resetState()
+  - Features: Multi-step import wizard, duplicate detection, error handling
+  - Usage: CSV transaction import workflow
+
+- **exportStore** (`src/lib/stores/export.ts`): Export operation tracking
+  - State: Export progress, format selection, filters
+  - Actions: exportTransactions(), exportHoldings(), exportTaxReport()
+  - Features: PDF/CSV export with jsPDF and html2canvas
+  - Usage: Report generation and data export
+
+**Store Usage Patterns:**
+
+```typescript
+// Example: Portfolio operations
+import { usePortfolioStore } from '@/lib/stores/portfolio';
+
+function MyComponent() {
+  const { portfolios, loadPortfolios, setCurrentPortfolio } = usePortfolioStore();
+
+  useEffect(() => {
+    loadPortfolios();
+  }, [loadPortfolios]);
+
+  return <div>{portfolios.map(p => ...)}</div>;
+}
+
+// Example: Price polling
+import { usePriceStore } from '@/lib/stores/price';
+
+function PriceDisplay({ symbol }) {
+  const { prices, startPolling, stopPolling } = usePriceStore();
+
+  useEffect(() => {
+    startPolling([symbol]);
+    return () => stopPolling();
+  }, [symbol]);
+
+  return <div>{prices[symbol]?.price}</div>;
+}
+
+// Example: Tax settings
+import { useTaxSettingsStore } from '@/lib/stores/tax-settings';
+
+function TaxSettings() {
+  const { taxSettings, setShortTermRate } = useTaxSettingsStore();
+
+  const handleChange = (rate: number) => {
+    setShortTermRate(new Decimal(rate));
+  };
+
+  return <input value={taxSettings.shortTermRate.toNumber()} onChange={...} />;
+}
+```
 
 #### API Routes
 Price data fetching happens through Next.js API routes in `src/app/api/prices/`:
@@ -416,6 +551,160 @@ Make change → Tell user "done" → User finds visual issue → Repeat
 - Playwright for E2E testing
 - ESLint + Prettier for code quality
 
+## Planning & FIRE Features (Feature #014)
+
+The planning module provides comprehensive net worth tracking, liability management, and FIRE (Financial Independence, Retire Early) calculation tools with accurate historical reconstruction and cash flow analysis.
+
+### Net Worth Tracking with Liabilities
+
+**Overview**: Complete liability management system integrated with portfolio tracking for accurate net worth calculations.
+
+**Key Features**:
+- **Liability Management**: Track mortgages, loans, credit cards, and other debts
+- **Cash Ledger System**: Accurate net worth by tracking all cash flows (transactions, dividends, liability payments)
+- **Historical Accuracy**: Reconstruct liability balances at any point in time using payment history
+- **Multiple Liability Types**: Support for mortgages, auto loans, student loans, personal loans, credit cards, and other debts
+
+**Database Schema (v4)**:
+- **`liabilities` table**: Liability definitions with initial balance, interest rate, payment schedule
+  - Fields: `id`, `portfolioId`, `name`, `type`, `initialBalance`, `interestRate`, `startDate`, `monthlyPayment`, `notes`
+- **`liabilityPayments` table**: Payment history for accurate balance reconstruction
+  - Fields: `id`, `liabilityId`, `date`, `principalAmount`, `interestAmount`, `notes`
+  - Index: `[liabilityId+date]` for efficient querying
+
+**Components**:
+- `src/components/planning/liability-manager.tsx`: Liability CRUD interface with payment tracking
+- `src/components/planning/net-worth-chart.tsx`: Visual net worth over time (assets - liabilities)
+- `src/components/planning/fire-projection-chart.tsx`: FIRE timeline visualization
+- `src/components/planning/goal-input-form.tsx`: FIRE goal configuration
+- `src/components/planning/scenario-controls.tsx`: Scenario modeling controls
+
+**Services**:
+- `src/lib/services/planning/liability-service.ts`: Liability CRUD and balance reconstruction
+  - `reconstructLiabilityBalances(liability, asOfDate)`: Historical balance calculation
+  - `calculateCurrentBalance(liability)`: Current liability balance
+  - `getPaymentHistory(liabilityId)`: Payment records with P&I breakdown
+- `src/lib/services/cash-ledger.ts`: Cash flow aggregation for net worth
+  - `sumCashFlows(portfolioId, startDate, endDate)`: Aggregate all cash movements
+  - Tracks: transactions (buys/sells), dividends, liability payments
+- `src/lib/services/planning/net-worth-service.ts`: Net worth calculation engine
+  - `calculateNetWorth(portfolioId, asOfDate)`: Assets - Liabilities at point in time
+  - `getNetWorthHistory(portfolioId, startDate, endDate)`: Historical net worth series
+
+**Store**:
+- `src/lib/stores/planning.ts` (`usePlanningStore`):
+  - FIRE configuration: retirement age, annual expenses, safe withdrawal rate
+  - Liabilities: CRUD operations for liabilities
+  - Scenarios: Multiple FIRE scenarios with different assumptions
+  - Liability payments: Payment tracking and history
+
+**Usage Example**:
+```typescript
+import { usePlanningStore } from '@/lib/stores/planning';
+import { netWorthService } from '@/lib/services/planning/net-worth-service';
+
+// Get current net worth
+const portfolioId = 'portfolio-1';
+const netWorth = await netWorthService.calculateNetWorth(portfolioId, new Date());
+console.log(`Net worth: $${netWorth.toFixed(2)}`);
+
+// Add liability
+const planningStore = usePlanningStore.getState();
+await planningStore.addLiability({
+  portfolioId,
+  name: 'Mortgage',
+  type: 'mortgage',
+  initialBalance: new Decimal(300000),
+  interestRate: new Decimal(0.04), // 4%
+  startDate: new Date('2023-01-01'),
+  monthlyPayment: new Decimal(1432.25),
+});
+```
+
+### FIRE Planning & Projection
+
+**Overview**: Financial Independence, Retire Early (FIRE) calculation engine with scenario modeling and sensitivity analysis.
+
+**Key Calculations**:
+- **FIRE Number**: Annual expenses × 25 (4% safe withdrawal rate)
+- **Years to FIRE**: Based on current net worth, savings rate, and expected returns
+- **Withdrawal Strategy**: 4% rule with inflation adjustment
+- **Scenario Modeling**: Optimistic, baseline, pessimistic projections
+
+**FIRE Configuration**:
+- **Retirement Age**: Target age for financial independence
+- **Annual Expenses**: Expected yearly spending in retirement
+- **Safe Withdrawal Rate**: Default 4% (customizable)
+- **Expected Return**: Assumed portfolio growth rate
+- **Current Savings Rate**: Monthly investment amount
+
+**Components**:
+- `src/components/planning/fire-projection-chart.tsx`: Interactive FIRE timeline
+  - Shows projected net worth growth
+  - Highlights FIRE date based on assumptions
+  - Scenario comparison (optimistic/baseline/pessimistic)
+
+**Services**:
+- `src/lib/services/planning/fire-projection.ts`: FIRE calculation engine
+  - `calculateFireNumber(annualExpenses, withdrawalRate)`: Required portfolio size
+  - `projectNetWorth(currentNW, savingsRate, returnRate, years)`: Future net worth projection
+  - `calculateYearsToFire(currentNW, fireNumber, savingsRate, returnRate)`: Time to FIRE
+
+**Store Features**:
+- Multiple FIRE scenarios with different assumptions
+- Sensitivity analysis (vary return rates, expenses, savings)
+- Goal tracking and progress monitoring
+
+### Allocation Planning
+
+**Overview**: Asset allocation tools with rebalancing recommendations and target allocation tracking.
+
+**Key Features**:
+- **Target Allocation**: Define desired asset class percentages
+- **Current Allocation**: Automatic calculation from holdings
+- **Rebalancing Recommendations**: Buy/sell suggestions to reach target
+- **Drift Monitoring**: Alert when allocation deviates beyond threshold
+
+**Store**:
+- `src/lib/stores/allocation.ts` (if exists - to be documented)
+
+**Access**:
+1. **Planning Page**: Navigate to `/planning`
+2. **Net Worth View**: Shows assets, liabilities, and net worth chart
+3. **FIRE Projection**: Configure FIRE goals and view timeline
+4. **Scenario Analysis**: Compare different FIRE scenarios
+
+### Testing
+
+```bash
+# Run planning-related unit tests
+npm run test -- --run src/lib/services/planning/
+
+# Run cash ledger tests
+npm run test -- --run src/lib/services/__tests__/cash-ledger.test.ts
+
+# Run planning E2E tests (if available)
+npx playwright test tests/e2e/planning*.spec.ts --project=chromium
+```
+
+### Common Debugging Scenarios
+
+**Net Worth Calculation Issues**:
+- Check liability payment history: DevTools → IndexedDB → `liabilityPayments`
+- Verify cash ledger: `sumCashFlows()` in `cash-ledger.ts`
+- Historical balances: `reconstructLiabilityBalances()` in `liability-service.ts`
+
+**FIRE Planning Edge Cases**:
+- Negative cash flows: Verify retirement age > current age
+- Projection errors: Check scenario inputs in `planningStore`
+- Chart rendering: Verify data array length and date ranges
+
+**Liability Balance Mismatch**:
+- Check payment records are complete
+- Verify principal vs interest split
+- Ensure startDate is before all payment dates
+- Run balance reconstruction for specific date
+
 ## Recent Changes
 
 **Foundation Features (Early 2025):**
@@ -439,6 +728,14 @@ Make change → Tell user "done" → User finds visual issue → Repeat
 **Reporting & Code Quality:**
 - 011-export-functionality: PDF/CSV export with jsPDF and html2canvas
 - **Code Simplification**: Extracted price-sources.ts, removed 500+ duplicate lines, cleaned up deprecated code (January 2026)
+
+**Planning & Net Worth (February 2026):**
+- 014-net-worth-cash-ledger: Complete liability tracking implementation
+  - Liability management with payment history
+  - Cash ledger for accurate net worth calculations
+  - Historical liability balance reconstruction
+  - FIRE projection and scenario modeling
+  - Database schema v4 with `liabilities` and `liabilityPayments` tables
 
 ## Live Market Data Feature (005)
 
