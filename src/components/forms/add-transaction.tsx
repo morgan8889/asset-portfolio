@@ -62,6 +62,7 @@ const baseTransactionSchema = z.object({
     'rsu_vest',
     'deposit',
     'withdrawal',
+    'liability_payment',
   ]),
   assetSymbol: z
     .string()
