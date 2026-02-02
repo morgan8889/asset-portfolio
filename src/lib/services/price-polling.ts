@@ -137,13 +137,11 @@ export class PricePollingService {
 
     if (online && wasOffline) {
       // Connection restored - refresh prices
-      console.log('Network connection restored, refreshing prices...');
       this.callbacks.onRefresh().catch((error) => {
         console.error('Error refreshing after network restore:', error);
       });
-    } else if (!online) {
-      console.log('Network connection lost, using cached prices');
     }
+    // When offline, we silently fall back to cached prices
   }
 
   /**

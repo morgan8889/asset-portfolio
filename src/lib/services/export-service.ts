@@ -421,11 +421,11 @@ class ExportService implements IExportService {
     const { formatHoldingPeriodAbbr } = await import('@/lib/utils/tax-formatters');
     const { useTaxSettingsStore } = await import('@/lib/stores/tax-settings');
 
-    // Get tax settings
-    const taxSettings = useTaxSettingsStore.getState().settings;
+    // Get tax settings (adapt store format with Decimal rates to numbers)
+    const storeTaxSettings = useTaxSettingsStore.getState().taxSettings;
     const combinedTaxRate = {
-      st: taxSettings.shortTermTaxRate + taxSettings.stateRate,
-      lt: taxSettings.longTermTaxRate + taxSettings.stateRate,
+      st: storeTaxSettings.shortTermRate.toNumber(),
+      lt: storeTaxSettings.longTermRate.toNumber(),
     };
 
     // Get all holdings for portfolio
@@ -464,10 +464,14 @@ class ExportService implements IExportService {
 
       // Calculate ST/LT gains from lots
       for (const lot of holding.lots) {
-        if (lot.remainingQuantity.isZero()) continue;
+        // Convert storage format (strings) to Decimals
+        const lotRemainingQty = new Decimal(lot.remainingQuantity);
+        const lotPurchasePrice = new Decimal(lot.purchasePrice);
 
-        const lotValue = lot.remainingQuantity.mul(currentPrice);
-        const lotCost = lot.remainingQuantity.mul(lot.purchasePrice);
+        if (lotRemainingQty.isZero()) continue;
+
+        const lotValue = lotRemainingQty.mul(currentPrice);
+        const lotCost = lotRemainingQty.mul(lotPurchasePrice);
         const lotGain = lotValue.sub(lotCost);
 
         const daysHeld = Math.floor(
