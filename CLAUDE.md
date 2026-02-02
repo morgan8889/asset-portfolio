@@ -737,6 +737,157 @@ npx playwright test tests/e2e/planning*.spec.ts --project=chromium
   - FIRE projection and scenario modeling
   - Database schema v4 with `liabilities` and `liabilityPayments` tables
 
+**Testing & Quality (February 2026):**
+- **Phase 2: API Resilience Testing** - Comprehensive test coverage for price-sources.ts
+  - 18 new tests (PriceCache, Yahoo Finance, CoinGecko, retry logic)
+  - Coverage: 0% → 98.26% statements, 100% functions
+  - Validates retry logic (3 attempts, exponential backoff)
+  - Tests UK market GBp→GBP conversion
+  - Verifies cache TTL (5 min) and LRU eviction (1000 symbols)
+  - Confirms timeout handling (10s AbortController)
+  - All 643 existing tests passing (no regressions)
+
+## Navigation System
+
+The app uses a grouped collapsible navigation structure for improved organization and mobile responsiveness.
+
+### Configuration
+
+Navigation is configured in `src/lib/config/navigation.ts`:
+
+```typescript
+export const navigationStructure: (NavItem | NavGroup)[] = [
+  { name: 'Dashboard', href: '/', icon: Home },
+  {
+    id: 'portfolio',
+    name: 'Portfolio',
+    icon: Briefcase,
+    items: [
+      { name: 'Holdings', href: '/holdings', icon: Briefcase },
+      { name: 'Transactions', href: '/transactions', icon: ArrowLeftRight },
+      { name: 'Performance', href: '/performance', icon: TrendingUp },
+    ]
+  },
+  // ... more groups
+];
+```
+
+### Components
+
+- `src/components/layout/nav-group.tsx`: Collapsible group component
+- `src/components/layout/nav-item.tsx`: Individual navigation item
+- `src/components/layout/sidebar.tsx`: Sidebar with navigation groups
+
+### Features
+
+- **Collapsible Groups**: Click group headers to expand/collapse
+- **Default State**: Groups can be configured with `defaultOpen` property
+- **Active Highlighting**: Current route is highlighted
+- **Mobile Responsive**: Drawer-based navigation on mobile devices
+- **Icon Support**: Lucide React icons for all items
+
+### Adding Navigation Items
+
+1. Edit `src/lib/config/navigation.ts`
+2. Add to appropriate group or create new group
+3. Import icon from `lucide-react`
+4. Specify href, name, and icon
+
+Example:
+```typescript
+{
+  id: 'reports',
+  name: 'Reports',
+  icon: FileText,
+  items: [
+    { name: 'Tax Reports', href: '/reports/tax', icon: Receipt },
+    { name: 'Performance', href: '/reports/performance', icon: BarChart3 },
+  ]
+}
+```
+
+## Feature Index
+
+Quick reference to all major features:
+
+| Feature | Page | Key Components | Services | Store |
+|---------|------|----------------|----------|-------|
+| **Portfolio Dashboard** | `/` | dashboard-container-rgl | metrics-service | dashboardStore |
+| **Holdings Management** | `/holdings` | holdings-table, holding-detail-modal | holdings-service | portfolioStore |
+| **Transaction Tracking** | `/transactions` | transaction-table, add-transaction | - | transactionStore |
+| **Performance Analytics** | `/performance` | performance-chart, summary-stats | performance-analytics | performanceStore |
+| **Tax Analysis** | `/tax-analysis` | tax-analysis-tab, tax-exposure-widget | tax-calculator, tax-estimator | taxSettingsStore |
+| **FIRE Planning** | `/planning` | fire-projection-chart, liability-manager | fire-projection, net-worth-service | planningStore |
+| **Asset Allocation** | `/allocation` | allocation-donut-chart, rebalancing-table | rebalancing-service | allocationStore |
+| **Analysis Tools** | `/analysis` | allocation-chart, recommendation-list | recommendation-engine | analysisStore |
+| **CSV Import** | Dialog | csv-import-dialog, csv-file-upload | csv-importer, column-detector | csvImportStore |
+| **Export Reports** | `/reports` | export-button, performance-report | export-service | exportStore |
+| **Settings** | `/settings` | price-settings, tax-settings-panel | - | uiStore |
+| **Price Updates** | Global | price-display, staleness-indicator | price-polling, price-sources | priceStore |
+
+## Test Coverage & Quality
+
+### Overall Test Coverage
+
+**Unit Tests** (Vitest): 57 files, 930+ test cases
+- Service tests: 22 files (440+ tests)
+- Store tests: 7 files (209 tests)
+- Component tests: 4 files (80 tests)
+- Utility tests: 6 files (154 tests)
+
+**E2E Tests** (Playwright): 36 files, 370+ test cases
+- Dashboard/Layout: 14 files (140+ tests)
+- Holdings/Transactions: 6 files (37 tests)
+- Analytics/Reporting: 5 files (50+ tests)
+- CSV Import/Export: 2 files (37 tests)
+
+### Critical Coverage
+
+**Excellent Coverage (85%+)**:
+- ✅ CSV Import/Validation (120+ tests)
+- ✅ Metrics Calculation (58 tests)
+- ✅ Performance Analytics (78 tests)
+- ✅ Price Management (98 tests)
+- ✅ Tax Logic (91 tests, 30% → 90% coverage)
+- ✅ Store Management (209 tests)
+- ✅ Utility Functions (154 tests)
+- ✅ E2E Workflows (370+ tests)
+
+### Testing Commands
+
+```bash
+# Run all unit tests
+npm run test
+
+# Run specific service tests
+npm run test -- --run src/lib/services/__tests__/
+
+# Run with coverage report
+npm run test:coverage
+
+# Run all E2E tests
+npm run test:e2e
+
+# Run specific E2E test
+npx playwright test tests/e2e/portfolio-dashboard.spec.ts
+```
+
+### Testing Initiatives
+
+**Phase 1: Tax Logic Testing** (Complete)
+- Added 47 tests for ESPP validation, holding periods, tax estimation
+- Coverage: 30% → 90% for tax services
+
+**Phase 2: API Resilience Testing** (Complete)
+- Added 18 tests for price-sources.ts
+- Coverage: 0% → 98.26% for price fetching logic
+- Validates retry, caching, timeout, currency conversion
+
+**Phase 3: Documentation Updates** (Complete)
+- Updated CLAUDE.md with feature index, navigation docs
+- Documented all 13 Zustand stores
+- Added test coverage section
+
 ## Live Market Data Feature (005)
 
 ### Overview
