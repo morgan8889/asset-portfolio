@@ -5,11 +5,12 @@
  */
 
 /**
- * Tax Settings
+ * User Tax Settings
  *
  * User-configured tax rates and preferences for tax optimization features.
+ * Includes jurisdiction, state rates, and feature toggles.
  */
-export interface TaxSettings {
+export interface UserTaxSettings {
   userId: string; // Always 'default' (single-user app)
   shortTermTaxRate: number; // 0.0-0.5 (e.g., 0.32 for 32%)
   longTermTaxRate: number; // 0.0-0.3 (e.g., 0.15 for 15%)
@@ -20,9 +21,9 @@ export interface TaxSettings {
 }
 
 /**
- * Default Tax Settings (US-centric)
+ * Default User Tax Settings (US-centric)
  */
-export const DEFAULT_TAX_SETTINGS: TaxSettings = {
+export const DEFAULT_TAX_SETTINGS: UserTaxSettings = {
   userId: 'default',
   shortTermTaxRate: 0.24, // US 24% bracket (common)
   longTermTaxRate: 0.15, // US 15% LTCG

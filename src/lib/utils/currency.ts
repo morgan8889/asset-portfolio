@@ -1,45 +1,109 @@
 /**
  * Centralized currency formatting utilities
+ *
+ * Re-exports enhanced utilities from main utils module for consistency.
  */
+
+import { Decimal } from 'decimal.js';
 
 export interface CurrencyFormatOptions {
   currency?: string;
+  locale?: string;
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
   notation?: 'standard' | 'compact';
 }
 
 /**
- * Formats a number as currency with consistent styling across the application
+ * Formats a number/Decimal as currency with consistent styling
+ *
+ * Supports two signatures for flexibility:
+ *
+ * 1. **Simple signature** (recommended for most cases):
+ *    ```typescript
+ *    formatCurrency(1234.56, 'USD', 'en-US') // "$1,234.56"
+ *    formatCurrency(1234.56, 'EUR', 'de-DE') // "1.234,56 €"
+ *    ```
+ *
+ * 2. **Options-based signature** (for advanced formatting):
+ *    ```typescript
+ *    formatCurrency(1234567.89, {
+ *      currency: 'USD',
+ *      locale: 'en-US',
+ *      notation: 'compact',
+ *      minimumFractionDigits: 1,
+ *      maximumFractionDigits: 1,
+ *    }) // "$1.2M"
+ *    ```
+ *
+ * @param amount - The numeric value to format (number, string, or Decimal)
+ * @param currencyOrOptions - Currency code (e.g., 'USD') or formatting options object
+ * @param locale - The locale for formatting (default: 'en-US'). Only used with simple signature.
+ * @returns Formatted currency string
+ *
+ * @example
+ * // Simple usage
+ * formatCurrency(1234.56) // "$1,234.56" (defaults to USD, en-US)
+ * formatCurrency(new Decimal('1234.56'), 'GBP') // "£1,234.56"
+ *
+ * @example
+ * // Compact notation for large numbers
+ * formatCurrency(1234567, { currency: 'USD', notation: 'compact' }) // "$1.2M"
+ *
+ * @example
+ * // Custom decimal places
+ * formatCurrency(1234.5, { currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }) // "$1,235"
  */
 export function formatCurrency(
-  value: number,
-  options: CurrencyFormatOptions = {}
+  amount: number | string | Decimal,
+  currencyOrOptions?: string | CurrencyFormatOptions,
+  locale: string = 'en-US'
 ): string {
-  const {
-    currency = 'USD',
-    minimumFractionDigits = 0,
-    maximumFractionDigits = 0,
-    notation = 'standard',
-  } = options;
+  const value = amount instanceof Decimal ? amount.toNumber() : Number(amount);
 
-  return new Intl.NumberFormat('en-US', {
+  // Options-based signature
+  if (typeof currencyOrOptions === 'object') {
+    const {
+      currency = 'USD',
+      locale: optionsLocale = 'en-US',
+      minimumFractionDigits = 0,
+      maximumFractionDigits = 0,
+      notation = 'standard',
+    } = currencyOrOptions;
+
+    return new Intl.NumberFormat(optionsLocale, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits,
+      maximumFractionDigits,
+      notation,
+    }).format(value);
+  }
+
+  // Simple signature
+  const currency = currencyOrOptions || 'USD';
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
-    minimumFractionDigits,
-    maximumFractionDigits,
-    notation,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(value);
 }
 
 /**
  * Formats a number as a percentage
+ * Supports both decimal input (0.15 → 15%) and percentage input (15 → 15%)
  */
 export function formatPercentage(
   value: number,
-  decimals: number = 2
+  decimals: number = 2,
+  showSign: boolean = false,
+  isDecimal: boolean = false
 ): string {
-  return `${(value * 100).toFixed(decimals)}%`;
+  const percentValue = isDecimal ? value * 100 : value;
+  const formatted = percentValue.toFixed(decimals);
+  const sign = showSign && percentValue > 0 ? '+' : '';
+  return `${sign}${formatted}%`;
 }
 
 /**

@@ -6,32 +6,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Currency formatting
-export function formatCurrency(
-  amount: number | string | Decimal,
-  currency: string = 'USD',
-  locale: string = 'en-US'
-): string {
-  const value = amount instanceof Decimal ? amount.toNumber() : Number(amount);
-
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-// Percentage formatting
-export function formatPercentage(
-  value: number,
-  decimals: number = 2,
-  showSign: boolean = true
-): string {
-  const formatted = value.toFixed(decimals);
-  const sign = showSign && value > 0 ? '+' : '';
-  return `${sign}${formatted}%`;
-}
+// Re-export currency formatting from centralized module
+export {
+  formatCurrency,
+  formatPercentage,
+  formatCompactCurrency,
+} from '@/lib/utils/currency';
 
 // Number formatting with abbreviations
 export function formatNumber(

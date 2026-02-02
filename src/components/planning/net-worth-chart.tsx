@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useMemo } from 'react';
 import { NetWorthPoint } from '@/types/planning';
 import {
   Area,
@@ -14,44 +15,51 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatCompactCurrency } from '@/lib/utils/currency';
 
 interface NetWorthChartProps {
   data: NetWorthPoint[];
   className?: string;
 }
 
-export function NetWorthChart({ data, className }: NetWorthChartProps) {
-  const formatCurrency = (value: number) => {
-    if (Math.abs(value) >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`;
-    } else if (Math.abs(value) >= 1000) {
-      return `$${(value / 1000).toFixed(0)}K`;
-    }
-    return `$${value.toFixed(0)}`;
-  };
+export const NetWorthChart = memo(function NetWorthChart({
+  data,
+  className
+}: NetWorthChartProps) {
 
   const formatDate = (date: Date) => {
     return format(date, 'MMM yyyy');
   };
 
-  // Transform data for Recharts
-  const chartData = data.map((point) => ({
-    date: point.date,
-    dateLabel: formatDate(point.date),
-    assets: point.assets,
-    liabilities: point.liabilities,
-    netWorth: point.netWorth,
-  }));
+  // Memoize chart data transformation to prevent recalculation on every render
+  const chartData = useMemo(
+    () => data.map((point) => ({
+      date: point.date,
+      dateLabel: formatDate(point.date),
+      assets: point.assets,
+      liabilities: point.liabilities,
+      netWorth: point.netWorth,
+    })),
+    [data]
+  );
 
-  // Calculate domain for Y-axis to handle negative values
-  const allValues = data.flatMap((d) => [d.assets, d.liabilities, d.netWorth]);
-  const minValue = Math.min(...allValues);
-  const maxValue = Math.max(...allValues);
-  const padding = (maxValue - minValue) * 0.1;
-  const yDomain = [
-    Math.floor((minValue - padding) / 1000) * 1000,
-    Math.ceil((maxValue + padding) / 1000) * 1000,
-  ];
+  // Memoize Y-axis domain calculation
+  const yDomain = useMemo(() => {
+    const allValues = data.flatMap((d) => [d.assets, d.liabilities, d.netWorth]);
+    const minValue = Math.min(...allValues);
+    const maxValue = Math.max(...allValues);
+    const padding = (maxValue - minValue) * 0.1;
+    return [
+      Math.floor((minValue - padding) / 1000) * 1000,
+      Math.ceil((maxValue + padding) / 1000) * 1000,
+    ];
+  }, [data]);
+
+  // Memoize min value check for reference line
+  const minValue = useMemo(() => {
+    const allValues = data.flatMap((d) => [d.assets, d.liabilities, d.netWorth]);
+    return Math.min(...allValues);
+  }, [data]);
 
   const latestPoint = data[data.length - 1];
   const isNegativeNetWorth = latestPoint && latestPoint.netWorth < 0;
@@ -69,19 +77,19 @@ export function NetWorthChart({ data, className }: NetWorthChartProps) {
                   isNegativeNetWorth ? 'text-destructive' : 'text-foreground'
                 }`}
               >
-                {formatCurrency(latestPoint.netWorth)}
+                {formatCompactCurrency(latestPoint.netWorth)}
               </p>
             </div>
             <div>
               <p className="text-muted-foreground">Total Assets</p>
               <p className="text-xl font-bold">
-                {formatCurrency(latestPoint.assets)}
+                {formatCompactCurrency(latestPoint.assets)}
               </p>
             </div>
             <div>
               <p className="text-muted-foreground">Total Liabilities</p>
               <p className="text-xl font-bold text-orange-600">
-                {formatCurrency(latestPoint.liabilities)}
+                {formatCompactCurrency(latestPoint.liabilities)}
               </p>
             </div>
           </div>
@@ -126,7 +134,7 @@ export function NetWorthChart({ data, className }: NetWorthChartProps) {
               />
               <YAxis
                 domain={yDomain}
-                tickFormatter={formatCurrency}
+                tickFormatter={(value) => formatCompactCurrency(value)}
                 className="text-xs"
                 tick={{ fill: 'currentColor' }}
               />
@@ -137,7 +145,7 @@ export function NetWorthChart({ data, className }: NetWorthChartProps) {
                   borderRadius: '6px',
                 }}
                 labelFormatter={(label) => label}
-                formatter={(value: number) => [formatCurrency(value), '']}
+                formatter={(value: number) => [formatCompactCurrency(value), '']}
               />
               <Legend />
               {/* Add reference line at zero if there are negative values */}
@@ -179,4 +187,4 @@ export function NetWorthChart({ data, className }: NetWorthChartProps) {
       </CardContent>
     </Card>
   );
-}
+});

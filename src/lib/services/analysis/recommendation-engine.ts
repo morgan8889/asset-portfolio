@@ -16,6 +16,7 @@ import { AssetType } from '@/types/portfolio';
 import { Holding, Asset } from '@/types';
 import { detectAgingLots } from '@/lib/services/tax-calculator';
 import { useTaxSettingsStore } from '@/lib/stores/tax-settings';
+import { logger } from '@/lib/utils/logger';
 
 interface RecommendationInput {
   holdings: Holding[];
@@ -68,8 +69,11 @@ function checkCashDrag(
   input: RecommendationInput,
   thresholds: RecommendationThresholds
 ): Recommendation | null {
+  // Create asset map for O(1) lookups
+  const assetMap = new Map(input.assets.map((a) => [a.id, a]));
+
   const cashHoldings = input.holdings.filter((h) => {
-    const asset = input.assets.find((a) => a.id === h.assetId);
+    const asset = assetMap.get(h.assetId);
     return asset?.type === 'cash';
   });
 
@@ -105,11 +109,14 @@ function checkAssetTypeConcentration(
   input: RecommendationInput,
   thresholds: RecommendationThresholds
 ): Recommendation | null {
+  // Create asset map for O(1) lookups
+  const assetMap = new Map(input.assets.map((a) => [a.id, a]));
+
   const typeValues: Partial<Record<AssetType, Decimal>> = {};
   const missingAssets: string[] = [];
 
   for (const holding of input.holdings) {
-    const asset = input.assets.find((a) => a.id === holding.assetId);
+    const asset = assetMap.get(holding.assetId);
     if (!asset) {
       missingAssets.push(holding.assetId);
       continue;
@@ -122,10 +129,11 @@ function checkAssetTypeConcentration(
 
   // Log warning if assets are missing
   if (missingAssets.length > 0) {
-    console.warn(
-      '[Recommendation Engine] Missing asset data for holdings:',
-      missingAssets
-    );
+    logger.warn('Missing asset data for holdings', {
+      component: 'RecommendationEngine',
+      operation: 'checkAssetTypeConcentration',
+      missingAssets,
+    });
   }
 
   // Find the most concentrated asset type
@@ -170,11 +178,14 @@ function checkRegionConcentration(
   input: RecommendationInput,
   thresholds: RecommendationThresholds
 ): Recommendation | null {
+  // Create asset map for O(1) lookups
+  const assetMap = new Map(input.assets.map((a) => [a.id, a]));
+
   const regionValues: Record<string, Decimal> = {};
   const missingAssets: string[] = [];
 
   for (const holding of input.holdings) {
-    const asset = input.assets.find((a) => a.id === holding.assetId);
+    const asset = assetMap.get(holding.assetId);
     if (!asset) {
       missingAssets.push(holding.assetId);
       continue;
@@ -188,10 +199,11 @@ function checkRegionConcentration(
 
   // Log warning if assets are missing
   if (missingAssets.length > 0) {
-    console.warn(
-      '[Recommendation Engine] Missing asset data for holdings in region check:',
-      missingAssets
-    );
+    logger.warn('Missing asset data for holdings in region check', {
+      component: 'RecommendationEngine',
+      operation: 'checkRegionConcentration',
+      missingAssets,
+    });
   }
 
   // Find most concentrated region
@@ -236,11 +248,14 @@ function checkSectorConcentration(
   input: RecommendationInput,
   thresholds: RecommendationThresholds
 ): Recommendation | null {
+  // Create asset map for O(1) lookups
+  const assetMap = new Map(input.assets.map((a) => [a.id, a]));
+
   const sectorValues: Record<string, Decimal> = {};
   const missingAssets: string[] = [];
 
   for (const holding of input.holdings) {
-    const asset = input.assets.find((a) => a.id === holding.assetId);
+    const asset = assetMap.get(holding.assetId);
     if (!asset) {
       missingAssets.push(holding.assetId);
       continue;
@@ -255,10 +270,11 @@ function checkSectorConcentration(
 
   // Log warning if assets are missing
   if (missingAssets.length > 0) {
-    console.warn(
-      '[Recommendation Engine] Missing asset data for holdings in sector check:',
-      missingAssets
-    );
+    logger.warn('Missing asset data for holdings in sector check', {
+      component: 'RecommendationEngine',
+      operation: 'checkSectorConcentration',
+      missingAssets,
+    });
   }
 
   // Find most concentrated sector
@@ -315,9 +331,9 @@ function checkTaxLotAging(
   }
 
   // Get tax settings for calculating potential savings
-  const taxSettings = useTaxSettingsStore.getState().settings;
-  const shortTermRate = taxSettings.shortTermTaxRate;
-  const longTermRate = taxSettings.longTermTaxRate;
+  const storeTaxSettings = useTaxSettingsStore.getState().taxSettings;
+  const shortTermRate = storeTaxSettings.shortTermRate.toNumber();
+  const longTermRate = storeTaxSettings.longTermRate.toNumber();
   const rateDiff = shortTermRate - longTermRate;
 
   // Find the lot closest to becoming long-term
@@ -333,10 +349,10 @@ function checkTaxLotAging(
   const potentialSavings = totalUnrealizedGains.mul(rateDiff).toNumber();
 
   const metadata: TaxRecommendationMetadata = {
+    assetSymbol: nearestLot.assetSymbol,
     agingLotsCount: agingLots.length,
-    totalUnrealizedGain: totalUnrealizedGains.toString(),
-    earliestLotDaysRemaining: nearestLot.daysUntilLongTerm,
-    affectedAssetIds: [...new Set(agingLots.map(lot => lot.assetId))],
+    daysUntilLongTerm: nearestLot.daysUntilLongTerm,
+    potentialSavings: potentialSavings,
   };
 
   const daysText = nearestLot.daysUntilLongTerm === 1 ? 'day' : 'days';
@@ -350,6 +366,6 @@ function checkTaxLotAging(
     severity: nearestLot.daysUntilLongTerm <= 7 ? 'high' : 'medium',
     actionLabel: 'View Tax Exposure',
     actionUrl: '/analysis',
-    metadata,
+    metadata: metadata as unknown as Record<string, unknown>,
   };
 }

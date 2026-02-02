@@ -49,10 +49,7 @@ import {
   RecentActivityWidget,
   TaxExposureWidget,
 } from './widgets';
-import {
-  TopPerformersWidget,
-  BiggestLosersWidget,
-} from './widgets/performance-list-widget';
+import { PerformanceListWidget } from './widgets/performance-list-widget';
 
 interface DashboardContainerRGLProps {
   disableDragDrop?: boolean;
@@ -287,15 +284,26 @@ const DashboardContainerRGLComponent = ({
   );
 
   // Tax exposure calculation (T059)
-  const taxSettings = useTaxSettingsStore((state) => state.settings);
+  const storeTaxSettings = useTaxSettingsStore((state) => state.taxSettings);
   const taxExposure = useMemo(() => {
     if (!holdings || holdings.length === 0 || !assets || assets.length === 0) {
       return null;
     }
 
+    // Adapt store TaxSettings (Decimal rates) to calculator TaxSettings (number rates)
+    const taxSettings = {
+      userId: 'default',
+      shortTermTaxRate: storeTaxSettings.shortTermRate.toNumber(),
+      longTermTaxRate: storeTaxSettings.longTermRate.toNumber(),
+      stateRate: 0, // State tax not tracked in current store
+      enableTaxOptimization: true,
+      lookbackDays: 30,
+      jurisdiction: 'US',
+    };
+
     const assetMap = new Map(assets.map((a) => [a.id, a]));
     return calculateTaxExposure(holdings, assetMap, taxSettings);
-  }, [holdings, assets, taxSettings]);
+  }, [holdings, assets, storeTaxSettings]);
 
   const renderWidget = useCallback(
     (widgetId: WidgetId) => {
@@ -323,8 +331,9 @@ const DashboardContainerRGLComponent = ({
           return <GrowthChartWidget />;
         case 'top-performers':
           return (
-            <TopPerformersWidget
-              performers={
+            <PerformanceListWidget
+              variant="gainers"
+              data={
                 liveMetrics.hasLivePrices
                   ? liveMetrics.topPerformers
                   : undefined
@@ -333,8 +342,9 @@ const DashboardContainerRGLComponent = ({
           );
         case 'biggest-losers':
           return (
-            <BiggestLosersWidget
-              losers={
+            <PerformanceListWidget
+              variant="losers"
+              data={
                 liveMetrics.hasLivePrices
                   ? liveMetrics.biggestLosers
                   : undefined
@@ -347,7 +357,9 @@ const DashboardContainerRGLComponent = ({
           return taxExposure ? (
             <TaxExposureWidget metrics={taxExposure} />
           ) : (
-            <TaxExposureEmptyState />
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              No tax data available
+            </div>
           );
         default: {
           const _exhaustiveCheck: never = widgetId;

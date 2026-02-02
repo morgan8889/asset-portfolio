@@ -8,6 +8,7 @@
  */
 
 import { settingsQueries } from '@/lib/db';
+import { logger } from '@/lib/utils/logger';
 import {
   DashboardConfiguration,
   DashboardConfigurationV1,
@@ -33,6 +34,35 @@ import {
 
 const STORAGE_KEY = 'dashboard-config';
 
+/** All widget IDs for ensuring complete visibility records */
+const ALL_WIDGET_IDS: WidgetId[] = [
+  'total-value',
+  'gain-loss',
+  'day-change',
+  'category-breakdown',
+  'growth-chart',
+  'top-performers',
+  'biggest-losers',
+  'recent-activity',
+  'tax-exposure',
+];
+
+/**
+ * Ensure all widget IDs have visibility entries.
+ * New widgets default to visible (true).
+ */
+function ensureCompleteVisibility(
+  visibility: Record<WidgetId, boolean>
+): Record<WidgetId, boolean> {
+  const complete = { ...visibility };
+  for (const widgetId of ALL_WIDGET_IDS) {
+    if (!(widgetId in complete)) {
+      complete[widgetId] = true; // New widgets default to visible
+    }
+  }
+  return complete;
+}
+
 /**
  * Migrate a v1 configuration to v2.
  * Adds default layout settings while preserving existing config.
@@ -46,6 +76,7 @@ function migrateV1ToV2(
     layoutMode: 'grid',
     gridColumns: 4,
     widgetSpans: { ...DEFAULT_WIDGET_SPANS },
+    widgetVisibility: ensureCompleteVisibility(v1Config.widgetVisibility),
   };
 }
 
@@ -61,6 +92,7 @@ function migrateV2ToV3(
     version: 3,
     densePacking: true,
     widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
+    widgetVisibility: ensureCompleteVisibility(v2Config.widgetVisibility),
     widgetSettings: {
       'category-breakdown': {
         showPieChart: false,
@@ -206,6 +238,7 @@ function migrateV3ToV4(
     ...v3Config,
     version: 4,
     useReactGridLayout: false, // Disabled by default, opt-in
+    widgetVisibility: ensureCompleteVisibility(v3Config.widgetVisibility),
     rglLayouts: generateRGLLayoutsFromSpans(
       v3Config.widgetOrder,
       v3Config.widgetSpans,
@@ -289,7 +322,7 @@ export const dashboardConfigService = {
     // Try to migrate from v3
     const v3Result = DashboardConfigurationSchemaV3.safeParse(stored);
     if (v3Result.success) {
-      console.info('Migrating dashboard config from v3 to v4');
+      logger.info('Migrating dashboard config from v3 to v4', { component: 'DashboardConfig', operation: 'migration' });
       const migrated = migrateV3ToV4(v3Result.data);
       // Persist the migrated config
       await settingsQueries.set(STORAGE_KEY, migrated);
@@ -299,7 +332,7 @@ export const dashboardConfigService = {
     // Try to migrate from v2
     const v2Result = DashboardConfigurationSchemaV2.safeParse(stored);
     if (v2Result.success) {
-      console.info('Migrating dashboard config from v2 to v4');
+      logger.info('Migrating dashboard config from v2 to v4', { component: 'DashboardConfig', operation: 'migration' });
       const v3Config = migrateV2ToV3(v2Result.data);
       const migrated = migrateV3ToV4(v3Config);
       // Persist the migrated config
@@ -310,7 +343,7 @@ export const dashboardConfigService = {
     // Try to migrate from v1
     const v1Result = DashboardConfigurationSchemaV1.safeParse(stored);
     if (v1Result.success) {
-      console.info('Migrating dashboard config from v1 to v4');
+      logger.info('Migrating dashboard config from v1 to v4', { component: 'DashboardConfig', operation: 'migration' });
       const v2Config = migrateV1ToV2(v1Result.data);
       const v3Config = migrateV2ToV3(v2Config);
       const migrated = migrateV3ToV4(v3Config);
@@ -320,7 +353,7 @@ export const dashboardConfigService = {
     }
 
     // None of the versions valid - use defaults
-    console.warn('Invalid dashboard config, using default:', v4Result.error);
+    logger.warn('Invalid dashboard config, using default', { component: 'DashboardConfig', error: v4Result.error });
     return { ...DEFAULT_DASHBOARD_CONFIG };
   },
 
