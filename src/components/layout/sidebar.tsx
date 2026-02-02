@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Wallet,
   FileText,
+  Target,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,7 @@ type NavRoute = {
     | '/analysis'
     | '/performance'
     | '/allocation'
+    | '/planning'
     | '/reports'
     | '/settings';
   icon: typeof Home;
@@ -65,6 +67,11 @@ const navigation: NavRoute[] = [
     name: 'Allocation',
     href: '/allocation',
     icon: PieChart,
+  },
+  {
+    name: 'Planning',
+    href: '/planning',
+    icon: Target,
   },
   {
     name: 'Reports',
