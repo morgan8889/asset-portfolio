@@ -22,45 +22,22 @@ import { Transaction, TransactionType } from '@/types/transaction';
 import { db } from '@/lib/db/schema';
 
 /**
- * IMPLEMENTATION NOTE: Cash Account Persistence
+ * FUTURE ENHANCEMENT: Cash Account Persistence
  *
- * The functions below are placeholders for future cash account table implementation.
- * Until schema v5 adds the cashAccounts table, all cash balance calculations
- * are performed on-demand by replaying transactions via calculateCashBalanceAtDate().
+ * Currently, cash balances are calculated on-demand by replaying all transactions.
+ * A future enhancement (schema v5) will add a cashAccounts table for better performance:
  *
- * Future enhancement (schema v5):
+ * Proposed schema:
  * - Add cashAccounts table with fields: id, portfolioId, currency, balance, updatedAt
  * - Implement getCashAccount() to read from database
  * - Implement updateCashBalance() to persist balances
  * - Add triggers/hooks to update cash balance on transaction add/edit/delete
  *
- * Current behavior:
- * - getCashAccount() always returns null (no persisted cash accounts)
- * - updateCashBalance() is a no-op (nothing to persist)
- * - getCashBalanceHistory() calculates balances by replaying all transactions
- * - updateCashAccountBalance() calculates current balance but does not persist it
+ * Benefits:
+ * - Faster access to current cash balance (no transaction replay)
+ * - Support for multiple currencies per portfolio
+ * - Persistent cash account visible in holdings
  */
-interface CashAccount {
-  portfolioId: string;
-  currency: string;
-  balance: Decimal;
-}
-
-async function getCashAccount(_portfolioId: string): Promise<CashAccount | null> {
-  // Placeholder: Cash account table not yet implemented (pending schema v5)
-  // Returns null to indicate no persisted cash account exists
-  return null;
-}
-
-async function updateCashBalance(
-  _portfolioId: string,
-  _currency: string,
-  _balance: Decimal
-): Promise<void> {
-  // Placeholder: Cash account table not yet implemented (pending schema v5)
-  // This function currently does nothing as there is no table to persist to
-  // When cashAccounts table is added, this will update the balance in the database
-}
 
 /**
  * Determine the cash impact of a transaction
@@ -251,28 +228,16 @@ export async function getCashBalanceHistory(
 }
 
 /**
- * Update cash account balance after a transaction
+ * Get current cash balance for a portfolio
  *
- * This is a convenience function to update the cash account in the database
- * after a transaction is added/edited/deleted.
+ * Calculates the current cash balance by replaying all cash-affecting transactions.
+ * This is a convenience function for getting the current balance without specifying
+ * a target date.
  *
- * @param portfolioId - Portfolio to update
- * @param currency - Currency of cash account (default: 'USD')
+ * @param portfolioId - Portfolio to calculate balance for
+ * @returns Current cash balance
  */
-export async function updateCashAccountBalance(
-  portfolioId: string,
-  currency: string = 'USD'
-): Promise<void> {
-  // Get all transactions
+export async function getCurrentCashBalance(portfolioId: string): Promise<Decimal> {
   const transactions = await db.getTransactionsByPortfolio(portfolioId);
-
-  // Calculate current balance
-  const balance = calculateCashBalanceAtDate(
-    transactions,
-    new Date(),
-    new Decimal(0)
-  );
-
-  // Update or create cash account
-  await updateCashBalance(portfolioId, currency, balance);
+  return calculateCashBalanceAtDate(transactions, new Date(), new Decimal(0));
 }
