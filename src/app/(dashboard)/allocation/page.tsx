@@ -174,10 +174,8 @@ export default function AllocationPage() {
   };
 
   // Handle drill-down (T016)
-  const handleCategoryClick = (category: string) => {
-    // For now, just log - in the future this could drill down to show sector breakdown
-    console.log('Category clicked:', category);
-    // TODO: Implement hierarchical drill-down
+  const handleCategoryClick = (_category: string) => {
+    // TODO: Implement hierarchical drill-down to show sector breakdown
   };
 
   return (

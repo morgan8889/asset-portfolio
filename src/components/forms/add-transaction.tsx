@@ -60,6 +60,8 @@ const baseTransactionSchema = z.object({
     'reinvestment',
     'espp_purchase',
     'rsu_vest',
+    'deposit',
+    'withdrawal',
   ]),
   assetSymbol: z
     .string()
