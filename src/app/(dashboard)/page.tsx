@@ -11,7 +11,11 @@ import {
   DashboardEmptyState,
 } from '@/components/dashboard';
 import { HoldingsTable } from '@/components/tables/holdings-table';
-import { usePriceStore, usePortfolioStore } from '@/lib/stores';
+import {
+  usePriceStore,
+  usePortfolioStore,
+  useDashboardStore,
+} from '@/lib/stores';
 
 export default function DashboardPage() {
   return (
@@ -32,17 +36,20 @@ function DashboardContent() {
     stopPolling,
     refreshAllPrices,
   } = usePriceStore();
+  const { loadConfig } = useDashboardStore();
 
-  // Initialize price polling when dashboard mounts
+  // Initialize dashboard config and price polling when dashboard mounts
   useEffect(() => {
-    // Load user preferences from IndexedDB
+    // Load dashboard configuration from IndexedDB
+    loadConfig();
+    // Load price preferences from IndexedDB
     loadPreferences();
 
     return () => {
       // Cleanup polling on unmount
       stopPolling();
     };
-  }, [loadPreferences, stopPolling]);
+  }, [loadConfig, loadPreferences, stopPolling]);
 
   // Update watched symbols when holdings change
   useEffect(() => {
