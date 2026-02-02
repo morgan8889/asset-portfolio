@@ -16,7 +16,7 @@ export async function initializePortfolioApp() {
       await HoldingsCalculator.recalculatePortfolioHoldings(portfolio.id);
     }
 
-    console.log('Portfolio app initialized successfully');
+    // Initialization complete
   } catch (error) {
     console.error('Failed to initialize portfolio app:', error);
     throw error;
@@ -35,7 +35,7 @@ export async function recalculateAllHoldings() {
       await HoldingsCalculator.recalculatePortfolioHoldings(portfolio.id);
     }
 
-    console.log('All holdings recalculated successfully');
+    // Recalculation complete
   } catch (error) {
     console.error('Failed to recalculate holdings:', error);
     throw error;

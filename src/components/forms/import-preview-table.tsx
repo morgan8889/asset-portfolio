@@ -40,6 +40,11 @@ const FIELD_LABELS: Record<TransactionField, string> = {
   type: 'Type',
   fees: 'Fees',
   notes: 'Notes',
+  grantDate: 'Grant Date',
+  vestingDate: 'Vesting Date',
+  discountPercent: 'Discount %',
+  sharesWithheld: 'Shares Withheld',
+  ordinaryIncomeAmount: 'Ordinary Income',
 };
 
 export function ImportPreviewTable({

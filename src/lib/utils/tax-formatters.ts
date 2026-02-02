@@ -8,37 +8,6 @@ import { Decimal } from 'decimal.js';
 import { HoldingPeriod } from '@/types/tax';
 
 /**
- * Format currency with appropriate symbol and precision
- *
- * @param amount - Decimal or number amount
- * @param currency - Currency code (default: 'USD')
- * @param showCents - Whether to show cents (default: true)
- * @returns Formatted currency string (e.g., "$1,234.56")
- */
-export function formatCurrency(
-  amount: Decimal | number | string | undefined | null,
-  currency: string = 'USD',
-  showCents: boolean = true
-): string {
-  if (amount === undefined || amount === null) {
-    return currency === 'USD' ? '$0.00' : '0.00';
-  }
-
-  const decimal =
-    amount instanceof Decimal ? amount : new Decimal(amount.toString());
-  const value = decimal.toNumber();
-
-  const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: showCents ? 2 : 0,
-    maximumFractionDigits: showCents ? 2 : 0,
-  });
-
-  return formatter.format(value);
-}
-
-/**
  * Format percentage with appropriate precision
  *
  * @param percent - Decimal or number percentage (0.15 = 15%)

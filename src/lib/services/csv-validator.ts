@@ -481,6 +481,11 @@ export function groupErrorsByField(
     price: [],
     fees: [],
     notes: [],
+    grantDate: [],
+    vestingDate: [],
+    discountPercent: [],
+    sharesWithheld: [],
+    ordinaryIncomeAmount: [],
   };
 
   for (const error of errors) {
