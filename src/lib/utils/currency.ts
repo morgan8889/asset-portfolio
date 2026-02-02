@@ -15,7 +15,42 @@ export interface CurrencyFormatOptions {
 
 /**
  * Formats a number/Decimal as currency with consistent styling
- * Supports both simple (amount, currency, locale) and options-based signatures
+ *
+ * Supports two signatures for flexibility:
+ *
+ * 1. **Simple signature** (recommended for most cases):
+ *    ```typescript
+ *    formatCurrency(1234.56, 'USD', 'en-US') // "$1,234.56"
+ *    formatCurrency(1234.56, 'EUR', 'de-DE') // "1.234,56 €"
+ *    ```
+ *
+ * 2. **Options-based signature** (for advanced formatting):
+ *    ```typescript
+ *    formatCurrency(1234567.89, {
+ *      currency: 'USD',
+ *      notation: 'compact',
+ *      minimumFractionDigits: 1,
+ *      maximumFractionDigits: 1,
+ *    }) // "$1.2M"
+ *    ```
+ *
+ * @param amount - The numeric value to format (number, string, or Decimal)
+ * @param currencyOrOptions - Currency code (e.g., 'USD') or formatting options object
+ * @param locale - The locale for formatting (default: 'en-US'). Only used with simple signature.
+ * @returns Formatted currency string
+ *
+ * @example
+ * // Simple usage
+ * formatCurrency(1234.56) // "$1,234.56" (defaults to USD, en-US)
+ * formatCurrency(new Decimal('1234.56'), 'GBP') // "£1,234.56"
+ *
+ * @example
+ * // Compact notation for large numbers
+ * formatCurrency(1234567, { currency: 'USD', notation: 'compact' }) // "$1.2M"
+ *
+ * @example
+ * // Custom decimal places
+ * formatCurrency(1234.5, { currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }) // "$1,235"
  */
 export function formatCurrency(
   amount: number | string | Decimal,
