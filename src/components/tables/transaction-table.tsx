@@ -118,6 +118,11 @@ export const getTransactionTypeBadge = (type: TransactionType) => {
       color:
         'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
     },
+    liability_payment: {
+      label: 'Liability Payment',
+      color:
+        'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+    },
   };
 
   const config = typeConfig[type] || typeConfig.buy;
