@@ -105,9 +105,12 @@ export function generatePortfolioMetrics(
   assets: Asset[],
   previousTotalValue?: Decimal
 ): PortfolioMetrics {
+  // Create asset map for O(1) lookups
+  const assetMap = new Map(assets.map((a) => [a.id, a]));
+
   const holdingsWithAssets: HoldingWithAsset[] = holdings.map((holding) => ({
     holding,
-    asset: assets.find((a) => a.id === holding.assetId),
+    asset: assetMap.get(holding.assetId),
   }));
 
   return calculatePortfolioMetrics(holdingsWithAssets, previousTotalValue);
@@ -125,9 +128,12 @@ export function generateRebalancingPlan(
   const targetAllocations = portfolio.settings.targetAllocations || [];
   const threshold = portfolio.settings.rebalanceThreshold;
 
+  // Create asset map for O(1) lookups
+  const assetMap = new Map(assets.map((a) => [a.id, a]));
+
   const holdingsWithAssets: HoldingWithAsset[] = holdings.map((holding) => ({
     holding,
-    asset: assets.find((a) => a.id === holding.assetId),
+    asset: assetMap.get(holding.assetId),
   }));
 
   const totalValue = calculateTotalValue(holdings);
@@ -248,9 +254,12 @@ export function calculateDiversificationScore(
   sectorCount: number;
   concentrationRisk: number;
 } {
+  // Create asset map for O(1) lookups
+  const assetMap = new Map(assets.map((a) => [a.id, a]));
+
   const holdingsWithAssets: HoldingWithAsset[] = holdings.map((holding) => ({
     holding,
-    asset: assets.find((a) => a.id === holding.assetId),
+    asset: assetMap.get(holding.assetId),
   }));
 
   const totalValue = calculateTotalValue(holdings);
@@ -311,6 +320,9 @@ export function calculateRiskMetrics(
   concentratedPosition: string | null;
   volatileHoldings: string[];
 } {
+  // Create asset map for O(1) lookups
+  const assetMap = new Map(assets.map((a) => [a.id, a]));
+
   const totalValue = calculateTotalValue(holdings);
 
   let maxWeight = 0;
@@ -322,15 +334,16 @@ export function calculateRiskMetrics(
       ? 0
       : holding.currentValue.dividedBy(totalValue).mul(100).toNumber();
 
+    // Get asset once for this holding
+    const asset = assetMap.get(holding.assetId);
+
     if (weight > maxWeight) {
       maxWeight = weight;
-      const asset = assets.find((a) => a.id === holding.assetId);
       concentratedPosition =
         weight > 25 ? asset?.symbol || holding.assetId : null;
     }
 
     // Check for volatile assets (beta > 1.5 or crypto)
-    const asset = assets.find((a) => a.id === holding.assetId);
     if (asset) {
       const beta = asset.metadata.beta || 1;
       if (beta > 1.5 || asset.type === 'crypto') {
@@ -361,8 +374,11 @@ export function calculateProjectedIncome(
   const incomeByAsset: Array<{ symbol: string; income: Decimal }> = [];
   const totalValue = calculateTotalValue(holdings);
 
+  // Create asset map for O(1) lookups
+  const assetMap = new Map(assets.map((a) => [a.id, a]));
+
   for (const holding of holdings) {
-    const asset = assets.find((a) => a.id === holding.assetId);
+    const asset = assetMap.get(holding.assetId);
     if (!asset) continue;
 
     const dividendYield = asset.metadata.dividendYield || 0;

@@ -14,7 +14,7 @@ import {
 } from '@/types/tax';
 import { Holding, TaxLot } from '@/types/asset';
 import { Asset } from '@/types';
-import { TaxSettings } from '@/types/settings';
+import { UserTaxSettings } from '@/types/settings';
 
 /**
  * Calculate holding period for a transaction/lot
@@ -115,7 +115,7 @@ export function detectAgingLots(
 export function calculateTaxExposure(
   holdings: Holding[],
   assetMap: Map<string, Asset>,
-  taxSettings: TaxSettings,
+  taxSettings: UserTaxSettings,
   currentDate: Date = new Date()
 ): TaxExposureMetrics {
   let shortTermGains = new Decimal(0);

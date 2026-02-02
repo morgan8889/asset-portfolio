@@ -6,11 +6,7 @@ export { CategoryBreakdownWidget } from './category-breakdown-widget';
 export { GrowthChartWidget } from './growth-chart-widget';
 export { RecentActivityWidget } from './recent-activity-widget';
 export { TaxExposureWidget, TaxExposureEmptyState } from './tax-exposure-widget';
-export {
-  TopPerformersWidget,
-  BiggestLosersWidget,
-  PerformanceListWidget,
-} from './performance-list-widget';
+export { PerformanceListWidget } from './performance-list-widget';
 
 // Shared utilities for building widgets
 export {

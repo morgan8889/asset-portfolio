@@ -11,7 +11,7 @@ import { Decimal } from 'decimal.js';
 import { detectAgingLots, calculateTaxExposure } from '../tax-calculator';
 import { Holding, TaxLot } from '@/types/asset';
 import { Asset } from '@/types';
-import { DEFAULT_TAX_SETTINGS } from '@/types/settings';
+import { UserTaxSettings, DEFAULT_TAX_SETTINGS } from '@/types/settings';
 
 /**
  * Generate test holdings with tax lots for performance testing
@@ -29,16 +29,16 @@ function generateTestHoldings(count: number): {
     const symbol = `TEST${i}`;
 
     // Create asset
+    const currentPrice = 100 + i;
     const asset: Asset = {
       id: assetId,
       symbol,
       name: `Test Asset ${i}`,
       type: 'stock',
-      currentPrice: new Decimal(100 + i),
+      currentPrice,
       currency: 'USD',
       region: 'US',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      metadata: {},
     };
     assetMap.set(assetId, asset);
 
@@ -70,7 +70,7 @@ function generateTestHoldings(count: number): {
 
     const costBasis = totalCost;
     const averageCost = totalQuantity.isZero() ? new Decimal(0) : costBasis.div(totalQuantity);
-    const currentValue = totalQuantity.times(asset.currentPrice);
+    const currentValue = totalQuantity.times(asset.currentPrice ?? 0);
     const unrealizedGain = currentValue.minus(costBasis);
 
     holdings.push({
@@ -138,9 +138,10 @@ describe('Tax Calculator Performance', () => {
     // Realistic scenario: dashboard widget rendering
     const { holdings, assetMap } = generateTestHoldings(500);
 
-    const taxSettings: TaxSettings = {
-      shortTermRate: 0.24,
-      longTermRate: 0.15,
+    const taxSettings: UserTaxSettings = {
+      ...DEFAULT_TAX_SETTINGS,
+      shortTermTaxRate: 0.24,
+      longTermTaxRate: 0.15,
     };
 
     const startTime = performance.now();
@@ -164,9 +165,10 @@ describe('Tax Calculator Performance', () => {
     // Stress test with 2x the target
     const { holdings, assetMap } = generateTestHoldings(1000);
 
-    const taxSettings: TaxSettings = {
-      shortTermRate: 0.24,
-      longTermRate: 0.15,
+    const taxSettings: UserTaxSettings = {
+      ...DEFAULT_TAX_SETTINGS,
+      shortTermTaxRate: 0.24,
+      longTermTaxRate: 0.15,
     };
 
     const startTime = performance.now();

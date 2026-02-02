@@ -52,10 +52,7 @@ import {
   GrowthChartWidget,
   RecentActivityWidget,
 } from './widgets';
-import {
-  TopPerformersWidget,
-  BiggestLosersWidget,
-} from './widgets/performance-list-widget';
+import { PerformanceListWidget } from './widgets/performance-list-widget';
 
 interface DashboardContainerProps {
   disableDragDrop?: boolean;
@@ -345,8 +342,9 @@ const DashboardContainerLegacyComponent = ({
           return <GrowthChartWidget />;
         case 'top-performers':
           return (
-            <TopPerformersWidget
-              performers={
+            <PerformanceListWidget
+              variant="gainers"
+              data={
                 liveMetrics.hasLivePrices
                   ? liveMetrics.topPerformers
                   : undefined
@@ -355,8 +353,9 @@ const DashboardContainerLegacyComponent = ({
           );
         case 'biggest-losers':
           return (
-            <BiggestLosersWidget
-              losers={
+            <PerformanceListWidget
+              variant="losers"
+              data={
                 liveMetrics.hasLivePrices
                   ? liveMetrics.biggestLosers
                   : undefined
@@ -365,6 +364,13 @@ const DashboardContainerLegacyComponent = ({
           );
         case 'recent-activity':
           return <RecentActivityWidget />;
+        case 'tax-exposure':
+          // Tax exposure widget not supported in legacy dashboard
+          return (
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              Tax exposure not available in legacy mode
+            </div>
+          );
         default: {
           // Exhaustive check - all widget types should be handled above
           const _exhaustiveCheck: never = widgetId;
