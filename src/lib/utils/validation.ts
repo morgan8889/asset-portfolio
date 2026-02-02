@@ -60,7 +60,24 @@ export const portfolioSchema = z.object({
 
 // Transaction validation schema
 export const transactionSchema = z.object({
-  type: z.enum(['buy', 'sell', 'dividend', 'split', 'transfer']),
+  type: z.enum([
+    'buy',
+    'sell',
+    'dividend',
+    'interest',
+    'split',
+    'transfer_in',
+    'transfer_out',
+    'fee',
+    'tax',
+    'spinoff',
+    'merger',
+    'reinvestment',
+    'espp_purchase',
+    'rsu_vest',
+    'deposit',
+    'withdrawal',
+  ]),
   assetSymbol: z
     .string()
     .min(1, 'Asset symbol is required')

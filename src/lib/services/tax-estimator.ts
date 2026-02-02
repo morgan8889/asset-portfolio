@@ -60,8 +60,8 @@ export function estimateTaxLiability(
       continue;
     }
 
-    // Get asset symbol (from holding or use assetId as fallback)
-    const assetSymbol = (holding as any).symbol || holding.assetId;
+    // Use assetId as the symbol identifier
+    const assetSymbol = holding.assetId;
 
     for (const lot of holding.lots) {
       // Skip fully sold lots
