@@ -116,14 +116,16 @@ export function ScenarioControls() {
     setDeleteDialogOpen(false);
   };
 
+  // Helper for consistent percentage formatting
+  const formatPercentageScenario = (value: number) => `${value > 0 ? '+' : ''}${value}%`;
+
   const getValueLabel = (scenario: Scenario) => {
     switch (scenario.type) {
       case 'market_correction':
         return `${scenario.value}% drop`;
       case 'expense_increase':
-        return `${scenario.value > 0 ? '+' : ''}${scenario.value}%`;
       case 'income_change':
-        return `${scenario.value > 0 ? '+' : ''}${scenario.value}%`;
+        return formatPercentageScenario(scenario.value);
       case 'one_time_expense':
         return `$${scenario.value.toLocaleString()}`;
       default:
