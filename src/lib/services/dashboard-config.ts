@@ -92,6 +92,7 @@ function migrateV2ToV3(
     version: 3,
     densePacking: true,
     widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
+    widgetVisibility: ensureCompleteVisibility(v2Config.widgetVisibility),
     widgetSettings: {
       'category-breakdown': {
         showPieChart: false,
@@ -237,6 +238,7 @@ function migrateV3ToV4(
     ...v3Config,
     version: 4,
     useReactGridLayout: false, // Disabled by default, opt-in
+    widgetVisibility: ensureCompleteVisibility(v3Config.widgetVisibility),
     rglLayouts: generateRGLLayoutsFromSpans(
       v3Config.widgetOrder,
       v3Config.widgetSpans,
