@@ -16,7 +16,11 @@ import type {
 } from '@/types/csv-import';
 import type { TransactionType } from '@/types/transaction';
 import { parseDate, validateTransactionDate } from '@/lib/utils/date-parser';
-import { TYPE_KEYWORDS, csvSymbolSchema, sanitizeForDisplay } from '@/lib/utils/validation';
+import {
+  TYPE_KEYWORDS,
+  csvSymbolSchema,
+  sanitizeForDisplay,
+} from '@/lib/utils/validation';
 import { getMappingForField } from './column-detector';
 
 /**
@@ -246,7 +250,7 @@ export function validateRow(
   }
 
   // Tax Fields Validation (T022-T026)
-  
+
   // Grant Date (optional)
   const grantDateValue = getValue('grantDate');
   if (grantDateValue) {
@@ -316,8 +320,11 @@ export function validateRow(
       const normalizedDiscount = parsedDiscount.greaterThan(1)
         ? parsedDiscount.div(100)
         : parsedDiscount;
-      
-      if (normalizedDiscount.isNegative() || normalizedDiscount.greaterThan(0.5)) {
+
+      if (
+        normalizedDiscount.isNegative() ||
+        normalizedDiscount.greaterThan(0.5)
+      ) {
         errors.push({
           field: 'discountPercent',
           value: discountPercentValue,
@@ -345,7 +352,10 @@ export function validateRow(
         value: sharesWithheldValue,
         message: 'Shares withheld cannot be negative',
       });
-    } else if (parsed.quantity && parsedSharesWithheld.greaterThan(parsed.quantity)) {
+    } else if (
+      parsed.quantity &&
+      parsedSharesWithheld.greaterThan(parsed.quantity)
+    ) {
       errors.push({
         field: 'sharesWithheld',
         value: sharesWithheldValue,

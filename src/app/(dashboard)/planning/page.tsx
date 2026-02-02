@@ -103,7 +103,13 @@ export default function PlanningPage() {
     } catch (error) {
       console.error('Failed to update projection:', error);
     }
-  }, [currentPortfolio, fireConfig, scenarios, setFireProjection, setFireCalculation]);
+  }, [
+    currentPortfolio,
+    fireConfig,
+    scenarios,
+    setFireProjection,
+    setFireCalculation,
+  ]);
 
   const loadData = useCallback(async () => {
     if (!currentPortfolio) return;
@@ -135,7 +141,13 @@ export default function PlanningPage() {
     if (currentPortfolio && netWorthHistory.length > 0) {
       updateProjection();
     }
-  }, [currentPortfolio, fireConfig, scenarios, netWorthHistory, updateProjection]);
+  }, [
+    currentPortfolio,
+    fireConfig,
+    scenarios,
+    netWorthHistory,
+    updateProjection,
+  ]);
 
   if (!currentPortfolio) {
     return (

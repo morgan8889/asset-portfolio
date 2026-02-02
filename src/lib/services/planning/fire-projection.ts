@@ -40,7 +40,10 @@ export function calculateRealReturn(
  * Centralized to avoid duplicate calculations
  */
 function getMonthlyReturnRate(config: FireConfig): number {
-  const realReturn = calculateRealReturn(config.expectedReturn, config.inflationRate);
+  const realReturn = calculateRealReturn(
+    config.expectedReturn,
+    config.inflationRate
+  );
   return realReturn / 12;
 }
 
@@ -72,12 +75,15 @@ export function applyScenarios(
 ): FireConfig {
   const activeScenarios = scenarios.filter((s) => s.isActive);
 
-  return activeScenarios.reduce((modifiedConfig, scenario) => {
-    const handler = SCENARIO_HANDLERS[scenario.type];
-    if (!handler) return modifiedConfig;
+  return activeScenarios.reduce(
+    (modifiedConfig, scenario) => {
+      const handler = SCENARIO_HANDLERS[scenario.type];
+      if (!handler) return modifiedConfig;
 
-    return { ...modifiedConfig, ...handler(modifiedConfig, scenario.value) };
-  }, { ...config });
+      return { ...modifiedConfig, ...handler(modifiedConfig, scenario.value) };
+    },
+    { ...config }
+  );
 }
 
 /**
@@ -161,7 +167,11 @@ export function generateFireProjection(
   const currentYear = startDate.getFullYear();
 
   // Add current point with context
-  const initialAgeContext = buildAgeContext(config.currentAge, config.retirementAge, 0);
+  const initialAgeContext = buildAgeContext(
+    config.currentAge,
+    config.retirementAge,
+    0
+  );
   projection.push(
     createProjectionPoint(
       startDate,
@@ -190,7 +200,10 @@ export function generateFireProjection(
 
     // Apply one-time expenses if applicable
     const oneTimeExpenses = scenarios.filter(
-      (s) => s.isActive && s.type === 'one_time_expense' && s.durationMonths === month
+      (s) =>
+        s.isActive &&
+        s.type === 'one_time_expense' &&
+        s.durationMonths === month
     );
 
     for (const expense of oneTimeExpenses) {
@@ -200,7 +213,11 @@ export function generateFireProjection(
     // Add annual data points (every 12 months)
     if (month % 12 === 0) {
       const yearOffset = month / 12;
-      const ageContext = buildAgeContext(config.currentAge, config.retirementAge, yearOffset);
+      const ageContext = buildAgeContext(
+        config.currentAge,
+        config.retirementAge,
+        yearOffset
+      );
       projection.push(
         createProjectionPoint(
           addMonths(startDate, month),
@@ -218,7 +235,11 @@ export function generateFireProjection(
   // Add final point if we reached FIRE
   if (currentBalance.greaterThanOrEqualTo(fireTarget) && month % 12 !== 0) {
     const yearOffset = month / 12;
-    const ageContext = buildAgeContext(config.currentAge, config.retirementAge, yearOffset);
+    const ageContext = buildAgeContext(
+      config.currentAge,
+      config.retirementAge,
+      yearOffset
+    );
     projection.push(
       createProjectionPoint(
         addMonths(startDate, month),
@@ -262,9 +283,10 @@ export function calculateFireMetrics(
       monthlyProgress: 0,
       retirementAge: config.retirementAge,
       ageAtFire: config.currentAge,
-      yearsBeforeRetirement: config.retirementAge && config.currentAge
-        ? config.retirementAge - config.currentAge
-        : undefined,
+      yearsBeforeRetirement:
+        config.retirementAge && config.currentAge
+          ? config.retirementAge - config.currentAge
+          : undefined,
     };
   }
 
@@ -276,12 +298,14 @@ export function calculateFireMetrics(
 
   const yearsToFire = firePoint ? firePoint.year : Infinity;
   const projectedFireDate = firePoint ? firePoint.date : null;
-  const ageAtFire = firePoint && config.currentAge
-    ? config.currentAge + yearsToFire
-    : undefined;
-  const yearsBeforeRetirement = config.retirementAge && ageAtFire
-    ? config.retirementAge - ageAtFire
-    : undefined;
+  const ageAtFire =
+    firePoint && config.currentAge
+      ? config.currentAge + yearsToFire
+      : undefined;
+  const yearsBeforeRetirement =
+    config.retirementAge && ageAtFire
+      ? config.retirementAge - ageAtFire
+      : undefined;
 
   // Calculate monthly progress
   const monthlyReturn = getMonthlyReturnRate(modifiedConfig);

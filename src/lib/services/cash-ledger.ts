@@ -111,7 +111,9 @@ export function getCashImpact(transaction: Transaction): Decimal {
 
     default:
       // Unknown transaction type - assume no cash impact
-      console.warn(`Unknown transaction type: ${type}, assuming no cash impact`);
+      console.warn(
+        `Unknown transaction type: ${type}, assuming no cash impact`
+      );
       return new Decimal(0);
   }
 }
@@ -237,7 +239,9 @@ export async function getCashBalanceHistory(
  * @param portfolioId - Portfolio to calculate balance for
  * @returns Current cash balance
  */
-export async function getCurrentCashBalance(portfolioId: string): Promise<Decimal> {
+export async function getCurrentCashBalance(
+  portfolioId: string
+): Promise<Decimal> {
   const transactions = await db.getTransactionsByPortfolio(portfolioId);
   return calculateCashBalanceAtDate(transactions, new Date(), new Decimal(0));
 }

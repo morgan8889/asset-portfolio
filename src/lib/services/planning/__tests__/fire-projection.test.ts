@@ -61,7 +61,9 @@ describe('FIRE Projection Calculations', () => {
       };
       const result = validateFireConfig(config);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('Withdrawal rate must be between'))).toBe(true);
+      expect(
+        result.errors.some((e) => e.includes('Withdrawal rate must be between'))
+      ).toBe(true);
     });
 
     it('should reject negative monthly savings', () => {
@@ -87,11 +89,13 @@ describe('FIRE Projection Calculations', () => {
     it('should reject expected return outside valid range', () => {
       const config: FireConfig = {
         ...DEFAULT_FIRE_CONFIG,
-        expectedReturn: 0.40, // 40% - unrealistic
+        expectedReturn: 0.4, // 40% - unrealistic
       };
       const result = validateFireConfig(config);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('Expected return must be between'))).toBe(true);
+      expect(
+        result.errors.some((e) => e.includes('Expected return must be between'))
+      ).toBe(true);
     });
   });
 

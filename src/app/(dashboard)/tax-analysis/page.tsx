@@ -61,14 +61,18 @@ export default function TaxAnalysisPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Tax Analysis</h1>
           <p className="text-muted-foreground">
-            Analyze unrealized gains and estimate tax liability for {currentPortfolio.name}
+            Analyze unrealized gains and estimate tax liability for{' '}
+            {currentPortfolio.name}
           </p>
         </div>
 
         <Alert>
           <InfoIcon className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
-            <span>You don&apos;t have any holdings yet. Add some transactions to see tax analysis.</span>
+            <span>
+              You don&apos;t have any holdings yet. Add some transactions to see
+              tax analysis.
+            </span>
             <Link href="/transactions">
               <Button variant="outline" size="sm">
                 Add Transactions
@@ -86,13 +90,12 @@ export default function TaxAnalysisPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Tax Analysis</h1>
           <p className="text-muted-foreground">
-            Unrealized gains analysis and tax liability estimates for {currentPortfolio.name}
+            Unrealized gains analysis and tax liability estimates for{' '}
+            {currentPortfolio.name}
           </p>
         </div>
         <Link href="/settings/tax">
-          <Button variant="outline">
-            Tax Settings
-          </Button>
+          <Button variant="outline">Tax Settings</Button>
         </Link>
       </div>
 
@@ -100,7 +103,8 @@ export default function TaxAnalysisPage() {
         <InfoIcon className="h-4 w-4" />
         <AlertDescription>
           This analysis shows unrealized gains if all positions were sold today.
-          Tax rates can be configured in Tax Settings. Consult a tax professional for actual tax liability.
+          Tax rates can be configured in Tax Settings. Consult a tax
+          professional for actual tax liability.
         </AlertDescription>
       </Alert>
 

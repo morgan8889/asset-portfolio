@@ -78,7 +78,9 @@ export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
     null
   );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [liabilityToDelete, setLiabilityToDelete] = useState<string | null>(null);
+  const [liabilityToDelete, setLiabilityToDelete] = useState<string | null>(
+    null
+  );
 
   const {
     register,
@@ -169,9 +171,10 @@ export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="max-w-xs text-sm">
-                    Note: Historical net worth calculations currently use the current balance
-                    for all past dates. Future updates will calculate historical balances
-                    based on payment schedules and interest rates.
+                    Note: Historical net worth calculations currently use the
+                    current balance for all past dates. Future updates will
+                    calculate historical balances based on payment schedules and
+                    interest rates.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -312,7 +315,8 @@ export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
       {liabilities.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center">
           <p className="text-sm text-muted-foreground">
-            No liabilities added yet. Click &quot;Add Liability&quot; to get started.
+            No liabilities added yet. Click &quot;Add Liability&quot; to get
+            started.
           </p>
         </div>
       ) : (
@@ -372,12 +376,15 @@ export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Liability</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this liability? This action cannot be undone.
+              Are you sure you want to delete this liability? This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>Delete</AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete}>
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

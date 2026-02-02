@@ -178,8 +178,12 @@ export function getTaxImplicationMessage(
   const grantDateStr = check.grantDate.toISOString().split('T')[0];
   const purchaseDateStr = check.purchaseDate.toISOString().split('T')[0];
   const sellDateStr = check.sellDate.toISOString().split('T')[0];
-  const twoYearThresholdStr = check.twoYearsFromGrant.toISOString().split('T')[0];
-  const oneYearThresholdStr = check.oneYearFromPurchase.toISOString().split('T')[0];
+  const twoYearThresholdStr = check.twoYearsFromGrant
+    .toISOString()
+    .split('T')[0];
+  const oneYearThresholdStr = check.oneYearFromPurchase
+    .toISOString()
+    .split('T')[0];
 
   let specificReason = '';
   if (reason === 'both_requirements_not_met') {

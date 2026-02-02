@@ -44,7 +44,7 @@ export function DeleteTransactionDialog({
               </p>
 
               {/* Transaction details for verification */}
-              <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
+              <div className="space-y-2 rounded-lg border bg-muted/50 p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-foreground">
                     Asset:
