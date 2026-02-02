@@ -1,3 +1,11 @@
+---
+Last Updated: 2026-02-02
+Status: Active
+Accuracy: 95%
+Audience: Developers
+Related Features: 001-015
+---
+
 # Portfolio Tracker - Development Setup
 
 ## Quick Start
@@ -79,8 +87,9 @@ src/
 
 ## Key Features Implemented
 
-### ✅ Completed Foundation
+### ✅ Completed Foundation & Features
 
+**Core Stack:**
 1. **Next.js 14 with App Router**: Modern React framework with latest features
 2. **TypeScript Configuration**: Strict typing with path aliases
 3. **Tailwind CSS + Design System**: Complete color palette and component styles
@@ -89,6 +98,17 @@ src/
 6. **Type Definitions**: Comprehensive TypeScript interfaces
 7. **Basic UI Components**: shadcn/ui foundation components
 8. **Layout System**: Responsive header and sidebar navigation
+
+**Implemented Features:**
+- **001**: CSV Transaction Import with PapaParse
+- **002-004**: Portfolio Dashboard with drag-drop widgets and grid layouts
+- **005-007**: Live market data, performance analytics, 3-year performance tracking
+- **008-009**: Financial analysis tools, real estate holdings with rental yield
+- **010-011**: Asset allocation planning, PDF/CSV export with jsPDF and html2canvas
+- **012**: Tax features (ESPP/RSU tracking, capital gains analysis)
+- **013**: Tax data integration (CSV import/export with tax fields)
+- **014**: FIRE calculator with retirement planning
+- **015**: Net worth tracking with liability support
 
 ### 📊 Database Schema
 
@@ -117,41 +137,42 @@ Complete design system with:
 - Component variants
 - Responsive utilities
 
-## Next Development Steps
+## Current Development Focus
 
-### Immediate Priorities (Week 1-2)
+### Active Development Areas
 
-1. **Complete shadcn/ui Components**
-   - Add remaining UI components (select, dialog, table, etc.)
-   - Create form components with react-hook-form integration
+1. **Documentation Cleanup**
+   - Removing obsolete Streamlit migration docs
+   - Updating stale technical specifications
+   - Creating comprehensive documentation index
 
-2. **Implement Core Features**
-   - Portfolio CRUD operations
-   - Asset search and management
-   - Transaction entry forms
-   - CSV import functionality
+2. **Code Quality Initiatives**
+   - Reducing code duplication (Phase 2 complete: 500+ lines removed)
+   - Improving type safety (reducing `any` usage)
+   - Splitting large files (>500 lines) into smaller modules
+   - Standardizing logging and error handling patterns
 
-3. **Add Charts and Visualizations**
-   - Portfolio performance charts (Recharts)
-   - Asset allocation charts
-   - Interactive financial charts
+3. **Testing & E2E Coverage**
+   - 31 E2E test files covering all major workflows
+   - Unit tests for services and utilities (targeting 70%+ coverage)
+   - Playwright tests for visual regression and user journeys
 
-### Medium Term (Week 3-4)
+### Future Enhancements
 
-1. **Price Feed Integration**
-   - Yahoo Finance API integration
-   - CoinGecko for crypto prices
-   - Real-time price updates
+1. **Advanced Analytics**
+   - Monte Carlo simulations for retirement projections
+   - Correlation matrix for portfolio diversification
+   - Risk-adjusted return metrics (Sharpe ratio, Sortino ratio)
 
-2. **Advanced Features**
-   - Tax lot tracking and reporting
-   - Performance analytics
-   - Risk metrics
+2. **Multi-Currency Support**
+   - Real-time forex conversion
+   - Multi-currency reporting
+   - Currency-specific tax rules
 
-3. **Testing and Polish**
-   - Unit tests with Vitest
-   - E2E tests with Playwright
-   - Performance optimization
+3. **Production Deployment**
+   - Security headers and CSP implementation
+   - Production build optimization
+   - Environment-specific configuration
 
 ## Available Scripts
 
@@ -212,6 +233,9 @@ npm run test:e2e:ui     # Run E2E tests with UI
 5. **Zustand**: Lightweight state management without boilerplate
 6. **shadcn/ui**: High-quality, accessible UI components
 7. **Decimal.js**: Precise financial calculations without floating-point errors
+8. **PapaParse**: Robust CSV parsing for transaction imports
+9. **Recharts**: Interactive charts for portfolio visualization
+10. **jsPDF + html2canvas**: PDF export generation for reports
 
 ### Architecture Principles
 
