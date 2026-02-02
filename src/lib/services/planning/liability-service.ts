@@ -21,22 +21,77 @@ import { db, LiabilityPayment } from '@/lib/db/schema';
  * 3. Add back principal paid after target date (reverse the payments)
  * 4. Result = balance at target date
  *
+ * KNOWN LIMITATION: This algorithm assumes complete payment history exists.
+ * If the liability existed before the first recorded payment, historical
+ * balances before that first payment will be INCORRECT. The function will
+ * return the current balance without adjustment, which does not account for
+ * payments that occurred before the first recorded payment.
+ *
+ * Example issue:
+ * - Mortgage originated in 2020 at $300,000
+ * - First recorded payment in 2024, current balance $250,000
+ * - Query for balance in 2022 will incorrectly return $250,000
+ * - Actual 2022 balance was likely ~$280,000
+ *
+ * Workaround: Ensure payment history is recorded from the liability start date,
+ * or use extrapolation based on monthly payment amount and interest rate.
+ *
  * @param liability - Liability to calculate balance for
  * @param payments - All payment records for this liability (sorted by date)
  * @param targetDate - Date to calculate balance for
  * @returns Balance at the target date
+ * @throws Error if targetDate is before the liability start date
+ * @emits console.warn if targetDate is before first recorded payment
  */
 export function calculateLiabilityBalanceAtDate(
   liability: Liability,
   payments: LiabilityPayment[],
   targetDate: Date
 ): Decimal {
+  // Validate: target date should not be before liability start date
+  const startDate = new Date(liability.startDate);
+  if (targetDate < startDate) {
+    throw new Error(
+      `Cannot calculate liability balance before start date. ` +
+      `Target: ${targetDate.toISOString()}, Start: ${startDate.toISOString()}`
+    );
+  }
+
   // Start with current balance
   let balance = new Decimal(liability.balance);
 
-  // If no payments recorded, return current balance
+  // If no payments recorded, warn about potential inaccuracy
   if (payments.length === 0) {
+    if (targetDate < new Date()) {
+      console.warn(
+        `No payment history available for liability ${liability.id}. ` +
+        `Historical balance calculation may be inaccurate. ` +
+        `Returning current balance: ${balance.toString()}`
+      );
+    }
     return balance;
+  }
+
+  // Check if target date is before first recorded payment
+  const sortedPayments = [...payments].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+  const firstPaymentDate = new Date(sortedPayments[0].date);
+
+  if (targetDate < firstPaymentDate) {
+    console.warn(
+      `Target date ${targetDate.toISOString()} is before first recorded payment ` +
+      `${firstPaymentDate.toISOString()} for liability ${liability.id}. ` +
+      `Historical balance will be inaccurate. Consider recording payment history ` +
+      `from the liability start date or implementing payment extrapolation.`
+    );
+    // Return current balance + all recorded principal payments
+    // This is still inaccurate but at least accounts for known payments
+    let estimatedBalance = balance;
+    for (const payment of sortedPayments) {
+      estimatedBalance = estimatedBalance.plus(new Decimal(payment.principalPaid));
+    }
+    return estimatedBalance;
   }
 
   // Find payments that occurred AFTER target date

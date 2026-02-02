@@ -59,8 +59,8 @@ test.describe('Net Worth Accuracy Tests', () => {
     await page.getByLabel(/amount/i).fill('10000');
     await page.getByRole('button', { name: /save|add/i }).click();
 
-    // Wait for transaction to be added
-    await page.waitForTimeout(1000);
+    // Wait for modal to close
+    await page.waitForSelector('text=/add transaction/i', { state: 'visible', timeout: 5000 });
 
     // Add buy transaction
     await page.getByRole('button', { name: /add transaction/i }).click();
@@ -72,7 +72,8 @@ test.describe('Net Worth Accuracy Tests', () => {
     await page.getByLabel(/fees/i).fill('10');
     await page.getByRole('button', { name: /save|add/i }).click();
 
-    await page.waitForTimeout(1000);
+    // Wait for modal to close
+    await page.waitForSelector('text=/add transaction/i', { state: 'visible', timeout: 5000 });
 
     // Add dividend transaction
     await page.getByRole('button', { name: /add transaction/i }).click();
@@ -82,7 +83,8 @@ test.describe('Net Worth Accuracy Tests', () => {
     await page.getByLabel(/amount/i).fill('200');
     await page.getByRole('button', { name: /save|add/i }).click();
 
-    await page.waitForTimeout(1000);
+    // Wait for modal to close
+    await page.waitForSelector('text=/add transaction/i', { state: 'visible', timeout: 5000 });
 
     // Navigate to net worth chart
     await page.goto('/planning/net-worth');
@@ -131,7 +133,9 @@ test.describe('Net Worth Accuracy Tests', () => {
       await page.getByLabel(/start date/i).fill('2020-01-01');
 
       await page.getByRole('button', { name: /save|add/i }).click();
-      await page.waitForTimeout(1000);
+
+      // Wait for modal to close
+      await page.waitForSelector('text=/add liability/i', { state: 'visible', timeout: 5000 });
     }
 
     // Navigate to net worth chart
@@ -169,7 +173,9 @@ test.describe('Net Worth Accuracy Tests', () => {
     await page.getByLabel(/date/i).fill('2024-01-01');
     await page.getByLabel(/amount/i).fill('5000');
     await page.getByRole('button', { name: /save|add/i }).click();
-    await page.waitForTimeout(1000);
+
+    // Wait for modal to close
+    await page.waitForSelector('text=/add transaction/i', { state: 'visible', timeout: 5000 });
 
     // Add fee
     await page.getByRole('button', { name: /add transaction/i }).click();
@@ -177,7 +183,9 @@ test.describe('Net Worth Accuracy Tests', () => {
     await page.getByLabel(/date/i).fill('2024-01-15');
     await page.getByLabel(/amount/i).fill('50');
     await page.getByRole('button', { name: /save|add/i }).click();
-    await page.waitForTimeout(1000);
+
+    // Wait for modal to close
+    await page.waitForSelector('text=/add transaction/i', { state: 'visible', timeout: 5000 });
 
     // Add tax
     await page.getByRole('button', { name: /add transaction/i }).click();
@@ -185,7 +193,9 @@ test.describe('Net Worth Accuracy Tests', () => {
     await page.getByLabel(/date/i).fill('2024-02-01');
     await page.getByLabel(/amount/i).fill('100');
     await page.getByRole('button', { name: /save|add/i }).click();
-    await page.waitForTimeout(1000);
+
+    // Wait for modal to close
+    await page.waitForSelector('text=/add transaction/i', { state: 'visible', timeout: 5000 });
 
     // Check net worth
     await page.goto('/planning/net-worth');
@@ -290,8 +300,8 @@ test.describe('Net Worth Accuracy Tests', () => {
     await expect(chart).toBeVisible();
 
     // Verify chart has stacked areas (cash + invested)
-    // This is a visual test - just ensure no errors
-    await page.waitForTimeout(2000); // Let chart render
+    // Wait for chart to fully render
+    await page.waitForSelector('[class*="recharts"]', { state: 'visible', timeout: 5000 });
   });
 });
 
@@ -323,7 +333,9 @@ async function addTransaction(
   }
 ) {
   await page.getByRole('button', { name: /add transaction/i }).click();
-  await page.waitForTimeout(500);
+
+  // Wait for modal to open
+  await page.waitForSelector('text=/type/i', { state: 'visible', timeout: 5000 });
 
   await page.getByLabel(/type/i).selectOption(data.type);
   await page.getByLabel(/date/i).fill(data.date);
@@ -349,5 +361,7 @@ async function addTransaction(
   }
 
   await page.getByRole('button', { name: /save|add/i }).click();
-  await page.waitForTimeout(1000);
+
+  // Wait for modal to close by checking for the add transaction button to be visible again
+  await page.waitForSelector('text=/add transaction/i', { state: 'visible', timeout: 5000 });
 }
