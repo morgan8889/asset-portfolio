@@ -830,7 +830,7 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfiguration = {
   densePacking: true,
   widgetRowSpans: { ...DEFAULT_WIDGET_ROW_SPANS },
   rglLayouts: undefined, // Generated on demand during migration
-  useReactGridLayout: false, // Disabled by default, opt-in
+  useReactGridLayout: true, // RGL is now the default implementation
   widgetSettings: {
     'category-breakdown': {
       showPieChart: false, // Pie chart disabled by default

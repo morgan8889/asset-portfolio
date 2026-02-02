@@ -1,15 +1,13 @@
 'use client';
 
 /**
- * Dashboard Container Router
+ * Dashboard Container
  *
- * Routes between legacy (CSS Grid + dnd-kit) and new (react-grid-layout)
- * implementations based on the useReactGridLayout feature flag.
+ * Main dashboard container using react-grid-layout for responsive,
+ * draggable widget layout.
  */
 
 import { memo } from 'react';
-import { useDashboardStore } from '@/lib/stores';
-import { DashboardContainerLegacy } from './dashboard-container-legacy';
 import { DashboardContainerRGL } from './dashboard-container-rgl';
 
 interface DashboardContainerProps {
@@ -19,16 +17,7 @@ interface DashboardContainerProps {
 const DashboardContainerComponent = ({
   disableDragDrop = false,
 }: DashboardContainerProps) => {
-  const { config } = useDashboardStore();
-
-  // Feature flag determines implementation
-  // Default to legacy if config hasn't loaded yet or flag is disabled
-  if (config?.useReactGridLayout === true) {
-    return <DashboardContainerRGL disableDragDrop={disableDragDrop} />;
-  }
-
-  // Default to legacy (includes null/undefined config cases)
-  return <DashboardContainerLegacy disableDragDrop={disableDragDrop} />;
+  return <DashboardContainerRGL disableDragDrop={disableDragDrop} />;
 };
 
 export const DashboardContainer = memo(DashboardContainerComponent);

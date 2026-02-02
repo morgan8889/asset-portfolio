@@ -237,7 +237,7 @@ function migrateV3ToV4(
   return {
     ...v3Config,
     version: 4,
-    useReactGridLayout: false, // Disabled by default, opt-in
+    useReactGridLayout: true, // RGL is now the default implementation
     widgetVisibility: ensureCompleteVisibility(v3Config.widgetVisibility),
     rglLayouts: generateRGLLayoutsFromSpans(
       v3Config.widgetOrder,

@@ -93,7 +93,7 @@ describe('Dashboard Configuration Service', () => {
         expect(config.widgetRowSpans).toEqual(DEFAULT_WIDGET_ROW_SPANS);
 
         // Should have v4 features
-        expect(config.useReactGridLayout).toBe(false);
+        expect(config.useReactGridLayout).toBe(true); // RGL is now the default
         expect(config.rglLayouts).toBeDefined();
 
         // Should preserve v1 settings (with new widgets added)
@@ -156,7 +156,7 @@ describe('Dashboard Configuration Service', () => {
         expect(config.widgetRowSpans).toEqual(DEFAULT_WIDGET_ROW_SPANS);
 
         // Should have v4 features
-        expect(config.useReactGridLayout).toBe(false);
+        expect(config.useReactGridLayout).toBe(true); // RGL is now the default
         expect(config.rglLayouts).toBeDefined();
 
         // Should preserve v2 settings
@@ -218,7 +218,7 @@ describe('Dashboard Configuration Service', () => {
 
         // Should migrate to v4
         expect(config.version).toBe(4);
-        expect(config.useReactGridLayout).toBe(false); // Disabled by default
+        expect(config.useReactGridLayout).toBe(true); // RGL is now the default
         expect(config.rglLayouts).toBeDefined();
 
         // RGL layouts should have lg, md, sm breakpoints
@@ -1117,7 +1117,7 @@ describe('Dashboard Configuration Service', () => {
       const config = await dashboardConfigService.getConfig();
 
       expect(config.version).toBe(4);
-      expect(config.useReactGridLayout).toBe(false);
+      expect(config.useReactGridLayout).toBe(true); // RGL is now the default
     });
 
     it('should return default config if no config exists', async () => {
@@ -1126,7 +1126,7 @@ describe('Dashboard Configuration Service', () => {
       const config = await dashboardConfigService.getConfig();
 
       expect(config.version).toBe(4);
-      expect(config.useReactGridLayout).toBe(false);
+      expect(config.useReactGridLayout).toBe(true); // RGL is now the default
     });
   });
 });
