@@ -84,9 +84,13 @@ export function getCashImpact(transaction: Transaction): Decimal {
   switch (type) {
     case 'buy':
     case 'espp_purchase':
-    case 'rsu_vest':
       // Cash out: Cost of shares + fees
       return quantity.mul(price).plus(fees).neg();
+
+    case 'rsu_vest':
+      // RSUs vest with no cash outlay - shares appear in account
+      // Taxes withheld via share sales, not cash deduction
+      return new Decimal(0);
 
     case 'sell':
       // Cash in: Proceeds - fees
@@ -108,6 +112,11 @@ export function getCashImpact(transaction: Transaction): Decimal {
 
     case 'withdrawal':
       // Cash out: Withdrawal amount
+      return new Decimal(price).neg();
+
+    case 'liability_payment':
+      // Cash out: Liability payment (principal + interest)
+      // Payment amount stored in price field
       return new Decimal(price).neg();
 
     case 'reinvestment':
@@ -147,7 +156,8 @@ export function affectsCash(type: TransactionType): boolean {
     'deposit',
     'withdrawal',
     'espp_purchase',
-    'rsu_vest',
+    'liability_payment',
+    // Note: rsu_vest is NOT included because RSUs vest with no cash outlay
   ];
 
   return cashAffectingTypes.includes(type);
@@ -205,20 +215,28 @@ export async function getCashBalanceHistory(
   // Get all transactions for portfolio
   const transactions = await db.getTransactionsByPortfolio(portfolioId);
 
-  // Get initial cash balance
-  const cashAccount = await getCashAccount(portfolioId);
-  const currentBalance = cashAccount?.balance || new Decimal(0);
+  // Filter to cash-affecting transactions and sort chronologically
+  const sortedTransactions = transactions
+    .filter((tx) => affectsCash(tx.type))
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  // Build daily snapshots
+  // Build daily snapshots with incremental calculation (O(n) instead of O(n²))
   const history: Array<{ date: Date; balance: Decimal }> = [];
+  let balance = new Decimal(0);
+  let txIndex = 0;
+
   const currentDate = new Date(startDate);
 
   while (currentDate <= endDate) {
-    const balance = calculateCashBalanceAtDate(
-      transactions,
-      currentDate,
-      new Decimal(0) // Always start from zero and replay all transactions
-    );
+    // Add all transactions that occurred on or before currentDate
+    while (
+      txIndex < sortedTransactions.length &&
+      sortedTransactions[txIndex].date <= currentDate
+    ) {
+      const impact = getCashImpact(sortedTransactions[txIndex]);
+      balance = balance.plus(impact);
+      txIndex++;
+    }
 
     history.push({
       date: new Date(currentDate),
