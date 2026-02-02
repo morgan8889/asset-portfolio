@@ -1,3 +1,11 @@
+---
+Last Updated: 2026-02-02
+Status: Active
+Accuracy: 90%
+Audience: Developers, Architects
+Related Features: All (comprehensive technical overview)
+---
+
 # Portfolio Tracker - Technical Specification Document
 
 ## Table of Contents
@@ -40,8 +48,10 @@ Frontend:
   UI Components: shadcn/ui (Radix UI primitives)
   Styling: Tailwind CSS 3.4+
   State Management: Zustand 4.5+
-  Charts: Recharts 2.10+ & Tremor 3.13+
+  Charts: Recharts 2.15+ & Tremor 3.13+
   Forms: React Hook Form 7.48+ with Zod 3.22+
+  Drag & Drop: @dnd-kit/core 6.3+, @dnd-kit/sortable 10.0+
+  Dashboard Layouts: react-grid-layout
 
 Data Layer:
   Local Storage: IndexedDB via Dexie.js 3.2+
@@ -49,13 +59,14 @@ Data Layer:
   CSV Processing: PapaParse 5.4+
   Calculations: decimal.js 10.4+ (financial precision)
   Date Handling: date-fns 3.0+
+  Export: jsPDF 4.0+, html2canvas 1.4+
 
 Development:
-  Build Tool: Vite/Next.js bundler
-  Testing: Vitest 1.2+ & React Testing Library 14+
+  Build Tool: Next.js bundler
+  Testing: Vitest 1.2+ & Playwright for E2E
   Linting: ESLint 8.56+ with Prettier 3.2+
   Git Hooks: Husky 9.0+ with lint-staged
-  CI/CD: GitHub Actions
+  CI/CD: GitHub Actions (planned)
   Deployment: Vercel/Netlify/Self-hosted
 ```
 
@@ -65,21 +76,23 @@ Development:
 
 ## Implementation Status
 
-**Last Updated**: 2026-01-24
-**Overall Progress**: 30-40% Complete (Foundational architecture solid, UI-service integration incomplete)
+**Last Updated**: 2026-02-02
+**Overall Progress**: 70-80% Complete (Core features implemented, advanced features in progress)
 
 **Quick Status**:
 
 - ✅ **Database Layer**: Complete (Dexie.js with 8 tables, decimal.js serialization)
-- ✅ **Service Layer**: Complete (8 business logic services)
-- ✅ **State Management**: Complete (6 Zustand stores)
+- ✅ **Service Layer**: Complete (comprehensive business logic services)
+- ✅ **State Management**: Complete (Zustand stores with persist middleware)
 - ✅ **Type System**: Complete (TypeScript strict mode with comprehensive types)
-- 🔄 **API Routes**: Partial (Yahoo Finance implemented, others planned)
-- 🔄 **UI Components**: Partial (Shells exist, data integration incomplete)
-- 🔄 **Charts**: Partial (Components exist, using mock data)
-- 📋 **CSV Import**: Planned (UI button exists, backend missing)
-- 📋 **Tax Reporting**: Planned (Service logic exists, visualization incomplete)
-- 📋 **Advanced Analytics**: Planned (UI placeholders only)
+- ✅ **API Routes**: Complete (Yahoo Finance, CoinGecko, Alpha Vantage proxies)
+- ✅ **UI Components**: Complete (shadcn/ui with custom financial components)
+- ✅ **Charts**: Complete (Recharts with real portfolio data)
+- ✅ **CSV Import**: Complete (PapaParse with tax field support)
+- ✅ **Tax Reporting**: Complete (ESPP/RSU tracking, capital gains analysis)
+- ✅ **Dashboard**: Complete (Responsive grid with drag-drop widgets)
+- ✅ **Export Functionality**: Complete (PDF/CSV with jsPDF)
+- 🔄 **Advanced Analytics**: Partial (Risk metrics, performance analytics implemented)
 
 **For detailed implementation status**, see [PROJECT_STATUS.md](../PROJECT_STATUS.md)
 
@@ -917,47 +930,50 @@ NEXT_PUBLIC_COINGECKO_KEY=xxx
 - No production deployment configuration
 - QA testing not performed
 
-### 📋 Post-MVP Roadmap - **UPDATED FOR 2026**
+### 📋 Future Enhancements
 
-**Previously Claimed** (2024 timeline - obsolete):
+**Current Focus** (Q1 2026):
 
-- ~~Month 2: Advanced analytics, Monte Carlo simulations~~
-- ~~Month 3: Mobile app, cloud sync options~~
-- ~~Month 4: AI insights, automated rebalancing~~
-- ~~Month 5: Social features, portfolio sharing~~
-- ~~Month 6: Advanced tax optimization, integrations~~
+- Documentation cleanup and standardization
+- Code quality improvements (reducing duplication, improving type safety)
+- E2E test coverage expansion (31 tests implemented)
+- Production deployment preparation
 
-**Current Priorities** (2026):
+**Planned Features** (Q2-Q3 2026):
 
-**Immediate** (Next 2 Weeks):
+**Advanced Analytics:**
+- Monte Carlo simulations for retirement projections
+- Correlation matrix for portfolio diversification
+- Risk-adjusted return metrics (Sharpe, Sortino ratios)
+- Factor analysis and attribution
 
-- Close 6 dashboard widget gaps (see `specs/dashboard-real-data-widgets/spec.md`)
-- Implement CSV import backend
-- Verify and fix UI-service integration
-- Wire charts to real data
+**Multi-Currency Support:**
+- Real-time forex conversion
+- Multi-currency reporting
+- Currency-specific tax rules
+- Currency risk analysis
 
-**Short-Term** (Next Month):
+**Security Enhancements:**
+- Local authentication (PIN/password/biometric)
+- AES-256-GCM encryption for sensitive data
+- Secure export with password protection
+- Auto-lock and session management
 
-- Tax reporting visualization and PDF/CSV export
-- Complete analytics page (risk analysis, correlation matrix)
-- Report generation functionality
-- Allocation management with rebalancing UI
+**Production Features:**
+- Security headers and CSP
+- Performance optimization
+- PWA support for offline use
+- Automated backups with encryption
 
-**Medium-Term** (Next Quarter):
-
-- Advanced analytics (Monte Carlo simulations)
-- Multi-currency support
-- Optional authentication and encryption
-- Production deployment configuration
-
-**Long-Term** (Future):
+**Long-Term Vision** (2027+):
 
 - Mobile app (React Native or PWA)
-- Cloud sync (optional, encrypted)
-- AI-powered insights
-- Social/sharing features
+- Optional cloud sync (end-to-end encrypted)
+- AI-powered portfolio insights
+- Automated rebalancing recommendations
+- Integration with brokerage APIs (read-only)
 
-**For detailed gap analysis and next steps**, see [PROJECT_STATUS.md](../PROJECT_STATUS.md)
+**For current implementation status**, see [PROJECT_STATUS.md](../PROJECT_STATUS.md)
 
 ---
 

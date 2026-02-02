@@ -1,3 +1,11 @@
+---
+Last Updated: 2026-02-02
+Status: Active
+Accuracy: 85%
+Audience: Security Engineers, Developers
+Related Features: All (security applies across features)
+---
+
 # Portfolio Tracker Security Assessment Report
 
 ## Executive Summary
@@ -260,6 +268,7 @@ return NextResponse.json({
 2. **No Server-Side Storage**: Eliminates server-side data breach risks
 3. **Decimal Precision**: Proper financial calculations with decimal.js
 4. **IndexedDB Encryption Ready**: Schema supports future encryption
+5. **Tax Data Privacy**: All tax-sensitive data (ESPP/RSU) stored locally only
 
 ### ⚠️ Weaknesses
 
@@ -268,12 +277,41 @@ return NextResponse.json({
 3. **Browser Storage Limits**: No handling of storage quota issues
 4. **No Data Masking**: Sensitive data always visible
 
+### Tax Data Privacy Considerations (Features 012-013)
+
+**Sensitive Data Types**:
+- **ESPP Purchase Details**: Grant dates, discount percentages, bargain elements
+- **RSU Vest Information**: Vesting dates, FMV at vest, shares withheld for taxes
+- **Tax Lot Details**: Purchase dates, cost basis, holding period classification
+- **W-2 Income**: Ordinary income from stock compensation
+
+**Current Protection Measures**:
+1. **Local-Only Storage**: All tax data stored in browser IndexedDB, never transmitted to servers
+2. **No Cloud Sync**: Tax information remains on user's device
+3. **CSV Export Control**: Tax fields included in exports but files remain local
+4. **Decimal Precision**: Tax calculations use Decimal.js to prevent floating-point errors
+
+**Identified Risks**:
+1. **Plaintext Storage**: Tax data stored unencrypted in IndexedDB
+2. **CSV Export Security**: Exported CSV files contain sensitive tax information in plaintext
+3. **Browser History**: Tax analysis pages may expose sensitive data in browser history
+4. **Shared Devices**: No authentication prevents unauthorized access on shared computers
+
+**Recommendations**:
+1. **Implement AES-256-GCM encryption** for tax-sensitive fields in IndexedDB
+2. **Add password protection** for CSV exports containing tax data
+3. **Implement local authentication** (PIN/password) for access control
+4. **Add data masking options** for tax amounts and sensitive identifiers
+5. **Implement auto-lock** functionality for inactivity timeout
+6. **Add export audit trail** tracking when tax data is exported
+
 ### Recommendations
 
 1. **Implement AES-256-GCM encryption** for local storage
 2. **Add password-protected backups**
 3. **Implement data masking** options
 4. **Add secure data export** with encryption
+5. **Implement local authentication** for sensitive data access
 
 ---
 
