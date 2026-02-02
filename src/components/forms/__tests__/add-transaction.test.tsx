@@ -42,16 +42,14 @@ vi.mock('@/lib/stores', () => ({
 vi.mock('@/lib/db', () => ({
   assetQueries: {
     getBySymbol: vi.fn().mockResolvedValue(null),
-    getById: vi
-      .fn()
-      .mockImplementation((id: string) =>
-        Promise.resolve({
-          id,
-          symbol: 'AAPL',
-          name: 'Apple Inc.',
-          type: 'stock',
-        })
-      ),
+    getById: vi.fn().mockImplementation((id: string) =>
+      Promise.resolve({
+        id,
+        symbol: 'AAPL',
+        name: 'Apple Inc.',
+        type: 'stock',
+      })
+    ),
     create: vi.fn().mockResolvedValue('asset-123'),
   },
 }));
