@@ -19,20 +19,22 @@ interface CachedPortfolioData {
 /**
  * Load all portfolio data once for batch net worth calculations
  */
-async function loadPortfolioData(portfolioId: string): Promise<CachedPortfolioData> {
+async function loadPortfolioData(
+  portfolioId: string
+): Promise<CachedPortfolioData> {
   // Load all data in parallel
   const [holdings, liabilities] = await Promise.all([
     db.getHoldingsByPortfolio(portfolioId),
     db.getLiabilitiesByPortfolio(portfolioId),
   ]);
 
-  const assetIds = holdings.map(h => h.assetId);
+  const assetIds = holdings.map((h) => h.assetId);
 
   // Load assets, price history, and liability payments in parallel
   const [assets, priceHistories, liabilityPaymentArrays] = await Promise.all([
     db.assets.bulkGet(assetIds),
-    Promise.all(assetIds.map(id => db.getPriceHistoryByAsset(id))),
-    Promise.all(liabilities.map(l => db.getLiabilityPayments(l.id))),
+    Promise.all(assetIds.map((id) => db.getPriceHistoryByAsset(id))),
+    Promise.all(liabilities.map((l) => db.getLiabilityPayments(l.id))),
   ]);
 
   // Create maps and pre-sort price history by date descending
@@ -51,7 +53,13 @@ async function loadPortfolioData(portfolioId: string): Promise<CachedPortfolioDa
     liabilities.map((l, i) => [l.id, liabilityPaymentArrays[i]])
   );
 
-  return { holdings, liabilities, assetMap, priceHistoryMap, liabilityPaymentsMap };
+  return {
+    holdings,
+    liabilities,
+    assetMap,
+    priceHistoryMap,
+    liabilityPaymentsMap,
+  };
 }
 
 /**
@@ -89,13 +97,17 @@ function calculateNetWorthFromCache(
     if (!asset) continue;
 
     const priceHistory = data.priceHistoryMap.get(holding.assetId) || [];
-    const fallbackPrice = asset.currentPrice ? new Decimal(asset.currentPrice) : new Decimal(0);
+    const fallbackPrice = asset.currentPrice
+      ? new Decimal(asset.currentPrice)
+      : new Decimal(0);
     const price = findPriceAtDate(priceHistory, date, fallbackPrice);
 
     const quantity = new Decimal(holding.quantity);
     const value = price.mul(quantity);
 
-    const ownershipPercent = new Decimal(holding.ownershipPercentage || 100).div(100);
+    const ownershipPercent = new Decimal(
+      holding.ownershipPercentage || 100
+    ).div(100);
     const adjustedValue = value.mul(ownershipPercent);
 
     totalAssets = totalAssets.plus(adjustedValue);
@@ -104,7 +116,11 @@ function calculateNetWorthFromCache(
   // Calculate historical liability balances using payment history
   for (const liability of data.liabilities) {
     const payments = data.liabilityPaymentsMap.get(liability.id) || [];
-    const balanceAtDate = calculateLiabilityBalanceAtDate(liability, payments, date);
+    const balanceAtDate = calculateLiabilityBalanceAtDate(
+      liability,
+      payments,
+      date
+    );
     totalLiabilities = totalLiabilities.plus(balanceAtDate);
   }
 
@@ -145,7 +161,10 @@ export async function getNetWorthHistory(
 
   // Calculate net worth for each month from cached data (no DB calls in loop)
   return monthEnds.map((monthEnd) => {
-    const { assets, liabilities, netWorth } = calculateNetWorthFromCache(data, monthEnd);
+    const { assets, liabilities, netWorth } = calculateNetWorthFromCache(
+      data,
+      monthEnd
+    );
 
     return {
       date: monthEnd,
@@ -175,7 +194,12 @@ export async function getTotalAssets(portfolioId: string): Promise<number> {
 /**
  * Calculates the total liabilities in a portfolio
  */
-export async function getTotalLiabilities(portfolioId: string): Promise<number> {
-  const { liabilities } = await calculateNetWorthAtDate(portfolioId, new Date());
+export async function getTotalLiabilities(
+  portfolioId: string
+): Promise<number> {
+  const { liabilities } = await calculateNetWorthAtDate(
+    portfolioId,
+    new Date()
+  );
   return liabilities.toNumber();
 }

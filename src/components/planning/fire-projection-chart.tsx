@@ -33,18 +33,23 @@ const labelFormatters: LabelFormatter[] = [
   // Priority 1: Age-based (most intuitive for retirement planning)
   (point) => {
     if (point.userAge === undefined) return null;
-    return point.year === 0 ? `Age ${Math.round(point.userAge)}` : `${Math.round(point.userAge)}`;
+    return point.year === 0
+      ? `Age ${Math.round(point.userAge)}`
+      : `${Math.round(point.userAge)}`;
   },
   // Priority 2: Calendar year
   (point) => {
     if (point.calendarYear === undefined) return null;
-    return point.year === 0 ? `${point.calendarYear}` : `'${String(point.calendarYear).slice(-2)}`;
+    return point.year === 0
+      ? `${point.calendarYear}`
+      : `'${String(point.calendarYear).slice(-2)}`;
   },
   // Priority 3: Years to retirement
   (point) => {
     if (point.yearsToRetirement === undefined) return null;
     if (point.yearsToRetirement === 0) return 'Retirement';
-    if (point.yearsToRetirement > 0) return `-${Math.round(point.yearsToRetirement)}Y`;
+    if (point.yearsToRetirement > 0)
+      return `-${Math.round(point.yearsToRetirement)}Y`;
     return `+${Math.abs(Math.round(point.yearsToRetirement))}Y`;
   },
   // Fallback: Relative years
@@ -68,21 +73,22 @@ export const FireProjectionChart = memo(function FireProjectionChart({
   isLoading = false,
 }: FireProjectionChartProps) {
   // Determine best label format based on available data
-  const hasAgeData = projection.some(p => p.userAge !== undefined);
-  const hasCalendarYear = projection.some(p => p.calendarYear !== undefined);
+  const hasAgeData = projection.some((p) => p.userAge !== undefined);
+  const hasCalendarYear = projection.some((p) => p.calendarYear !== undefined);
 
   // Memoize chart data transformation to prevent recalculation on every render
-  const chartData = useMemo(() =>
-    projection.map((point) => ({
-      year: point.year,
-      yearLabel: formatYear(point.year, point),
-      netWorth: point.netWorth,
-      fireTarget: point.fireTarget,
-      isProjected: point.isProjected,
-      userAge: point.userAge,
-      calendarYear: point.calendarYear,
-      yearsToRetirement: point.yearsToRetirement,
-    })),
+  const chartData = useMemo(
+    () =>
+      projection.map((point) => ({
+        year: point.year,
+        yearLabel: formatYear(point.year, point),
+        netWorth: point.netWorth,
+        fireTarget: point.fireTarget,
+        isProjected: point.isProjected,
+        userAge: point.userAge,
+        calendarYear: point.calendarYear,
+        yearsToRetirement: point.yearsToRetirement,
+      })),
     [projection]
   );
 
@@ -136,8 +142,7 @@ export const FireProjectionChart = memo(function FireProjectionChart({
                   <p className="text-xs text-muted-foreground">
                     {fireCalculation.yearsBeforeRetirement >= 0
                       ? `${fireCalculation.yearsBeforeRetirement.toFixed(1)}Y before retirement`
-                      : `${Math.abs(fireCalculation.yearsBeforeRetirement).toFixed(1)}Y after retirement`
-                    }
+                      : `${Math.abs(fireCalculation.yearsBeforeRetirement).toFixed(1)}Y after retirement`}
                   </p>
                 )}
               </div>
@@ -169,7 +174,7 @@ export const FireProjectionChart = memo(function FireProjectionChart({
       </CardHeader>
       <CardContent className="relative">
         {isLoading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg">
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80 backdrop-blur-sm">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         )}
@@ -184,7 +189,13 @@ export const FireProjectionChart = memo(function FireProjectionChart({
               margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
             >
               <defs>
-                <linearGradient id="colorProjection" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient
+                  id="colorProjection"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
                   <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                 </linearGradient>
@@ -198,8 +209,12 @@ export const FireProjectionChart = memo(function FireProjectionChart({
                   hasAgeData
                     ? { value: 'Age', position: 'insideBottom', offset: -5 }
                     : hasCalendarYear
-                    ? { value: 'Year', position: 'insideBottom', offset: -5 }
-                    : { value: 'Years from Now', position: 'insideBottom', offset: -5 }
+                      ? { value: 'Year', position: 'insideBottom', offset: -5 }
+                      : {
+                          value: 'Years from Now',
+                          position: 'insideBottom',
+                          offset: -5,
+                        }
                 }
               />
               <YAxis

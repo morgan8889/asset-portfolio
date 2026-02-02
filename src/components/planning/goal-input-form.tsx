@@ -27,7 +27,9 @@ const fireConfigSchema = z.object({
     .number()
     .min(PLANNING_CONSTRAINTS.MIN_WITHDRAWAL_RATE * 100)
     .max(PLANNING_CONSTRAINTS.MAX_WITHDRAWAL_RATE * 100),
-  monthlySavings: z.coerce.number().min(0, 'Monthly savings cannot be negative'),
+  monthlySavings: z.coerce
+    .number()
+    .min(0, 'Monthly savings cannot be negative'),
   expectedReturn: z.coerce
     .number()
     .min(PLANNING_CONSTRAINTS.MIN_EXPECTED_RETURN * 100)
@@ -97,7 +99,10 @@ export function GoalInputForm() {
       <CardHeader>
         <CardTitle>FIRE Goal Settings</CardTitle>
         <div className="text-sm text-muted-foreground">
-          FIRE Target: <span className="text-lg font-bold text-foreground">{formatCurrency(fireNumber, { currency })}</span>
+          FIRE Target:{' '}
+          <span className="text-lg font-bold text-foreground">
+            {formatCurrency(fireNumber, { currency })}
+          </span>
         </div>
       </CardHeader>
       <CardContent>
@@ -113,8 +118,8 @@ export function GoalInputForm() {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-xs">
-                        Your desired annual spending in retirement (in today&apos;s
-                        dollars)
+                        Your desired annual spending in retirement (in
+                        today&apos;s dollars)
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -136,9 +141,7 @@ export function GoalInputForm() {
 
             <div className="grid gap-2">
               <div className="flex items-center gap-2">
-                <Label htmlFor="withdrawalRate">
-                  Safe Withdrawal Rate (%)
-                </Label>
+                <Label htmlFor="withdrawalRate">Safe Withdrawal Rate (%)</Label>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -292,11 +295,7 @@ export function GoalInputForm() {
 
           <div className="flex gap-2">
             <Button type="submit">Update Goals</Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleReset}
-            >
+            <Button type="button" variant="outline" onClick={handleReset}>
               Reset to Defaults
             </Button>
           </div>

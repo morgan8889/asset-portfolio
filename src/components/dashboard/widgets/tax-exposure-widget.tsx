@@ -12,11 +12,7 @@ import { Receipt, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 import { Decimal } from 'decimal.js';
 import { formatCurrency } from '@/lib/utils';
 import { TaxExposureMetrics } from '@/types/tax';
-import {
-  WidgetSkeleton,
-  WidgetCard,
-  MetricValue,
-} from './shared';
+import { WidgetSkeleton, WidgetCard, MetricValue } from './shared';
 
 interface TaxExposureWidgetProps {
   metrics: TaxExposureMetrics;
@@ -66,7 +62,10 @@ export const TaxExposureWidget = memo(function TaxExposureWidget({
           </span>
         </div>
         {hasAgingLots && (
-          <div className="flex items-center gap-1 pt-1 text-amber-600" role="alert">
+          <div
+            className="flex items-center gap-1 pt-1 text-amber-600"
+            role="alert"
+          >
             <AlertCircle className="h-3 w-3" />
             <span>{metrics.agingLotsCount} lot(s) aging</span>
           </div>
@@ -91,9 +90,7 @@ export const TaxExposureEmptyState = memo(function TaxExposureEmptyState() {
       ariaDescription="No tax exposure data available"
     >
       <div className="flex flex-col items-center justify-center py-6 text-center">
-        <p className="text-sm text-muted-foreground">
-          No tax lots to analyze
-        </p>
+        <p className="text-sm text-muted-foreground">No tax lots to analyze</p>
         <p className="mt-1 text-xs text-muted-foreground">
           Add holdings with transactions to see tax exposure
         </p>

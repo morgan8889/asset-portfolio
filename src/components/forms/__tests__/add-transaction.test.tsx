@@ -3,7 +3,10 @@ import { render, screen, fireEvent, waitFor } from '@/test-utils';
 import userEvent from '@testing-library/user-event';
 import { AddTransactionDialog } from '../add-transaction';
 import { useTransactionStore, usePortfolioStore } from '@/lib/stores';
-import { showSuccessNotification, showErrorNotification } from '@/lib/stores/ui';
+import {
+  showSuccessNotification,
+  showErrorNotification,
+} from '@/lib/stores/ui';
 
 // Mock notification functions - must be before vi.mock due to hoisting
 vi.mock('@/lib/stores/ui', () => ({
@@ -39,9 +42,16 @@ vi.mock('@/lib/stores', () => ({
 vi.mock('@/lib/db', () => ({
   assetQueries: {
     getBySymbol: vi.fn().mockResolvedValue(null),
-    getById: vi.fn().mockImplementation((id: string) =>
-      Promise.resolve({ id, symbol: 'AAPL', name: 'Apple Inc.', type: 'stock' })
-    ),
+    getById: vi
+      .fn()
+      .mockImplementation((id: string) =>
+        Promise.resolve({
+          id,
+          symbol: 'AAPL',
+          name: 'Apple Inc.',
+          type: 'stock',
+        })
+      ),
     create: vi.fn().mockResolvedValue('asset-123'),
   },
 }));
@@ -619,12 +629,19 @@ describe('TransactionDialog - Edit Mode', () => {
   it('should show loading state while fetching asset', async () => {
     const { assetQueries } = await import('@/lib/db');
     vi.spyOn(assetQueries, 'getById').mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve({
-        id: 'asset-123',
-        symbol: 'AAPL',
-        name: 'Apple Inc.',
-        type: 'stock',
-      } as any), 100))
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                id: 'asset-123',
+                symbol: 'AAPL',
+                name: 'Apple Inc.',
+                type: 'stock',
+              } as any),
+            100
+          )
+        )
     );
 
     const { TransactionDialog } = await import('../add-transaction');
@@ -639,9 +656,14 @@ describe('TransactionDialog - Edit Mode', () => {
 
     expect(screen.getByText('Loading asset data...')).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(screen.queryByText('Loading asset data...')).not.toBeInTheDocument();
-    }, { timeout: 3000 });
+    await waitFor(
+      () => {
+        expect(
+          screen.queryByText('Loading asset data...')
+        ).not.toBeInTheDocument();
+      },
+      { timeout: 3000 }
+    );
   });
 
   it('should handle asset loading errors gracefully', async () => {

@@ -93,7 +93,7 @@ export function deserializeDecimalArray<T extends object, K extends keyof T>(
  */
 export function serializePartialDecimals<
   T extends object,
-  K extends keyof T = keyof T
+  K extends keyof T = keyof T,
 >(
   updates: Partial<T>,
   allDecimalFields: readonly K[]

@@ -11,7 +11,8 @@ export default function TaxSettingsPage() {
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Tax Settings</h1>
         <p className="text-muted-foreground">
-          Configure your capital gains tax rates for accurate tax liability calculations
+          Configure your capital gains tax rates for accurate tax liability
+          calculations
         </p>
       </div>
 

@@ -70,20 +70,8 @@ describe('calculateLiabilityBalanceAtDate', () => {
   it('should return current balance for future date with no future payments', () => {
     const liability = createLiability(100000);
     const payments = [
-      createPayment(
-        liability.id,
-        new Date('2023-01-01'),
-        500,
-        450,
-        99500
-      ),
-      createPayment(
-        liability.id,
-        new Date('2023-02-01'),
-        505,
-        445,
-        98995
-      ),
+      createPayment(liability.id, new Date('2023-01-01'), 500, 450, 99500),
+      createPayment(liability.id, new Date('2023-02-01'), 505, 445, 98995),
     ];
     const targetDate = new Date('2024-01-01'); // After all payments
 
@@ -100,90 +88,18 @@ describe('calculateLiabilityBalanceAtDate', () => {
   it('should add back principal from payments after target date', () => {
     const liability = createLiability(95000); // Current balance after payments
     const payments = [
-      createPayment(
-        liability.id,
-        new Date('2024-01-01'),
-        500,
-        450,
-        99500
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-02-01'),
-        505,
-        445,
-        98995
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-03-01'),
-        510,
-        440,
-        98485
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-04-01'),
-        515,
-        435,
-        97970
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-05-01'),
-        520,
-        430,
-        97450
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-06-01'),
-        525,
-        425,
-        96925
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-07-01'),
-        530,
-        420,
-        96395
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-08-01'),
-        535,
-        415,
-        95860
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-09-01'),
-        540,
-        410,
-        95320
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-10-01'),
-        545,
-        405,
-        94775
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-11-01'),
-        550,
-        400,
-        94225
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-12-01'),
-        555,
-        395,
-        93670
-      ),
+      createPayment(liability.id, new Date('2024-01-01'), 500, 450, 99500),
+      createPayment(liability.id, new Date('2024-02-01'), 505, 445, 98995),
+      createPayment(liability.id, new Date('2024-03-01'), 510, 440, 98485),
+      createPayment(liability.id, new Date('2024-04-01'), 515, 435, 97970),
+      createPayment(liability.id, new Date('2024-05-01'), 520, 430, 97450),
+      createPayment(liability.id, new Date('2024-06-01'), 525, 425, 96925),
+      createPayment(liability.id, new Date('2024-07-01'), 530, 420, 96395),
+      createPayment(liability.id, new Date('2024-08-01'), 535, 415, 95860),
+      createPayment(liability.id, new Date('2024-09-01'), 540, 410, 95320),
+      createPayment(liability.id, new Date('2024-10-01'), 545, 405, 94775),
+      createPayment(liability.id, new Date('2024-11-01'), 550, 400, 94225),
+      createPayment(liability.id, new Date('2024-12-01'), 555, 395, 93670),
     ];
 
     // Calculate balance as of March 15, 2024
@@ -209,27 +125,9 @@ describe('calculateLiabilityBalanceAtDate', () => {
     const liability = createLiability(95000);
     const paymentDate = new Date('2024-06-01');
     const payments = [
-      createPayment(
-        liability.id,
-        new Date('2024-01-01'),
-        500,
-        450,
-        99500
-      ),
-      createPayment(
-        liability.id,
-        paymentDate,
-        525,
-        425,
-        96925
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-12-01'),
-        555,
-        395,
-        93670
-      ),
+      createPayment(liability.id, new Date('2024-01-01'), 500, 450, 99500),
+      createPayment(liability.id, paymentDate, 525, 425, 96925),
+      createPayment(liability.id, new Date('2024-12-01'), 555, 395, 93670),
     ];
 
     const balance = calculateLiabilityBalanceAtDate(
@@ -247,20 +145,8 @@ describe('calculateLiabilityBalanceAtDate', () => {
   it('should handle balance before any payments', () => {
     const liability = createLiability(90000);
     const payments = [
-      createPayment(
-        liability.id,
-        new Date('2024-02-01'),
-        1000,
-        500,
-        99000
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-03-01'),
-        1005,
-        495,
-        97995
-      ),
+      createPayment(liability.id, new Date('2024-02-01'), 1000, 500, 99000),
+      createPayment(liability.id, new Date('2024-03-01'), 1005, 495, 97995),
     ];
 
     const targetDate = new Date('2024-01-01'); // Before all payments
@@ -316,20 +202,8 @@ describe('calculateLiabilityBalanceAtDate', () => {
   it('should handle very small principal payments', () => {
     const liability = createLiability(100000);
     const payments = [
-      createPayment(
-        liability.id,
-        new Date('2024-01-01'),
-        0.01,
-        500,
-        99999.99
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-02-01'),
-        0.01,
-        500,
-        99999.98
-      ),
+      createPayment(liability.id, new Date('2024-01-01'), 0.01, 500, 99999.99),
+      createPayment(liability.id, new Date('2024-02-01'), 0.01, 500, 99999.98),
     ];
 
     const targetDate = new Date('2024-01-15');
@@ -348,13 +222,7 @@ describe('calculateLiabilityBalanceAtDate', () => {
   it('should handle large principal payments (refinance/extra payment)', () => {
     const liability = createLiability(50000);
     const payments = [
-      createPayment(
-        liability.id,
-        new Date('2024-01-01'),
-        500,
-        450,
-        99500
-      ),
+      createPayment(liability.id, new Date('2024-01-01'), 500, 450, 99500),
       createPayment(
         liability.id,
         new Date('2024-02-01'),
@@ -362,13 +230,7 @@ describe('calculateLiabilityBalanceAtDate', () => {
         400,
         79500
       ),
-      createPayment(
-        liability.id,
-        new Date('2024-03-01'),
-        500,
-        300,
-        79000
-      ),
+      createPayment(liability.id, new Date('2024-03-01'), 500, 300, 79000),
     ];
 
     const targetDate = new Date('2024-02-15');
@@ -441,13 +303,7 @@ describe('calculateLiabilityBalanceAtDate', () => {
     const targetDate = new Date('2024-03-01T00:00:00');
     const liability = createLiability(95000);
     const payments = [
-      createPayment(
-        liability.id,
-        new Date('2024-02-01'),
-        500,
-        450,
-        99500
-      ),
+      createPayment(liability.id, new Date('2024-02-01'), 500, 450, 99500),
       createPayment(
         liability.id,
         targetDate, // Exact match
@@ -455,13 +311,7 @@ describe('calculateLiabilityBalanceAtDate', () => {
         445,
         98995
       ),
-      createPayment(
-        liability.id,
-        new Date('2024-04-01'),
-        510,
-        440,
-        98485
-      ),
+      createPayment(liability.id, new Date('2024-04-01'), 510, 440, 98485),
     ];
 
     const balance = calculateLiabilityBalanceAtDate(
@@ -513,20 +363,8 @@ describe('calculateLiabilityBalanceAtDate - Edge Cases', () => {
   it('should handle liability with zero balance', () => {
     const liability = createLiability(0); // Paid off
     const payments = [
-      createPayment(
-        liability.id,
-        new Date('2023-01-01'),
-        500,
-        450,
-        99500
-      ),
-      createPayment(
-        liability.id,
-        new Date('2024-01-01'),
-        99500,
-        0,
-        0
-      ),
+      createPayment(liability.id, new Date('2023-01-01'), 500, 450, 99500),
+      createPayment(liability.id, new Date('2024-01-01'), 99500, 0, 0),
     ];
 
     const targetDate = new Date('2023-06-15');
@@ -543,13 +381,7 @@ describe('calculateLiabilityBalanceAtDate - Edge Cases', () => {
   it('should handle negative balance (overpayment scenario)', () => {
     const liability = createLiability(-100); // Overpaid
     const payments = [
-      createPayment(
-        liability.id,
-        new Date('2024-01-01'),
-        100,
-        0,
-        0
-      ),
+      createPayment(liability.id, new Date('2024-01-01'), 100, 0, 0),
       createPayment(
         liability.id,
         new Date('2024-02-01'),

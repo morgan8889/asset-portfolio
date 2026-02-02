@@ -35,7 +35,7 @@ export interface Transaction {
   notes?: string;
   importSource?: string; // CSV import tracking
   metadata?: Record<string, any>;
-  
+
   // Tax-specific fields (optional, for ESPP/RSU transactions)
   grantDate?: Date; // ESPP: Purchase date | RSU: Award date
   vestingDate?: Date; // When shares became owned
@@ -147,12 +147,12 @@ export interface TransactionSummary {
  * Stored in Transaction.metadata field for espp_purchase transactions
  */
 export interface ESPPTransactionMetadata {
-  grantDate: string;             // ISO date string
-  purchaseDate: string;          // ISO date string (same as transaction.date)
-  marketPriceAtGrant: string;    // Decimal as string
+  grantDate: string; // ISO date string
+  purchaseDate: string; // ISO date string (same as transaction.date)
+  marketPriceAtGrant: string; // Decimal as string
   marketPriceAtPurchase: string; // Decimal as string
-  discountPercent: number;       // 0-100 (e.g., 15 for 15%)
-  bargainElement: string;        // Decimal as string (calculated)
+  discountPercent: number; // 0-100 (e.g., 15 for 15%)
+  bargainElement: string; // Decimal as string (calculated)
 }
 
 /**
@@ -160,12 +160,12 @@ export interface ESPPTransactionMetadata {
  * Stored in Transaction.metadata field for rsu_vest transactions
  */
 export interface RSUTransactionMetadata {
-  vestingDate: string;           // ISO date string (same as transaction.date)
-  grossSharesVested: string;     // Decimal as string
-  sharesWithheld: string;        // Decimal as string (for taxes)
-  netShares: string;             // Decimal as string (grossSharesVested - sharesWithheld)
-  vestingPrice: string;          // Decimal as string (FMV at vesting)
-  taxWithheldAmount?: string;    // Decimal as string (optional, for record-keeping)
+  vestingDate: string; // ISO date string (same as transaction.date)
+  grossSharesVested: string; // Decimal as string
+  sharesWithheld: string; // Decimal as string (for taxes)
+  netShares: string; // Decimal as string (grossSharesVested - sharesWithheld)
+  vestingPrice: string; // Decimal as string (FMV at vesting)
+  taxWithheldAmount?: string; // Decimal as string (optional, for record-keeping)
 }
 
 // ==================== Zod Validation Schemas ====================
@@ -189,35 +189,38 @@ export const DecimalStringSchema = z.string().refine(
  * ESPP Transaction Schema
  * Validates espp_purchase transactions with metadata
  */
-export const ESPPTransactionMetadataSchema = z.object({
-  grantDate: z.string().datetime(),
-  purchaseDate: z.string().datetime(),
-  marketPriceAtGrant: DecimalStringSchema,
-  marketPriceAtPurchase: DecimalStringSchema,
-  discountPercent: z.number().min(0).max(100),
-  bargainElement: DecimalStringSchema,
-}).refine(
-  (data) => new Date(data.grantDate) < new Date(data.purchaseDate),
-  { message: 'Grant date must be before purchase date' }
-);
+export const ESPPTransactionMetadataSchema = z
+  .object({
+    grantDate: z.string().datetime(),
+    purchaseDate: z.string().datetime(),
+    marketPriceAtGrant: DecimalStringSchema,
+    marketPriceAtPurchase: DecimalStringSchema,
+    discountPercent: z.number().min(0).max(100),
+    bargainElement: DecimalStringSchema,
+  })
+  .refine((data) => new Date(data.grantDate) < new Date(data.purchaseDate), {
+    message: 'Grant date must be before purchase date',
+  });
 
 /**
  * RSU Transaction Schema
  * Validates rsu_vest transactions with metadata
  */
-export const RSUTransactionMetadataSchema = z.object({
-  vestingDate: z.string().datetime(),
-  grossSharesVested: DecimalStringSchema,
-  sharesWithheld: DecimalStringSchema,
-  netShares: DecimalStringSchema,
-  vestingPrice: DecimalStringSchema,
-  taxWithheldAmount: DecimalStringSchema.optional(),
-}).refine(
-  (data) => {
-    const gross = new Decimal(data.grossSharesVested);
-    const withheld = new Decimal(data.sharesWithheld);
-    const net = new Decimal(data.netShares);
-    return net.equals(gross.minus(withheld));
-  },
-  { message: 'Net shares must equal gross shares - shares withheld' }
-);
+export const RSUTransactionMetadataSchema = z
+  .object({
+    vestingDate: z.string().datetime(),
+    grossSharesVested: DecimalStringSchema,
+    sharesWithheld: DecimalStringSchema,
+    netShares: DecimalStringSchema,
+    vestingPrice: DecimalStringSchema,
+    taxWithheldAmount: DecimalStringSchema.optional(),
+  })
+  .refine(
+    (data) => {
+      const gross = new Decimal(data.grossSharesVested);
+      const withheld = new Decimal(data.sharesWithheld);
+      const net = new Decimal(data.netShares);
+      return net.equals(gross.minus(withheld));
+    },
+    { message: 'Net shares must equal gross shares - shares withheld' }
+  );

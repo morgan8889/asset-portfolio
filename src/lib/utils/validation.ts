@@ -538,7 +538,7 @@ export const HEADER_KEYWORDS: Record<string, string[]> = {
   ],
   fees: ['fees', 'fee', 'commission', 'commissions'],
   notes: ['notes', 'note', 'description', 'memo', 'comments', 'comment'],
-  
+
   // Tax-specific fields (T015-T019)
   grantDate: [
     'grant_date',
