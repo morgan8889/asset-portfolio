@@ -14,40 +14,72 @@ import {
   Label,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, Calendar, DollarSign } from 'lucide-react';
+import { TrendingUp, Calendar, DollarSign, Loader2 } from 'lucide-react';
+import { formatCompactCurrency } from '@/lib/utils/currency';
 
 interface FireProjectionChartProps {
   projection: ProjectionPoint[];
   fireCalculation: FireCalculation | null;
   className?: string;
+  isLoading?: boolean;
 }
 
 export function FireProjectionChart({
   projection,
   fireCalculation,
   className,
+  isLoading = false,
 }: FireProjectionChartProps) {
-  const formatCurrency = (value: number) => {
-    if (Math.abs(value) >= 1000000) {
-      return `$${(value / 1000000).toFixed(1)}M`;
-    } else if (Math.abs(value) >= 1000) {
-      return `$${(value / 1000).toFixed(0)}K`;
+
+  // Strategy pattern for label formatting with priority-ordered formatters
+  type LabelFormatter = (point: ProjectionPoint) => string | null;
+
+  const labelFormatters: LabelFormatter[] = [
+    // Priority 1: Age-based (most intuitive for retirement planning)
+    (point) => {
+      if (point.userAge === undefined) return null;
+      return point.year === 0 ? `Age ${Math.round(point.userAge)}` : `${Math.round(point.userAge)}`;
+    },
+    // Priority 2: Calendar year
+    (point) => {
+      if (point.calendarYear === undefined) return null;
+      return point.year === 0 ? `${point.calendarYear}` : `'${String(point.calendarYear).slice(-2)}`;
+    },
+    // Priority 3: Years to retirement
+    (point) => {
+      if (point.yearsToRetirement === undefined) return null;
+      if (point.yearsToRetirement === 0) return 'Retirement';
+      if (point.yearsToRetirement > 0) return `-${Math.round(point.yearsToRetirement)}Y`;
+      return `+${Math.abs(Math.round(point.yearsToRetirement))}Y`;
+    },
+    // Fallback: Relative years
+    (point) => (point.year === 0 ? 'Now' : `+${point.year}Y`),
+  ];
+
+  const formatYear = (value: number, dataPoint?: ProjectionPoint) => {
+    if (!dataPoint) return value.toString();
+
+    for (const formatter of labelFormatters) {
+      const result = formatter(dataPoint);
+      if (result !== null) return result;
     }
-    return `$${value.toFixed(0)}`;
+    return value.toString();
   };
 
-  const formatYear = (value: number) => {
-    if (value === 0) return 'Now';
-    return `+${value}Y`;
-  };
+  // Determine best label format based on available data
+  const hasAgeData = projection.some(p => p.userAge !== undefined);
+  const hasCalendarYear = projection.some(p => p.calendarYear !== undefined);
 
   // Transform data for Recharts
   const chartData = projection.map((point) => ({
     year: point.year,
-    yearLabel: formatYear(point.year),
+    yearLabel: formatYear(point.year, point),
     netWorth: point.netWorth,
     fireTarget: point.fireTarget,
     isProjected: point.isProjected,
+    userAge: point.userAge,
+    calendarYear: point.calendarYear,
+    yearsToRetirement: point.yearsToRetirement,
   }));
 
   // Find crossover point
@@ -88,6 +120,19 @@ export function FireProjectionChart({
                     {formatDate(fireCalculation.projectedFireDate)}
                   </p>
                 )}
+                {fireCalculation.ageAtFire && (
+                  <p className="text-xs text-muted-foreground">
+                    Age {fireCalculation.ageAtFire.toFixed(0)}
+                  </p>
+                )}
+                {fireCalculation.yearsBeforeRetirement !== undefined && (
+                  <p className="text-xs text-muted-foreground">
+                    {fireCalculation.yearsBeforeRetirement >= 0
+                      ? `${fireCalculation.yearsBeforeRetirement.toFixed(1)}Y before retirement`
+                      : `${Math.abs(fireCalculation.yearsBeforeRetirement).toFixed(1)}Y after retirement`
+                    }
+                  </p>
+                )}
               </div>
             </div>
 
@@ -96,7 +141,7 @@ export function FireProjectionChart({
               <div>
                 <p className="text-sm text-muted-foreground">FIRE Target</p>
                 <p className="text-xl font-bold">
-                  {formatCurrency(fireCalculation.fireNumber)}
+                  {formatCompactCurrency(fireCalculation.fireNumber)}
                 </p>
               </div>
             </div>
@@ -115,7 +160,12 @@ export function FireProjectionChart({
           </div>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="relative">
+        {isLoading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        )}
         {chartData.length === 0 ? (
           <div className="flex h-[300px] items-center justify-center text-muted-foreground">
             No projection data available
@@ -137,9 +187,16 @@ export function FireProjectionChart({
                 dataKey="yearLabel"
                 className="text-xs"
                 tick={{ fill: 'currentColor' }}
+                label={
+                  hasAgeData
+                    ? { value: 'Age', position: 'insideBottom', offset: -5 }
+                    : hasCalendarYear
+                    ? { value: 'Year', position: 'insideBottom', offset: -5 }
+                    : { value: 'Years from Now', position: 'insideBottom', offset: -5 }
+                }
               />
               <YAxis
-                tickFormatter={formatCurrency}
+                tickFormatter={(value) => formatCompactCurrency(value)}
                 className="text-xs"
                 tick={{ fill: 'currentColor' }}
               />
@@ -151,7 +208,7 @@ export function FireProjectionChart({
                 }}
                 labelFormatter={(label) => `Year ${label}`}
                 formatter={(value: number, name: string) => [
-                  formatCurrency(value),
+                  formatCompactCurrency(value),
                   name === 'netWorth' ? 'Net Worth' : 'FIRE Target',
                 ]}
               />
