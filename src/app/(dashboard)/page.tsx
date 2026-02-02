@@ -41,7 +41,12 @@ function DashboardContent() {
   // Initialize dashboard config and price polling when dashboard mounts
   useEffect(() => {
     // Load dashboard configuration from IndexedDB
-    loadConfig();
+    // Note: loadConfig() has built-in error handling and falls back to defaults if it fails
+    loadConfig().catch((err) => {
+      console.error('Dashboard config failed to load, using defaults:', err);
+      // Store handles fallback to DEFAULT_DASHBOARD_CONFIG automatically
+    });
+
     // Load price preferences from IndexedDB
     loadPreferences();
 

@@ -230,6 +230,13 @@ function generateRGLLayoutsFromSpans(
 /**
  * Migrate a v3 configuration to v4.
  * Adds react-grid-layout support while preserving existing config.
+ *
+ * BREAKING CHANGE: useReactGridLayout is set to true for all users.
+ * The legacy CSS Grid dashboard has been removed in favor of react-grid-layout (RGL).
+ * This migration ensures all users are transitioned to the RGL implementation.
+ *
+ * Widget positions and sizes are preserved by generating RGL layouts from
+ * existing widgetSpans and widgetRowSpans configuration.
  */
 function migrateV3ToV4(
   v3Config: DashboardConfigurationV3
@@ -237,7 +244,7 @@ function migrateV3ToV4(
   return {
     ...v3Config,
     version: 4,
-    useReactGridLayout: true, // RGL is now the default implementation
+    useReactGridLayout: true, // RGL is now the only implementation (legacy removed)
     widgetVisibility: ensureCompleteVisibility(v3Config.widgetVisibility),
     rglLayouts: generateRGLLayoutsFromSpans(
       v3Config.widgetOrder,
