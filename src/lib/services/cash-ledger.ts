@@ -20,6 +20,7 @@
 import { Decimal } from 'decimal.js';
 import { Transaction, TransactionType } from '@/types/transaction';
 import { db } from '@/lib/db/schema';
+import { logger } from '@/lib/utils/logger';
 
 /**
  * FUTURE ENHANCEMENT: Cash Account Persistence
@@ -111,7 +112,7 @@ export function getCashImpact(transaction: Transaction): Decimal {
 
     default:
       // Unknown transaction type - assume no cash impact
-      console.warn(
+      logger.warn(
         `Unknown transaction type: ${type}, assuming no cash impact`
       );
       return new Decimal(0);
