@@ -15,6 +15,7 @@ export interface NavItem {
   name: string;
   href:
     | '/'
+    | '/portfolios'
     | '/holdings'
     | '/transactions'
     | '/analysis'
@@ -49,6 +50,7 @@ export const navigationStructure: (NavItem | NavGroup)[] = [
     icon: Briefcase,
     defaultOpen: true,
     items: [
+      { name: 'Manage Portfolios', href: '/portfolios', icon: Briefcase },
       { name: 'Holdings', href: '/holdings', icon: Briefcase },
       { name: 'Transactions', href: '/transactions', icon: Wallet },
       { name: 'Allocation', href: '/allocation', icon: PieChart },
