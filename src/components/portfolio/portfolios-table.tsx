@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -14,6 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { formatCurrency } from '@/lib/utils/format';
+import { calculateTotalValue, calculateGainPercent } from '@/lib/services/metrics-service';
+import { holdingQueries } from '@/lib/db';
 import Decimal from 'decimal.js';
 
 const portfolioTypeLabels: Record<string, string> = {
@@ -35,16 +37,60 @@ export function PortfoliosTable({
   onDelete,
 }: PortfoliosTableProps) {
   const { getSortedPortfolios, currentPortfolio } = usePortfolioStore();
+  const [portfolioMetrics, setPortfolioMetrics] = useState<
+    Map<string, { totalValue: Decimal; ytdReturn: number; holdings: number }>
+  >(new Map());
 
   const portfolios = useMemo(() => getSortedPortfolios(), [getSortedPortfolios]);
 
-  // TODO: Calculate actual metrics from holdings
+  // Load metrics for all portfolios
+  useEffect(() => {
+    async function loadMetrics() {
+      const metricsMap = new Map();
+
+      for (const portfolio of portfolios) {
+        try {
+          const holdings = await holdingQueries.getByPortfolio(portfolio.id);
+          const totalValue = calculateTotalValue(holdings);
+          const totalCost = holdings.reduce(
+            (sum, h) => sum.plus(h.costBasis),
+            new Decimal(0)
+          );
+          const totalGain = holdings.reduce(
+            (sum, h) => sum.plus(h.unrealizedGain),
+            new Decimal(0)
+          );
+          const ytdReturn = calculateGainPercent(totalGain, totalCost);
+
+          metricsMap.set(portfolio.id, {
+            totalValue,
+            ytdReturn,
+            holdings: holdings.length,
+          });
+        } catch (error) {
+          console.error(`Failed to load metrics for portfolio ${portfolio.id}:`, error);
+          metricsMap.set(portfolio.id, {
+            totalValue: new Decimal(0),
+            ytdReturn: 0,
+            holdings: 0,
+          });
+        }
+      }
+
+      setPortfolioMetrics(metricsMap);
+    }
+
+    loadMetrics();
+  }, [portfolios]);
+
   const getPortfolioMetrics = (portfolioId: string) => {
-    return {
-      totalValue: new Decimal(0),
-      ytdReturn: 0,
-      holdings: 0,
-    };
+    return (
+      portfolioMetrics.get(portfolioId) || {
+        totalValue: new Decimal(0),
+        ytdReturn: 0,
+        holdings: 0,
+      }
+    );
   };
 
   return (

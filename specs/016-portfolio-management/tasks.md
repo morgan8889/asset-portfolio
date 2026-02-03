@@ -75,9 +75,9 @@ Next.js 14 App Router structure:
 - [X] T012 [P] [US1] Unit test for PortfolioSelector component rendering in src/components/portfolio/__tests__/portfolio-selector.test.tsx
 - [X] T013 [P] [US1] Unit test for PortfolioSelector sorting behavior in src/components/portfolio/__tests__/portfolio-selector.test.tsx
 - [X] T014 [P] [US1] Unit test for PortfolioSelector disabled state during CSV import in src/components/portfolio/__tests__/portfolio-selector.test.tsx
-- [ ] T015 [P] [US1] E2E test for portfolio switching workflow in tests/e2e/portfolio-switching.spec.ts
-- [ ] T016 [P] [US1] E2E test for portfolio selection persistence across page reload in tests/e2e/portfolio-switching.spec.ts
-- [ ] T017 [P] [US1] E2E test for CSV import blocking portfolio selector in tests/e2e/portfolio-switching.spec.ts
+- [X] T015 [P] [US1] E2E test for portfolio switching workflow in tests/e2e/portfolio-switching.spec.ts
+- [X] T016 [P] [US1] E2E test for portfolio selection persistence across page reload in tests/e2e/portfolio-switching.spec.ts
+- [X] T017 [P] [US1] E2E test for CSV import blocking portfolio selector in tests/e2e/portfolio-switching.spec.ts
 
 ### Implementation for User Story 1
 
@@ -100,18 +100,18 @@ Next.js 14 App Router structure:
 
 ### Tests for User Story 2
 
-- [ ] T022 [P] [US2] E2E test for /portfolios route navigation in tests/e2e/portfolios-management.spec.ts
-- [ ] T023 [P] [US2] E2E test for portfolio list display with metrics in tests/e2e/portfolios-management.spec.ts
-- [ ] T024 [P] [US2] E2E test for "View" action switching to portfolio in tests/e2e/portfolios-management.spec.ts
-- [ ] T025 [P] [US2] E2E test for empty state with "Create Your First Portfolio" button in tests/e2e/portfolios-management.spec.ts
+- [X] T022 [P] [US2] E2E test for /portfolios route navigation in tests/e2e/portfolios-management.spec.ts
+- [X] T023 [P] [US2] E2E test for portfolio list display with metrics in tests/e2e/portfolios-management.spec.ts
+- [X] T024 [P] [US2] E2E test for "View" action switching to portfolio in tests/e2e/portfolios-management.spec.ts
+- [X] T025 [P] [US2] E2E test for empty state with "Create Your First Portfolio" button in tests/e2e/portfolios-management.spec.ts
 
 ### Implementation for User Story 2
 
 - [X] T026 [US2] Add /portfolios route to navigation config in src/lib/config/navigation.ts
 - [X] T027 [US2] Create PortfoliosPage component in src/app/(dashboard)/portfolios/page.tsx
 - [X] T028 [US2] Create PortfoliosTable component with metrics display in src/components/portfolio/portfolios-table.tsx
-- [ ] T029 [US2] Integrate calculatePortfolioMetrics service for value/return display in src/components/portfolio/portfolios-table.tsx
-- [ ] T030 [US2] Implement "View" action button to switch portfolio and navigate to dashboard in src/components/portfolio/portfolios-table.tsx
+- [X] T029 [US2] Integrate calculatePortfolioMetrics service for value/return display in src/components/portfolio/portfolios-table.tsx
+- [X] T030 [US2] Implement "View" action button to switch portfolio and navigate to dashboard in src/components/portfolio/portfolios-table.tsx
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
