@@ -129,6 +129,9 @@ export class PortfolioDatabase extends Dexie {
     });
 
     // Define schema version 4 - add liabilityPayments table
+    // Note: The [portfolioId+date] compound index on transactions enables
+    // efficient pagination when sorting by date (the default sort order).
+    // This allows database-level ordering without loading all records into memory.
     this.version(4).stores({
       portfolios: '++id, name, type, createdAt, updatedAt',
       assets: '++id, symbol, name, type, exchange, currency',

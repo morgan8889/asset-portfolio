@@ -203,6 +203,61 @@ describe('PaginationControls', () => {
     });
   });
 
+  describe('Error Handling', () => {
+    it('should display error message when error prop is provided', () => {
+      render(
+        <PaginationControls
+          {...defaultProps}
+          error="Failed to load transactions"
+        />
+      );
+
+      expect(screen.getByText('Failed to load transactions')).toBeInTheDocument();
+    });
+
+    it('should show retry button when error and onRetry provided', () => {
+      const onRetry = vi.fn();
+      render(
+        <PaginationControls
+          {...defaultProps}
+          error="Failed to load transactions"
+          onRetry={onRetry}
+        />
+      );
+
+      const retryButton = screen.getByRole('button', { name: /retry/i });
+      expect(retryButton).toBeInTheDocument();
+
+      fireEvent.click(retryButton);
+      expect(onRetry).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not show retry button when onRetry not provided', () => {
+      render(
+        <PaginationControls
+          {...defaultProps}
+          error="Failed to load transactions"
+        />
+      );
+
+      expect(screen.queryByRole('button', { name: /retry/i })).not.toBeInTheDocument();
+    });
+
+    it('should hide error when loading', () => {
+      render(
+        <PaginationControls
+          {...defaultProps}
+          error="Failed to load transactions"
+          isLoading={true}
+        />
+      );
+
+      // When loading, should show normal pagination controls, not error
+      expect(screen.queryByText('Failed to load transactions')).not.toBeInTheDocument();
+      expect(screen.getByText('Showing 1-25 of 100 transactions')).toBeInTheDocument();
+    });
+  });
+
   describe('Accessibility', () => {
     it('should have ARIA labels on buttons', () => {
       render(<PaginationControls {...defaultProps} />);

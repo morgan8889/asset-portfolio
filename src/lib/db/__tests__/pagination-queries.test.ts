@@ -198,5 +198,31 @@ describe('Pagination Queries', () => {
       expect(transaction.totalAmount).toBeInstanceOf(Decimal);
       expect(transaction.fees).toBeInstanceOf(Decimal);
     });
+
+    it('should handle invalid page size (zero) gracefully', async () => {
+      const result = await getPaginatedTransactions({
+        page: 1,
+        pageSize: 0,
+        portfolioId: testPortfolioId,
+      });
+
+      // Should default to 25 per page
+      expect(result.data).toHaveLength(25);
+      expect(result.pageSize).toBe(25);
+      expect(result.totalPages).toBe(4);
+    });
+
+    it('should handle invalid page size (negative) gracefully', async () => {
+      const result = await getPaginatedTransactions({
+        page: 1,
+        pageSize: -10,
+        portfolioId: testPortfolioId,
+      });
+
+      // Should default to 25 per page
+      expect(result.data).toHaveLength(25);
+      expect(result.pageSize).toBe(25);
+      expect(result.totalPages).toBe(4);
+    });
   });
 });

@@ -18,6 +18,11 @@ import { transactionQueries, HoldingsCalculator } from '@/lib/db';
 import { getPaginatedTransactions } from '@/lib/db/queries';
 import { showSuccessNotification, showErrorNotification } from './ui';
 import { handleSnapshotTrigger } from '@/lib/services/snapshot-service';
+import {
+  DEFAULT_PAGE,
+  DEFAULT_PAGE_SIZE,
+  isValidPageSize,
+} from '@/lib/constants/pagination';
 
 // Optimistic ID prefix to identify temporary IDs
 const OPTIMISTIC_ID_PREFIX = 'optimistic-';
@@ -140,15 +145,15 @@ interface TransactionState {
 
 // Default pagination state
 const DEFAULT_PAGINATION: PaginationState = {
-  currentPage: 1,
-  pageSize: 25,
+  currentPage: DEFAULT_PAGE,
+  pageSize: DEFAULT_PAGE_SIZE,
   totalCount: 0,
   totalPages: 0,
 };
 
 export const useTransactionStore = create<TransactionState>()(
-  persist(
-    devtools(
+  devtools(
+    persist(
       (set, get) => ({
         // Initial state
         transactions: [],
@@ -588,9 +593,8 @@ export const useTransactionStore = create<TransactionState>()(
       setPageSize: (size) => {
         const { pagination } = get();
 
-        // Validate size
-        const validSizes = [10, 25, 50, 100];
-        const validSize = validSizes.includes(size) ? size : pagination.pageSize;
+        // Validate size using centralized constant
+        const validSize = isValidPageSize(size) ? size : pagination.pageSize;
 
         // Calculate new page to preserve position
         const firstItemIndex = (pagination.currentPage - 1) * pagination.pageSize;
@@ -623,27 +627,27 @@ export const useTransactionStore = create<TransactionState>()(
         set({ error: null });
       },
     }),
-    {
-      name: 'transaction-store',
-    }
+      {
+        name: 'transaction-pagination-state',
+        storage: {
+          getItem: (name) => {
+            const str = sessionStorage.getItem(name);
+            return str ? JSON.parse(str) : null;
+          },
+          setItem: (name, value) => {
+            sessionStorage.setItem(name, JSON.stringify(value));
+          },
+          removeItem: (name) => {
+            sessionStorage.removeItem(name);
+          },
+        },
+        partialize: (state) => ({
+          pagination: state.pagination,
+        }) as TransactionState,
+      }
     ),
     {
-      name: 'transaction-pagination-state',
-      storage: {
-        getItem: (name) => {
-          const str = sessionStorage.getItem(name);
-          return str ? JSON.parse(str) : null;
-        },
-        setItem: (name, value) => {
-          sessionStorage.setItem(name, JSON.stringify(value));
-        },
-        removeItem: (name) => {
-          sessionStorage.removeItem(name);
-        },
-      },
-      partialize: (state) => ({
-        pagination: state.pagination,
-      }) as TransactionState,
+      name: 'transaction-store',
     }
   )
 );

@@ -414,6 +414,8 @@ const TransactionTableComponent = ({
             onPageChange={setCurrentPage}
             onPageSizeChange={setPageSize}
             isLoading={loading}
+            error={error}
+            onRetry={() => loadPaginatedTransactions(selectedPortfolio?.id || '')}
           />
         </CardFooter>
       )}

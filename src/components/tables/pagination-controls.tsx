@@ -8,7 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { PAGE_SIZE_OPTIONS } from '@/lib/constants/pagination';
 
 interface PaginationControlsProps {
   currentPage: number;
@@ -18,9 +20,35 @@ interface PaginationControlsProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   className?: string;
 }
 
+/**
+ * Pagination controls component with page navigation and page size selection
+ *
+ * Features:
+ * - Previous/Next navigation buttons
+ * - Page size selector (10, 25, 50, 100)
+ * - Info text showing current range
+ * - Loading state with spinner
+ * - Error state with retry button
+ *
+ * @example
+ * ```tsx
+ * <PaginationControls
+ *   currentPage={1}
+ *   totalPages={10}
+ *   pageSize={25}
+ *   totalCount={250}
+ *   onPageChange={(page) => loadPage(page)}
+ *   onPageSizeChange={(size) => updatePageSize(size)}
+ *   isLoading={false}
+ *   error={null}
+ * />
+ * ```
+ */
 export function PaginationControls({
   currentPage,
   totalPages,
@@ -29,6 +57,8 @@ export function PaginationControls({
   onPageChange,
   onPageSizeChange,
   isLoading = false,
+  error = null,
+  onRetry,
   className = '',
 }: PaginationControlsProps) {
   // Calculate range for info text
@@ -46,6 +76,23 @@ export function PaginationControls({
       onPageChange(currentPage + 1);
     }
   };
+
+  // Show error state if present
+  if (error && !isLoading) {
+    return (
+      <Alert variant="destructive" className={className}>
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription className="flex items-center justify-between">
+          <span>{error}</span>
+          {onRetry && (
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              Retry
+            </Button>
+          )}
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className={`flex items-center justify-between gap-4 ${className}`}>
@@ -69,10 +116,11 @@ export function PaginationControls({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="25">25</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <SelectItem key={size} value={String(size)}>
+                  {size}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
