@@ -594,6 +594,7 @@ export const navigationStructure: (NavItem | NavGroup)[] = [
 - Phase 5: Cleanup (dead code, unused exports)
 
 ## Recent Changes
+- 016-portfolio-management: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 | Feature | Date | Impact |
 |---------|------|--------|
