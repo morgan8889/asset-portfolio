@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { logger } from '@/lib/utils/logger';
 import { Decimal } from 'decimal.js';
 
 export function cn(...inputs: ClassValue[]) {
@@ -168,7 +169,7 @@ export function getFromStorage<T = unknown>(key: string): T | null {
     const item = localStorage.getItem(key);
     return item ? (JSON.parse(item) as T) : null;
   } catch (error) {
-    console.error(`Error reading from localStorage key "${key}":`, error);
+    logger.error(`Error reading from localStorage key "${key}":`, error);
     return null;
   }
 }
@@ -177,7 +178,7 @@ export function setToStorage<T = unknown>(key: string, value: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
-    console.error(`Error writing to localStorage key "${key}":`, error);
+    logger.error(`Error writing to localStorage key "${key}":`, error);
   }
 }
 
@@ -185,6 +186,6 @@ export function removeFromStorage(key: string): void {
   try {
     localStorage.removeItem(key);
   } catch (error) {
-    console.error(`Error removing from localStorage key "${key}":`, error);
+    logger.error(`Error removing from localStorage key "${key}":`, error);
   }
 }

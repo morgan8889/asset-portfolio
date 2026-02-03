@@ -21,6 +21,7 @@ import {
   eachMonthOfInterval,
 } from 'date-fns';
 import { getPriceAtDate, createPriceCache, PriceCache } from './price-lookup';
+import { logger } from '@/lib/utils/logger';
 
 type Resolution = 'daily' | 'weekly' | 'monthly';
 
@@ -124,7 +125,7 @@ async function calculateValueAtDate(
       totalValue = totalValue.plus(quantity.mul(price));
       if (isInterpolated) hasInterpolatedPrices = true;
     } catch (error) {
-      console.error(
+      logger.error(
         `Error calculating value for asset ${assetId} at ${date}:`,
         error
       );
@@ -199,7 +200,7 @@ export async function getHistoricalValues(
 
       previousValue = totalValue;
     } catch (error) {
-      console.error(`Error calculating historical value for ${date}:`, error);
+      logger.error(`Error calculating historical value for ${date}:`, error);
       // Skip this date point and continue
     }
   }

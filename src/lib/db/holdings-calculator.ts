@@ -2,6 +2,7 @@ import { Decimal } from 'decimal.js';
 import { Transaction, Holding, TaxLot } from '@/types';
 import { db } from './schema';
 import { assetQueries, holdingQueries } from './queries';
+import { logger } from '@/lib/utils/logger';
 
 /**
  * Holdings Calculator
@@ -85,7 +86,7 @@ export class HoldingsCalculator {
       // Validate asset ID before creation
       const cleanAssetId = assetId.trim().toUpperCase();
       if (!cleanAssetId || cleanAssetId.length === 0) {
-        console.error(
+        logger.error(
           `Invalid asset ID: "${assetId}". Skipping asset creation.`
         );
         return;
@@ -143,7 +144,7 @@ export class HoldingsCalculator {
         });
         asset = await assetQueries.getById(cleanAssetId);
       } catch (err) {
-        console.error(`Failed to create asset "${cleanAssetId}":`, err);
+        logger.error(`Failed to create asset "${cleanAssetId}":`, err);
         return;
       }
     }
@@ -435,7 +436,7 @@ function debounceHoldingsUpdate(
     try {
       await callback();
     } catch (error) {
-      console.error('Error in debounced holdings update:', error);
+      logger.error('Error in debounced holdings update:', error);
     }
   }, DEBOUNCE_DELAY);
 

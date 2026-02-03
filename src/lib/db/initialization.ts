@@ -1,5 +1,6 @@
 import { setupHoldingsSync, HoldingsCalculator } from './holdings-calculator';
 import { portfolioQueries } from './queries';
+import { logger } from '@/lib/utils/logger';
 
 /**
  * Initialize the database and set up automatic holdings synchronization
@@ -18,7 +19,7 @@ export async function initializePortfolioApp() {
 
     // Initialization complete
   } catch (error) {
-    console.error('Failed to initialize portfolio app:', error);
+    logger.error('Failed to initialize portfolio app:', error);
     throw error;
   }
 }
@@ -37,7 +38,7 @@ export async function recalculateAllHoldings() {
 
     // Recalculation complete
   } catch (error) {
-    console.error('Failed to recalculate holdings:', error);
+    logger.error('Failed to recalculate holdings:', error);
     throw error;
   }
 }
