@@ -8,6 +8,7 @@
 import { Decimal } from 'decimal.js';
 import { Liability } from '@/types/planning';
 import { db, LiabilityPayment } from '@/lib/db/schema';
+import { logger } from '@/lib/utils/logger';
 
 /**
  * Calculate liability balance at a specific date using payment history
@@ -41,7 +42,7 @@ import { db, LiabilityPayment } from '@/lib/db/schema';
  * @param targetDate - Date to calculate balance for
  * @returns Balance at the target date
  * @throws Error if targetDate is before the liability start date
- * @emits console.warn if targetDate is before first recorded payment
+ * @emits logger.warn if targetDate is before first recorded payment
  */
 export function calculateLiabilityBalanceAtDate(
   liability: Liability,
@@ -63,7 +64,7 @@ export function calculateLiabilityBalanceAtDate(
   // If no payments recorded, warn about potential inaccuracy
   if (payments.length === 0) {
     if (targetDate < new Date()) {
-      console.warn(
+      logger.warn(
         `No payment history available for liability ${liability.id}. ` +
           `Historical balance calculation may be inaccurate. ` +
           `Returning current balance: ${balance.toString()}`
@@ -79,7 +80,7 @@ export function calculateLiabilityBalanceAtDate(
   const firstPaymentDate = new Date(sortedPayments[0].date);
 
   if (targetDate < firstPaymentDate) {
-    console.warn(
+    logger.warn(
       `Target date ${targetDate.toISOString()} is before first recorded payment ` +
         `${firstPaymentDate.toISOString()} for liability ${liability.id}. ` +
         `Historical balance will be inaccurate. Consider recording payment history ` +
