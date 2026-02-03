@@ -19,10 +19,11 @@ test.describe('Performance Analytics', () => {
       await expect(page.locator('text=Track your portfolio performance')).toBeVisible();
 
       // Verify period selector is visible
-      await expect(page.locator('button:has-text("1W")')).toBeVisible();
       await expect(page.locator('button:has-text("1M")')).toBeVisible();
       await expect(page.locator('button:has-text("3M")')).toBeVisible();
+      await expect(page.locator('button:has-text("YTD")')).toBeVisible();
       await expect(page.locator('button:has-text("1Y")')).toBeVisible();
+      await expect(page.locator('button:has-text("3Y")')).toBeVisible();
       await expect(page.locator('button:has-text("ALL")')).toBeVisible();
     });
 
