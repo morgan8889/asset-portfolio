@@ -623,53 +623,60 @@ export async function getPaginatedTransactions(
     searchTerm,
   } = options;
 
-  // Validate page size to prevent division by zero
+  // Validate page size and page number to prevent edge cases
   const validPageSize = pageSize > 0 ? pageSize : 25;
-  const offset = (page - 1) * validPageSize;
-
-  // Get total count with filters
-  const totalCount = await countTransactions(portfolioId, filterType, searchTerm);
-  const totalPages = validPageSize > 0 ? Math.ceil(totalCount / validPageSize) : 1;
+  const validPage = Math.max(1, page); // Ensure page >= 1
+  const offset = (validPage - 1) * validPageSize;
 
   // Optimize query based on whether filters are present
   let results: TransactionStorage[];
+  let totalCount: number;
+  let totalPages: number;
 
   if (!filterType && !searchTerm && sortBy === 'date') {
     // Fast path: No filters, sorting by date (uses [portfolioId+date] compound index)
     // This is the optimal case - database-level sorting and pagination
-    const query = db.transactions
-      .where('portfolioId')
-      .equals(portfolioId)
-      .reverse(); // desc order by default for date
+    // Get count separately since we can use database-level pagination
+    totalCount = await countTransactions(portfolioId);
+    totalPages = validPageSize > 0 ? Math.ceil(totalCount / validPageSize) : 1;
 
-    if (sortOrder === 'asc') {
-      results = await query.offset(offset).limit(validPageSize).toArray();
-    } else {
-      results = await query.offset(offset).limit(validPageSize).toArray();
+    let query = db.transactions
+      .where('portfolioId')
+      .equals(portfolioId);
+
+    // Apply sort order
+    if (sortOrder === 'desc') {
+      query = query.reverse();
     }
+
+    results = await query.offset(offset).limit(validPageSize).toArray();
   } else {
     // Slow path: Filters or non-date sorting requires client-side processing
-    // Load all portfolio transactions using compound index
+    // Load all portfolio transactions once, then filter, count, sort, and paginate
     let query = db.transactions.where('portfolioId').equals(portfolioId);
-    results = await query.toArray();
+    let allResults = await query.toArray();
 
     // Apply type filter
     if (filterType && filterType.length > 0) {
-      results = results.filter((t) => filterType.includes(t.type));
+      allResults = allResults.filter((t) => filterType.includes(t.type));
     }
 
     // Apply search filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
-      results = results.filter(
+      allResults = allResults.filter(
         (t) =>
           t.assetId?.toLowerCase().includes(searchLower) ||
           t.notes?.toLowerCase().includes(searchLower)
       );
     }
 
+    // Count AFTER filtering (avoids double data load)
+    totalCount = allResults.length;
+    totalPages = validPageSize > 0 ? Math.ceil(totalCount / validPageSize) : 1;
+
     // Sort with type-safe value extraction
-    results.sort((a, b) => {
+    allResults.sort((a, b) => {
       const aVal = getSortValue(a, sortBy);
       const bVal = getSortValue(b, sortBy);
       const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
@@ -677,7 +684,7 @@ export async function getPaginatedTransactions(
     });
 
     // Apply pagination after sorting
-    results = results.slice(offset, offset + validPageSize);
+    results = allResults.slice(offset, offset + validPageSize);
   }
 
   // Convert Decimal.js fields
@@ -686,7 +693,7 @@ export async function getPaginatedTransactions(
   return {
     data,
     totalCount,
-    page,
+    page: validPage,
     pageSize: validPageSize,
     totalPages,
   };

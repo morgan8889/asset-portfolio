@@ -593,8 +593,8 @@ export const useTransactionStore = create<TransactionState>()(
       setPageSize: (size) => {
         const { pagination } = get();
 
-        // Validate size using centralized constant
-        const validSize = isValidPageSize(size) ? size : pagination.pageSize;
+        // Validate size using centralized constant with explicit type
+        const validSize: PageSize = isValidPageSize(size) ? size : (pagination.pageSize as PageSize);
 
         // Calculate new page to preserve position
         const firstItemIndex = (pagination.currentPage - 1) * pagination.pageSize;

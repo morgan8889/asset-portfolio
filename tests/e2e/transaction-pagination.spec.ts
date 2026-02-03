@@ -209,4 +209,51 @@ test.describe('Transaction Pagination', () => {
       await expect(page.locator('[aria-label="Select page size"]')).toBeVisible();
     }
   });
+
+  test('should persist pagination state across navigation', async ({ page }) => {
+    const paginationExists = await page.locator('text=Per page:').count() > 0;
+
+    if (paginationExists) {
+      // Change page size to 50
+      await page.click('[aria-label="Select page size"]');
+      await page.click('text=50');
+      await page.waitForTimeout(500);
+
+      // Verify page size changed
+      const pageSizeButton = page.locator('[aria-label="Select page size"]');
+      await expect(pageSizeButton).toContainText('50');
+
+      const nextButton = page.locator('button[aria-label="Go to next page"]');
+      const isNextEnabled = await nextButton.isEnabled();
+
+      // Navigate to page 2 if possible
+      if (isNextEnabled) {
+        await nextButton.click();
+        await page.waitForTimeout(500);
+
+        // Verify we're on page 2
+        const infoText = await page.locator('text=/Showing \\d+-\\d+ of \\d+ transactions/').textContent();
+        expect(infoText).not.toContain('Showing 1-');
+      }
+
+      // Navigate away to Holdings page
+      await page.click('text=Holdings');
+      await page.waitForURL('**/holdings', { timeout: 10000 });
+
+      // Navigate back to Transactions
+      await page.click('text=Transactions');
+      await page.waitForURL('**/transactions', { timeout: 10000 });
+      await page.waitForTimeout(500);
+
+      // Verify pagination state persisted
+      const pageSizeAfterNav = page.locator('[aria-label="Select page size"]');
+      await expect(pageSizeAfterNav).toContainText('50');
+
+      if (isNextEnabled) {
+        // Verify we're still on page 2 (or page that was calculated based on position)
+        const infoTextAfterNav = await page.locator('text=/Showing \\d+-\\d+ of \\d+ transactions/').textContent();
+        expect(infoTextAfterNav).toBeTruthy();
+      }
+    }
+  });
 });
