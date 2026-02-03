@@ -27,6 +27,7 @@ interface PortfolioState {
   calculateMetrics: (portfolioId: string) => Promise<void>;
   refreshData: () => Promise<void>;
   clearError: () => void;
+  getSortedPortfolios: () => Portfolio[];
 }
 
 export const usePortfolioStore = create<PortfolioState>()(
@@ -79,6 +80,14 @@ export const usePortfolioStore = create<PortfolioState>()(
           set({ currentPortfolio: portfolio });
           if (!portfolio) {
             set({ holdings: [], metrics: null });
+          } else {
+            // Track lastAccessedAt for recency-based sorting
+            const now = new Date();
+            portfolioQueries
+              .update(portfolio.id, { lastAccessedAt: now })
+              .catch((error) => {
+                console.error('Failed to update lastAccessedAt:', error);
+              });
           }
           // Note: loadHoldings and calculateMetrics are now triggered by useDashboardData hook
           // to avoid race conditions with persist middleware rehydration
@@ -130,16 +139,30 @@ export const usePortfolioStore = create<PortfolioState>()(
         deletePortfolio: async (id) => {
           set({ loading: true, error: null });
           try {
-            // Check if deleting current portfolio BEFORE loadPortfolios clears it
-            const { currentPortfolio } = get();
+            // Check if deleting current portfolio BEFORE delete
+            const { currentPortfolio, portfolios } = get();
             const wasCurrentDeleted = currentPortfolio?.id === id;
 
             await portfolioQueries.delete(id);
             await get().loadPortfolios();
 
-            // Clear holdings/metrics if we deleted the current portfolio
+            // If we deleted the current portfolio, fall back to next best option
             if (wasCurrentDeleted) {
-              set({ currentPortfolio: null, holdings: [], metrics: null });
+              const remainingPortfolios = portfolios.filter((p) => p.id !== id);
+
+              if (remainingPortfolios.length > 0) {
+                // Fall back to most recently accessed portfolio
+                const sorted = get().getSortedPortfolios();
+                const nextPortfolio = sorted[0] || remainingPortfolios[0];
+                set({ currentPortfolio: nextPortfolio });
+
+                // Load data for the new current portfolio
+                await get().loadHoldings(nextPortfolio.id);
+                await get().calculateMetrics(nextPortfolio.id);
+              } else {
+                // No portfolios left
+                set({ currentPortfolio: null, holdings: [], metrics: null });
+              }
             }
             set({ loading: false });
           } catch (error) {
@@ -216,6 +239,26 @@ export const usePortfolioStore = create<PortfolioState>()(
 
         clearError: () => {
           set({ error: null });
+        },
+
+        getSortedPortfolios: () => {
+          const { portfolios } = get();
+
+          // Sort by lastAccessedAt (most recent first), fallback to updatedAt, then createdAt
+          return [...portfolios].sort((a, b) => {
+            const aTime =
+              a.lastAccessedAt?.getTime() ||
+              a.updatedAt?.getTime() ||
+              a.createdAt?.getTime() ||
+              0;
+            const bTime =
+              b.lastAccessedAt?.getTime() ||
+              b.updatedAt?.getTime() ||
+              b.createdAt?.getTime() ||
+              0;
+
+            return bTime - aTime; // Descending order (most recent first)
+          });
         },
       }),
       {

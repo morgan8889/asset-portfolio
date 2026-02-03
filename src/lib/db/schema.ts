@@ -146,6 +146,24 @@ export class PortfolioDatabase extends Dexie {
       liabilityPayments: '++id, liabilityId, date, [liabilityId+date]',
     });
 
+    // Define schema version 5 - add lastAccessedAt to portfolios for sorting
+    this.version(5).stores({
+      portfolios: '++id, name, type, createdAt, updatedAt, lastAccessedAt',
+      assets: '++id, symbol, name, type, exchange, currency',
+      holdings:
+        '++id, portfolioId, assetId, [portfolioId+assetId], lastUpdated',
+      transactions:
+        '++id, portfolioId, assetId, date, type, [portfolioId+date], [assetId+date], [portfolioId+assetId]',
+      priceHistory: '++id, assetId, date, [assetId+date], source',
+      priceSnapshots: '++id, assetId, timestamp, [assetId+timestamp], source',
+      dividendRecords:
+        '++id, assetId, portfolioId, paymentDate, [assetId+paymentDate]',
+      userSettings: '++id, key',
+      performanceSnapshots: '++id, portfolioId, date, [portfolioId+date]',
+      liabilities: '++id, portfolioId, name, startDate',
+      liabilityPayments: '++id, liabilityId, date, [liabilityId+date]',
+    });
+
     // Add hooks for data transformation
     this.holdings.hook('creating', this.transformHolding);
     this.transactions.hook('creating', this.transformTransaction);
