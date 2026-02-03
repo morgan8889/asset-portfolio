@@ -22,11 +22,14 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/services/analysis/scoring-service', () => ({
   calculateHealthScore: vi.fn(() => ({
-    overall: 75,
-    diversification: 80,
-    performance: 70,
-    risk: 75,
-    allocation: 80,
+    overallScore: 75,
+    metrics: [
+      { id: 'diversification', name: 'Diversification', score: 80, maxScore: 100, weight: 0.33, status: 'good', details: 'Good diversification' },
+      { id: 'performance', name: 'Performance', score: 70, maxScore: 100, weight: 0.34, status: 'good', details: 'Good performance' },
+      { id: 'volatility', name: 'Volatility', score: 75, maxScore: 100, weight: 0.33, status: 'good', details: 'Low volatility' },
+    ],
+    profile: { id: 'balanced', name: 'Balanced', description: 'Equal weight across all factors', weights: { diversification: 0.33, performance: 0.34, volatility: 0.33 } },
+    calculatedAt: new Date(),
   })),
 }));
 
@@ -110,7 +113,7 @@ describe('Analysis Store', () => {
 
       const state = useAnalysisStore.getState();
       expect(state.health).toBeTruthy();
-      expect(state.health?.overall).toBe(75);
+      expect(state.health?.overallScore).toBe(75);
       expect(state.isCalculating).toBe(false);
       expect(state.error).toBeNull();
     });
@@ -299,8 +302,8 @@ describe('Analysis Store', () => {
           {
             id: 'model-1',
             name: 'Test Model',
-            targets: { stocks: 60, bonds: 40 },
-            dimension: 'assetClass',
+            allocations: { stock: 60, bond: 40 } as Record<string, number>,
+            isSystem: false,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
@@ -341,8 +344,8 @@ describe('Analysis Store', () => {
           {
             id: 'model-1',
             name: 'Test Model',
-            targets: { stocks: 60, bonds: 40 },
-            dimension: 'assetClass',
+            allocations: { stock: 60, bond: 40 } as Record<string, number>,
+            isSystem: false,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
@@ -405,8 +408,8 @@ describe('Analysis Store', () => {
           {
             id: 'model-1',
             name: 'Test Model',
-            targets: { stocks: 60, bonds: 40 },
-            dimension: 'assetClass',
+            allocations: { stock: 60, bond: 40 } as Record<string, number>,
+            isSystem: false,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
