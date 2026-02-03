@@ -27,6 +27,7 @@ import {
   BarChart3,
   AlertTriangle,
   Wallet,
+  RefreshCw,
 } from 'lucide-react';
 import { formatCurrency, cn } from '@/lib/utils';
 import { usePerformanceData } from '@/hooks';
@@ -36,7 +37,10 @@ import {
   HoldingPerformance,
 } from '@/types/dashboard';
 import Decimal from 'decimal.js';
-import { YoYGrowthTable } from '@/components/performance';
+import { YoYGrowthTable, ExportButton, HoldingsBreakdown } from '@/components/performance';
+import { usePortfolioStore } from '@/lib/stores/portfolio';
+import { usePriceStore } from '@/lib/stores/price';
+import { HoldingPerformanceData } from '@/types/performance';
 
 // Period configuration for chart display
 const periodConfigs: Record<
@@ -359,6 +363,36 @@ export default function PerformancePage() {
     setSelectedPeriod,
   } = usePerformanceData();
 
+  const { currentPortfolio, holdings: portfolioHoldings } = usePortfolioStore();
+  const { refreshAllPrices } = usePriceStore();
+
+  const handleRefresh = async () => {
+    if (currentPortfolio?.id) {
+      await refreshAllPrices();
+    }
+  };
+
+  // Transform holdings for the breakdown table
+  const holdingsPerformanceData = useMemo((): HoldingPerformanceData[] => {
+    // Combine top performers and losers to get all holdings
+    const allPerformers = [...topPerformers, ...biggestLosers];
+
+    return allPerformers.map((perf) => ({
+      holdingId: perf.holdingId,
+      symbol: perf.symbol,
+      name: perf.name,
+      assetType: perf.assetType,
+      quantity: new Decimal(0), // Not critical for display
+      costBasis: new Decimal(0), // Not critical for display
+      currentValue: perf.currentValue,
+      periodStartValue: perf.periodStartValue,
+      absoluteGain: perf.absoluteGain,
+      percentGain: perf.percentGain,
+      weight: 0, // Not critical for display
+      isInterpolated: false,
+    }));
+  }, [topPerformers, biggestLosers]);
+
   // Transform historical data for chart
   const chartData = useMemo(
     () => transformHistoricalData(historicalData),
@@ -421,22 +455,51 @@ export default function PerformancePage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Performance</h1>
-        <p className="text-muted-foreground">
-          Track your portfolio performance over time with detailed metrics and
-          benchmarks.
-        </p>
+      <div className="flex items-start justify-between">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">Performance</h1>
+          <p className="text-muted-foreground">
+            Track your portfolio performance over time with detailed metrics and
+            benchmarks.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={loading || !currentPortfolio}
+            aria-label="Refresh prices"
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
+          </Button>
+          {currentPortfolio && (
+            <ExportButton
+              portfolioId={currentPortfolio.id}
+              disabled={loading}
+            />
+          )}
+        </div>
       </div>
 
       {/* Key Metrics Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
         <MetricCard
           title="Total Return"
           value={formatPercent(metrics.roi)}
           subtitle="Since inception"
           icon={<TrendingUp className="h-4 w-4" />}
           trend={metrics.roi >= 0 ? 'positive' : 'negative'}
+          loading={loading}
+        />
+
+        <MetricCard
+          title="Time-Weighted Return"
+          value={formatPercent(metrics.annualizedReturn)}
+          subtitle="CAGR"
+          icon={<Activity className="h-4 w-4" />}
+          trend={metrics.annualizedReturn >= 0 ? 'positive' : 'negative'}
           loading={loading}
         />
 
@@ -651,6 +714,14 @@ export default function PerformancePage() {
 
       {/* Year-over-Year Growth */}
       {!loading && <YoYGrowthTable metrics={yoyMetrics} />}
+
+      {/* Holdings Performance Table */}
+      {!loading && holdingsPerformanceData.length > 0 && (
+        <HoldingsBreakdown
+          holdings={holdingsPerformanceData}
+          isLoading={loading}
+        />
+      )}
 
       {/* Top Performers / Biggest Losers */}
       <div className="grid gap-6 md:grid-cols-2">
