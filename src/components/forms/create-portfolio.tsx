@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -42,15 +42,34 @@ type PortfolioFormData = z.infer<typeof portfolioSchema>;
 interface CreatePortfolioDialogProps {
   children?: React.ReactNode;
   variant?: 'default' | 'outline';
+  mode?: 'create' | 'edit';
+  portfolio?: {
+    id: string;
+    name: string;
+    type: PortfolioType;
+    currency: string;
+  };
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function CreatePortfolioDialog({
   children,
   variant = 'default',
+  mode = 'create',
+  portfolio,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: CreatePortfolioDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { createPortfolio } = usePortfolioStore();
+  const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false);
+  const [transactionCount, setTransactionCount] = useState(0);
+  const { createPortfolio, updatePortfolio } = usePortfolioStore();
+
+  // Use controlled or internal state
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = controlledOnOpenChange || setInternalOpen;
 
   const {
     register,
@@ -61,35 +80,73 @@ export function CreatePortfolioDialog({
     formState: { errors },
   } = useForm<PortfolioFormData>({
     resolver: zodResolver(portfolioSchema),
-    defaultValues: {
-      currency: 'USD',
-    },
+    defaultValues: mode === 'edit' && portfolio
+      ? {
+          name: portfolio.name,
+          type: portfolio.type,
+          currency: portfolio.currency,
+        }
+      : {
+          currency: 'USD',
+        },
   });
 
   const portfolioType = watch('type');
+  const initialType = portfolio?.type;
+
+  // Check transaction count when type changes in edit mode
+  useEffect(() => {
+    if (mode === 'edit' && portfolio && portfolioType && portfolioType !== initialType) {
+      // Check if portfolio has transactions
+      import('@/lib/db').then(({ db }) => {
+        db.transactions
+          .where('portfolioId')
+          .equals(portfolio.id)
+          .count()
+          .then(count => {
+            setTransactionCount(count);
+            if (count > 0) {
+              setShowTypeChangeWarning(true);
+            }
+          });
+      });
+    }
+  }, [portfolioType, mode, portfolio, initialType]);
 
   const onSubmit = async (data: PortfolioFormData) => {
     try {
       setIsSubmitting(true);
 
-      await createPortfolio({
-        name: data.name,
-        type: data.type,
-        currency: data.currency,
-        settings: {
-          rebalanceThreshold: 5,
-          taxStrategy: 'fifo',
-          autoRebalance: false,
-          dividendReinvestment: false,
-        },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      if (mode === 'edit' && portfolio) {
+        // Update existing portfolio
+        await updatePortfolio(portfolio.id, {
+          name: data.name,
+          type: data.type,
+          currency: data.currency,
+          updatedAt: new Date(),
+        });
+      } else {
+        // Create new portfolio
+        await createPortfolio({
+          name: data.name,
+          type: data.type,
+          currency: data.currency,
+          settings: {
+            rebalanceThreshold: 5,
+            taxStrategy: 'fifo',
+            autoRebalance: false,
+            dividendReinvestment: false,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
 
       reset();
       setOpen(false);
+      setShowTypeChangeWarning(false);
     } catch (error) {
-      console.error('Failed to create portfolio:', error);
+      console.error(`Failed to ${mode} portfolio:`, error);
     } finally {
       setIsSubmitting(false);
     }
@@ -108,11 +165,34 @@ export function CreatePortfolioDialog({
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Create New Portfolio</DialogTitle>
+            <DialogTitle>
+              {mode === 'edit' ? 'Edit Portfolio' : 'Create New Portfolio'}
+            </DialogTitle>
             <DialogDescription>
-              Set up a new portfolio to start tracking your investments.
+              {mode === 'edit'
+                ? 'Update your portfolio settings and preferences.'
+                : 'Set up a new portfolio to start tracking your investments.'}
             </DialogDescription>
           </DialogHeader>
+
+          {showTypeChangeWarning && (
+            <div className="rounded-md bg-yellow-50 p-4 my-2">
+              <div className="flex">
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800">
+                    Type Change Warning
+                  </h3>
+                  <div className="mt-2 text-sm text-yellow-700">
+                    <p>
+                      This portfolio has {transactionCount} transaction{transactionCount !== 1 ? 's' : ''}.
+                      Changing the account type may affect tax calculations and reporting.
+                      Please ensure this change is intentional.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
@@ -185,7 +265,9 @@ export function CreatePortfolioDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Portfolio'}
+              {isSubmitting
+                ? mode === 'edit' ? 'Updating...' : 'Creating...'
+                : mode === 'edit' ? 'Update Portfolio' : 'Create Portfolio'}
             </Button>
           </DialogFooter>
         </form>

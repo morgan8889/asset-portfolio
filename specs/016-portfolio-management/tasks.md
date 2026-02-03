@@ -32,9 +32,9 @@ Next.js 14 App Router structure:
 
 **Purpose**: Database migration foundation for lastAccessedAt tracking
 
-- [ ] T001 Update Portfolio interface with lastAccessedAt field in src/types/portfolio.ts
-- [ ] T002 Update database schema to v5 with lastAccessedAt index in src/lib/db/schema.ts
-- [ ] T003 Create migration v4→v5 script in src/lib/db/migrations.ts
+- [X] T001 Update Portfolio interface with lastAccessedAt field in src/types/portfolio.ts
+- [X] T002 Update database schema to v5 with lastAccessedAt index in src/lib/db/schema.ts
+- [X] T003 Create migration v4→v5 script in src/lib/db/migrations.ts
 
 ---
 
@@ -44,17 +44,17 @@ Next.js 14 App Router structure:
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Modify setCurrentPortfolio to track lastAccessedAt in src/lib/stores/portfolio.ts
-- [ ] T005 [P] Implement updatePortfolio action in src/lib/stores/portfolio.ts
-- [ ] T006 [P] Implement deletePortfolio action with fallback logic in src/lib/stores/portfolio.ts
-- [ ] T007 [P] Implement getSortedPortfolios helper in src/lib/stores/portfolio.ts
+- [X] T004 Modify setCurrentPortfolio to track lastAccessedAt in src/lib/stores/portfolio.ts
+- [X] T005 [P] Implement updatePortfolio action in src/lib/stores/portfolio.ts
+- [X] T006 [P] Implement deletePortfolio action with fallback logic in src/lib/stores/portfolio.ts
+- [X] T007 [P] Implement getSortedPortfolios helper in src/lib/stores/portfolio.ts
 
 **Tests for Foundational Store Actions**:
 
-- [ ] T008 [P] Unit test for setCurrentPortfolio lastAccessedAt tracking in src/lib/stores/__tests__/portfolio.test.ts
-- [ ] T009 [P] Unit test for updatePortfolio action in src/lib/stores/__tests__/portfolio.test.ts
-- [ ] T010 [P] Unit test for deletePortfolio with fallback in src/lib/stores/__tests__/portfolio.test.ts
-- [ ] T011 [P] Unit test for getSortedPortfolios sorting logic in src/lib/stores/__tests__/portfolio.test.ts
+- [X] T008 [P] Unit test for setCurrentPortfolio lastAccessedAt tracking in src/lib/stores/__tests__/portfolio.test.ts
+- [X] T009 [P] Unit test for updatePortfolio action in src/lib/stores/__tests__/portfolio.test.ts
+- [X] T010 [P] Unit test for deletePortfolio with fallback in src/lib/stores/__tests__/portfolio.test.ts
+- [X] T011 [P] Unit test for getSortedPortfolios sorting logic in src/lib/stores/__tests__/portfolio.test.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -72,17 +72,17 @@ Next.js 14 App Router structure:
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T012 [P] [US1] Unit test for PortfolioSelector component rendering in src/components/portfolio/__tests__/portfolio-selector.test.tsx
-- [ ] T013 [P] [US1] Unit test for PortfolioSelector sorting behavior in src/components/portfolio/__tests__/portfolio-selector.test.tsx
-- [ ] T014 [P] [US1] Unit test for PortfolioSelector disabled state during CSV import in src/components/portfolio/__tests__/portfolio-selector.test.tsx
-- [ ] T015 [P] [US1] E2E test for portfolio switching workflow in tests/e2e/portfolio-switching.spec.ts
-- [ ] T016 [P] [US1] E2E test for portfolio selection persistence across page reload in tests/e2e/portfolio-switching.spec.ts
-- [ ] T017 [P] [US1] E2E test for CSV import blocking portfolio selector in tests/e2e/portfolio-switching.spec.ts
+- [X] T012 [P] [US1] Unit test for PortfolioSelector component rendering in src/components/portfolio/__tests__/portfolio-selector.test.tsx
+- [X] T013 [P] [US1] Unit test for PortfolioSelector sorting behavior in src/components/portfolio/__tests__/portfolio-selector.test.tsx
+- [X] T014 [P] [US1] Unit test for PortfolioSelector disabled state during CSV import in src/components/portfolio/__tests__/portfolio-selector.test.tsx
+- [X] T015 [P] [US1] E2E test for portfolio switching workflow in tests/e2e/portfolio-switching.spec.ts
+- [X] T016 [P] [US1] E2E test for portfolio selection persistence across page reload in tests/e2e/portfolio-switching.spec.ts
+- [X] T017 [P] [US1] E2E test for CSV import blocking portfolio selector in tests/e2e/portfolio-switching.spec.ts
 
 ### Implementation for User Story 1
 
-- [ ] T018 [US1] Create PortfolioSelector component in src/components/portfolio/portfolio-selector.tsx
-- [ ] T019 [US1] Replace static portfolio badges with PortfolioSelector in src/components/dashboard/DashboardHeader.tsx
+- [X] T018 [US1] Create PortfolioSelector component in src/components/portfolio/portfolio-selector.tsx
+- [X] T019 [US1] Replace static portfolio badges with PortfolioSelector in src/components/dashboard/DashboardHeader.tsx
 - [ ] T020 [US1] Verify price polling switches immediately when portfolio changes (existing priceStore behavior)
 - [ ] T021 [US1] Verify filter state preservation on portfolio switch (preserve type/search, reset date/pagination)
 
@@ -100,18 +100,18 @@ Next.js 14 App Router structure:
 
 ### Tests for User Story 2
 
-- [ ] T022 [P] [US2] E2E test for /portfolios route navigation in tests/e2e/portfolios-management.spec.ts
-- [ ] T023 [P] [US2] E2E test for portfolio list display with metrics in tests/e2e/portfolios-management.spec.ts
-- [ ] T024 [P] [US2] E2E test for "View" action switching to portfolio in tests/e2e/portfolios-management.spec.ts
-- [ ] T025 [P] [US2] E2E test for empty state with "Create Your First Portfolio" button in tests/e2e/portfolios-management.spec.ts
+- [X] T022 [P] [US2] E2E test for /portfolios route navigation in tests/e2e/portfolios-management.spec.ts
+- [X] T023 [P] [US2] E2E test for portfolio list display with metrics in tests/e2e/portfolios-management.spec.ts
+- [X] T024 [P] [US2] E2E test for "View" action switching to portfolio in tests/e2e/portfolios-management.spec.ts
+- [X] T025 [P] [US2] E2E test for empty state with "Create Your First Portfolio" button in tests/e2e/portfolios-management.spec.ts
 
 ### Implementation for User Story 2
 
-- [ ] T026 [US2] Add /portfolios route to navigation config in src/lib/config/navigation.ts
-- [ ] T027 [US2] Create PortfoliosPage component in src/app/(dashboard)/portfolios/page.tsx
-- [ ] T028 [US2] Create PortfoliosTable component with metrics display in src/components/portfolio/portfolios-table.tsx
-- [ ] T029 [US2] Integrate calculatePortfolioMetrics service for value/return display in src/components/portfolio/portfolios-table.tsx
-- [ ] T030 [US2] Implement "View" action button to switch portfolio and navigate to dashboard in src/components/portfolio/portfolios-table.tsx
+- [X] T026 [US2] Add /portfolios route to navigation config in src/lib/config/navigation.ts
+- [X] T027 [US2] Create PortfoliosPage component in src/app/(dashboard)/portfolios/page.tsx
+- [X] T028 [US2] Create PortfoliosTable component with metrics display in src/components/portfolio/portfolios-table.tsx
+- [X] T029 [US2] Integrate calculatePortfolioMetrics service for value/return display in src/components/portfolio/portfolios-table.tsx
+- [X] T030 [US2] Implement "View" action button to switch portfolio and navigate to dashboard in src/components/portfolio/portfolios-table.tsx
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 

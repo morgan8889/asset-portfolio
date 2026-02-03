@@ -26,6 +26,7 @@ export interface Portfolio {
   currency: string; // Base currency (USD default)
   createdAt: Date;
   updatedAt: Date;
+  lastAccessedAt?: Date; // Track when portfolio was last viewed for sorting
   settings: PortfolioSettings;
   metadata?: Record<string, any>;
 }

@@ -35,10 +35,9 @@ describe('Export Store', () => {
   describe('startExport', () => {
     it('should start PDF export', () => {
       const config: ReportConfig = {
-        type: 'performance',
+        type: 'pdf',
         portfolioId: 'portfolio-1',
-        dateRange: 'YTD',
-        format: 'pdf',
+        includeSummary: true,
       };
 
       useExportStore.getState().startExport(config);
@@ -46,23 +45,21 @@ describe('Export Store', () => {
       const state = useExportStore.getState();
       expect(state.progress.status).toBe('preparing');
       expect(state.progress.progress).toBe(0);
-      expect(state.progress.message).toBe('Preparing performance export...');
+      expect(state.progress.message).toBe('Preparing pdf export...');
       expect(state.progress.error).toBeUndefined();
     });
 
     it('should start CSV export', () => {
       const config: ReportConfig = {
-        type: 'transactions',
+        type: 'csv',
         portfolioId: 'portfolio-1',
-        dateRange: 'ALL',
-        format: 'csv',
       };
 
       useExportStore.getState().startExport(config);
 
       const state = useExportStore.getState();
       expect(state.progress.status).toBe('preparing');
-      expect(state.progress.message).toBe('Preparing transactions export...');
+      expect(state.progress.message).toBe('Preparing csv export...');
     });
 
     it('should clear previous error on new export', () => {
@@ -76,10 +73,8 @@ describe('Export Store', () => {
       });
 
       const config: ReportConfig = {
-        type: 'holdings',
+        type: 'pdf',
         portfolioId: 'portfolio-1',
-        dateRange: 'YTD',
-        format: 'pdf',
       };
 
       useExportStore.getState().startExport(config);
@@ -97,15 +92,15 @@ describe('Export Store', () => {
       expect(state.progress.progress).toBe(50);
     });
 
-    it('should update status to generating', () => {
+    it('should update status to exporting', () => {
       useExportStore.getState().updateProgress({
-        status: 'generating',
+        status: 'exporting',
         progress: 30,
         message: 'Generating report...',
       });
 
       const state = useExportStore.getState();
-      expect(state.progress.status).toBe('generating');
+      expect(state.progress.status).toBe('exporting');
       expect(state.progress.progress).toBe(30);
       expect(state.progress.message).toBe('Generating report...');
     });
@@ -137,7 +132,7 @@ describe('Export Store', () => {
     it('should preserve existing fields when partially updating', () => {
       useExportStore.setState({
         progress: {
-          status: 'generating',
+          status: 'exporting',
           progress: 50,
           message: 'Generating...',
           error: undefined,
@@ -147,7 +142,7 @@ describe('Export Store', () => {
       useExportStore.getState().updateProgress({ progress: 75 });
 
       const state = useExportStore.getState();
-      expect(state.progress.status).toBe('generating');
+      expect(state.progress.status).toBe('exporting');
       expect(state.progress.progress).toBe(75);
       expect(state.progress.message).toBe('Generating...');
     });
@@ -193,22 +188,20 @@ describe('Export Store', () => {
   describe('Progress Workflow', () => {
     it('should follow typical export workflow', () => {
       const config: ReportConfig = {
-        type: 'performance',
+        type: 'pdf',
         portfolioId: 'portfolio-1',
-        dateRange: 'YTD',
-        format: 'pdf',
       };
 
       // Start export
       useExportStore.getState().startExport(config);
       expect(useExportStore.getState().progress.status).toBe('preparing');
 
-      // Update to generating
+      // Update to exporting
       useExportStore.getState().updateProgress({
-        status: 'generating',
+        status: 'exporting',
         progress: 30,
       });
-      expect(useExportStore.getState().progress.status).toBe('generating');
+      expect(useExportStore.getState().progress.status).toBe('exporting');
       expect(useExportStore.getState().progress.progress).toBe(30);
 
       // Progress to 60%
@@ -230,10 +223,8 @@ describe('Export Store', () => {
 
     it('should handle export failure workflow', () => {
       const config: ReportConfig = {
-        type: 'transactions',
+        type: 'csv',
         portfolioId: 'portfolio-1',
-        dateRange: 'ALL',
-        format: 'csv',
       };
 
       // Start export

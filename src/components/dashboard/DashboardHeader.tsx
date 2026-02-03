@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { AddTransactionDialog } from '@/components/forms/add-transaction';
 import { CsvImportDialog } from '@/components/forms/csv-import-dialog';
 import { Download, FileSpreadsheet, Settings } from 'lucide-react';
@@ -11,6 +10,7 @@ import { useDashboardContext } from './DashboardProvider';
 import { DashboardSettings } from './dashboard-settings';
 import { TimePeriodSelector } from './time-period-selector';
 import { useDashboardStore } from '@/lib/stores';
+import { PortfolioSelector } from '@/components/portfolio/portfolio-selector';
 
 export function DashboardHeader() {
   const router = useRouter();
@@ -32,12 +32,7 @@ export function DashboardHeader() {
         </div>
         <div className="flex items-center gap-2">
           <p className="text-muted-foreground">Portfolio:</p>
-          <Badge variant="outline" className="font-medium">
-            {currentPortfolio.name}
-          </Badge>
-          <Badge variant="secondary" className="text-xs">
-            {currentPortfolio.type.toUpperCase()}
-          </Badge>
+          <PortfolioSelector />
         </div>
       </div>
 

@@ -197,6 +197,32 @@ describe('Portfolio Store', () => {
       expect(mockHoldingQueries.getByPortfolio).not.toHaveBeenCalled();
     });
 
+    it('should track lastAccessedAt when setting current portfolio', async () => {
+      const portfolio: Portfolio = {
+        id: 'p1',
+        name: 'Test Portfolio',
+        type: 'taxable',
+        currency: 'USD',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        settings: defaultSettings,
+      };
+
+      mockPortfolioQueries.update.mockResolvedValue(undefined);
+
+      usePortfolioStore.getState().setCurrentPortfolio(portfolio);
+
+      // Wait for async update to be called
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(mockPortfolioQueries.update).toHaveBeenCalledWith(
+        'p1',
+        expect.objectContaining({
+          lastAccessedAt: expect.any(Date),
+        })
+      );
+    });
+
     it('should clear holdings and metrics when setting portfolio to null', () => {
       usePortfolioStore.setState({
         holdings: [{ id: 'h1' } as Holding],
@@ -209,6 +235,17 @@ describe('Portfolio Store', () => {
       expect(state.currentPortfolio).toBeNull();
       expect(state.holdings).toEqual([]);
       expect(state.metrics).toBeNull();
+    });
+
+    it('should not update lastAccessedAt when setting null portfolio', async () => {
+      mockPortfolioQueries.update.mockResolvedValue(undefined);
+
+      usePortfolioStore.getState().setCurrentPortfolio(null);
+
+      // Wait for potential async update
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(mockPortfolioQueries.update).not.toHaveBeenCalled();
     });
   });
 
@@ -295,7 +332,7 @@ describe('Portfolio Store', () => {
   });
 
   describe('deletePortfolio', () => {
-    it('should delete portfolio and clear current if it matches', async () => {
+    it('should delete portfolio and clear current if it was the last one', async () => {
       const currentPortfolio: Portfolio = {
         id: 'p1',
         name: 'To Delete',
@@ -307,6 +344,7 @@ describe('Portfolio Store', () => {
       };
 
       usePortfolioStore.setState({
+        portfolios: [currentPortfolio],
         currentPortfolio,
         holdings: [{ id: 'h1' } as Holding],
         metrics: {} as any,
@@ -324,6 +362,100 @@ describe('Portfolio Store', () => {
       expect(state.holdings).toEqual([]);
       expect(state.metrics).toBeNull();
       expect(state.loading).toBe(false);
+    });
+
+    it('should fall back to most recently accessed portfolio when deleting current', async () => {
+      const now = new Date();
+      const recentDate = new Date(now.getTime() - 1000 * 60); // 1 minute ago
+      const oldDate = new Date(now.getTime() - 1000 * 60 * 60); // 1 hour ago
+
+      const currentPortfolio: Portfolio = {
+        id: 'p1',
+        name: 'To Delete',
+        type: 'taxable',
+        currency: 'USD',
+        createdAt: oldDate,
+        updatedAt: oldDate,
+        lastAccessedAt: now,
+        settings: defaultSettings,
+      };
+
+      const recentPortfolio: Portfolio = {
+        id: 'p2',
+        name: 'Recently Accessed',
+        type: 'ira',
+        currency: 'USD',
+        createdAt: oldDate,
+        updatedAt: oldDate,
+        lastAccessedAt: recentDate,
+        settings: defaultSettings,
+      };
+
+      const oldPortfolio: Portfolio = {
+        id: 'p3',
+        name: 'Old Portfolio',
+        type: '401k',
+        currency: 'USD',
+        createdAt: oldDate,
+        updatedAt: oldDate,
+        lastAccessedAt: oldDate,
+        settings: defaultSettings,
+      };
+
+      usePortfolioStore.setState({
+        portfolios: [currentPortfolio, recentPortfolio, oldPortfolio],
+        currentPortfolio,
+      });
+
+      mockPortfolioQueries.delete.mockResolvedValue(undefined);
+      mockPortfolioQueries.getAll.mockResolvedValue([
+        recentPortfolio,
+        oldPortfolio,
+      ]);
+      mockHoldingQueries.getByPortfolio.mockResolvedValue([]);
+
+      await usePortfolioStore.getState().deletePortfolio('p1');
+
+      const state = usePortfolioStore.getState();
+      // Should fall back to most recently accessed (p2)
+      expect(state.currentPortfolio).toEqual(recentPortfolio);
+      expect(mockHoldingQueries.getByPortfolio).toHaveBeenCalledWith('p2');
+    });
+
+    it('should not change current portfolio if deleting a different one', async () => {
+      const currentPortfolio: Portfolio = {
+        id: 'p1',
+        name: 'Current',
+        type: 'taxable',
+        currency: 'USD',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        settings: defaultSettings,
+      };
+
+      const toDelete: Portfolio = {
+        id: 'p2',
+        name: 'To Delete',
+        type: 'ira',
+        currency: 'USD',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        settings: defaultSettings,
+      };
+
+      usePortfolioStore.setState({
+        portfolios: [currentPortfolio, toDelete],
+        currentPortfolio,
+      });
+
+      mockPortfolioQueries.delete.mockResolvedValue(undefined);
+      mockPortfolioQueries.getAll.mockResolvedValue([currentPortfolio]);
+
+      await usePortfolioStore.getState().deletePortfolio('p2');
+
+      const state = usePortfolioStore.getState();
+      expect(state.currentPortfolio).toEqual(currentPortfolio);
+      expect(mockHoldingQueries.getByPortfolio).not.toHaveBeenCalled();
     });
   });
 
@@ -462,6 +594,154 @@ describe('Portfolio Store', () => {
 
       const state = usePortfolioStore.getState();
       expect(state.error).toBeNull();
+    });
+  });
+
+  describe('getSortedPortfolios', () => {
+    it('should sort portfolios by lastAccessedAt (most recent first)', () => {
+      const now = new Date();
+      const recent = new Date(now.getTime() - 1000 * 60); // 1 minute ago
+      const old = new Date(now.getTime() - 1000 * 60 * 60); // 1 hour ago
+
+      const portfolios: Portfolio[] = [
+        {
+          id: 'p1',
+          name: 'Old',
+          type: 'taxable',
+          currency: 'USD',
+          createdAt: old,
+          updatedAt: old,
+          lastAccessedAt: old,
+          settings: defaultSettings,
+        },
+        {
+          id: 'p2',
+          name: 'Recent',
+          type: 'ira',
+          currency: 'USD',
+          createdAt: old,
+          updatedAt: old,
+          lastAccessedAt: recent,
+          settings: defaultSettings,
+        },
+        {
+          id: 'p3',
+          name: 'Most Recent',
+          type: '401k',
+          currency: 'USD',
+          createdAt: old,
+          updatedAt: old,
+          lastAccessedAt: now,
+          settings: defaultSettings,
+        },
+      ];
+
+      usePortfolioStore.setState({ portfolios });
+
+      const sorted = usePortfolioStore.getState().getSortedPortfolios();
+
+      expect(sorted[0].id).toBe('p3'); // Most recent
+      expect(sorted[1].id).toBe('p2'); // Recent
+      expect(sorted[2].id).toBe('p1'); // Old
+    });
+
+    it('should fall back to updatedAt if lastAccessedAt is missing', () => {
+      const now = new Date();
+      const old = new Date(now.getTime() - 1000 * 60 * 60);
+
+      const portfolios: Portfolio[] = [
+        {
+          id: 'p1',
+          name: 'No lastAccessedAt',
+          type: 'taxable',
+          currency: 'USD',
+          createdAt: old,
+          updatedAt: old,
+          settings: defaultSettings,
+        },
+        {
+          id: 'p2',
+          name: 'With lastAccessedAt',
+          type: 'ira',
+          currency: 'USD',
+          createdAt: old,
+          updatedAt: old,
+          lastAccessedAt: now,
+          settings: defaultSettings,
+        },
+      ];
+
+      usePortfolioStore.setState({ portfolios });
+
+      const sorted = usePortfolioStore.getState().getSortedPortfolios();
+
+      expect(sorted[0].id).toBe('p2'); // Has lastAccessedAt
+      expect(sorted[1].id).toBe('p1'); // Falls back to updatedAt
+    });
+
+    it('should fall back to createdAt if both lastAccessedAt and updatedAt are missing', () => {
+      const now = new Date();
+      const old = new Date(now.getTime() - 1000 * 60 * 60);
+
+      const portfolios: Portfolio[] = [
+        {
+          id: 'p1',
+          name: 'Old Created',
+          type: 'taxable',
+          currency: 'USD',
+          createdAt: old,
+          updatedAt: old,
+          settings: defaultSettings,
+        },
+        {
+          id: 'p2',
+          name: 'New Created',
+          type: 'ira',
+          currency: 'USD',
+          createdAt: now,
+          updatedAt: now,
+          settings: defaultSettings,
+        },
+      ];
+
+      usePortfolioStore.setState({ portfolios });
+
+      const sorted = usePortfolioStore.getState().getSortedPortfolios();
+
+      expect(sorted[0].id).toBe('p2'); // Newer
+      expect(sorted[1].id).toBe('p1'); // Older
+    });
+
+    it('should not mutate original portfolios array', () => {
+      const portfolios: Portfolio[] = [
+        {
+          id: 'p1',
+          name: 'First',
+          type: 'taxable',
+          currency: 'USD',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          settings: defaultSettings,
+        },
+        {
+          id: 'p2',
+          name: 'Second',
+          type: 'ira',
+          currency: 'USD',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          settings: defaultSettings,
+        },
+      ];
+
+      usePortfolioStore.setState({ portfolios });
+
+      const sorted = usePortfolioStore.getState().getSortedPortfolios();
+      const original = usePortfolioStore.getState().portfolios;
+
+      // Ensure we got a new array
+      expect(sorted).not.toBe(original);
+      expect(original[0].id).toBe('p1'); // Original order unchanged
     });
   });
 });

@@ -371,6 +371,7 @@ Quick reference to all major features:
 
 | Feature | Page | Key Components | Services | Store |
 |---------|------|----------------|----------|-------|
+| **Portfolio Management** | `/portfolios` | portfolios-table, portfolio-selector, create-portfolio-dialog, delete-portfolio-dialog | - | portfolioStore |
 | **Portfolio Dashboard** | `/` | dashboard-container-rgl | metrics-service | dashboardStore |
 | **Holdings Management** | `/holdings` | holdings-table, holding-detail-modal | holdings-service | portfolioStore |
 | **Transaction Tracking** | `/transactions` | transaction-table, add-transaction | - | transactionStore |
@@ -413,6 +414,115 @@ Bulk import transactions from CSV files with auto-detection and validation.
 ```bash
 npm run test -- src/lib/services/__tests__/csv*.test.ts  # 103 tests
 npm run test:e2e -- tests/e2e/csv-import.spec.ts
+```
+
+## Portfolio Management
+
+Multi-portfolio support with comprehensive CRUD operations and data isolation.
+
+### Key Features
+
+**Portfolio Switching** (`/` Dashboard):
+- Dropdown selector in header (PortfolioSelector component)
+- Sorted by recency (lastAccessedAt → updatedAt → createdAt)
+- Disabled during CSV import
+- Persists selection across page reloads (Zustand persist middleware)
+
+**Portfolio Management Page** (`/portfolios`):
+- Table view of all portfolios with real-time metrics
+- Columns: Name, Type, Total Value, YTD Return, Holdings count, Actions
+- Current portfolio highlighted with "Current" badge
+- Metrics calculated from actual holdings data
+
+**Create Portfolio**:
+- Form fields: Name (1-50 chars), Type (taxable/IRA/401k/Roth), Currency (USD/EUR/GBP/CAD/JPY)
+- Default settings: 5% rebalance threshold, FIFO tax strategy
+- Validation: Required name, valid type/currency
+
+**Edit Portfolio**:
+- Pre-filled form with existing portfolio data
+- Type change warning if portfolio has transactions
+- Shows transaction count before allowing type change
+- Updates portfolio with new values
+
+**Delete Portfolio**:
+- Graduated confirmation based on transaction count:
+  - **0 transactions**: Simple confirmation
+  - **1-10 transactions**: Checkbox confirmation
+  - **>10 transactions**: Must type portfolio name exactly
+- Last portfolio warning
+- Auto-fallback to next most recently used portfolio
+- Complete data deletion (portfolio + all transactions)
+
+### Database Schema v5
+
+```typescript
+interface Portfolio {
+  id: string;
+  name: string;
+  type: 'taxable' | 'ira' | '401k' | 'roth';
+  currency: string;
+  createdAt: Date;
+  updatedAt: Date;
+  lastAccessedAt?: Date; // NEW in v5 - for recency sorting
+  settings: PortfolioSettings;
+}
+```
+
+**Migration**: Reversible v4→v5 migration adds `lastAccessedAt` index to portfolios table.
+
+### Store Actions
+
+**portfolioStore** enhancements:
+- `setCurrentPortfolio(portfolio)` - Updates lastAccessedAt timestamp
+- `getSortedPortfolios()` - Returns portfolios sorted by recency
+- `deletePortfolio(id)` - Auto-fallback to next portfolio if current deleted
+- `updatePortfolio(id, changes)` - Updates portfolio with validation
+
+### Components
+
+- **PortfolioSelector** (`src/components/portfolio/portfolio-selector.tsx`)
+  - Dropdown with checkmark on current portfolio
+  - Shows portfolio name and type
+  - Disabled during CSV import
+
+- **PortfoliosTable** (`src/components/portfolio/portfolios-table.tsx`)
+  - Displays all portfolios with metrics
+  - View/Edit/Delete actions per row
+  - Real metrics from holdings queries
+
+- **CreatePortfolioDialog** (`src/components/forms/create-portfolio.tsx`)
+  - Dual mode: create or edit
+  - Controlled dialog state
+  - Type change warnings
+
+- **DeletePortfolioDialog** (`src/components/forms/delete-portfolio-dialog.tsx`)
+  - Graduated confirmation UI
+  - Transaction count checking
+  - Last portfolio warning
+
+### Data Isolation
+
+- Holdings filtered by `portfolioId`
+- Transactions filtered by `portfolioId`
+- Metrics calculated per-portfolio
+- No data leakage between portfolios
+- Filter state cleared on portfolio switch
+
+### Testing
+
+```bash
+# Unit Tests
+npm run test -- --run src/lib/stores/__tests__/portfolio.test.ts     # Store actions (8 tests)
+npm run test -- --run src/components/portfolio/__tests__/*.test.tsx  # Components (15+ tests)
+npm run test -- --run src/components/forms/__tests__/*.test.tsx      # Dialogs (19 tests)
+
+# E2E Tests
+npx playwright test tests/e2e/portfolio-switching.spec.ts           # Switching workflow
+npx playwright test tests/e2e/portfolios-management.spec.ts         # CRUD operations
+npx playwright test tests/e2e/portfolio-edit.spec.ts                # Edit workflow (13 tests)
+npx playwright test tests/e2e/portfolio-delete.spec.ts              # Delete workflow (15 tests)
+npx playwright test tests/e2e/portfolio-isolation.spec.ts           # Data isolation (6 tests)
 ```
 
 ## Tax Features (ESPP, RSU, Capital Gains)
@@ -594,10 +704,10 @@ export const navigationStructure: (NavItem | NavGroup)[] = [
 - Phase 5: Cleanup (dead code, unused exports)
 
 ## Recent Changes
-- 016-portfolio-management: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 | Feature | Date | Impact |
 |---------|------|--------|
+| **Feature #016: Portfolio Management** | Feb 2026 | Multi-portfolio switching, CRUD operations, data isolation, graduated delete confirmations |
 | **Phase 2: API Resilience Testing** | Feb 2026 | 18 tests for price-sources.ts, 0% → 98.26% coverage |
 | **Feature #014: FIRE Planning** | Feb 2026 | Net worth tracking, liabilities, cash ledger, DB schema v4 |
 | **Phase 1: Tax Logic Testing** | Jan 2026 | 47 tests added, 30% → 90% tax service coverage |

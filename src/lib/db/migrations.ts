@@ -35,17 +35,41 @@ const migrations: Migration[] = [
       throw new Error('Cannot rollback initial migration');
     },
   },
-  // Future migrations can be added here
-  // {
-  //   version: 2,
-  //   description: 'Add new fields to portfolios',
-  //   up: async () => {
-  //     // Migration logic here
-  //   },
-  //   down: async () => {
-  //     // Rollback logic here
-  //   },
-  // },
+  {
+    version: 2,
+    description: 'Add lastAccessedAt to portfolios for recency sorting',
+    up: async () => {
+      logger.info('Adding lastAccessedAt field to existing portfolios...');
+
+      // Get all portfolios
+      const portfolios = await db.portfolios.toArray();
+
+      // Update each portfolio with lastAccessedAt = updatedAt (default)
+      for (const portfolio of portfolios) {
+        if (!portfolio.lastAccessedAt) {
+          await db.portfolios.update(portfolio.id, {
+            lastAccessedAt: portfolio.updatedAt || portfolio.createdAt,
+          });
+        }
+      }
+
+      logger.info(`Updated ${portfolios.length} portfolios with lastAccessedAt`);
+    },
+    down: async () => {
+      logger.info('Removing lastAccessedAt field from portfolios...');
+
+      // Get all portfolios
+      const portfolios = await db.portfolios.toArray();
+
+      // Remove lastAccessedAt field
+      for (const portfolio of portfolios) {
+        const { lastAccessedAt, ...rest } = portfolio as any;
+        await db.portfolios.put(rest);
+      }
+
+      logger.info('lastAccessedAt field removed from portfolios');
+    },
+  },
 ];
 
 // Migration manager
@@ -262,13 +286,15 @@ export async function seedInitialData(): Promise<void> {
 
     // Create default portfolio
     const portfolioId = crypto.randomUUID();
+    const now = new Date();
     await db.portfolios.add({
       id: portfolioId,
       name: 'My Portfolio',
       type: 'taxable',
       currency: 'USD',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: now,
+      updatedAt: now,
+      lastAccessedAt: now,
       settings: {
         rebalanceThreshold: 5,
         taxStrategy: 'fifo',
