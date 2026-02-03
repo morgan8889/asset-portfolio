@@ -5,13 +5,28 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { PortfoliosTable } from '@/components/portfolio/portfolios-table';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CreatePortfolioDialog } from '@/components/forms/create-portfolio';
 
 export default function PortfoliosPage() {
   const router = useRouter();
   const { portfolios } = usePortfolioStore();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  // Load portfolios from IndexedDB on mount
+  const { loadPortfolios } = usePortfolioStore.getState();
+  const initialLoadStartedRef = useRef(false);
+
+  useEffect(() => {
+    // Prevent duplicate calls during React Strict Mode remounting
+    if (initialLoadStartedRef.current) {
+      return;
+    }
+    initialLoadStartedRef.current = true;
+
+    loadPortfolios();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadPortfolios is stable from getState()
+  }, []);
 
   const handleViewPortfolio = (portfolioId: string) => {
     const portfolio = portfolios.find((p) => p.id === portfolioId);

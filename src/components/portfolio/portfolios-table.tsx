@@ -39,7 +39,9 @@ export function PortfoliosTable({
   onEdit,
   onDelete,
 }: PortfoliosTableProps) {
-  const { getSortedPortfolios, currentPortfolio } = usePortfolioStore();
+  // Subscribe directly to portfolios array (re-renders only when it changes)
+  const portfolios = usePortfolioStore((state) => state.portfolios);
+  const currentPortfolio = usePortfolioStore((state) => state.currentPortfolio);
   const [portfolioMetrics, setPortfolioMetrics] = useState<
     Map<string, { totalValue: Decimal; ytdReturn: number; holdings: number }>
   >(new Map());
@@ -50,21 +52,39 @@ export function PortfoliosTable({
     currency: string;
   } | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  
+
   const [deletingPortfolio, setDeletingPortfolio] = useState<{
     id: string;
     name: string;
   } | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  const portfolios = useMemo(() => getSortedPortfolios(), [getSortedPortfolios]);
+  // Sort in component with proper dependency
+  const sortedPortfolios = useMemo(() => {
+    if (!portfolios || !Array.isArray(portfolios)) {
+      return [];
+    }
+    return [...portfolios].sort((a, b) => {
+      const aTime =
+        a.lastAccessedAt?.getTime() ||
+        a.updatedAt?.getTime() ||
+        a.createdAt?.getTime() ||
+        0;
+      const bTime =
+        b.lastAccessedAt?.getTime() ||
+        b.updatedAt?.getTime() ||
+        b.createdAt?.getTime() ||
+        0;
+      return bTime - aTime; // Most recent first
+    });
+  }, [portfolios]);
 
   // Load metrics for all portfolios
   useEffect(() => {
     async function loadMetrics() {
       const metricsMap = new Map();
 
-      for (const portfolio of portfolios) {
+      for (const portfolio of sortedPortfolios) {
         try {
           const holdings = await holdingQueries.getByPortfolio(portfolio.id);
           const totalValue = calculateTotalValue(holdings);
@@ -97,7 +117,7 @@ export function PortfoliosTable({
     }
 
     loadMetrics();
-  }, [portfolios]);
+  }, [sortedPortfolios]);
 
   const getPortfolioMetrics = (portfolioId: string) => {
     return (
@@ -147,7 +167,7 @@ export function PortfoliosTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {portfolios.map((portfolio) => {
+          {sortedPortfolios.map((portfolio) => {
             const metrics = getPortfolioMetrics(portfolio.id);
             const isCurrent = currentPortfolio?.id === portfolio.id;
 
@@ -229,7 +249,7 @@ export function PortfoliosTable({
         portfolio={deletingPortfolio}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        isLastPortfolio={portfolios.length === 1}
+        isLastPortfolio={sortedPortfolios.length === 1}
       />
     </div>
   );
