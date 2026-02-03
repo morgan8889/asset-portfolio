@@ -254,13 +254,116 @@ npm run build
 
 # Run production build locally
 npm run start
+```
 
+### Docker Deployment
+
+#### Using Pre-built Container (Recommended)
+
+Pull the latest image from GitHub Container Registry:
+
+```bash
+# Pull latest version
+docker pull ghcr.io/morgan8889/asset-portfolio:latest
+
+# Run with environment variables
+docker run -d \
+  --name portfolio-tracker \
+  -p 3000:3000 \
+  -e NEXT_PUBLIC_YAHOO_FINANCE_KEY=your_key_here \
+  -e NEXT_PUBLIC_ALPHA_VANTAGE_KEY=your_key_here \
+  -e NEXT_PUBLIC_COINGECKO_KEY=your_key_here \
+  ghcr.io/morgan8889/asset-portfolio:latest
+
+# Open http://localhost:3000
+```
+
+#### Using Docker Compose (Easiest)
+
+Create a `.env` file in the project root:
+
+```env
+NEXT_PUBLIC_YAHOO_FINANCE_KEY=your_key_here
+NEXT_PUBLIC_ALPHA_VANTAGE_KEY=your_key_here
+NEXT_PUBLIC_COINGECKO_KEY=your_key_here
+```
+
+Run with Docker Compose:
+
+```bash
+# Start the application
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the application
+docker-compose down
+```
+
+#### Building Locally
+
+```bash
 # Build Docker image
 docker build -t portfolio-tracker .
 
-# Run Docker container
-docker run -p 3000:3000 portfolio-tracker
+# Run container with environment variables
+docker run -d \
+  --name portfolio-tracker \
+  -p 3000:3000 \
+  -e NEXT_PUBLIC_YAHOO_FINANCE_KEY=your_key_here \
+  portfolio-tracker
+
+# Check health status
+docker inspect --format='{{.State.Health.Status}}' portfolio-tracker
+
+# View logs
+docker logs -f portfolio-tracker
+
+# Stop container
+docker stop portfolio-tracker && docker rm portfolio-tracker
 ```
+
+#### Environment Variables
+
+The following environment variables can be passed to the container:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NEXT_PUBLIC_YAHOO_FINANCE_KEY` | No | Yahoo Finance API key for stock prices |
+| `NEXT_PUBLIC_ALPHA_VANTAGE_KEY` | No | Alpha Vantage API key (fallback source) |
+| `NEXT_PUBLIC_COINGECKO_KEY` | No | CoinGecko API key for crypto prices |
+| `PORT` | No | Server port (default: 3000) |
+| `NODE_ENV` | No | Node environment (default: production) |
+
+**Note**: API keys are optional but recommended for live market data. Without them, manual price entry is required.
+
+#### Health Checks
+
+The container includes a built-in health check endpoint at `/api/health`. This is used by:
+
+- Docker's `HEALTHCHECK` instruction
+- Kubernetes liveness/readiness probes
+- Load balancers and orchestration tools
+
+Check health status:
+
+```bash
+# Via Docker
+docker inspect --format='{{.State.Health.Status}}' portfolio-tracker
+
+# Via HTTP
+curl http://localhost:3000/api/health
+```
+
+#### Container Features
+
+- **Multi-stage build**: Optimized image size (~200MB)
+- **Non-root user**: Runs as `nextjs:nodejs` for security
+- **Health checks**: Built-in monitoring support
+- **Layer caching**: Fast rebuilds in CI/CD
+- **Security scanning**: Trivy scans on every build
+- **Standalone output**: Minimal Next.js production bundle
 
 ## 🚀 Deployment
 
