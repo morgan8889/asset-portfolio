@@ -267,7 +267,7 @@ The project uses TypeScript path aliases:
 - **Unit Tests**: Vitest for services and utilities
 - **E2E Tests**: Playwright for user workflows in `tests/e2e/`
 - **Test Data**: Use factories for consistent test data
-- **Coverage**: Aim for 70%+ coverage on business logic
+- **Coverage**: Aim for 80%+ coverage on business logic
 
 ### Financial Calculations
 All monetary calculations use `decimal.js` to avoid floating-point errors:
