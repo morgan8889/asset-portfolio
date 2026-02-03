@@ -19,6 +19,7 @@ import { formatCurrency } from '@/lib/utils/currency';
 import { calculateTotalValue, calculateGainPercent } from '@/lib/services/metrics-service';
 import { holdingQueries } from '@/lib/db';
 import Decimal from 'decimal.js';
+import { PortfolioType } from '@/types/portfolio';
 
 const portfolioTypeLabels: Record<string, string> = {
   taxable: 'Taxable',
@@ -45,7 +46,7 @@ export function PortfoliosTable({
   const [editingPortfolio, setEditingPortfolio] = useState<{
     id: string;
     name: string;
-    type: string;
+    type: PortfolioType;
     currency: string;
   } | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);

@@ -35,10 +35,10 @@ interface PortfolioSelectorProps {
 export function PortfolioSelector({ className }: PortfolioSelectorProps) {
   const { currentPortfolio, setCurrentPortfolio, getSortedPortfolios } =
     usePortfolioStore();
-  const { isImporting } = useCsvImportStore();
+  const { isProcessing } = useCsvImportStore();
 
   const sortedPortfolios = getSortedPortfolios();
-  const isDisabled = isImporting;
+  const isDisabled = isProcessing;
 
   const handleSelectPortfolio = (portfolio: Portfolio) => {
     setCurrentPortfolio(portfolio);
