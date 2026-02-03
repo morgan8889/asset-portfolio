@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 import { Decimal } from 'decimal.js';
 
 import {
@@ -147,17 +147,18 @@ const DEFAULT_PAGINATION: PaginationState = {
 };
 
 export const useTransactionStore = create<TransactionState>()(
-  devtools(
-    (set, get) => ({
-      // Initial state
-      transactions: [],
-      filteredTransactions: [],
-      currentFilter: {},
-      summary: null,
-      loading: false,
-      importing: false,
-      error: null,
-      pagination: { ...DEFAULT_PAGINATION },
+  persist(
+    devtools(
+      (set, get) => ({
+        // Initial state
+        transactions: [],
+        filteredTransactions: [],
+        currentFilter: {},
+        summary: null,
+        loading: false,
+        importing: false,
+        error: null,
+        pagination: { ...DEFAULT_PAGINATION },
 
       // Actions
       loadTransactions: async (portfolioId) => {
@@ -624,6 +625,25 @@ export const useTransactionStore = create<TransactionState>()(
     }),
     {
       name: 'transaction-store',
+    }
+    ),
+    {
+      name: 'transaction-pagination-state',
+      storage: {
+        getItem: (name) => {
+          const str = sessionStorage.getItem(name);
+          return str ? JSON.parse(str) : null;
+        },
+        setItem: (name, value) => {
+          sessionStorage.setItem(name, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          sessionStorage.removeItem(name);
+        },
+      },
+      partialize: (state) => ({
+        pagination: state.pagination,
+      }) as TransactionState,
     }
   )
 );
