@@ -36,6 +36,8 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { Transaction, TransactionType } from '@/types';
 import { TransactionDialog } from '@/components/forms/add-transaction';
 import { DeleteTransactionDialog } from '@/components/dialogs/delete-transaction-dialog';
+import { PaginationControls } from './pagination-controls';
+import { CardFooter } from '@/components/ui/card';
 
 interface TransactionTableProps {
   showPortfolioFilter?: boolean;
@@ -134,8 +136,6 @@ export const getTransactionTypeBadge = (type: TransactionType) => {
 const TransactionTableComponent = ({
   showPortfolioFilter = false,
 }: TransactionTableProps) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<TransactionType | 'all'>('all');
   const [editTransaction, setEditTransaction] = useState<Transaction | null>(
     null
   );
@@ -148,46 +148,52 @@ const TransactionTableComponent = ({
     loading,
     error,
     loadTransactions,
+    loadPaginatedTransactions,
+    pagination,
+    setCurrentPage,
+    setPageSize,
+    resetPagination,
     filterTransactions,
+    currentFilter,
     clearError,
     deleteTransaction: deleteTransactionAction,
   } = useTransactionStore();
 
   const { currentPortfolio } = usePortfolioStore();
 
+  // Load paginated transactions when portfolio or pagination changes
   useEffect(() => {
     if (currentPortfolio?.id) {
-      loadTransactions(currentPortfolio.id);
+      loadPaginatedTransactions(currentPortfolio.id);
     }
-  }, [currentPortfolio?.id, loadTransactions]);
+  }, [currentPortfolio?.id, pagination.currentPage, pagination.pageSize]);
 
-  const displayTransactions = useMemo(() => {
-    let filtered =
-      filteredTransactions.length > 0 ? filteredTransactions : transactions;
-
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (transaction) =>
-          transaction.assetId
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          transaction.notes?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  // Handle filter changes - update store filter and reload from database
+  const handleSearchChange = (search: string) => {
+    resetPagination(); // Reset to page 1
+    filterTransactions({
+      ...currentFilter,
+      search: search || undefined,
+    });
+    if (currentPortfolio?.id) {
+      loadPaginatedTransactions(currentPortfolio.id);
     }
+  };
 
-    // Apply type filter
-    if (filterType !== 'all') {
-      filtered = filtered.filter(
-        (transaction) => transaction.type === filterType
-      );
+  const handleTypeFilterChange = (type: TransactionType | 'all') => {
+    resetPagination(); // Reset to page 1
+    const filterType = type === 'all' ? undefined : [type];
+    filterTransactions({
+      ...currentFilter,
+      type: filterType,
+    });
+    if (currentPortfolio?.id) {
+      loadPaginatedTransactions(currentPortfolio.id);
     }
+  };
 
-    // Sort by date (newest first)
-    return filtered.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-  }, [filteredTransactions, transactions, searchTerm, filterType]);
+  // Use filteredTransactions directly - already paginated and filtered by the database
+  const displayTransactions = filteredTransactions;
 
   const handleDelete = async () => {
     if (deleteTransaction) {
@@ -240,7 +246,7 @@ const TransactionTableComponent = ({
     );
   }
 
-  if (displayTransactions.length === 0 && !searchTerm && filterType === 'all') {
+  if (displayTransactions.length === 0 && !currentFilter.search && !currentFilter.type) {
     return (
       <Card>
         <CardHeader>
@@ -275,16 +281,16 @@ const TransactionTableComponent = ({
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
             <Input
               placeholder="Search by symbol or notes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={currentFilter.search || ''}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10"
             />
           </div>
 
           <select
-            value={filterType}
+            value={currentFilter.type?.[0] || 'all'}
             onChange={(e) =>
-              setFilterType(e.target.value as TransactionType | 'all')
+              handleTypeFilterChange(e.target.value as TransactionType | 'all')
             }
             className="rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
@@ -389,6 +395,23 @@ const TransactionTableComponent = ({
           </div>
         )}
       </CardContent>
+
+      {/* Pagination Controls */}
+      {pagination.totalPages > 1 && (
+        <CardFooter className="border-t">
+          <PaginationControls
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            pageSize={pagination.pageSize}
+            totalCount={pagination.totalCount}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            isLoading={loading}
+            error={error}
+            onRetry={() => currentPortfolio?.id && loadPaginatedTransactions(currentPortfolio.id)}
+          />
+        </CardFooter>
+      )}
 
       {/* Edit Transaction Dialog */}
       {editTransaction && (

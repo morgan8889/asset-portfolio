@@ -1,18 +1,29 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { devtools, persist } from 'zustand/middleware';
 import { Decimal } from 'decimal.js';
 
-import {
+import type {
   Transaction,
   TransactionFilter,
   TransactionSummary,
   ImportResult,
   TransactionImportError,
 } from '@/types';
+import type {
+  PaginationState,
+  PaginationOptions,
+} from '@/types/transaction';
 import { generateTransactionId } from '@/types/storage';
 import { transactionQueries, HoldingsCalculator } from '@/lib/db';
+import { getPaginatedTransactions } from '@/lib/db/queries';
 import { showSuccessNotification, showErrorNotification } from './ui';
 import { handleSnapshotTrigger } from '@/lib/services/snapshot-service';
+import {
+  DEFAULT_PAGE,
+  DEFAULT_PAGE_SIZE,
+  isValidPageSize,
+  type PageSize,
+} from '@/lib/constants/pagination';
 
 // Optimistic ID prefix to identify temporary IDs
 const OPTIMISTIC_ID_PREFIX = 'optimistic-';
@@ -103,9 +114,14 @@ interface TransactionState {
   loading: boolean;
   importing: boolean;
   error: string | null;
+  pagination: PaginationState;
 
   // Actions
   loadTransactions: (portfolioId?: string) => Promise<void>;
+  loadPaginatedTransactions: (
+    portfolioId: string,
+    options?: Partial<PaginationOptions>
+  ) => Promise<void>;
   filterTransactions: (filter: TransactionFilter) => Promise<void>;
   createTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
   createTransactions: (
@@ -121,21 +137,34 @@ interface TransactionState {
     transactions: Omit<Transaction, 'id'>[],
     portfolioId: string
   ) => Promise<ImportResult>;
+  setCurrentPage: (page: number) => void;
+  setPageSize: (size: number) => void;
+  resetPagination: () => void;
   clearFilter: () => void;
   clearError: () => void;
 }
 
+// Default pagination state
+const DEFAULT_PAGINATION: PaginationState = {
+  currentPage: DEFAULT_PAGE,
+  pageSize: DEFAULT_PAGE_SIZE,
+  totalCount: 0,
+  totalPages: 0,
+};
+
 export const useTransactionStore = create<TransactionState>()(
   devtools(
-    (set, get) => ({
-      // Initial state
-      transactions: [],
-      filteredTransactions: [],
-      currentFilter: {},
-      summary: null,
-      loading: false,
-      importing: false,
-      error: null,
+    persist(
+      (set, get) => ({
+        // Initial state
+        transactions: [],
+        filteredTransactions: [],
+        currentFilter: {},
+        summary: null,
+        loading: false,
+        importing: false,
+        error: null,
+        pagination: { ...DEFAULT_PAGINATION },
 
       // Actions
       loadTransactions: async (portfolioId) => {
@@ -510,6 +539,83 @@ export const useTransactionStore = create<TransactionState>()(
         }
       },
 
+      loadPaginatedTransactions: async (portfolioId, options = {}) => {
+        set({ loading: true, error: null });
+
+        try {
+          const { pagination, currentFilter } = get();
+
+          const result = await getPaginatedTransactions({
+            page: options.page || pagination.currentPage,
+            pageSize: options.pageSize || pagination.pageSize,
+            portfolioId,
+            filterType: currentFilter.type,
+            searchTerm: currentFilter.search,
+            sortBy: 'date',
+            sortOrder: 'desc',
+          });
+
+          set({
+            transactions: result.data,
+            filteredTransactions: result.data,
+            pagination: {
+              currentPage: result.page,
+              pageSize: result.pageSize,
+              totalCount: result.totalCount,
+              totalPages: result.totalPages,
+            },
+            loading: false,
+          });
+        } catch (error) {
+          set({
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to load transactions',
+            loading: false,
+          });
+        }
+      },
+
+      setCurrentPage: (page) => {
+        const { pagination } = get();
+
+        // Validate bounds
+        const validPage = Math.max(1, Math.min(page, pagination.totalPages || 1));
+
+        set({
+          pagination: {
+            ...pagination,
+            currentPage: validPage,
+          },
+        });
+      },
+
+      setPageSize: (size) => {
+        const { pagination } = get();
+
+        // Validate size using centralized constant with explicit type
+        const validSize: PageSize = isValidPageSize(size) ? size : (pagination.pageSize as PageSize);
+
+        // Calculate new page to preserve position
+        const firstItemIndex = (pagination.currentPage - 1) * pagination.pageSize;
+        const newPage = Math.floor(firstItemIndex / validSize) + 1;
+
+        set({
+          pagination: {
+            ...pagination,
+            pageSize: validSize,
+            currentPage: newPage,
+          },
+        });
+      },
+
+      resetPagination: () => {
+        set({
+          pagination: { ...DEFAULT_PAGINATION },
+        });
+      },
+
       clearFilter: () => {
         const { transactions } = get();
         set({
@@ -522,6 +628,25 @@ export const useTransactionStore = create<TransactionState>()(
         set({ error: null });
       },
     }),
+      {
+        name: 'transaction-pagination-state',
+        storage: {
+          getItem: (name) => {
+            const str = sessionStorage.getItem(name);
+            return str ? JSON.parse(str) : null;
+          },
+          setItem: (name, value) => {
+            sessionStorage.setItem(name, JSON.stringify(value));
+          },
+          removeItem: (name) => {
+            sessionStorage.removeItem(name);
+          },
+        },
+        partialize: (state) => ({
+          pagination: state.pagination,
+        }) as TransactionState,
+      }
+    ),
     {
       name: 'transaction-store',
     }
