@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import { Decimal } from 'decimal.js';
 
-import {
+import type {
   Transaction,
   TransactionFilter,
   TransactionSummary,
@@ -22,6 +22,7 @@ import {
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   isValidPageSize,
+  type PageSize,
 } from '@/lib/constants/pagination';
 
 // Optimistic ID prefix to identify temporary IDs
