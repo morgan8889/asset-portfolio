@@ -69,6 +69,9 @@ export const WIDGET_SIZE_CONSTRAINTS: Record<WidgetId, WidgetSizeConstraints> =
     'day-change': { minW: 1, maxW: 1, minH: 1, maxH: 1 },
     'category-breakdown': { minW: 1, maxW: 2, minH: 2, maxH: 4 },
     'growth-chart': { minW: 2, maxW: 4, minH: 2, maxH: 4 }, // Allows 2-4 columns for full-width charts
+    // BACKWARD COMPATIBILITY: Widget IDs preserved for existing dashboard configurations.
+    // Implementations removed but IDs retained for migration compatibility.
+    // New dashboards use 'performance-list' widget instead.
     'top-performers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
     'biggest-losers': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
     'recent-activity': { minW: 1, maxW: 2, minH: 2, maxH: 3 },
@@ -105,6 +108,7 @@ export type WidgetId =
   | 'day-change'
   | 'category-breakdown'
   | 'growth-chart'
+  // BACKWARD COMPATIBILITY: Preserved for existing dashboard configs
   | 'top-performers'
   | 'biggest-losers'
   | 'recent-activity'
