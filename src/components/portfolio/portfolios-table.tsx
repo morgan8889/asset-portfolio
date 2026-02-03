@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useState } from 'react';
 import { CreatePortfolioDialog } from '@/components/forms/create-portfolio';
+import { DeletePortfolioDialog } from '@/components/forms/delete-portfolio-dialog';
 import {
   Table,
   TableBody,
@@ -48,6 +49,12 @@ export function PortfoliosTable({
     currency: string;
   } | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  
+  const [deletingPortfolio, setDeletingPortfolio] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const portfolios = useMemo(() => getSortedPortfolios(), [getSortedPortfolios]);
 
@@ -111,6 +118,17 @@ export function PortfoliosTable({
     setEditDialogOpen(true);
     if (onEdit) {
       onEdit(portfolio.id);
+    }
+  };
+
+  const handleDelete = (portfolio: any) => {
+    setDeletingPortfolio({
+      id: portfolio.id,
+      name: portfolio.name,
+    });
+    setDeleteDialogOpen(true);
+    if (onDelete) {
+      onDelete(portfolio.id);
     }
   };
 
@@ -182,15 +200,13 @@ export function PortfoliosTable({
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    {onDelete && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDelete(portfolio.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(portfolio)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -207,6 +223,13 @@ export function PortfoliosTable({
           onOpenChange={setEditDialogOpen}
         />
       )}
+
+      <DeletePortfolioDialog
+        portfolio={deletingPortfolio}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        isLastPortfolio={portfolios.length === 1}
+      />
     </div>
   );
 }
