@@ -36,6 +36,8 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { Transaction, TransactionType } from '@/types';
 import { TransactionDialog } from '@/components/forms/add-transaction';
 import { DeleteTransactionDialog } from '@/components/dialogs/delete-transaction-dialog';
+import { PaginationControls } from './pagination-controls';
+import { CardFooter } from '@/components/ui/card';
 
 interface TransactionTableProps {
   showPortfolioFilter?: boolean;
@@ -148,6 +150,11 @@ const TransactionTableComponent = ({
     loading,
     error,
     loadTransactions,
+    loadPaginatedTransactions,
+    pagination,
+    setCurrentPage,
+    setPageSize,
+    resetPagination,
     filterTransactions,
     clearError,
     deleteTransaction: deleteTransactionAction,
@@ -155,11 +162,17 @@ const TransactionTableComponent = ({
 
   const { currentPortfolio } = usePortfolioStore();
 
+  // Load paginated transactions when portfolio or pagination changes
   useEffect(() => {
     if (currentPortfolio?.id) {
-      loadTransactions(currentPortfolio.id);
+      loadPaginatedTransactions(currentPortfolio.id);
     }
-  }, [currentPortfolio?.id, loadTransactions]);
+  }, [currentPortfolio?.id, pagination.currentPage, pagination.pageSize, loadPaginatedTransactions]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    resetPagination();
+  }, [searchTerm, filterType, resetPagination]);
 
   const displayTransactions = useMemo(() => {
     let filtered =
@@ -389,6 +402,21 @@ const TransactionTableComponent = ({
           </div>
         )}
       </CardContent>
+
+      {/* Pagination Controls */}
+      {pagination.totalPages > 1 && (
+        <CardFooter className="border-t">
+          <PaginationControls
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            pageSize={pagination.pageSize}
+            totalCount={pagination.totalCount}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            isLoading={loading}
+          />
+        </CardFooter>
+      )}
 
       {/* Edit Transaction Dialog */}
       {editTransaction && (

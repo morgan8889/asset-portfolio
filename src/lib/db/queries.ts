@@ -17,6 +17,11 @@ import {
   HoldingStorage,
   TransactionStorage,
 } from '@/types';
+import type {
+  TransactionType,
+  PaginationOptions,
+  PaginatedTransactionsResult,
+} from '@/types/transaction';
 import {
   serializeDecimalFields,
   serializePartialDecimals,
@@ -522,3 +527,110 @@ export const settingsQueries = {
     );
   },
 };
+
+// ==================== Pagination Queries ====================
+
+/**
+ * Count total transactions matching criteria
+ */
+export async function countTransactions(
+  portfolioId: string,
+  filterType?: TransactionType[],
+  searchTerm?: string
+): Promise<number> {
+  let query = db.transactions.where('portfolioId').equals(portfolioId);
+
+  // Apply filters if provided
+  let results = await query.toArray();
+
+  if (filterType && filterType.length > 0) {
+    results = results.filter((t) => filterType.includes(t.type));
+  }
+
+  if (searchTerm) {
+    const searchLower = searchTerm.toLowerCase();
+    results = results.filter(
+      (t) =>
+        t.assetId?.toLowerCase().includes(searchLower) ||
+        t.notes?.toLowerCase().includes(searchLower)
+    );
+  }
+
+  return results.length;
+}
+
+/**
+ * Get paginated transactions with sorting and filtering
+ */
+export async function getPaginatedTransactions(
+  options: PaginationOptions
+): Promise<PaginatedTransactionsResult> {
+  const {
+    page,
+    pageSize,
+    portfolioId,
+    sortBy = 'date',
+    sortOrder = 'desc',
+    filterType,
+    searchTerm,
+  } = options;
+
+  // Calculate offset (0-indexed)
+  const offset = (page - 1) * pageSize;
+
+  // Get count first
+  const totalCount = await countTransactions(portfolioId, filterType, searchTerm);
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  // Get paginated data
+  let query = db.transactions.where('portfolioId').equals(portfolioId);
+  let results = await query.toArray();
+
+  // Apply filters
+  if (filterType && filterType.length > 0) {
+    results = results.filter((t) => filterType.includes(t.type));
+  }
+
+  if (searchTerm) {
+    const searchLower = searchTerm.toLowerCase();
+    results = results.filter(
+      (t) =>
+        t.assetId?.toLowerCase().includes(searchLower) ||
+        t.notes?.toLowerCase().includes(searchLower)
+    );
+  }
+
+  // Sort
+  results.sort((a, b) => {
+    let aVal: any;
+    let bVal: any;
+
+    if (sortBy === 'date') {
+      aVal = new Date(a.date).getTime();
+      bVal = new Date(b.date).getTime();
+    } else if (sortBy === 'totalAmount') {
+      aVal = new Decimal(a.totalAmount || '0').toNumber();
+      bVal = new Decimal(b.totalAmount || '0').toNumber();
+    } else {
+      aVal = a[sortBy] || '';
+      bVal = b[sortBy] || '';
+    }
+
+    const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+    return sortOrder === 'desc' ? -comparison : comparison;
+  });
+
+  // Apply pagination
+  const paginatedResults = results.slice(offset, offset + pageSize);
+
+  // Convert Decimal.js fields
+  const data = paginatedResults.map((t) => db.convertTransactionDecimals(t));
+
+  return {
+    data,
+    totalCount,
+    page,
+    pageSize,
+    totalPages,
+  };
+}

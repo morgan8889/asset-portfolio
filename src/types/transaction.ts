@@ -224,3 +224,39 @@ export const RSUTransactionMetadataSchema = z
     },
     { message: 'Net shares must equal gross shares - shares withheld' }
   );
+
+// ==================== Pagination Types ====================
+
+/**
+ * Pagination state stored in transaction store
+ */
+export interface PaginationState {
+  currentPage: number; // 1-indexed, default: 1
+  pageSize: number; // 10 | 25 | 50 | 100, default: 25
+  totalCount: number; // Total matching transactions
+  totalPages: number; // Calculated: ceil(totalCount / pageSize)
+}
+
+/**
+ * Options for paginated queries
+ */
+export interface PaginationOptions {
+  page: number; // 1-indexed page number
+  pageSize: number; // Transactions per page
+  portfolioId: string; // Required: which portfolio
+  sortBy?: 'date' | 'totalAmount' | 'assetId'; // Default: 'date'
+  sortOrder?: 'asc' | 'desc'; // Default: 'desc'
+  filterType?: TransactionType[]; // Optional: type filter
+  searchTerm?: string; // Optional: search filter
+}
+
+/**
+ * Paginated query result
+ */
+export interface PaginatedTransactionsResult {
+  data: Transaction[]; // Page of transactions
+  totalCount: number; // Total matching transactions
+  page: number; // Current page (1-indexed)
+  pageSize: number; // Items per page
+  totalPages: number; // Calculated: ceil(totalCount / pageSize)
+}
