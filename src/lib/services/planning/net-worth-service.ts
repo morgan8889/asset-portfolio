@@ -115,6 +115,10 @@ function calculateNetWorthFromCache(
 
   // Calculate historical liability balances using payment history
   for (const liability of data.liabilities) {
+    // Skip liabilities that didn't exist yet at the calculation date
+    const liabilityStartDate = new Date(liability.startDate);
+    if (date < liabilityStartDate) continue;
+
     const payments = data.liabilityPaymentsMap.get(liability.id) || [];
     const balanceAtDate = calculateLiabilityBalanceAtDate(
       liability,
