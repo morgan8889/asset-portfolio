@@ -9,14 +9,14 @@ import path from 'path';
 
 // Test CSV file content
 const VALID_CSV_CONTENT = `Date,Symbol,Quantity,Price,Type,Fees,Notes
-2025-01-15,AAPL,10,150.00,buy,5.00,Test purchase
-2025-01-16,GOOGL,5,175.50,buy,5.00,Another purchase
-2025-01-17,MSFT,20,380.25,buy,7.50,Microsoft stock`;
+2026-01-15,AAPL,10,150.00,buy,5.00,Test purchase
+2026-01-16,GOOGL,5,175.50,buy,5.00,Another purchase
+2026-01-17,MSFT,20,380.25,buy,7.50,Microsoft stock`;
 
 const CSV_WITH_ERRORS = `Date,Symbol,Quantity,Price,Type
-2025-01-15,AAPL,10,150.00,buy
+2026-01-15,AAPL,10,150.00,buy
 invalid-date,GOOGL,5,175.50,buy
-2025-01-17,,20,380.25,buy`;
+2026-01-17,,20,380.25,buy`;
 
 test.describe('CSV Import Flow', () => {
   test.beforeEach(async ({ page }) => {
