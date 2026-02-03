@@ -41,7 +41,7 @@ import {
 import { DuplicateReview } from './duplicate-review';
 import { useCsvImportStore } from '@/lib/stores/csv-import';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
-import { ensureValidPortfolio } from '@/lib/utils/portfolio-validation';
+import { ensureValidPortfolio } from '@/lib/services/csv/portfolio-validation';
 import type { DuplicateHandling } from '@/types/csv-import';
 import type { TransactionField } from '@/types/csv-import';
 

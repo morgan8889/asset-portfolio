@@ -202,77 +202,11 @@ class Logger {
 // Create singleton logger instance
 export const logger = new Logger();
 
-// Performance measurement helper
-export function measurePerformance<T>(
-  operation: string,
-  fn: () => T | Promise<T>
-): T | Promise<T> {
-  const start = performance.now();
-
-  const logResult = (result?: T) => {
-    const duration = performance.now() - start;
-    logger.performance(operation, duration, {
-      success: true,
-      result: typeof result === 'object' ? '[object]' : result,
-    });
-    return result;
-  };
-
-  const logError = (error: any) => {
-    const duration = performance.now() - start;
-    logger.performance(operation, duration, {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
-    throw error;
-  };
-
-  try {
-    const result = fn();
-
-    if (result instanceof Promise) {
-      return result.then(
-        (res: T) => logResult(res)!,
-        (err: any) => logError(err)!
-      ) as Promise<T>;
-    }
-
-    return logResult(result)!;
-  } catch (error) {
-    return logError(error);
-  }
-}
-
-// Request logging middleware helper
-export function createRequestLogger(requestId?: string) {
-  return logger.withContext({
-    sessionId:
-      requestId ||
-      `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-  });
-}
-
-// Client-side error boundary logger
-export function logUnhandledError(error: Error, errorInfo?: any): void {
-  logger.error('Unhandled error caught by error boundary', {
-    error: {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-    },
-    errorInfo,
-    url: typeof window !== 'undefined' ? window.location.href : undefined,
-    userAgent:
-      typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
-  });
-}
-
-// Log levels for external configuration
-export const LOG_LEVELS = {
-  DEBUG: 'debug',
-  INFO: 'info',
-  WARN: 'warn',
-  ERROR: 'error',
-} as const;
+// Removed unused logger utilities (Feb 2026 cleanup):
+// - measurePerformance(): 39 lines, zero usage confirmed
+// - createRequestLogger(): 7 lines, zero usage confirmed
+// - logUnhandledError(): 13 lines, zero usage confirmed
+// - LOG_LEVELS constant: 4 lines, zero usage confirmed
+// If needed in the future, retrieve from git history
 
 export type { LogLevel, LogEntry };
