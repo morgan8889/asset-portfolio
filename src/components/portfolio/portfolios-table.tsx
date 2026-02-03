@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useEffect, useState } from 'react';
+import { CreatePortfolioDialog } from '@/components/forms/create-portfolio';
 import {
   Table,
   TableBody,
@@ -13,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
-import { formatCurrency } from '@/lib/utils/format';
+import { formatCurrency } from '@/lib/utils/currency';
 import { calculateTotalValue, calculateGainPercent } from '@/lib/services/metrics-service';
 import { holdingQueries } from '@/lib/db';
 import Decimal from 'decimal.js';
@@ -40,6 +41,13 @@ export function PortfoliosTable({
   const [portfolioMetrics, setPortfolioMetrics] = useState<
     Map<string, { totalValue: Decimal; ytdReturn: number; holdings: number }>
   >(new Map());
+  const [editingPortfolio, setEditingPortfolio] = useState<{
+    id: string;
+    name: string;
+    type: string;
+    currency: string;
+  } | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const portfolios = useMemo(() => getSortedPortfolios(), [getSortedPortfolios]);
 
@@ -91,6 +99,19 @@ export function PortfoliosTable({
         holdings: 0,
       }
     );
+  };
+
+  const handleEdit = (portfolio: any) => {
+    setEditingPortfolio({
+      id: portfolio.id,
+      name: portfolio.name,
+      type: portfolio.type,
+      currency: portfolio.currency,
+    });
+    setEditDialogOpen(true);
+    if (onEdit) {
+      onEdit(portfolio.id);
+    }
   };
 
   return (
@@ -154,15 +175,13 @@ export function PortfoliosTable({
                       <Eye className="h-4 w-4 mr-1" />
                       View
                     </Button>
-                    {onEdit && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onEdit(portfolio.id)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(portfolio)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                     {onDelete && (
                       <Button
                         variant="ghost"
@@ -179,6 +198,15 @@ export function PortfoliosTable({
           })}
         </TableBody>
       </Table>
+
+      {editingPortfolio && (
+        <CreatePortfolioDialog
+          mode="edit"
+          portfolio={editingPortfolio}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+        />
+      )}
     </div>
   );
 }
