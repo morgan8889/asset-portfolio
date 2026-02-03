@@ -22,12 +22,16 @@ const migrations: Migration[] = [
     version: 1,
     description: 'Initial schema',
     up: async () => {
-      // Initial schema is already defined in the Dexie constructor
-      // This migration is just for tracking
+      // Initial schema (v1-v4) is defined in Dexie version() calls in schema.ts
+      // This migration exists for version tracking only
+      // Actual schema includes:
+      // - portfolios, assets, holdings, transactions
+      // - priceHistory, priceSnapshots, dividendRecords, performanceSnapshots
+      // - userSettings, liabilities, liabilityPayments (v4: net worth tracking)
       logger.info('Applying initial schema migration...');
     },
     down: async () => {
-      // Cannot easily rollback initial schema
+      // Cannot rollback initial schema (would destroy all data)
       throw new Error('Cannot rollback initial migration');
     },
   },
