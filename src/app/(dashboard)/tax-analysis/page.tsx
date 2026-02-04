@@ -30,7 +30,19 @@ export default function TaxAnalysisPage() {
     return map;
   }, [assets]);
 
-  // Convert prices to Map<string, Decimal>
+  // Create a stable key based on actual price values to prevent unnecessary re-renders
+  // This ensures pricesMap only changes when actual price values change, not on every poll cycle
+  const pricesKey = useMemo(
+    () =>
+      Object.entries(prices)
+        .filter(([, p]) => p != null)
+        .map(([id, p]) => `${id}:${p}`)
+        .sort()
+        .join('|'),
+    [prices]
+  );
+
+  // Convert prices to Map<string, Decimal> with stable dependency
   const pricesMap = useMemo(() => {
     const map = new Map<string, Decimal>();
     Object.entries(prices).forEach(([assetId, price]) => {
@@ -39,7 +51,8 @@ export default function TaxAnalysisPage() {
       }
     });
     return map;
-  }, [prices]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pricesKey]);
 
   if (!currentPortfolio) {
     return (

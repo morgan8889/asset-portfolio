@@ -50,7 +50,8 @@ export function estimateTaxLiability(
   for (const holding of holdings) {
     const currentPrice = currentPrices.get(holding.assetId);
     if (!currentPrice) {
-      // Skip holdings without current price
+      // Log skipped holdings for debugging - helps identify missing price data
+      console.warn(`Tax estimator: Skipping ${holding.assetId} - no price available`);
       continue;
     }
 
