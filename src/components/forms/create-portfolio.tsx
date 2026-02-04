@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Plus } from 'lucide-react';
+import { db } from '@/lib/db';
+import { logger } from '@/lib/utils/logger';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -95,25 +97,35 @@ export function CreatePortfolioDialog({
   const currencyValue = watch('currency');
   const initialType = portfolio?.type;
 
+  // Reset form when dialog opens with different portfolio
+  useEffect(() => {
+    if (open && mode === 'edit' && portfolio) {
+      reset({
+        name: portfolio.name,
+        type: portfolio.type,
+        currency: portfolio.currency,
+      });
+      setShowTypeChangeWarning(false);
+      setTransactionCount(0);
+    }
+  }, [open, mode, portfolio, reset]);
+
   // Check transaction count when type changes in edit mode
   useEffect(() => {
     if (mode === 'edit' && portfolio && portfolioType && portfolioType !== initialType) {
       // Check if portfolio has transactions
-      import('@/lib/db')
-        .then(({ db }) => {
-          return db.transactions
-            .where('portfolioId')
-            .equals(portfolio.id)
-            .count()
-            .then(count => {
-              setTransactionCount(count);
-              if (count > 0) {
-                setShowTypeChangeWarning(true);
-              }
-            });
+      db.transactions
+        .where('portfolioId')
+        .equals(portfolio.id)
+        .count()
+        .then(count => {
+          setTransactionCount(count);
+          if (count > 0) {
+            setShowTypeChangeWarning(true);
+          }
         })
         .catch(error => {
-          console.error('Failed to check transaction count:', error);
+          logger.error('Failed to check transaction count', error);
           // Show warning as a safety measure if we can't check
           setShowTypeChangeWarning(true);
         });
@@ -157,7 +169,7 @@ export function CreatePortfolioDialog({
       setOpen(false);
       setShowTypeChangeWarning(false);
     } catch (error) {
-      console.error(`Failed to ${mode} portfolio:`, error);
+      logger.error(`Failed to ${mode} portfolio`, error);
     } finally {
       setIsSubmitting(false);
     }

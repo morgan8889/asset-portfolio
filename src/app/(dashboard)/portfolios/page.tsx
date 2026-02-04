@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { PortfoliosTable } from '@/components/portfolio/portfolios-table';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { CreatePortfolioDialog } from '@/components/forms/create-portfolio';
 
 export default function PortfoliosPage() {

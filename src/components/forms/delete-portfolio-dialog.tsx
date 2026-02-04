@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { usePortfolioStore } from '@/lib/stores';
 import { db } from '@/lib/db';
+import { logger } from '@/lib/utils/logger';
 
 interface DeletePortfolioDialogProps {
   portfolio: {
@@ -49,7 +50,7 @@ export function DeletePortfolioDialog({
         .count()
         .then(setTransactionCount)
         .catch((error) => {
-          console.error('Failed to count transactions:', error);
+          logger.error('Failed to count transactions:', error);
           setTransactionCount(0);
         });
     } else {
@@ -83,7 +84,7 @@ export function DeletePortfolioDialog({
       await deletePortfolio(portfolio.id);
       onOpenChange(false);
     } catch (error) {
-      console.error('Failed to delete portfolio:', error);
+      logger.error('Failed to delete portfolio:', error);
     } finally {
       setIsDeleting(false);
     }
@@ -105,16 +106,16 @@ export function DeletePortfolioDialog({
         <div className="space-y-4 py-4">
           {/* Last portfolio warning */}
           {isLastPortfolio && (
-            <div className="rounded-md bg-yellow-50 border border-yellow-200 p-4">
+            <div className="rounded-md bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                  <AlertTriangle className="h-5 w-5 text-yellow-400 dark:text-yellow-600" />
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-yellow-800">
+                  <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
                     Last Portfolio
                   </h3>
-                  <div className="mt-2 text-sm text-yellow-700">
+                  <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
                     <p>
                       This is your last portfolio. Deleting it will leave you
                       with no portfolios to track. You'll need to create a new
@@ -127,15 +128,15 @@ export function DeletePortfolioDialog({
           )}
 
           {/* Portfolio info */}
-          <div className="rounded-md bg-gray-50 p-4">
-            <p className="text-sm text-gray-600">
+          <div className="rounded-md bg-gray-50 dark:bg-gray-900 p-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               You are about to delete:
             </p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">
+            <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
               {portfolio.name}
             </p>
             {transactionCount > 0 && (
-              <p className="mt-2 text-sm text-red-600">
+              <p className="mt-2 text-sm text-red-600 dark:text-red-400">
                 This portfolio contains {transactionCount} transaction
                 {transactionCount !== 1 ? 's' : ''}. All transactions will be
                 permanently deleted.

@@ -76,18 +76,20 @@ export const usePortfolioStore = create<PortfolioState>()(
           }
         },
 
-        setCurrentPortfolio: (portfolio) => {
+        setCurrentPortfolio: async (portfolio) => {
           set({ currentPortfolio: portfolio });
           if (!portfolio) {
             set({ holdings: [], metrics: null });
           } else {
             // Track lastAccessedAt for recency-based sorting
             const now = new Date();
-            portfolioQueries
-              .update(portfolio.id, { lastAccessedAt: now })
-              .catch((error) => {
-                console.error('Failed to update lastAccessedAt:', error);
-              });
+            try {
+              await portfolioQueries.update(portfolio.id, { lastAccessedAt: now });
+            } catch (error) {
+              // Log error but don't fail the operation since this is non-critical
+              const { logger } = await import('@/lib/utils/logger');
+              logger.error('Failed to update lastAccessedAt', error);
+            }
           }
           // Note: loadHoldings and calculateMetrics are now triggered by useDashboardData hook
           // to avoid race conditions with persist middleware rehydration
@@ -149,7 +151,8 @@ export const usePortfolioStore = create<PortfolioState>()(
             // If we deleted the current portfolio, fall back to next best option
             if (wasCurrentDeleted) {
               // Use the updated portfolios from the store after loadPortfolios()
-              const remainingPortfolios = get().portfolios.filter((p) => p.id !== id);
+              // Note: The deleted portfolio is already gone from get().portfolios
+              const remainingPortfolios = get().portfolios;
 
               if (remainingPortfolios.length > 0) {
                 // Fall back to most recently accessed portfolio

@@ -21,6 +21,7 @@ import { holdingQueries } from '@/lib/db';
 import Decimal from 'decimal.js';
 import { Portfolio, PortfolioType } from '@/types/portfolio';
 import { PORTFOLIO_TYPE_LABELS } from '@/lib/constants/portfolio';
+import { logger } from '@/lib/utils/logger';
 
 interface PortfoliosTableProps {
   onView: (portfolioId: string) => void;
@@ -53,25 +54,11 @@ export function PortfoliosTable({
   } | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  // Sort in component with proper dependency
+  // Use the store's getSortedPortfolios method for consistency
+  const getSortedPortfolios = usePortfolioStore((state) => state.getSortedPortfolios);
   const sortedPortfolios = useMemo(() => {
-    if (!portfolios || !Array.isArray(portfolios)) {
-      return [];
-    }
-    return [...portfolios].sort((a, b) => {
-      const aTime =
-        a.lastAccessedAt?.getTime() ||
-        a.updatedAt?.getTime() ||
-        a.createdAt?.getTime() ||
-        0;
-      const bTime =
-        b.lastAccessedAt?.getTime() ||
-        b.updatedAt?.getTime() ||
-        b.createdAt?.getTime() ||
-        0;
-      return bTime - aTime; // Most recent first
-    });
-  }, [portfolios]);
+    return getSortedPortfolios();
+  }, [portfolios, getSortedPortfolios]);
 
   // Load metrics for all portfolios
   useEffect(() => {
@@ -100,7 +87,7 @@ export function PortfoliosTable({
             },
           };
         } catch (error) {
-          console.error(`Failed to load metrics for portfolio ${portfolio.id}:`, error);
+          logger.error(`Failed to load metrics for portfolio ${portfolio.id}`, error);
           return {
             portfolioId: portfolio.id,
             metrics: {
