@@ -175,14 +175,16 @@ export function CreatePortfolioDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children || (
-          <Button variant={variant}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Portfolio
-          </Button>
-        )}
-      </DialogTrigger>
+      {controlledOpen === undefined && (
+        <DialogTrigger asChild>
+          {children || (
+            <Button variant={variant}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Portfolio
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
