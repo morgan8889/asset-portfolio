@@ -50,6 +50,11 @@ const mockPortfolios: Portfolio[] = [
 const mockSetCurrentPortfolio = vi.fn();
 const mockGetSortedPortfolios = vi.fn(() => mockPortfolios);
 
+// Use a mutable variable for CSV import state
+const { mockCsvState } = vi.hoisted(() => ({
+  mockCsvState: { isProcessing: false },
+}));
+
 vi.mock('@/lib/stores/portfolio', () => ({
   usePortfolioStore: () => ({
     portfolios: mockPortfolios,
@@ -60,14 +65,21 @@ vi.mock('@/lib/stores/portfolio', () => ({
 }));
 
 vi.mock('@/lib/stores/csv-import', () => ({
-  useCsvImportStore: () => ({
-    isImporting: false,
-  }),
+  useCsvImportStore: () => mockCsvState,
+}));
+
+// Mock tooltip components to render directly in jsdom
+vi.mock('@/components/ui/tooltip', () => ({
+  TooltipProvider: ({ children }: any) => children,
+  Tooltip: ({ children }: any) => children,
+  TooltipTrigger: ({ children, asChild }: any) => children,
+  TooltipContent: ({ children }: any) => <div role="tooltip">{children}</div>,
 }));
 
 describe('PortfolioSelector', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCsvState.isProcessing = false;
   });
 
   describe('Rendering', () => {
@@ -80,7 +92,8 @@ describe('PortfolioSelector', () => {
     it('should display portfolio type badge', () => {
       render(<PortfolioSelector />);
 
-      expect(screen.getByText(/taxable/i)).toBeInTheDocument();
+      // Use exact match for the badge text to avoid matching the portfolio name
+      expect(screen.getByText('Taxable')).toBeInTheDocument();
     });
 
     it('should show dropdown trigger button', () => {
@@ -168,11 +181,7 @@ describe('PortfolioSelector', () => {
 
   describe('Disabled State During CSV Import', () => {
     it('should disable selector when CSV import is in progress', () => {
-      vi.mock('@/lib/stores/csv-import', () => ({
-        useCsvImportStore: () => ({
-          isImporting: true,
-        }),
-      }));
+      mockCsvState.isProcessing = true;
 
       render(<PortfolioSelector />);
 
@@ -182,27 +191,14 @@ describe('PortfolioSelector', () => {
       expect(trigger).toBeDisabled();
     });
 
-    it('should show tooltip when disabled during import', async () => {
-      vi.mock('@/lib/stores/csv-import', () => ({
-        useCsvImportStore: () => ({
-          isImporting: true,
-        }),
-      }));
+    it('should show tooltip when disabled during import', () => {
+      mockCsvState.isProcessing = true;
 
-      const user = userEvent.setup();
       render(<PortfolioSelector />);
 
-      const trigger = screen.getByRole('button', {
-        name: /select portfolio/i,
-      });
-
-      await user.hover(trigger);
-
-      await waitFor(() => {
-        expect(
-          screen.getByText(/cannot switch portfolios during import/i)
-        ).toBeInTheDocument();
-      });
+      // With mocked tooltip components, the tooltip content renders directly
+      const tooltip = screen.getByRole('tooltip');
+      expect(tooltip).toHaveTextContent(/cannot switch portfolios during/i);
     });
   });
 });

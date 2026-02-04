@@ -35,8 +35,8 @@ describe('getNetWorthHistory', () => {
   });
 
   it('should return monthly data points even with no holdings or liabilities', async () => {
-    const startDate = new Date('2025-01-01');
-    const endDate = new Date('2025-03-31');
+    const startDate = new Date(2025, 0, 1);
+    const endDate = new Date(2025, 2, 31);
 
     const history = await getNetWorthHistory('portfolio-1', startDate, endDate);
 
@@ -78,8 +78,8 @@ describe('getNetWorthHistory', () => {
       { assetId, date: '2025-02-15', close: 150, open: 145, high: 155, low: 143, volume: 1200 },
     ] as any);
 
-    const startDate = new Date('2025-01-01');
-    const endDate = new Date('2025-02-28');
+    const startDate = new Date(2025, 0, 1);
+    const endDate = new Date(2025, 1, 28);
 
     const history = await getNetWorthHistory('portfolio-1', startDate, endDate);
 
@@ -102,17 +102,17 @@ describe('getNetWorthHistory', () => {
         balance: 20000,
         interestRate: 0.05,
         payment: 500,
-        startDate: '2025-03-01',
-        createdAt: '2025-03-01',
-        updatedAt: '2025-03-01',
+        startDate: '2025-03-15',
+        createdAt: '2025-03-15',
+        updatedAt: '2025-03-15',
       },
     ]);
 
     vi.mocked(db.assets.bulkGet).mockResolvedValue([]);
     vi.mocked(db.getLiabilityPayments).mockResolvedValue([]);
 
-    const startDate = new Date('2025-01-01');
-    const endDate = new Date('2025-04-30');
+    const startDate = new Date(2025, 0, 1);
+    const endDate = new Date(2025, 3, 30);
 
     const history = await getNetWorthHistory('portfolio-1', startDate, endDate);
 
@@ -146,8 +146,8 @@ describe('getNetWorthHistory', () => {
     vi.mocked(db.assets.bulkGet).mockResolvedValue([]);
     vi.mocked(db.getLiabilityPayments).mockResolvedValue([]);
 
-    const startDate = new Date('2020-01-01');
-    const endDate = new Date('2025-06-30');
+    const startDate = new Date(2020, 0, 1);
+    const endDate = new Date(2025, 5, 30);
 
     // This should NOT throw - it was the original bug
     await expect(
@@ -158,7 +158,7 @@ describe('getNetWorthHistory', () => {
 
     // All months before 2025-01-15 should have 0 liabilities
     const preLiabilityMonths = history.filter(
-      (p) => p.date < new Date('2025-01-15')
+      (p) => p.date < new Date(2025, 0, 15)
     );
     for (const point of preLiabilityMonths) {
       expect(point.liabilities).toBe(0);
@@ -166,7 +166,7 @@ describe('getNetWorthHistory', () => {
 
     // Months from Feb 2025 onward should include the liability
     const postLiabilityMonths = history.filter(
-      (p) => p.date >= new Date('2025-01-31')
+      (p) => p.date >= new Date(2025, 0, 31)
     );
     expect(postLiabilityMonths.length).toBeGreaterThan(0);
     for (const point of postLiabilityMonths) {
@@ -212,8 +212,8 @@ describe('getNetWorthHistory', () => {
 
     vi.mocked(db.getLiabilityPayments).mockResolvedValue([]);
 
-    const startDate = new Date('2025-01-01');
-    const endDate = new Date('2025-01-31');
+    const startDate = new Date(2025, 0, 1);
+    const endDate = new Date(2025, 0, 31);
 
     const history = await getNetWorthHistory('portfolio-1', startDate, endDate);
 

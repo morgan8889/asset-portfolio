@@ -53,6 +53,7 @@ describe('Portfolio Store', () => {
       error: null,
     });
     mockAssetQueries.getAll.mockResolvedValue([]);
+    mockPortfolioQueries.update.mockResolvedValue(undefined);
   });
 
   afterEach(() => {

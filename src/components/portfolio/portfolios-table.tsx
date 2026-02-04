@@ -217,6 +217,7 @@ export function PortfoliosTable({
                     <Button
                       variant="ghost"
                       size="sm"
+                      aria-label="Edit"
                       onClick={() => handleEdit(portfolio)}
                     >
                       <Pencil className="h-4 w-4" />
@@ -224,6 +225,7 @@ export function PortfoliosTable({
                     <Button
                       variant="ghost"
                       size="sm"
+                      aria-label="Delete"
                       onClick={() => handleDelete(portfolio)}
                     >
                       <Trash2 className="h-4 w-4" />

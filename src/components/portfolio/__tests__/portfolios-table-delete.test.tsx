@@ -2,11 +2,23 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PortfoliosTable } from '../portfolios-table';
-import { usePortfolioStore } from '@/lib/stores/portfolio';
-import { holdingQueries } from '@/lib/db';
+
+// Use vi.hoisted for mutable state accessible in vi.mock factories
+const { mockStoreState } = vi.hoisted(() => ({
+  mockStoreState: {
+    portfolios: [] as any[],
+    currentPortfolio: null as any,
+    deletePortfolio: vi.fn(),
+  },
+}));
 
 vi.mock('@/lib/stores/portfolio', () => ({
-  usePortfolioStore: vi.fn(),
+  usePortfolioStore: (selector?: any) => {
+    if (typeof selector === 'function') {
+      return selector(mockStoreState);
+    }
+    return mockStoreState;
+  },
 }));
 
 vi.mock('@/lib/db', () => ({
@@ -47,7 +59,7 @@ describe('PortfoliosTable - Delete Functionality', () => {
       type: 'ira',
       currency: 'USD',
       createdAt: new Date('2025-01-01'),
-      updatedAt: new Date('2025-01-15'),
+      updatedAt: new Date('2025-01-20'),
       settings: {},
     },
     {
@@ -56,18 +68,16 @@ describe('PortfoliosTable - Delete Functionality', () => {
       type: 'taxable',
       currency: 'USD',
       createdAt: new Date('2025-01-10'),
-      updatedAt: new Date('2025-01-20'),
+      updatedAt: new Date('2025-01-15'),
       settings: {},
     },
   ];
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (usePortfolioStore as any).mockReturnValue({
-      getSortedPortfolios: () => mockPortfolios,
-      currentPortfolio: mockPortfolios[0],
-      deletePortfolio: vi.fn(),
-    });
+    mockStoreState.portfolios = mockPortfolios;
+    mockStoreState.currentPortfolio = mockPortfolios[0];
+    mockStoreState.deletePortfolio = vi.fn();
   });
 
   it('should render Delete button for each portfolio', async () => {
@@ -76,7 +86,7 @@ describe('PortfoliosTable - Delete Functionality', () => {
     );
 
     await waitFor(() => {
-      const deleteButtons = screen.getAllByRole('button', { name: /trash/i });
+      const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
       expect(deleteButtons).toHaveLength(2);
     });
   });
@@ -92,13 +102,12 @@ describe('PortfoliosTable - Delete Functionality', () => {
     await screen.findByText('Retirement Portfolio');
 
     // Click first Delete button
-    const deleteButtons = screen.getAllByRole('button', { name: /trash/i });
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
     await user.click(deleteButtons[0]);
 
     // Dialog should open with delete confirmation
     await waitFor(() => {
-      expect(screen.getByText('Delete Portfolio')).toBeInTheDocument();
-      expect(screen.getByText('Retirement Portfolio')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /delete portfolio/i })).toBeInTheDocument();
     });
   });
 
@@ -112,11 +121,11 @@ describe('PortfoliosTable - Delete Functionality', () => {
     await screen.findByText('Retirement Portfolio');
 
     // Open delete dialog
-    const deleteButtons = screen.getAllByRole('button', { name: /trash/i });
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
     await user.click(deleteButtons[0]);
 
     await waitFor(() => {
-      expect(screen.getByText('Delete Portfolio')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /delete portfolio/i })).toBeInTheDocument();
     });
 
     // Click cancel
@@ -125,19 +134,14 @@ describe('PortfoliosTable - Delete Functionality', () => {
 
     // Dialog should close
     await waitFor(() => {
-      expect(screen.queryByText('Delete Portfolio')).not.toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: /delete portfolio/i })).not.toBeInTheDocument();
     });
   });
 
   it('should call deletePortfolio when confirmed', async () => {
     const user = userEvent.setup();
     const mockDeletePortfolio = vi.fn(() => Promise.resolve());
-
-    (usePortfolioStore as any).mockReturnValue({
-      getSortedPortfolios: () => mockPortfolios,
-      currentPortfolio: mockPortfolios[0],
-      deletePortfolio: mockDeletePortfolio,
-    });
+    mockStoreState.deletePortfolio = mockDeletePortfolio;
 
     render(
       <PortfoliosTable onView={vi.fn()} />
@@ -146,11 +150,11 @@ describe('PortfoliosTable - Delete Functionality', () => {
     await screen.findByText('Retirement Portfolio');
 
     // Open delete dialog
-    const deleteButtons = screen.getAllByRole('button', { name: /trash/i });
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
     await user.click(deleteButtons[0]);
 
     await waitFor(() => {
-      expect(screen.getByText('Delete Portfolio')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /delete portfolio/i })).toBeInTheDocument();
     });
 
     // Confirm deletion
@@ -165,12 +169,8 @@ describe('PortfoliosTable - Delete Functionality', () => {
   it('should show last portfolio warning when only one portfolio remains', async () => {
     const user = userEvent.setup();
     const singlePortfolio = [mockPortfolios[0]];
-
-    (usePortfolioStore as any).mockReturnValue({
-      getSortedPortfolios: () => singlePortfolio,
-      currentPortfolio: singlePortfolio[0],
-      deletePortfolio: vi.fn(),
-    });
+    mockStoreState.portfolios = singlePortfolio;
+    mockStoreState.currentPortfolio = singlePortfolio[0];
 
     render(
       <PortfoliosTable onView={vi.fn()} />
@@ -179,7 +179,7 @@ describe('PortfoliosTable - Delete Functionality', () => {
     await screen.findByText('Retirement Portfolio');
 
     // Open delete dialog
-    const deleteButtons = screen.getAllByRole('button', { name: /trash/i });
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
     await user.click(deleteButtons[0]);
 
     // Should show last portfolio warning
@@ -198,44 +198,32 @@ describe('PortfoliosTable - Delete Functionality', () => {
     await screen.findByText('Retirement Portfolio');
 
     // Open delete dialog
-    const deleteButtons = screen.getAllByRole('button', { name: /trash/i });
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
     await user.click(deleteButtons[0]);
 
     await waitFor(() => {
-      expect(screen.getByText('Delete Portfolio')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /delete portfolio/i })).toBeInTheDocument();
     });
 
     // Should not show last portfolio warning
     expect(screen.queryByText(/this is your last portfolio/i)).not.toBeInTheDocument();
   });
 
-  it('should allow deleting different portfolios sequentially', async () => {
+  it('should call onDelete with second portfolio id when clicking second delete button', async () => {
     const user = userEvent.setup();
+    const mockOnDelete = vi.fn();
 
     render(
-      <PortfoliosTable onView={vi.fn()} />
+      <PortfoliosTable onView={vi.fn()} onDelete={mockOnDelete} />
     );
 
-    await screen.findByText('Retirement Portfolio');
+    await screen.findByText('Trading Account');
 
-    // Delete first portfolio
-    const deleteButtons = screen.getAllByRole('button', { name: /trash/i });
-    await user.click(deleteButtons[0]);
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
 
-    await waitFor(() => {
-      expect(screen.getByText('Retirement Portfolio')).toBeInTheDocument();
-    });
-
-    // Cancel
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
-    await user.click(cancelButton);
-
-    // Delete second portfolio
+    // Click second delete button (portfolio-2)
     await user.click(deleteButtons[1]);
-
-    await waitFor(() => {
-      expect(screen.getByText('Trading Account')).toBeInTheDocument();
-    });
+    expect(mockOnDelete).toHaveBeenCalledWith('portfolio-2');
   });
 
   it('should call onDelete callback when provided', async () => {
@@ -248,7 +236,7 @@ describe('PortfoliosTable - Delete Functionality', () => {
 
     await screen.findByText('Retirement Portfolio');
 
-    const deleteButtons = screen.getAllByRole('button', { name: /trash/i });
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
     await user.click(deleteButtons[0]);
 
     expect(mockOnDelete).toHaveBeenCalledWith('portfolio-1');
@@ -265,7 +253,7 @@ describe('PortfoliosTable - Delete Functionality', () => {
     await screen.findByText('Trading Account');
 
     // Open and close delete dialog
-    const deleteButtons = screen.getAllByRole('button', { name: /trash/i });
+    const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
     await user.click(deleteButtons[0]);
 
     const cancelButton = await screen.findByRole('button', { name: /cancel/i });

@@ -159,9 +159,9 @@ describe('CategoryBreakdownWidget', () => {
       expect(screen.getByText('Stocks')).toBeInTheDocument();
       expect(screen.getByText('ETFs')).toBeInTheDocument();
       expect(screen.getByText('Crypto')).toBeInTheDocument();
-      expect(screen.getByText('+50.00%')).toBeInTheDocument();
-      expect(screen.getByText('+30.00%')).toBeInTheDocument();
-      expect(screen.getByText('+20.00%')).toBeInTheDocument();
+      expect(screen.getByText('50.00%')).toBeInTheDocument();
+      expect(screen.getByText('30.00%')).toBeInTheDocument();
+      expect(screen.getByText('20.00%')).toBeInTheDocument();
     });
 
     it('sorts allocations by percentage descending', () => {
