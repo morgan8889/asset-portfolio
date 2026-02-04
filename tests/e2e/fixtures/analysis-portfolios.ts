@@ -4,43 +4,45 @@
  */
 
 import { Page } from '@playwright/test';
+import {
+  generateMockData,
+  makePortfolioConcentrated,
+  makePortfolioHighCash,
+  makePortfolioMultiIssue,
+} from './seed-helpers';
 
 /**
- * Portfolio with high concentration (90% in single asset)
+ * Portfolio with high concentration (90%+ in single asset)
  * Should trigger: Concentration Risk recommendation (>15% threshold)
  *
- * Note: For now, using mock data as baseline. In future, could create custom
- * concentrated portfolios via direct database manipulation.
+ * Creates baseline mock data then replaces holdings so that ~95% of the
+ * portfolio value is in a single asset (AAPL).
  */
 export async function createConcentratedPortfolio(page: Page) {
-  // Use mock data generation for baseline portfolio
   await waitForMockDataGeneration(page);
-
-  // TODO: In future enhancement, modify the portfolio to be highly concentrated
-  // For now, the mock data will be used to test basic functionality
+  await makePortfolioConcentrated(page);
 }
 
 /**
- * Portfolio with high cash percentage (25%)
+ * Portfolio with high cash percentage (>20%)
  * Should trigger: High Cash Drag recommendation (>20% threshold)
  *
- * Note: Using mock data as baseline. Mock data may or may not have high cash.
+ * Creates baseline mock data then adds a large cash holding that
+ * represents ~30% of total portfolio value.
  */
 export async function createHighCashPortfolio(page: Page) {
-  // Use mock data generation for baseline portfolio
   await waitForMockDataGeneration(page);
-
-  // TODO: Modify portfolio to have >20% cash via database manipulation
+  await makePortfolioHighCash(page);
 }
 
 /**
  * Well-diversified portfolio with no issues
  * Should show: "No critical issues detected"
  *
- * Note: Using mock data which is reasonably diversified.
+ * Uses the default mock data which is reasonably diversified across
+ * stocks, ETFs, and crypto.
  */
 export async function createBalancedPortfolio(page: Page) {
-  // Use mock data generation for baseline portfolio
   await waitForMockDataGeneration(page);
 }
 
@@ -48,13 +50,12 @@ export async function createBalancedPortfolio(page: Page) {
  * Portfolio with multiple issues
  * Should trigger: Multiple recommendations (concentration + cash drag)
  *
- * Note: Using mock data as baseline.
+ * Creates baseline mock data then replaces holdings with a mix of
+ * 60% in single asset (concentration) + 25% cash (high cash drag).
  */
 export async function createMultiIssuePortfolio(page: Page) {
-  // Use mock data generation for baseline portfolio
   await waitForMockDataGeneration(page);
-
-  // TODO: Modify to create multiple issues via database manipulation
+  await makePortfolioMultiIssue(page);
 }
 
 /**
