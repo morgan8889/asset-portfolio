@@ -22,11 +22,10 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/services/analysis/scoring-service', () => ({
   calculateHealthScore: vi.fn(() => ({
-    overall: 75,
-    diversification: 80,
-    performance: 70,
-    risk: 75,
-    allocation: 80,
+    overallScore: 75,
+    metrics: [],
+    profile: { name: 'Balanced', weights: {} },
+    calculatedAt: new Date(),
   })),
 }));
 
@@ -110,7 +109,7 @@ describe('Analysis Store', () => {
 
       const state = useAnalysisStore.getState();
       expect(state.health).toBeTruthy();
-      expect(state.health?.overall).toBe(75);
+      expect(state.health?.overallScore).toBe(75);
       expect(state.isCalculating).toBe(false);
       expect(state.error).toBeNull();
     });
@@ -299,8 +298,8 @@ describe('Analysis Store', () => {
           {
             id: 'model-1',
             name: 'Test Model',
-            targets: { stocks: 60, bonds: 40 },
-            dimension: 'assetClass',
+            isSystem: false,
+            allocations: { stock: 60, bond: 40 } as Record<string, number>,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
@@ -341,8 +340,8 @@ describe('Analysis Store', () => {
           {
             id: 'model-1',
             name: 'Test Model',
-            targets: { stocks: 60, bonds: 40 },
-            dimension: 'assetClass',
+            isSystem: false,
+            allocations: { stock: 60, bond: 40 } as Record<string, number>,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
@@ -405,8 +404,8 @@ describe('Analysis Store', () => {
           {
             id: 'model-1',
             name: 'Test Model',
-            targets: { stocks: 60, bonds: 40 },
-            dimension: 'assetClass',
+            isSystem: false,
+            allocations: { stock: 60, bond: 40 } as Record<string, number>,
             createdAt: new Date(),
             updatedAt: new Date(),
           },
