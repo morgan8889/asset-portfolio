@@ -20,24 +20,21 @@ import { Badge } from '@/components/ui/badge';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { useCsvImportStore } from '@/lib/stores/csv-import';
 import { Portfolio } from '@/types';
-
-const portfolioTypeLabels: Record<string, string> = {
-  taxable: 'Taxable',
-  ira: 'IRA',
-  '401k': '401(k)',
-  roth: 'Roth IRA',
-};
+import { PORTFOLIO_TYPE_LABELS } from '@/lib/constants/portfolio';
 
 interface PortfolioSelectorProps {
   className?: string;
 }
 
 export function PortfolioSelector({ className }: PortfolioSelectorProps) {
-  const { currentPortfolio, setCurrentPortfolio, getSortedPortfolios } =
+  const { currentPortfolio, setCurrentPortfolio, getSortedPortfolios, portfolios } =
     usePortfolioStore();
   const { isProcessing } = useCsvImportStore();
 
-  const sortedPortfolios = getSortedPortfolios();
+  const sortedPortfolios = React.useMemo(
+    () => getSortedPortfolios(),
+    [portfolios, getSortedPortfolios]
+  );
   const isDisabled = isProcessing;
 
   const handleSelectPortfolio = (portfolio: Portfolio) => {
@@ -63,7 +60,7 @@ export function PortfolioSelector({ className }: PortfolioSelectorProps) {
       <div className="flex flex-col items-start">
         <span className="font-medium">{currentPortfolio.name}</span>
         <Badge variant="secondary" className="mt-1 text-xs">
-          {portfolioTypeLabels[currentPortfolio.type] || currentPortfolio.type}
+          {PORTFOLIO_TYPE_LABELS[currentPortfolio.type] || currentPortfolio.type}
         </Badge>
       </div>
       <ChevronDown className="ml-2 h-4 w-4 text-muted-foreground" />
@@ -101,7 +98,7 @@ export function PortfolioSelector({ className }: PortfolioSelectorProps) {
               <div className="flex flex-col">
                 <span className="font-medium">{portfolio.name}</span>
                 <span className="text-xs text-muted-foreground">
-                  {portfolioTypeLabels[portfolio.type] || portfolio.type}
+                  {PORTFOLIO_TYPE_LABELS[portfolio.type] || portfolio.type}
                 </span>
               </div>
               {isSelected && <Check className="h-4 w-4" />}

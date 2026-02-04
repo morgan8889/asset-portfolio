@@ -19,14 +19,8 @@ import { formatCurrency } from '@/lib/utils/currency';
 import { calculateTotalValue, calculateGainPercent } from '@/lib/services/metrics-service';
 import { holdingQueries } from '@/lib/db';
 import Decimal from 'decimal.js';
-import { PortfolioType } from '@/types/portfolio';
-
-const portfolioTypeLabels: Record<string, string> = {
-  taxable: 'Taxable',
-  ira: 'IRA',
-  '401k': '401(k)',
-  roth: 'Roth IRA',
-};
+import { Portfolio, PortfolioType } from '@/types/portfolio';
+import { PORTFOLIO_TYPE_LABELS } from '@/lib/constants/portfolio';
 
 interface PortfoliosTableProps {
   onView: (portfolioId: string) => void;
@@ -82,9 +76,8 @@ export function PortfoliosTable({
   // Load metrics for all portfolios
   useEffect(() => {
     async function loadMetrics() {
-      const metricsMap = new Map();
-
-      for (const portfolio of sortedPortfolios) {
+      // Parallelize metrics loading for better performance
+      const metricsPromises = portfolios.map(async (portfolio) => {
         try {
           const holdings = await holdingQueries.getByPortfolio(portfolio.id);
           const totalValue = calculateTotalValue(holdings);
@@ -98,26 +91,40 @@ export function PortfoliosTable({
           );
           const ytdReturn = calculateGainPercent(totalGain, totalCost);
 
-          metricsMap.set(portfolio.id, {
-            totalValue,
-            ytdReturn,
-            holdings: holdings.length,
-          });
+          return {
+            portfolioId: portfolio.id,
+            metrics: {
+              totalValue,
+              ytdReturn,
+              holdings: holdings.length,
+            },
+          };
         } catch (error) {
           console.error(`Failed to load metrics for portfolio ${portfolio.id}:`, error);
-          metricsMap.set(portfolio.id, {
-            totalValue: new Decimal(0),
-            ytdReturn: 0,
-            holdings: 0,
-          });
+          return {
+            portfolioId: portfolio.id,
+            metrics: {
+              totalValue: new Decimal(0),
+              ytdReturn: 0,
+              holdings: 0,
+            },
+          };
         }
-      }
+      });
+
+      const results = await Promise.all(metricsPromises);
+      const metricsMap = new Map();
+      results.forEach(({ portfolioId, metrics }) => {
+        metricsMap.set(portfolioId, metrics);
+      });
 
       setPortfolioMetrics(metricsMap);
     }
 
-    loadMetrics();
-  }, [sortedPortfolios]);
+    if (portfolios.length > 0) {
+      loadMetrics();
+    }
+  }, [portfolios]);
 
   const getPortfolioMetrics = (portfolioId: string) => {
     return (
@@ -129,7 +136,7 @@ export function PortfoliosTable({
     );
   };
 
-  const handleEdit = (portfolio: any) => {
+  const handleEdit = (portfolio: Portfolio) => {
     setEditingPortfolio({
       id: portfolio.id,
       name: portfolio.name,
@@ -142,7 +149,7 @@ export function PortfoliosTable({
     }
   };
 
-  const handleDelete = (portfolio: any) => {
+  const handleDelete = (portfolio: Portfolio) => {
     setDeletingPortfolio({
       id: portfolio.id,
       name: portfolio.name,
@@ -185,7 +192,7 @@ export function PortfoliosTable({
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline">
-                    {portfolioTypeLabels[portfolio.type] || portfolio.type}
+                    {PORTFOLIO_TYPE_LABELS[portfolio.type] || portfolio.type}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">

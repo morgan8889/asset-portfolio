@@ -14,18 +14,22 @@ export default function PortfoliosPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Load portfolios from IndexedDB on mount
-  const { loadPortfolios } = usePortfolioStore.getState();
-  const initialLoadStartedRef = useRef(false);
-
   useEffect(() => {
-    // Prevent duplicate calls during React Strict Mode remounting
-    if (initialLoadStartedRef.current) {
-      return;
-    }
-    initialLoadStartedRef.current = true;
+    let isMounted = true;
+    const { loadPortfolios } = usePortfolioStore.getState();
 
-    loadPortfolios();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- loadPortfolios is stable from getState()
+    async function load() {
+      if (isMounted) {
+        await loadPortfolios();
+      }
+    }
+
+    load();
+
+    // Cleanup function to prevent setting state on unmounted component
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleViewPortfolio = (portfolioId: string) => {

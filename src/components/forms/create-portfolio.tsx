@@ -92,24 +92,35 @@ export function CreatePortfolioDialog({
   });
 
   const portfolioType = watch('type');
+  const currencyValue = watch('currency');
   const initialType = portfolio?.type;
 
   // Check transaction count when type changes in edit mode
   useEffect(() => {
     if (mode === 'edit' && portfolio && portfolioType && portfolioType !== initialType) {
       // Check if portfolio has transactions
-      import('@/lib/db').then(({ db }) => {
-        db.transactions
-          .where('portfolioId')
-          .equals(portfolio.id)
-          .count()
-          .then(count => {
-            setTransactionCount(count);
-            if (count > 0) {
-              setShowTypeChangeWarning(true);
-            }
-          });
-      });
+      import('@/lib/db')
+        .then(({ db }) => {
+          return db.transactions
+            .where('portfolioId')
+            .equals(portfolio.id)
+            .count()
+            .then(count => {
+              setTransactionCount(count);
+              if (count > 0) {
+                setShowTypeChangeWarning(true);
+              }
+            });
+        })
+        .catch(error => {
+          console.error('Failed to check transaction count:', error);
+          // Show warning as a safety measure if we can't check
+          setShowTypeChangeWarning(true);
+        });
+    } else if (portfolioType === initialType) {
+      // Reset warning if type changes back to original
+      setShowTypeChangeWarning(false);
+      setTransactionCount(0);
     }
   }, [portfolioType, mode, portfolio, initialType]);
 
@@ -234,7 +245,7 @@ export function CreatePortfolioDialog({
               <Label htmlFor="currency">Base Currency</Label>
               <Select
                 onValueChange={(value) => setValue('currency', value)}
-                defaultValue="USD"
+                value={currencyValue}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select currency" />

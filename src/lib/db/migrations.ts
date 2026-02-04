@@ -17,6 +17,12 @@ export interface MigrationState {
 }
 
 // Migration registry
+// Migration version mapping:
+// - Data migration versions (1, 2, ...) are independent of Dexie schema versions
+// - Dexie schema versions (v1-v5) are defined in schema.ts using version() method
+// - Data migrations transform existing data without changing the schema structure
+// - Migration 1: Initial setup (maps to Dexie schema v1-v4)
+// - Migration 2: Add lastAccessedAt field data to existing portfolios (Dexie schema v5)
 const migrations: Migration[] = [
   {
     version: 1,

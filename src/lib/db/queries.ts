@@ -62,10 +62,25 @@ export const portfolioQueries = {
       db.portfolios,
       db.holdings,
       db.transactions,
+      db.performanceSnapshots,
+      db.dividendRecords,
+      db.liabilities,
+      db.liabilityPayments,
       async () => {
-        // Delete related holdings and transactions first
+        // Delete all related data in dependency order
         await db.holdings.where('portfolioId').equals(id).delete();
         await db.transactions.where('portfolioId').equals(id).delete();
+        await db.performanceSnapshots.where('portfolioId').equals(id).delete();
+        await db.dividendRecords.where('portfolioId').equals(id).delete();
+
+        // Delete liabilities and their payments
+        const liabilities = await db.liabilities.where('portfolioId').equals(id).toArray();
+        for (const liability of liabilities) {
+          await db.liabilityPayments.where('liabilityId').equals(liability.id).delete();
+        }
+        await db.liabilities.where('portfolioId').equals(id).delete();
+
+        // Finally delete the portfolio
         await db.portfolios.delete(id);
       }
     );

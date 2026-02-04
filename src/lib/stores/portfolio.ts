@@ -148,7 +148,8 @@ export const usePortfolioStore = create<PortfolioState>()(
 
             // If we deleted the current portfolio, fall back to next best option
             if (wasCurrentDeleted) {
-              const remainingPortfolios = portfolios.filter((p) => p.id !== id);
+              // Use the updated portfolios from the store after loadPortfolios()
+              const remainingPortfolios = get().portfolios.filter((p) => p.id !== id);
 
               if (remainingPortfolios.length > 0) {
                 // Fall back to most recently accessed portfolio
