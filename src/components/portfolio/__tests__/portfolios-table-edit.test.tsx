@@ -9,6 +9,7 @@ const { mockStoreState } = vi.hoisted(() => ({
     portfolios: [] as any[],
     currentPortfolio: null as any,
     updatePortfolio: vi.fn(),
+    getSortedPortfolios: () => mockStoreState.portfolios,
   },
 }));
 
@@ -25,14 +26,11 @@ vi.mock('@/lib/db', () => ({
   holdingQueries: {
     getByPortfolio: vi.fn(() => Promise.resolve([])),
   },
-  db: {
-    transactions: {
-      where: vi.fn(() => ({
-        equals: vi.fn(() => ({
-          count: vi.fn(() => Promise.resolve(0)),
-        })),
-      })),
-    },
+}));
+
+vi.mock('@/lib/db/queries', () => ({
+  transactionQueries: {
+    countByPortfolio: vi.fn(() => Promise.resolve(0)),
   },
 }));
 

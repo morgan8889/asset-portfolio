@@ -174,8 +174,8 @@ describe('PortfolioSelector', () => {
       });
       await user.click(taxableOption);
 
-      // Should still be called, just with same portfolio
-      expect(mockSetCurrentPortfolio).toHaveBeenCalledWith(mockPortfolios[0]);
+      // Should not be called since the same portfolio is already selected
+      expect(mockSetCurrentPortfolio).not.toHaveBeenCalled();
     });
   });
 
