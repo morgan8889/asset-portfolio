@@ -34,7 +34,8 @@ import { calculateHoldingPeriod, calculateHoldingDays } from './holding-period';
 export function estimateTaxLiability(
   holdings: Holding[],
   currentPrices: Map<string, Decimal>,
-  taxSettings: TaxSettings
+  taxSettings: TaxSettings,
+  assetSymbolMap?: Map<string, string>
 ): TaxAnalysis {
   let totalUnrealizedGain = new Decimal(0);
   let totalUnrealizedLoss = new Decimal(0);
@@ -53,8 +54,8 @@ export function estimateTaxLiability(
       continue;
     }
 
-    // Use assetId as the symbol identifier
-    const assetSymbol = holding.assetId;
+    // Look up the actual ticker symbol, fall back to assetId if not found
+    const assetSymbol = assetSymbolMap?.get(holding.assetId) ?? holding.assetId;
 
     for (const lot of holding.lots) {
       // Skip fully sold lots

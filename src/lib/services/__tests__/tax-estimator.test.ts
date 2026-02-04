@@ -394,6 +394,55 @@ describe('estimateTaxLiability', () => {
     expect(result.lots[0].unrealizedGain).toEqual(new Decimal(3000));
   });
 
+  it('should use assetSymbolMap to resolve ticker symbols when provided', () => {
+    const lot = createMockLot('lot-1', 100, 120, addDays(now, -200));
+    const holding = createMockHolding('holding-1', 'uuid-abc-123', [lot]);
+    const currentPrices = new Map([['uuid-abc-123', new Decimal(150)]]);
+    const assetSymbolMap = new Map([['uuid-abc-123', 'AAPL']]);
+
+    const result = estimateTaxLiability(
+      [holding],
+      currentPrices,
+      defaultTaxSettings,
+      assetSymbolMap
+    );
+
+    expect(result.lots).toHaveLength(1);
+    expect(result.lots[0].assetSymbol).toBe('AAPL');
+  });
+
+  it('should fall back to assetId when assetSymbolMap does not contain the asset', () => {
+    const lot = createMockLot('lot-1', 100, 120, addDays(now, -200));
+    const holding = createMockHolding('holding-1', 'unknown-id', [lot]);
+    const currentPrices = new Map([['unknown-id', new Decimal(150)]]);
+    const assetSymbolMap = new Map([['other-id', 'GOOGL']]);
+
+    const result = estimateTaxLiability(
+      [holding],
+      currentPrices,
+      defaultTaxSettings,
+      assetSymbolMap
+    );
+
+    expect(result.lots).toHaveLength(1);
+    expect(result.lots[0].assetSymbol).toBe('unknown-id');
+  });
+
+  it('should fall back to assetId when no assetSymbolMap is provided', () => {
+    const lot = createMockLot('lot-1', 100, 120, addDays(now, -200));
+    const holding = createMockHolding('holding-1', 'some-asset-id', [lot]);
+    const currentPrices = new Map([['some-asset-id', new Decimal(150)]]);
+
+    const result = estimateTaxLiability(
+      [holding],
+      currentPrices,
+      defaultTaxSettings
+    );
+
+    expect(result.lots).toHaveLength(1);
+    expect(result.lots[0].assetSymbol).toBe('some-asset-id');
+  });
+
   it('should handle zero gains scenario', () => {
     const lot = createMockLot('lot-1', 100, 150, addDays(now, -200));
     const holding = createMockHolding('holding-1', 'AAPL', [lot]);

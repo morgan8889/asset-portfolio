@@ -74,8 +74,8 @@ export function TaxAnalysisTab({
 
   // Calculate tax analysis
   const taxAnalysis = useMemo(
-    () => estimateTaxLiability(holdings, prices, taxSettings),
-    [holdings, prices, taxSettings]
+    () => estimateTaxLiability(holdings, prices, taxSettings, assetSymbolMap),
+    [holdings, prices, taxSettings, assetSymbolMap]
   );
 
   // Handle column sorting
@@ -176,10 +176,19 @@ export function TaxAnalysisTab({
       {/* Summary Cards - Reduced to 3 for compactness */}
       <Grid numItemsMd={2} numItemsLg={3} className="gap-4">
         <Card>
-          <Text>Total Unrealized Gains</Text>
-          <Metric>${taxAnalysis.totalUnrealizedGain.toFixed(2)}</Metric>
+          <Text>Net Unrealized Gain/Loss</Text>
+          <Metric
+            className={cn(
+              taxAnalysis.netUnrealizedGain.lessThan(0) && 'text-red-600'
+            )}
+          >
+            ${taxAnalysis.netUnrealizedGain.toFixed(2)}
+          </Metric>
           <Flex className="mt-2">
-            <Text className="truncate text-sm">Net after losses</Text>
+            <Text className="truncate text-sm">
+              Gains: ${taxAnalysis.totalUnrealizedGain.toFixed(0)} / Losses: $
+              {taxAnalysis.totalUnrealizedLoss.toFixed(0)}
+            </Text>
           </Flex>
         </Card>
 
