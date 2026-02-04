@@ -187,8 +187,8 @@ const TransactionTableComponent = ({
       );
     }
 
-    // Sort by date (newest first)
-    return filtered.sort(
+    // Sort by date (newest first) - use spread to avoid mutating original array
+    return [...filtered].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
   }, [filteredTransactions, transactions, searchTerm, filterType]);
@@ -197,6 +197,14 @@ const TransactionTableComponent = ({
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterType, currentPortfolio?.id]);
+
+  // Clamp current page when displayTransactions changes to prevent out-of-bounds
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(displayTransactions.length / pageSize));
+    if (currentPage > maxPage) {
+      setCurrentPage(maxPage);
+    }
+  }, [displayTransactions.length, pageSize, currentPage]);
 
   // Pagination
   const totalPages = Math.ceil(displayTransactions.length / pageSize);
@@ -332,7 +340,7 @@ const TransactionTableComponent = ({
           </div>
         ) : (
           <>
-          <div className="overflow-x-auto">
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -412,8 +420,8 @@ const TransactionTableComponent = ({
                 ))}
               </TableBody>
             </Table>
-          </div>
-          {displayTransactions.length > pageSize && (
+            </div>
+            {displayTransactions.length > pageSize && (
             <PaginationControls
               currentPage={currentPage}
               totalPages={totalPages}
@@ -423,7 +431,7 @@ const TransactionTableComponent = ({
               onPageSizeChange={handlePageSizeChange}
               className="mt-4"
             />
-          )}
+            )}
           </>
         )}
       </CardContent>
