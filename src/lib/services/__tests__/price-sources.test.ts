@@ -439,18 +439,15 @@ describe('fetchPriceWithRetry', () => {
 
     const promise = fetchPriceWithRetry('AAPL');
 
-    // Wait for all retries (3 attempts with delays)
-    for (let i = 0; i < MAX_RETRIES; i++) {
-      await vi.advanceTimersByTimeAsync(0); // Attempt
-      if (i < MAX_RETRIES - 1) {
-        const delay = Math.min(1000 * Math.pow(2, i), 5000);
-        await vi.advanceTimersByTimeAsync(delay); // Backoff delay
-      }
-    }
-
-    await expect(promise).rejects.toThrow(
+    // Attach rejection handler BEFORE running timers to avoid unhandled rejection
+    const assertion = expect(promise).rejects.toThrow(
       /Failed to fetch price for AAPL after 3 retries/
     );
+
+    // Run all timers to completion
+    await vi.runAllTimersAsync();
+
+    await assertion;
     expect(global.fetch).toHaveBeenCalledTimes(MAX_RETRIES);
   });
 
@@ -463,15 +460,14 @@ describe('fetchPriceWithRetry', () => {
 
     const promise = fetchPriceWithRetry('AAPL');
 
-    // Wait for all retries
-    for (let i = 0; i < MAX_RETRIES; i++) {
-      await vi.advanceTimersByTimeAsync(0); // Attempt
-      if (i < MAX_RETRIES - 1) {
-        const delay = Math.min(1000 * Math.pow(2, i), 5000);
-        await vi.advanceTimersByTimeAsync(delay); // Backoff delay
-      }
-    }
+    // Attach rejection handler BEFORE running timers to avoid unhandled rejection
+    const assertion = expect(promise).rejects.toThrow(
+      /Failed to fetch price for AAPL/
+    );
 
-    await expect(promise).rejects.toThrow(/Failed to fetch price for AAPL/);
+    // Run all timers to completion
+    await vi.runAllTimersAsync();
+
+    await assertion;
   });
 });
