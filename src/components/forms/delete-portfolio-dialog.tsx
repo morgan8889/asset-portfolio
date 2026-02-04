@@ -16,7 +16,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { usePortfolioStore } from '@/lib/stores';
-import { db } from '@/lib/db';
+import { transactionQueries } from '@/lib/db/queries';
 import { logger } from '@/lib/utils/logger';
 
 interface DeletePortfolioDialogProps {
@@ -44,10 +44,8 @@ export function DeletePortfolioDialog({
   // Load transaction count when dialog opens
   useEffect(() => {
     if (open && portfolio) {
-      db.transactions
-        .where('portfolioId')
-        .equals(portfolio.id)
-        .count()
+      transactionQueries
+        .countByPortfolio(portfolio.id)
         .then(setTransactionCount)
         .catch((error) => {
           logger.error('Failed to count transactions:', error);

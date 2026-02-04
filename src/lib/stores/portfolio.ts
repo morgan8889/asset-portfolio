@@ -19,7 +19,7 @@ interface PortfolioState {
 
   // Actions
   loadPortfolios: () => Promise<void>;
-  setCurrentPortfolio: (portfolio: Portfolio | null) => void;
+  setCurrentPortfolio: (portfolio: Portfolio | null) => Promise<void>;
   createPortfolio: (portfolio: Omit<Portfolio, 'id'>) => Promise<void>;
   updatePortfolio: (id: string, updates: Partial<Portfolio>) => Promise<void>;
   deletePortfolio: (id: string) => Promise<void>;
@@ -142,7 +142,7 @@ export const usePortfolioStore = create<PortfolioState>()(
           set({ loading: true, error: null });
           try {
             // Check if deleting current portfolio BEFORE delete
-            const { currentPortfolio, portfolios } = get();
+            const { currentPortfolio } = get();
             const wasCurrentDeleted = currentPortfolio?.id === id;
 
             await portfolioQueries.delete(id);
@@ -184,7 +184,12 @@ export const usePortfolioStore = create<PortfolioState>()(
           // Prevent duplicate/concurrent calls for the same portfolio
           const { _loadingHoldingsForId } = get();
           if (_loadingHoldingsForId === portfolioId) {
-            return;
+            // Wait a bit and retry if the previous request might have failed
+            await new Promise(resolve => setTimeout(resolve, 100));
+            // Check again after wait - if still loading, skip
+            if (get()._loadingHoldingsForId === portfolioId) {
+              return;
+            }
           }
 
           set({
@@ -210,6 +215,8 @@ export const usePortfolioStore = create<PortfolioState>()(
               loading: false,
               _loadingHoldingsForId: null,
             });
+            // Re-throw to allow callers to handle the error
+            throw error;
           }
         },
 

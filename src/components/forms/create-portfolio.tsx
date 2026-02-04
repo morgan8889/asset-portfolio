@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Plus } from 'lucide-react';
-import { db } from '@/lib/db';
+import { transactionQueries } from '@/lib/db/queries';
 import { logger } from '@/lib/utils/logger';
 
 import { Button } from '@/components/ui/button';
@@ -114,10 +114,8 @@ export function CreatePortfolioDialog({
   useEffect(() => {
     if (mode === 'edit' && portfolio && portfolioType && portfolioType !== initialType) {
       // Check if portfolio has transactions
-      db.transactions
-        .where('portfolioId')
-        .equals(portfolio.id)
-        .count()
+      transactionQueries
+        .countByPortfolio(portfolio.id)
         .then(count => {
           setTransactionCount(count);
           if (count > 0) {
@@ -199,13 +197,13 @@ export function CreatePortfolioDialog({
           </DialogHeader>
 
           {showTypeChangeWarning && (
-            <div className="rounded-md bg-yellow-50 p-4 my-2">
+            <div className="rounded-md bg-yellow-50 dark:bg-yellow-950 p-4 my-2 border border-yellow-200 dark:border-yellow-800">
               <div className="flex">
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-yellow-800">
+                  <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
                     Type Change Warning
                   </h3>
-                  <div className="mt-2 text-sm text-yellow-700">
+                  <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
                     <p>
                       This portfolio has {transactionCount} transaction{transactionCount !== 1 ? 's' : ''}.
                       Changing the account type may affect tax calculations and reporting.

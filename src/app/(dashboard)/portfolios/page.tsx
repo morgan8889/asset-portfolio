@@ -10,7 +10,7 @@ import { CreatePortfolioDialog } from '@/components/forms/create-portfolio';
 
 export default function PortfoliosPage() {
   const router = useRouter();
-  const { portfolios } = usePortfolioStore();
+  const { portfolios, error, loading } = usePortfolioStore();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Load portfolios from IndexedDB on mount
@@ -55,7 +55,13 @@ export default function PortfoliosPage() {
         </Button>
       </div>
 
-      {portfolios.length === 0 ? (
+      {error && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+          <p className="text-sm text-destructive">Error: {error}</p>
+        </div>
+      )}
+
+      {!error && portfolios.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
           <h3 className="text-lg font-semibold">No portfolios yet</h3>
           <p className="text-sm text-muted-foreground mt-2 mb-4">

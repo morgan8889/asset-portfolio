@@ -38,7 +38,10 @@ export function PortfolioSelector({ className }: PortfolioSelectorProps) {
   const isDisabled = isProcessing;
 
   const handleSelectPortfolio = (portfolio: Portfolio) => {
-    setCurrentPortfolio(portfolio);
+    // Don't re-select the same portfolio
+    if (currentPortfolio?.id !== portfolio.id) {
+      setCurrentPortfolio(portfolio);
+    }
   };
 
   if (!currentPortfolio) {

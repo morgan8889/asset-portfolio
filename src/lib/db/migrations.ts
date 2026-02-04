@@ -1,5 +1,6 @@
 import { db } from './schema';
 import { logger } from '@/lib/utils/logger';
+import type { Portfolio } from '@/types/portfolio';
 
 // Migration interface
 interface Migration {
@@ -69,7 +70,8 @@ const migrations: Migration[] = [
 
       // Remove lastAccessedAt field
       for (const portfolio of portfolios) {
-        const { lastAccessedAt, ...rest } = portfolio as any;
+        // Use object destructuring with type assertion for migration rollback
+        const { lastAccessedAt, ...rest } = portfolio as Portfolio & { lastAccessedAt?: Date };
         await db.portfolios.put(rest);
       }
 

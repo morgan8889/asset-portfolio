@@ -279,6 +279,13 @@ export const transactionQueries = {
     return await db.getTransactionsByPortfolio(portfolioId);
   },
 
+  async countByPortfolio(portfolioId: string): Promise<number> {
+    return await db.transactions
+      .where('portfolioId')
+      .equals(portfolioId)
+      .count();
+  },
+
   async getById(id: string): Promise<Transaction | undefined> {
     return await db.getTransactionWithDecimals(id);
   },
