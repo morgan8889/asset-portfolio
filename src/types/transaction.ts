@@ -225,20 +225,8 @@ export const RSUTransactionMetadataSchema = z
     { message: 'Net shares must equal gross shares - shares withheld' }
   );
 
-// ==================== Pagination Types ====================
-
 /**
- * Pagination state stored in transaction store
- */
-export interface PaginationState {
-  currentPage: number; // 1-indexed, default: 1
-  pageSize: number; // 10 | 25 | 50 | 100, default: 25
-  totalCount: number; // Total matching transactions
-  totalPages: number; // Calculated: ceil(totalCount / pageSize)
-}
-
-/**
- * Options for paginated queries
+ * Pagination Options for transaction queries
  */
 export interface PaginationOptions {
   page: number; // 1-indexed page number

@@ -16,12 +16,10 @@ import {
   generatePriceSnapshotId,
   HoldingStorage,
   TransactionStorage,
-} from '@/types';
-import type {
   TransactionType,
   PaginationOptions,
   PaginatedTransactionsResult,
-} from '@/types/transaction';
+} from '@/types';
 import {
   serializeDecimalFields,
   serializePartialDecimals,
@@ -64,10 +62,30 @@ export const portfolioQueries = {
       db.portfolios,
       db.holdings,
       db.transactions,
+      db.performanceSnapshots,
+      db.dividendRecords,
+      db.liabilities,
+      db.liabilityPayments,
       async () => {
-        // Delete related holdings and transactions first
+        // Delete all related data in dependency order
         await db.holdings.where('portfolioId').equals(id).delete();
         await db.transactions.where('portfolioId').equals(id).delete();
+        await db.performanceSnapshots.where('portfolioId').equals(id).delete();
+        await db.dividendRecords.where('portfolioId').equals(id).delete();
+
+        // Delete liabilities and their payments
+        const liabilities = await db.liabilities.where('portfolioId').equals(id).toArray();
+        for (const liability of liabilities) {
+          await db.liabilityPayments.where('liabilityId').equals(liability.id).delete();
+        }
+        await db.liabilities.where('portfolioId').equals(id).delete();
+
+        // NOTE: Assets and price history are NOT deleted as they may be shared
+        // across multiple portfolios. Orphaned assets (not referenced by any
+        // holdings) are intentionally retained as they contain metadata that
+        // might be useful if the same asset is added again in the future.
+
+        // Finally delete the portfolio
         await db.portfolios.delete(id);
       }
     );
@@ -264,6 +282,13 @@ export const holdingQueries = {
 export const transactionQueries = {
   async getByPortfolio(portfolioId: string): Promise<Transaction[]> {
     return await db.getTransactionsByPortfolio(portfolioId);
+  },
+
+  async countByPortfolio(portfolioId: string): Promise<number> {
+    return await db.transactions
+      .where('portfolioId')
+      .equals(portfolioId)
+      .count();
   },
 
   async getById(id: string): Promise<Transaction | undefined> {
@@ -470,69 +495,8 @@ export const priceQueries = {
   },
 };
 
-// Settings queries
-export const settingsQueries = {
-  /**
-   * Get a setting value by key with type safety.
-   * @param key - The setting key
-   * @returns The setting value or undefined if not found
-   */
-  async get<T = unknown>(key: string): Promise<T | undefined> {
-    const setting = await db.userSettings.where('key').equals(key).first();
-    return setting?.value as T | undefined;
-  },
+// Pagination helpers and queries
 
-  /**
-   * Set a setting value by key.
-   * @param key - The setting key
-   * @param value - The value to store
-   */
-  async set<T = unknown>(key: string, value: T): Promise<void> {
-    const existing = await db.userSettings.where('key').equals(key).first();
-
-    if (existing) {
-      await db.userSettings.update(existing.id!, {
-        value,
-        updatedAt: new Date(),
-      });
-    } else {
-      await db.userSettings.add({
-        key,
-        value,
-        updatedAt: new Date(),
-      });
-    }
-  },
-
-  /**
-   * Delete a setting by key.
-   * @param key - The setting key to delete
-   */
-  async delete(key: string): Promise<void> {
-    await db.userSettings.where('key').equals(key).delete();
-  },
-
-  /**
-   * Get all settings as a key-value record.
-   * @returns All settings as a record
-   */
-  async getAll(): Promise<Record<string, unknown>> {
-    const settings = await db.userSettings.toArray();
-    return settings.reduce(
-      (acc, setting) => {
-        acc[setting.key] = setting.value;
-        return acc;
-      },
-      {} as Record<string, unknown>
-    );
-  },
-};
-
-// ==================== Pagination Queries ====================
-
-/**
- * Type-safe sorting value extraction
- */
 type SortableValue = number | string;
 
 /**
@@ -562,12 +526,7 @@ function getSortValue(
 }
 
 /**
- * Count total transactions matching criteria
- *
- * Note: Dexie does not support complex filtering with indexes, so we must
- * load filtered results to get an accurate count. However, we use the
- * [portfolioId+date] compound index to efficiently fetch only the relevant
- * portfolio's transactions before filtering in memory.
+ * Count transactions with optional filtering
  */
 export async function countTransactions(
   portfolioId: string,
@@ -640,9 +599,7 @@ export async function getPaginatedTransactions(
     totalCount = await countTransactions(portfolioId);
     totalPages = validPageSize > 0 ? Math.ceil(totalCount / validPageSize) : 1;
 
-    let query = db.transactions
-      .where('portfolioId')
-      .equals(portfolioId);
+    let query = db.transactions.where('portfolioId').equals(portfolioId);
 
     // Apply sort order
     if (sortOrder === 'desc') {
@@ -698,3 +655,61 @@ export async function getPaginatedTransactions(
     totalPages,
   };
 }
+
+// Settings queries
+export const settingsQueries = {
+  /**
+   * Get a setting value by key with type safety.
+   * @param key - The setting key
+   * @returns The setting value or undefined if not found
+   */
+  async get<T = unknown>(key: string): Promise<T | undefined> {
+    const setting = await db.userSettings.where('key').equals(key).first();
+    return setting?.value as T | undefined;
+  },
+
+  /**
+   * Set a setting value by key.
+   * @param key - The setting key
+   * @param value - The value to store
+   */
+  async set<T = unknown>(key: string, value: T): Promise<void> {
+    const existing = await db.userSettings.where('key').equals(key).first();
+
+    if (existing) {
+      await db.userSettings.update(existing.id!, {
+        value,
+        updatedAt: new Date(),
+      });
+    } else {
+      await db.userSettings.add({
+        key,
+        value,
+        updatedAt: new Date(),
+      });
+    }
+  },
+
+  /**
+   * Delete a setting by key.
+   * @param key - The setting key to delete
+   */
+  async delete(key: string): Promise<void> {
+    await db.userSettings.where('key').equals(key).delete();
+  },
+
+  /**
+   * Get all settings as a key-value record.
+   * @returns All settings as a record
+   */
+  async getAll(): Promise<Record<string, unknown>> {
+    const settings = await db.userSettings.toArray();
+    return settings.reduce(
+      (acc, setting) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      },
+      {} as Record<string, unknown>
+    );
+  },
+};

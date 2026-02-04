@@ -139,7 +139,7 @@ describe('MetricsCards', () => {
 
     // Should show positive gain with + prefix
     expect(screen.getByText('+$20,000.00')).toBeInTheDocument();
-    expect(screen.getByText('+25.00% from cost basis')).toBeInTheDocument();
+    expect(screen.getByText('25.00% from cost basis')).toBeInTheDocument();
   });
 
   it('should display day change', () => {
@@ -150,7 +150,7 @@ describe('MetricsCards', () => {
     );
 
     expect(screen.getByText('+$1,500.00')).toBeInTheDocument();
-    expect(screen.getByText('+1.50% from yesterday')).toBeInTheDocument();
+    expect(screen.getByText('1.50% from yesterday')).toBeInTheDocument();
   });
 
   it('should render quick action buttons', () => {

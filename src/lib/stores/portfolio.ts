@@ -19,7 +19,7 @@ interface PortfolioState {
 
   // Actions
   loadPortfolios: () => Promise<void>;
-  setCurrentPortfolio: (portfolio: Portfolio | null) => void;
+  setCurrentPortfolio: (portfolio: Portfolio | null) => Promise<void>;
   createPortfolio: (portfolio: Omit<Portfolio, 'id'>) => Promise<void>;
   updatePortfolio: (id: string, updates: Partial<Portfolio>) => Promise<void>;
   deletePortfolio: (id: string) => Promise<void>;
@@ -27,6 +27,7 @@ interface PortfolioState {
   calculateMetrics: (portfolioId: string) => Promise<void>;
   refreshData: () => Promise<void>;
   clearError: () => void;
+  getSortedPortfolios: () => Portfolio[];
 }
 
 export const usePortfolioStore = create<PortfolioState>()(
@@ -75,10 +76,20 @@ export const usePortfolioStore = create<PortfolioState>()(
           }
         },
 
-        setCurrentPortfolio: (portfolio) => {
+        setCurrentPortfolio: async (portfolio) => {
           set({ currentPortfolio: portfolio });
           if (!portfolio) {
             set({ holdings: [], metrics: null });
+          } else {
+            // Track lastAccessedAt for recency-based sorting
+            const now = new Date();
+            try {
+              await portfolioQueries.update(portfolio.id, { lastAccessedAt: now });
+            } catch (error) {
+              // Log error but don't fail the operation since this is non-critical
+              const { logger } = await import('@/lib/utils/logger');
+              logger.error('Failed to update lastAccessedAt', error);
+            }
           }
           // Note: loadHoldings and calculateMetrics are now triggered by useDashboardData hook
           // to avoid race conditions with persist middleware rehydration
@@ -130,16 +141,32 @@ export const usePortfolioStore = create<PortfolioState>()(
         deletePortfolio: async (id) => {
           set({ loading: true, error: null });
           try {
-            // Check if deleting current portfolio BEFORE loadPortfolios clears it
+            // Check if deleting current portfolio BEFORE delete
             const { currentPortfolio } = get();
             const wasCurrentDeleted = currentPortfolio?.id === id;
 
             await portfolioQueries.delete(id);
             await get().loadPortfolios();
 
-            // Clear holdings/metrics if we deleted the current portfolio
+            // If we deleted the current portfolio, fall back to next best option
             if (wasCurrentDeleted) {
-              set({ currentPortfolio: null, holdings: [], metrics: null });
+              // Use the updated portfolios from the store after loadPortfolios()
+              // Note: The deleted portfolio is already gone from get().portfolios
+              const remainingPortfolios = get().portfolios;
+
+              if (remainingPortfolios.length > 0) {
+                // Fall back to most recently accessed portfolio
+                const sorted = get().getSortedPortfolios();
+                const nextPortfolio = sorted[0] || remainingPortfolios[0];
+                set({ currentPortfolio: nextPortfolio });
+
+                // Load data for the new current portfolio
+                await get().loadHoldings(nextPortfolio.id);
+                await get().calculateMetrics(nextPortfolio.id);
+              } else {
+                // No portfolios left
+                set({ currentPortfolio: null, holdings: [], metrics: null });
+              }
             }
             set({ loading: false });
           } catch (error) {
@@ -157,7 +184,12 @@ export const usePortfolioStore = create<PortfolioState>()(
           // Prevent duplicate/concurrent calls for the same portfolio
           const { _loadingHoldingsForId } = get();
           if (_loadingHoldingsForId === portfolioId) {
-            return;
+            // Wait a bit and retry if the previous request might have failed
+            await new Promise(resolve => setTimeout(resolve, 100));
+            // Check again after wait - if still loading, skip
+            if (get()._loadingHoldingsForId === portfolioId) {
+              return;
+            }
           }
 
           set({
@@ -183,6 +215,8 @@ export const usePortfolioStore = create<PortfolioState>()(
               loading: false,
               _loadingHoldingsForId: null,
             });
+            // Re-throw to allow callers to handle the error
+            throw error;
           }
         },
 
@@ -216,6 +250,26 @@ export const usePortfolioStore = create<PortfolioState>()(
 
         clearError: () => {
           set({ error: null });
+        },
+
+        getSortedPortfolios: () => {
+          const { portfolios } = get();
+
+          // Sort by lastAccessedAt (most recent first), fallback to updatedAt, then createdAt
+          return [...portfolios].sort((a, b) => {
+            const aTime =
+              a.lastAccessedAt?.getTime() ??
+              a.updatedAt?.getTime() ??
+              a.createdAt?.getTime() ??
+              0;
+            const bTime =
+              b.lastAccessedAt?.getTime() ??
+              b.updatedAt?.getTime() ??
+              b.createdAt?.getTime() ??
+              0;
+
+            return bTime - aTime; // Descending order (most recent first)
+          });
         },
       }),
       {

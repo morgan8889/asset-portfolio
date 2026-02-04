@@ -62,3 +62,5 @@ temp/
 
 # MCP server state
 .serena/
+.core.*
+core.*

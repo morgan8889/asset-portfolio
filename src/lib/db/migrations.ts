@@ -1,5 +1,6 @@
 import { db } from './schema';
 import { logger } from '@/lib/utils/logger';
+import type { Portfolio } from '@/types/portfolio';
 
 // Migration interface
 interface Migration {
@@ -17,6 +18,12 @@ export interface MigrationState {
 }
 
 // Migration registry
+// Migration version mapping:
+// - Data migration versions (1, 2, ...) are independent of Dexie schema versions
+// - Dexie schema versions (v1-v5) are defined in schema.ts using version() method
+// - Data migrations transform existing data without changing the schema structure
+// - Migration 1: Initial setup (maps to Dexie schema v1-v4)
+// - Migration 2: Add lastAccessedAt field data to existing portfolios (Dexie schema v5)
 const migrations: Migration[] = [
   {
     version: 1,
@@ -35,17 +42,42 @@ const migrations: Migration[] = [
       throw new Error('Cannot rollback initial migration');
     },
   },
-  // Future migrations can be added here
-  // {
-  //   version: 2,
-  //   description: 'Add new fields to portfolios',
-  //   up: async () => {
-  //     // Migration logic here
-  //   },
-  //   down: async () => {
-  //     // Rollback logic here
-  //   },
-  // },
+  {
+    version: 2,
+    description: 'Add lastAccessedAt to portfolios for recency sorting',
+    up: async () => {
+      logger.info('Adding lastAccessedAt field to existing portfolios...');
+
+      // Get all portfolios
+      const portfolios = await db.portfolios.toArray();
+
+      // Update each portfolio with lastAccessedAt = updatedAt (default)
+      for (const portfolio of portfolios) {
+        if (!portfolio.lastAccessedAt) {
+          await db.portfolios.update(portfolio.id, {
+            lastAccessedAt: portfolio.updatedAt || portfolio.createdAt,
+          });
+        }
+      }
+
+      logger.info(`Updated ${portfolios.length} portfolios with lastAccessedAt`);
+    },
+    down: async () => {
+      logger.info('Removing lastAccessedAt field from portfolios...');
+
+      // Get all portfolios
+      const portfolios = await db.portfolios.toArray();
+
+      // Remove lastAccessedAt field
+      for (const portfolio of portfolios) {
+        // Use object destructuring with type assertion for migration rollback
+        const { lastAccessedAt, ...rest } = portfolio as Portfolio & { lastAccessedAt?: Date };
+        await db.portfolios.put(rest);
+      }
+
+      logger.info('lastAccessedAt field removed from portfolios');
+    },
+  },
 ];
 
 // Migration manager
@@ -189,14 +221,18 @@ export class MigrationManager {
 
   static async getAppliedMigrations(): Promise<MigrationState[]> {
     try {
-      const settings = await db.userSettings
+      // Get the current migration state from db_migration_state key
+      const state = await db.userSettings
         .where('key')
-        .startsWith('migration_')
-        .toArray();
+        .equals(this.MIGRATION_KEY)
+        .first();
 
-      return settings
-        .map((s) => s.value as MigrationState)
-        .sort((a, b) => a.version - b.version);
+      if (state?.value) {
+        // Return as an array with the current migration state
+        return [state.value as MigrationState];
+      }
+
+      return [];
     } catch (error) {
       logger.warn('Could not get applied migrations:', error);
       return [];
@@ -262,13 +298,15 @@ export async function seedInitialData(): Promise<void> {
 
     // Create default portfolio
     const portfolioId = crypto.randomUUID();
+    const now = new Date();
     await db.portfolios.add({
       id: portfolioId,
       name: 'My Portfolio',
       type: 'taxable',
       currency: 'USD',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: now,
+      updatedAt: now,
+      lastAccessedAt: now,
       settings: {
         rebalanceThreshold: 5,
         taxStrategy: 'fifo',
