@@ -15,7 +15,6 @@ export interface NavItem {
   name: string;
   href:
     | '/'
-    | '/portfolios'
     | '/holdings'
     | '/transactions'
     | '/analysis'
@@ -24,8 +23,7 @@ export interface NavItem {
     | '/planning'
     | '/reports'
     | '/settings'
-    | '/tax-analysis'
-    | '/settings/tax';
+    | '/tax-analysis';
   icon: typeof Home;
   badge?: 'beta' | 'coming-soon';
 }
@@ -50,7 +48,6 @@ export const navigationStructure: (NavItem | NavGroup)[] = [
     icon: Briefcase,
     defaultOpen: true,
     items: [
-      { name: 'Manage Portfolios', href: '/portfolios', icon: Briefcase },
       { name: 'Holdings', href: '/holdings', icon: Briefcase },
       { name: 'Transactions', href: '/transactions', icon: Wallet },
       { name: 'Allocation', href: '/allocation', icon: PieChart },
@@ -76,7 +73,6 @@ export const navigationStructure: (NavItem | NavGroup)[] = [
     items: [
       { name: 'Reports', href: '/reports', icon: FileText },
       { name: 'Settings', href: '/settings', icon: Settings },
-      { name: 'Tax Settings', href: '/settings/tax', icon: Receipt },
     ],
   },
 ];
