@@ -4,17 +4,11 @@ import userEvent from '@testing-library/user-event';
 import { DeletePortfolioDialog } from '../delete-portfolio-dialog';
 
 // Use vi.hoisted for mutable state accessible in vi.mock factories
-const { mockStoreState, mockDbTransactions } = vi.hoisted(() => ({
+const { mockStoreState, mockCountByPortfolio } = vi.hoisted(() => ({
   mockStoreState: {
     deletePortfolio: vi.fn(),
   },
-  mockDbTransactions: {
-    where: vi.fn(() => ({
-      equals: vi.fn(() => ({
-        count: vi.fn(() => Promise.resolve(0)),
-      })),
-    })),
-  },
+  mockCountByPortfolio: vi.fn(() => Promise.resolve(0)),
 }));
 
 vi.mock('@/lib/stores', () => ({
@@ -26,9 +20,9 @@ vi.mock('@/lib/stores', () => ({
   },
 }));
 
-vi.mock('@/lib/db', () => ({
-  db: {
-    transactions: mockDbTransactions,
+vi.mock('@/lib/db/queries', () => ({
+  transactionQueries: {
+    countByPortfolio: mockCountByPortfolio,
   },
 }));
 
@@ -38,11 +32,7 @@ describe('DeletePortfolioDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockStoreState.deletePortfolio = vi.fn();
-    mockDbTransactions.where.mockReturnValue({
-      equals: vi.fn(() => ({
-        count: vi.fn(() => Promise.resolve(0)),
-      })),
-    });
+    mockCountByPortfolio.mockResolvedValue(0);
   });
 
   it('should render delete dialog with portfolio name', async () => {
@@ -93,11 +83,7 @@ describe('DeletePortfolioDialog', () => {
   });
 
   it('should show checkbox confirmation for portfolio with 1-10 transactions', async () => {
-    mockDbTransactions.where.mockReturnValue({
-      equals: vi.fn(() => ({
-        count: vi.fn(() => Promise.resolve(5)),
-      })),
-    });
+    mockCountByPortfolio.mockResolvedValue(5);
 
     const mockPortfolio = {
       id: 'portfolio-1',
@@ -127,11 +113,7 @@ describe('DeletePortfolioDialog', () => {
 
   it('should enable delete after checkbox is checked', async () => {
     const user = userEvent.setup();
-    mockDbTransactions.where.mockReturnValue({
-      equals: vi.fn(() => ({
-        count: vi.fn(() => Promise.resolve(5)),
-      })),
-    });
+    mockCountByPortfolio.mockResolvedValue(5);
 
     const mockPortfolio = {
       id: 'portfolio-1',
@@ -164,11 +146,7 @@ describe('DeletePortfolioDialog', () => {
   });
 
   it('should show typed confirmation for portfolio with >10 transactions', async () => {
-    mockDbTransactions.where.mockReturnValue({
-      equals: vi.fn(() => ({
-        count: vi.fn(() => Promise.resolve(15)),
-      })),
-    });
+    mockCountByPortfolio.mockResolvedValue(15);
 
     const mockPortfolio = {
       id: 'portfolio-1',
@@ -198,11 +176,7 @@ describe('DeletePortfolioDialog', () => {
 
   it('should enable delete after typing correct portfolio name', async () => {
     const user = userEvent.setup();
-    mockDbTransactions.where.mockReturnValue({
-      equals: vi.fn(() => ({
-        count: vi.fn(() => Promise.resolve(15)),
-      })),
-    });
+    mockCountByPortfolio.mockResolvedValue(15);
 
     const mockPortfolio = {
       id: 'portfolio-1',
@@ -375,11 +349,7 @@ describe('DeletePortfolioDialog', () => {
   });
 
   it('should reset state when dialog closes', async () => {
-    mockDbTransactions.where.mockReturnValue({
-      equals: vi.fn(() => ({
-        count: vi.fn(() => Promise.resolve(5)),
-      })),
-    });
+    mockCountByPortfolio.mockResolvedValue(5);
 
     const mockPortfolio = {
       id: 'portfolio-1',

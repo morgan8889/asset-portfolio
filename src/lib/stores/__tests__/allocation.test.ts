@@ -7,7 +7,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useAllocationStore } from '../allocation';
-import { TargetModel, AllocationDimension } from '@/types/allocation';
+import { TargetModel, AllocationDimension, AllocationData } from '@/types/allocation';
 
 // Mock the allocation services
 vi.mock('@/lib/services/allocation/target-service', () => ({
@@ -279,9 +279,9 @@ describe('Allocation Store', () => {
 
   describe('Dimension Selection', () => {
     it('should set selected dimension', () => {
-      useAllocationStore.getState().setSelectedDimension('category');
+      useAllocationStore.getState().setSelectedDimension('assetClass');
 
-      expect(useAllocationStore.getState().selectedDimension).toBe('category');
+      expect(useAllocationStore.getState().selectedDimension).toBe('assetClass');
     });
 
     it('should update dimension to region', () => {
@@ -362,12 +362,14 @@ describe('Allocation Store', () => {
 
   describe('Current Allocation', () => {
     it('should set current allocation', () => {
-      const mockAllocation = {
+      const mockAllocation: AllocationData = {
         dimension: 'assetClass' as AllocationDimension,
-        allocations: [
-          { category: 'stocks', value: 80000, percentage: 80, count: 10 },
-          { category: 'bonds', value: 20000, percentage: 20, count: 5 },
+        breakdown: [
+          { category: 'stocks', value: '80000', percentage: 80, count: 10 },
+          { category: 'bonds', value: '20000', percentage: 20, count: 5 },
         ],
+        totalValue: '100000',
+        hasUnclassified: false,
       };
 
       useAllocationStore.getState().setCurrentAllocation(mockAllocation);
@@ -376,9 +378,11 @@ describe('Allocation Store', () => {
     });
 
     it('should allow clearing current allocation', () => {
-      const mockAllocation = {
+      const mockAllocation: AllocationData = {
         dimension: 'assetClass' as AllocationDimension,
-        allocations: [{ category: 'stocks', value: 100000, percentage: 100, count: 1 }],
+        breakdown: [{ category: 'stocks', value: '100000', percentage: 100, count: 1 }],
+        totalValue: '100000',
+        hasUnclassified: false,
       };
 
       useAllocationStore.setState({ currentAllocation: mockAllocation });

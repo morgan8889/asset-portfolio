@@ -40,6 +40,7 @@ export function DeletePortfolioDialog({
   const [transactionCount, setTransactionCount] = useState(0);
   const [confirmChecked, setConfirmChecked] = useState(false);
   const [confirmText, setConfirmText] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Load transaction count when dialog opens
   useEffect(() => {
@@ -73,8 +74,6 @@ export function DeletePortfolioDialog({
     confirmationLevel === 'simple' ||
     (confirmationLevel === 'checkbox' && confirmChecked) ||
     (confirmationLevel === 'typed' && confirmText === portfolio.name);
-
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const handleDelete = async () => {
     if (!canDelete) return;
@@ -124,7 +123,7 @@ export function DeletePortfolioDialog({
                   <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
                     <p>
                       This is your last portfolio. Deleting it will leave you
-                      with no portfolios to track. You'll need to create a new
+                      with no portfolios to track. You&apos;ll need to create a new
                       portfolio to continue using the application.
                     </p>
                   </div>
@@ -185,7 +184,7 @@ export function DeletePortfolioDialog({
               />
               {confirmText && confirmText !== portfolio.name && (
                 <p className="text-sm text-red-600">
-                  Name doesn't match. Please type exactly: {portfolio.name}
+                  Name doesn&apos;t match. Please type exactly: {portfolio.name}
                 </p>
               )}
             </div>
