@@ -64,13 +64,13 @@ export async function getFirstPortfolioId(page: Page): Promise<string> {
         const store = tx.objectStore('portfolios');
         const getAll = store.getAll();
         getAll.onsuccess = () => {
-          db.close();
           const portfolios = getAll.result;
           if (portfolios.length === 0) {
-            db.close(); // Issue 4: Close db on error path
+            db.close(); // Close db on error path
             reject(new Error('No portfolios found in database'));
             return;
           }
+          db.close();
           resolve(portfolios[0].id);
         };
         getAll.onerror = () => {
@@ -468,9 +468,9 @@ export async function makePortfolioHighCash(page: Page): Promise<void> {
   const portfolioId = await getFirstPortfolioId(page);
 
   await page.evaluate(
-    async ({ portfolioId }) => {
+    async ({ portfolioId, dbName }) => {
       return new Promise<void>((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME);
+        const request = indexedDB.open(dbName);
         request.onsuccess = () => {
           const db = request.result;
 
@@ -539,9 +539,9 @@ export async function makePortfolioMultiIssue(page: Page): Promise<void> {
   const portfolioId = await getFirstPortfolioId(page);
 
   await page.evaluate(
-    async ({ portfolioId }) => {
+    async ({ portfolioId, dbName }) => {
       return new Promise<void>((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME);
+        const request = indexedDB.open(dbName);
         request.onsuccess = () => {
           const db = request.result;
 

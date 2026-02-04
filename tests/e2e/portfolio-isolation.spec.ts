@@ -301,21 +301,21 @@ test.describe('Portfolio Data Isolation', () => {
     const confirmButton = page.getByRole('button', { name: /delete portfolio/i });
     await page.waitForTimeout(500); // Wait for transaction count check
 
-    if (await confirmButton.isEnabled()) {
-      await confirmButton.click();
+    // Confirm button should be enabled since we control the seed data
+    await expect(confirmButton).toBeEnabled();
+    await confirmButton.click();
 
-      // Wait for dialog to close
-      await expect(page.getByRole('heading', { name: /delete portfolio/i })).not.toBeVisible();
+    // Wait for dialog to close
+    await expect(page.getByRole('heading', { name: /delete portfolio/i })).not.toBeVisible();
 
-      // Verify first portfolio is gone
-      await expect(page.getByText(firstPortfolioName?.trim() || '')).not.toBeVisible();
+    // Verify first portfolio is gone
+    await expect(page.getByText(firstPortfolioName?.trim() || '')).not.toBeVisible();
 
-      // Verify second portfolio still exists
-      await expect(page.getByText(secondPortfolioName?.trim() || '')).toBeVisible();
+    // Verify second portfolio still exists
+    await expect(page.getByText(secondPortfolioName?.trim() || '')).toBeVisible();
 
-      // Verify total count decreased by 1
-      const finalCount = await portfolioRows.count();
-      expect(finalCount).toBe(initialCount - 1);
-    }
+    // Verify total count decreased by 1
+    const finalCount = await portfolioRows.count();
+    expect(finalCount).toBe(initialCount - 1);
   });
 });

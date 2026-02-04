@@ -104,15 +104,8 @@ test.describe('Transaction Pagination', () => {
 
     while (await nextButton.isEnabled() && clickCount < maxClicks) {
       await nextButton.click();
-      // Issue 5: Wait for button state to stabilize instead of fixed timeout
-      await page.waitForFunction(
-        (btn) => {
-          const button = document.querySelector(btn);
-          return button && (button.hasAttribute('disabled') || !button.hasAttribute('disabled'));
-        },
-        'button[aria-label="Go to next page"]',
-        { timeout: 1000 }
-      );
+      // Wait a short moment for button state to stabilize
+      await page.waitForTimeout(100);
       clickCount++;
     }
 
@@ -163,14 +156,15 @@ test.describe('Transaction Pagination', () => {
 
     const nextButton = page.locator('button[aria-label="Go to next page"]');
 
-    if (await nextButton.isEnabled()) {
-      // Navigate to next page
-      await nextButton.click();
-      await expect(page.locator('button[aria-label="Go to previous page"]')).toBeEnabled();
+    // With 58 transactions and page size 50, there should be a next page
+    await expect(nextButton).toBeEnabled();
 
-      // Page size should still be 50
-      await expect(page.locator('[aria-label="Select page size"]')).toContainText('50');
-    }
+    // Navigate to next page
+    await nextButton.click();
+    await expect(page.locator('button[aria-label="Go to previous page"]')).toBeEnabled();
+
+    // Page size should still be 50
+    await expect(page.locator('[aria-label="Select page size"]')).toContainText('50');
   });
 
   test('should show loading state during pagination', async ({ page }) => {
@@ -210,11 +204,10 @@ test.describe('Transaction Pagination', () => {
 
     const nextButton = page.locator('button[aria-label="Go to next page"]');
 
-    // Navigate to page 2 if possible
-    if (await nextButton.isEnabled()) {
-      await nextButton.click();
-      await expect(page.locator('button[aria-label="Go to previous page"]')).toBeEnabled();
-    }
+    // Navigate to page 2 (with 58 transactions and page size 25, there should be 3 pages)
+    await expect(nextButton).toBeEnabled();
+    await nextButton.click();
+    await expect(page.locator('button[aria-label="Go to previous page"]')).toBeEnabled();
 
     // Navigate away to Holdings page
     await page.click('text=Holdings');
