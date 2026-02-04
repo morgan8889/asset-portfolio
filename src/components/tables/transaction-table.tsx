@@ -201,10 +201,8 @@ const TransactionTableComponent = ({
   // Clamp current page when displayTransactions changes to prevent out-of-bounds
   useEffect(() => {
     const maxPage = Math.max(1, Math.ceil(displayTransactions.length / pageSize));
-    if (currentPage > maxPage) {
-      setCurrentPage(maxPage);
-    }
-  }, [displayTransactions.length, pageSize, currentPage]);
+    setCurrentPage(prev => prev > maxPage ? maxPage : prev);
+  }, [displayTransactions.length, pageSize]);
 
   // Pagination
   const totalPages = Math.ceil(displayTransactions.length / pageSize);
@@ -341,7 +339,7 @@ const TransactionTableComponent = ({
         ) : (
           <>
             <div className="overflow-x-auto">
-            <Table>
+              <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
@@ -419,18 +417,18 @@ const TransactionTableComponent = ({
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
+              </Table>
             </div>
             {displayTransactions.length > pageSize && (
-            <PaginationControls
-              currentPage={currentPage}
-              totalPages={totalPages}
-              pageSize={pageSize}
-              totalCount={displayTransactions.length}
-              onPageChange={setCurrentPage}
-              onPageSizeChange={handlePageSizeChange}
-              className="mt-4"
-            />
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalCount={displayTransactions.length}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={handlePageSizeChange}
+                className="mt-4"
+              />
             )}
           </>
         )}

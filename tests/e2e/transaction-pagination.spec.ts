@@ -14,7 +14,7 @@ test.describe('Transaction Pagination', () => {
 
     // Note: These tests require >25 transactions to be meaningful.
     // In CI without seeded data, tests will pass vacuously.
-    // Consider seeding test data or using test.skip when pagination doesn't exist.
+    // TODO: Add test data seeding to ensure consistent test coverage
   });
 
   test('should display pagination controls when more than 25 transactions exist', async ({ page }) => {
@@ -119,7 +119,14 @@ test.describe('Transaction Pagination', () => {
 
       while (await nextButton.isEnabled() && clickCount < maxClicks) {
         await nextButton.click();
-        await page.waitForTimeout(300);
+        // Wait for button state to update
+        await page.waitForFunction(
+          () => {
+            const btn = document.querySelector('button[aria-label="Go to next page"]');
+            return !btn || btn.hasAttribute('disabled');
+          },
+          { timeout: 1000 }
+        ).catch(() => {}); // Ignore timeout, button might still be enabled
         clickCount++;
       }
 
@@ -171,7 +178,8 @@ test.describe('Transaction Pagination', () => {
       // Change page size to 50
       await page.click('[aria-label="Select page size"]');
       await page.click('text=50');
-      await page.waitForTimeout(500);
+      // Wait for page size button to update
+      await expect(page.locator('[aria-label="Select page size"]')).toContainText('50');
 
       const nextButton = page.locator('button[aria-label="Go to next page"]');
       const isNextEnabled = await nextButton.isEnabled();
@@ -179,7 +187,8 @@ test.describe('Transaction Pagination', () => {
       if (isNextEnabled) {
         // Navigate to next page
         await nextButton.click();
-        await page.waitForTimeout(500);
+        // Wait for Previous button to become enabled (indicates page change)
+        await expect(page.locator('button[aria-label="Go to previous page"]')).toBeEnabled();
 
         // Page size should still be 50
         const pageSizeButton = page.locator('[aria-label="Select page size"]');
@@ -199,9 +208,11 @@ test.describe('Transaction Pagination', () => {
         // Click Next
         await nextButton.click();
 
-        // Check if buttons are disabled during load (may be too fast to catch)
-        // Just verify the page updates successfully
-        await page.waitForTimeout(500);
+        // Wait for page navigation to complete by checking for info text update
+        await page.waitForFunction(() => {
+          const infoEl = document.querySelector('[class*="text-muted-foreground"]');
+          return infoEl && !infoEl.textContent?.includes('Showing 1-');
+        }, { timeout: 5000 });
 
         // Verify content updated
         await expect(page.locator('text=/Showing \\d+-\\d+ of \\d+ transactions/')).toBeVisible();
@@ -227,7 +238,8 @@ test.describe('Transaction Pagination', () => {
       // Change page size to 50
       await page.click('[aria-label="Select page size"]');
       await page.click('text=50');
-      await page.waitForTimeout(500);
+      // Wait for page size button to update
+      await expect(page.locator('[aria-label="Select page size"]')).toContainText('50');
 
       // Verify page size changed
       const pageSizeButton = page.locator('[aria-label="Select page size"]');
@@ -239,7 +251,8 @@ test.describe('Transaction Pagination', () => {
       // Navigate to page 2 if possible
       if (isNextEnabled) {
         await nextButton.click();
-        await page.waitForTimeout(500);
+        // Wait for Previous button to become enabled (indicates page change)
+        await expect(page.locator('button[aria-label="Go to previous page"]')).toBeEnabled();
 
         // Verify we're on page 2
         const infoText = await page.locator('text=/Showing \\d+-\\d+ of \\d+ transactions/').textContent();
@@ -253,7 +266,8 @@ test.describe('Transaction Pagination', () => {
       // Navigate back to Transactions
       await page.click('text=Transactions');
       await page.waitForURL('**/transactions', { timeout: 10000 });
-      await page.waitForTimeout(500);
+      // Wait for table to load
+      await page.waitForSelector('table tbody tr', { timeout: 5000 });
 
       // Verify pagination state is reset (pagination uses local state, not persisted)
       const pageSizeAfterNav = page.locator('[aria-label="Select page size"]');
