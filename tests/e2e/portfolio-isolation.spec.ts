@@ -16,10 +16,13 @@ test.describe('Portfolio Data Isolation', () => {
       page.getByRole('button').filter({ hasText: /portfolio/i }).first()
     );
 
-    let currentPortfolioName = '';
-    if (await portfolioSelector.isVisible().catch(() => false)) {
-      currentPortfolioName = await portfolioSelector.textContent() || '';
+    // Get current portfolio name - if selector is not visible, skip test
+    const isSelectorVisible = await portfolioSelector.isVisible();
+    if (!isSelectorVisible) {
+      test.skip();
+      return;
     }
+    const currentPortfolioName = await portfolioSelector.textContent() || '';
 
     // Get list of holdings for current portfolio
     const holdingsTableA = page.getByRole('table');
@@ -97,10 +100,13 @@ test.describe('Portfolio Data Isolation', () => {
       page.getByRole('button').filter({ hasText: /portfolio/i }).first()
     );
 
-    let currentPortfolioName = '';
-    if (await portfolioSelector.isVisible().catch(() => false)) {
-      currentPortfolioName = await portfolioSelector.textContent() || '';
+    // Get current portfolio name - if selector is not visible, skip test
+    const isSelectorVisible = await portfolioSelector.isVisible();
+    if (!isSelectorVisible) {
+      test.skip();
+      return;
     }
+    const currentPortfolioName = await portfolioSelector.textContent() || '';
 
     // Count transactions for Portfolio A
     const transactionsTableA = page.getByRole('table');
@@ -184,18 +190,24 @@ test.describe('Portfolio Data Isolation', () => {
       page.getByRole('button').filter({ hasText: /portfolio/i }).first()
     );
 
-    let portfolio1Name = '';
-    if (await portfolioSelector.isVisible().catch(() => false)) {
-      portfolio1Name = await portfolioSelector.textContent() || '';
+    // Get current portfolio name
+    const isSelectorVisible = await portfolioSelector.isVisible();
+    if (!isSelectorVisible) {
+      test.skip();
+      return;
     }
+    const portfolio1Name = await portfolioSelector.textContent() || '';
 
     // Check if allocation chart is visible
-    const chart1Visible = await page.locator('[data-testid="allocation-chart"]').or(
+    const allocationChart = page.locator('[data-testid="allocation-chart"]').or(
       page.locator('svg').filter({ hasText: /allocation/i })
-    ).isVisible().catch(() => false);
+    );
+
+    const chart1Visible = await allocationChart.isVisible();
 
     // Switch portfolios via selector (if available)
-    if (await portfolioSelector.isVisible().catch(() => false)) {
+    const canSwitch = await portfolioSelector.isVisible();
+    if (canSwitch) {
       await portfolioSelector.click();
 
       // Select a different portfolio from dropdown

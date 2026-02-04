@@ -221,14 +221,18 @@ export class MigrationManager {
 
   static async getAppliedMigrations(): Promise<MigrationState[]> {
     try {
-      const settings = await db.userSettings
+      // Get the current migration state from db_migration_state key
+      const state = await db.userSettings
         .where('key')
-        .startsWith('migration_')
-        .toArray();
+        .equals(this.MIGRATION_KEY)
+        .first();
 
-      return settings
-        .map((s) => s.value as MigrationState)
-        .sort((a, b) => a.version - b.version);
+      if (state?.value) {
+        // Return as an array with the current migration state
+        return [state.value as MigrationState];
+      }
+
+      return [];
     } catch (error) {
       logger.warn('Could not get applied migrations:', error);
       return [];

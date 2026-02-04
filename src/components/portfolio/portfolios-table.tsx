@@ -62,6 +62,8 @@ export function PortfoliosTable({
 
   // Load metrics for all portfolios
   useEffect(() => {
+    let mounted = true; // Track if component is still mounted
+
     async function loadMetrics() {
       // Parallelize metrics loading for better performance
       const metricsPromises = portfolios.map(async (portfolio) => {
@@ -100,17 +102,26 @@ export function PortfoliosTable({
       });
 
       const results = await Promise.all(metricsPromises);
-      const metricsMap = new Map();
-      results.forEach(({ portfolioId, metrics }) => {
-        metricsMap.set(portfolioId, metrics);
-      });
 
-      setPortfolioMetrics(metricsMap);
+      // Only update state if component is still mounted
+      if (mounted) {
+        const metricsMap = new Map();
+        results.forEach(({ portfolioId, metrics }) => {
+          metricsMap.set(portfolioId, metrics);
+        });
+
+        setPortfolioMetrics(metricsMap);
+      }
     }
 
     if (portfolios.length > 0) {
       loadMetrics();
     }
+
+    // Cleanup function to prevent state updates on unmounted component
+    return () => {
+      mounted = false;
+    };
   }, [portfolios]);
 
   const getPortfolioMetrics = (portfolioId: string) => {

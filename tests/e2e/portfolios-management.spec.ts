@@ -43,9 +43,8 @@ test.describe('Portfolios Management Page', () => {
   test('should highlight current portfolio with badge', async ({ page }) => {
     // Look for "Current" badge in the table
     const currentBadge = page.getByText(/current/i);
-    // Should have at least one current portfolio indicator
-    if (await currentBadge.isVisible()) {
-      await expect(currentBadge).toBeVisible();
-    }
+    // Should have exactly one current portfolio indicator
+    await expect(currentBadge).toBeVisible();
+    await expect(currentBadge).toHaveCount(1);
   });
 });

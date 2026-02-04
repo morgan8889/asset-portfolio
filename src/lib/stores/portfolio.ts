@@ -258,14 +258,14 @@ export const usePortfolioStore = create<PortfolioState>()(
           // Sort by lastAccessedAt (most recent first), fallback to updatedAt, then createdAt
           return [...portfolios].sort((a, b) => {
             const aTime =
-              a.lastAccessedAt?.getTime() ||
-              a.updatedAt?.getTime() ||
-              a.createdAt?.getTime() ||
+              a.lastAccessedAt?.getTime() ??
+              a.updatedAt?.getTime() ??
+              a.createdAt?.getTime() ??
               0;
             const bTime =
-              b.lastAccessedAt?.getTime() ||
-              b.updatedAt?.getTime() ||
-              b.createdAt?.getTime() ||
+              b.lastAccessedAt?.getTime() ??
+              b.updatedAt?.getTime() ??
+              b.createdAt?.getTime() ??
               0;
 
             return bTime - aTime; // Descending order (most recent first)

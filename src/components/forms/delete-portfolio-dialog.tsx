@@ -74,15 +74,23 @@ export function DeletePortfolioDialog({
     (confirmationLevel === 'checkbox' && confirmChecked) ||
     (confirmationLevel === 'typed' && confirmText === portfolio.name);
 
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   const handleDelete = async () => {
     if (!canDelete) return;
 
     try {
       setIsDeleting(true);
+      setDeleteError(null);
       await deletePortfolio(portfolio.id);
       onOpenChange(false);
     } catch (error) {
       logger.error('Failed to delete portfolio:', error);
+      setDeleteError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete portfolio. Please try again.'
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -180,6 +188,25 @@ export function DeletePortfolioDialog({
                   Name doesn't match. Please type exactly: {portfolio.name}
                 </p>
               )}
+            </div>
+          )}
+
+          {/* Error message */}
+          {deleteError && (
+            <div className="rounded-md bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertTriangle className="h-5 w-5 text-red-400 dark:text-red-600" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                    Delete Failed
+                  </h3>
+                  <div className="mt-1 text-sm text-red-700 dark:text-red-300">
+                    {deleteError}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>

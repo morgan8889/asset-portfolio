@@ -80,6 +80,11 @@ export const portfolioQueries = {
         }
         await db.liabilities.where('portfolioId').equals(id).delete();
 
+        // NOTE: Assets and price history are NOT deleted as they may be shared
+        // across multiple portfolios. Orphaned assets (not referenced by any
+        // holdings) are intentionally retained as they contain metadata that
+        // might be useful if the same asset is added again in the future.
+
         // Finally delete the portfolio
         await db.portfolios.delete(id);
       }
