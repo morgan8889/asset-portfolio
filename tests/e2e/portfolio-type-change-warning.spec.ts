@@ -1,6 +1,22 @@
 import { test, expect } from '@playwright/test';
+import {
+  generateMockData,
+  seedSecondPortfolio,
+} from './fixtures/seed-helpers';
 
 test.describe('Portfolio Type Change Warning', () => {
+  test.beforeEach(async ({ page }) => {
+    // Seed mock data to ensure we have at least one portfolio with transactions
+    await generateMockData(page);
+
+    // Create a second portfolio so portfolio management page has multiple rows
+    await seedSecondPortfolio(page, {
+      name: 'IRA Retirement Fund',
+      type: 'ira',
+      transactionCount: 3,
+    });
+  });
+
   test('should show warning when changing portfolio type with existing transactions', async ({ page }) => {
     // Navigate to portfolios page
     await page.goto('/portfolios');
@@ -10,10 +26,8 @@ test.describe('Portfolio Type Change Warning', () => {
     const rows = page.getByRole('row');
     const portfolioCount = await rows.count();
 
-    if (portfolioCount < 2) {
-      test.skip();
-      return;
-    }
+    // We should have at least 2 portfolios (header + 2 data rows = 3)
+    expect(portfolioCount).toBeGreaterThanOrEqual(3);
 
     // Click edit button on first portfolio (skip header row)
     const firstPortfolioRow = rows.nth(1);
@@ -50,8 +64,7 @@ test.describe('Portfolio Type Change Warning', () => {
         page.getByText(/tax implications/i)
       );
 
-      // The warning should appear if the portfolio has transactions
-      // We check if it exists but don't fail if it doesn't (empty portfolio)
+      // The warning should appear since the first portfolio has transactions
       const warningVisible = await warningText.isVisible().catch(() => false);
 
       if (warningVisible) {
