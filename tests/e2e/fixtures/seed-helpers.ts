@@ -4,9 +4,20 @@
  * Provides functions to seed IndexedDB directly from Playwright tests
  * via page.evaluate(). These helpers use the raw IndexedDB API to avoid
  * depending on Dexie being accessible from the test context.
+ *
+ * Usage Guide:
+ * - Use this module (seed-helpers.ts) for Playwright E2E tests that need to
+ *   directly manipulate IndexedDB from browser context
+ * - Use seed-data.ts for unit/integration tests that have access to Dexie and
+ *   need type-safe fixtures with Decimal.js support
+ * - This module uses raw IndexedDB API with string values (no Decimal.js)
+ * - seed-data.ts uses Dexie types with proper Decimal.js instances
  */
 
 import { Page } from '@playwright/test';
+
+// Database name constant to avoid hardcoding throughout the file
+const DB_NAME = 'PortfolioTrackerDB';
 
 // ============================================================================
 // Core: Generate mock data via the /test page UI
@@ -44,9 +55,9 @@ export async function generateMockData(page: Page): Promise<void> {
  * Must be called after the app is loaded (page has been navigated).
  */
 export async function getFirstPortfolioId(page: Page): Promise<string> {
-  return page.evaluate(async () => {
+  return page.evaluate(async (dbName) => {
     return new Promise<string>((resolve, reject) => {
-      const request = indexedDB.open('PortfolioTrackerDB');
+      const request = indexedDB.open(dbName);
       request.onsuccess = () => {
         const db = request.result;
         const tx = db.transaction(['portfolios'], 'readonly');
@@ -56,6 +67,7 @@ export async function getFirstPortfolioId(page: Page): Promise<string> {
           db.close();
           const portfolios = getAll.result;
           if (portfolios.length === 0) {
+            db.close(); // Issue 4: Close db on error path
             reject(new Error('No portfolios found in database'));
             return;
           }
@@ -68,16 +80,16 @@ export async function getFirstPortfolioId(page: Page): Promise<string> {
       };
       request.onerror = () => reject(request.error);
     });
-  });
+  }, DB_NAME);
 }
 
 /**
  * Gets all portfolio IDs from IndexedDB.
  */
 export async function getAllPortfolioIds(page: Page): Promise<string[]> {
-  return page.evaluate(async () => {
+  return page.evaluate(async (dbName) => {
     return new Promise<string[]>((resolve, reject) => {
-      const request = indexedDB.open('PortfolioTrackerDB');
+      const request = indexedDB.open(dbName);
       request.onsuccess = () => {
         const db = request.result;
         const tx = db.transaction(['portfolios'], 'readonly');
@@ -85,7 +97,13 @@ export async function getAllPortfolioIds(page: Page): Promise<string[]> {
         const getAll = store.getAll();
         getAll.onsuccess = () => {
           db.close();
-          resolve(getAll.result.map((p: { id: string }) => p.id));
+          const portfolios = getAll.result;
+          if (portfolios.length === 0) {
+            // Issue 4: No error here, just return empty array
+            resolve([]);
+            return;
+          }
+          resolve(portfolios.map((p: { id: string }) => p.id));
         };
         getAll.onerror = () => {
           db.close();
@@ -94,7 +112,7 @@ export async function getAllPortfolioIds(page: Page): Promise<string[]> {
       };
       request.onerror = () => reject(request.error);
     });
-  });
+  }, DB_NAME);
 }
 
 /**
@@ -108,9 +126,9 @@ export async function addRecordsToStore(
   records: Record<string, unknown>[]
 ): Promise<void> {
   await page.evaluate(
-    async ({ storeName, records }) => {
+    async ({ storeName, records, dbName }) => {
       return new Promise<void>((resolve, reject) => {
-        const request = indexedDB.open('PortfolioTrackerDB');
+        const request = indexedDB.open(dbName);
         request.onsuccess = () => {
           const db = request.result;
           const tx = db.transaction([storeName], 'readwrite');
@@ -142,7 +160,7 @@ export async function addRecordsToStore(
         request.onerror = () => reject(request.error);
       });
     },
-    { storeName, records }
+    { storeName, records, dbName: DB_NAME }
   );
 }
 
@@ -150,9 +168,9 @@ export async function addRecordsToStore(
  * Clears all data from all tables in the database.
  */
 export async function clearAllData(page: Page): Promise<void> {
-  await page.evaluate(async () => {
+  await page.evaluate(async (dbName) => {
     return new Promise<void>((resolve, reject) => {
-      const request = indexedDB.open('PortfolioTrackerDB');
+      const request = indexedDB.open(dbName);
       request.onsuccess = () => {
         const db = request.result;
         const storeNames = Array.from(db.objectStoreNames);
@@ -176,7 +194,7 @@ export async function clearAllData(page: Page): Promise<void> {
       };
       request.onerror = () => reject(request.error);
     });
-  });
+  }, DB_NAME);
 }
 
 // ============================================================================
@@ -243,13 +261,15 @@ export async function seedSecondPortfolio(
     name?: string;
     type?: string;
     transactionCount?: number;
+    id?: string; // Allow specifying a custom ID
   } = {}
 ): Promise<string> {
   const name = options.name || 'Second Test Portfolio';
   const type = options.type || 'ira';
   const transactionCount = options.transactionCount ?? 5;
 
-  const portfolioId = `seed-portfolio-${Date.now()}`;
+  // Issue 2: Use deterministic ID (can be overridden via options)
+  const portfolioId = options.id || 'seed-portfolio-2';
 
   // Add portfolio
   await addRecordsToStore(page, 'portfolios', [
@@ -269,9 +289,9 @@ export async function seedSecondPortfolio(
 
   // Add assets if they don't exist (put is idempotent, add may fail on duplicates)
   // We use the same assets that mock data creates
-  await page.evaluate(async () => {
+  await page.evaluate(async (dbName) => {
     return new Promise<void>((resolve, reject) => {
-      const request = indexedDB.open('PortfolioTrackerDB');
+      const request = indexedDB.open(dbName);
       request.onsuccess = () => {
         const db = request.result;
         const tx = db.transaction(['assets'], 'readwrite');
@@ -320,7 +340,7 @@ export async function seedSecondPortfolio(
       };
       request.onerror = () => reject(request.error);
     });
-  });
+  }, DB_NAME);
 
   // Add transactions for the second portfolio
   if (transactionCount > 0) {
@@ -377,15 +397,17 @@ export async function makePortfolioConcentrated(page: Page): Promise<void> {
 
   // Clear existing holdings and replace with concentrated allocation
   await page.evaluate(
-    async ({ portfolioId }) => {
+    async ({ portfolioId, dbName }) => {
       return new Promise<void>((resolve, reject) => {
-        const request = indexedDB.open('PortfolioTrackerDB');
+        const request = indexedDB.open(dbName);
         request.onsuccess = () => {
           const db = request.result;
           const tx = db.transaction(['holdings'], 'readwrite');
           const store = tx.objectStore('holdings');
 
-          // Clear existing holdings
+          // Issue 7: We iterate through holdings to delete only this portfolio's holdings
+          // rather than using store.clear() which would clear ALL portfolios' holdings.
+          // This preserves data isolation between portfolios.
           const idx = store.index('portfolioId');
           const getReq = idx.getAll(portfolioId);
           getReq.onsuccess = () => {
@@ -434,7 +456,7 @@ export async function makePortfolioConcentrated(page: Page): Promise<void> {
         request.onerror = () => reject(request.error);
       });
     },
-    { portfolioId }
+    { portfolioId, dbName: DB_NAME }
   );
 }
 
@@ -448,7 +470,7 @@ export async function makePortfolioHighCash(page: Page): Promise<void> {
   await page.evaluate(
     async ({ portfolioId }) => {
       return new Promise<void>((resolve, reject) => {
-        const request = indexedDB.open('PortfolioTrackerDB');
+        const request = indexedDB.open(DB_NAME);
         request.onsuccess = () => {
           const db = request.result;
 
@@ -505,7 +527,7 @@ export async function makePortfolioHighCash(page: Page): Promise<void> {
         request.onerror = () => reject(request.error);
       });
     },
-    { portfolioId }
+    { portfolioId, dbName: DB_NAME }
   );
 }
 
@@ -519,7 +541,7 @@ export async function makePortfolioMultiIssue(page: Page): Promise<void> {
   await page.evaluate(
     async ({ portfolioId }) => {
       return new Promise<void>((resolve, reject) => {
-        const request = indexedDB.open('PortfolioTrackerDB');
+        const request = indexedDB.open(DB_NAME);
         request.onsuccess = () => {
           const db = request.result;
 
@@ -609,6 +631,6 @@ export async function makePortfolioMultiIssue(page: Page): Promise<void> {
         request.onerror = () => reject(request.error);
       });
     },
-    { portfolioId }
+    { portfolioId, dbName: DB_NAME }
   );
 }

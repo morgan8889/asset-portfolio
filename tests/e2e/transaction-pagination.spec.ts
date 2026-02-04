@@ -104,7 +104,15 @@ test.describe('Transaction Pagination', () => {
 
     while (await nextButton.isEnabled() && clickCount < maxClicks) {
       await nextButton.click();
-      await page.waitForTimeout(300);
+      // Issue 5: Wait for button state to stabilize instead of fixed timeout
+      await page.waitForFunction(
+        (btn) => {
+          const button = document.querySelector(btn);
+          return button && (button.hasAttribute('disabled') || !button.hasAttribute('disabled'));
+        },
+        'button[aria-label="Go to next page"]',
+        { timeout: 1000 }
+      );
       clickCount++;
     }
 
@@ -129,20 +137,20 @@ test.describe('Transaction Pagination', () => {
   });
 
   test('should hide pagination controls when transactions fit on one page', async ({ page }) => {
-    // This test checks if pagination hides when page size exceeds total count.
+    // Issue 6: Assert pagination is visible (we seeded 50+ transactions)
+    await expect(page.locator('text=Per page:')).toBeVisible({ timeout: 5000 });
+
     // Change to 100 per page - all ~58 transactions should fit on one page.
-    const paginationExists = await page.locator('text=Per page:').count() > 0;
+    await page.click('[aria-label="Select page size"]');
+    await page.click('text=100');
 
-    if (paginationExists) {
-      await page.click('[aria-label="Select page size"]');
-      await page.click('text=100');
-      await page.waitForTimeout(500);
+    // Wait for the page size to update
+    await expect(page.locator('[aria-label="Select page size"]')).toContainText('100');
 
-      // With 100 per page and ~58 transactions, all should fit on one page
-      // Next button should be disabled since there's no next page
-      const nextButton = page.locator('button[aria-label="Go to next page"]');
-      await expect(nextButton).toBeDisabled();
-    }
+    // With 100 per page and ~58 transactions, all should fit on one page
+    // Next button should be disabled since there's no next page
+    const nextButton = page.locator('button[aria-label="Go to next page"]');
+    await expect(nextButton).toBeDisabled();
   });
 
   test('should maintain page size selection across page navigation', async ({ page }) => {
