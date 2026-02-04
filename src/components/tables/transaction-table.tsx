@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, memo } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import {
   Table,
   TableBody,
@@ -36,6 +36,8 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { Transaction, TransactionType } from '@/types';
 import { TransactionDialog } from '@/components/forms/add-transaction';
 import { DeleteTransactionDialog } from '@/components/dialogs/delete-transaction-dialog';
+import { PaginationControls } from '@/components/tables/pagination-controls';
+import { DEFAULT_PAGE_SIZE } from '@/lib/constants/pagination';
 
 interface TransactionTableProps {
   showPortfolioFilter?: boolean;
@@ -136,6 +138,8 @@ const TransactionTableComponent = ({
 }: TransactionTableProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<TransactionType | 'all'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [editTransaction, setEditTransaction] = useState<Transaction | null>(
     null
   );
@@ -183,11 +187,38 @@ const TransactionTableComponent = ({
       );
     }
 
-    // Sort by date (newest first)
-    return filtered.sort(
+    // Sort by date (newest first) - use spread to avoid mutating original array
+    return [...filtered].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
   }, [filteredTransactions, transactions, searchTerm, filterType]);
+
+  // Reset to page 1 when filters or portfolio change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterType, currentPortfolio?.id]);
+
+  // Clamp current page when displayTransactions changes to prevent out-of-bounds
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(displayTransactions.length / pageSize));
+    setCurrentPage(prev => prev > maxPage ? maxPage : prev);
+  }, [displayTransactions.length, pageSize]);
+
+  // Pagination
+  const totalPages = Math.ceil(displayTransactions.length / pageSize);
+  const paginatedTransactions = useMemo(
+    () =>
+      displayTransactions.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize
+      ),
+    [displayTransactions, currentPage, pageSize]
+  );
+
+  const handlePageSizeChange = useCallback((newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  }, []);
 
   const handleDelete = async () => {
     if (deleteTransaction) {
@@ -306,8 +337,9 @@ const TransactionTableComponent = ({
             <p>No transactions match your search criteria.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
+          <>
+            <div className="overflow-x-auto">
+              <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
@@ -322,7 +354,7 @@ const TransactionTableComponent = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayTransactions.map((transaction) => (
+                {paginatedTransactions.map((transaction) => (
                   <TableRow key={transaction.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -385,8 +417,20 @@ const TransactionTableComponent = ({
                   </TableRow>
                 ))}
               </TableBody>
-            </Table>
-          </div>
+              </Table>
+            </div>
+            {displayTransactions.length > pageSize && (
+              <PaginationControls
+                currentPage={currentPage}
+                totalPages={totalPages}
+                pageSize={pageSize}
+                totalCount={displayTransactions.length}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={handlePageSizeChange}
+                className="mt-4"
+              />
+            )}
+          </>
         )}
       </CardContent>
 
