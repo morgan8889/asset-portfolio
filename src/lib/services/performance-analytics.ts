@@ -411,7 +411,9 @@ export async function getYoYMetrics(
     }
 
     const daysInPeriod = differenceInDays(endSnapshot.date, startSnapshot.date);
-    const isPartialYear = daysInPeriod < 365 || year === currentYear;
+    // Note: differenceInDays returns 364 for a full calendar year (Jan 1 to Dec 31)
+    // because it counts intervals between dates, not inclusive days
+    const isPartialYear = daysInPeriod < 364 || year === currentYear;
 
     // Calculate simple return
     const simpleReturn = startSnapshot.totalValue.isZero()
