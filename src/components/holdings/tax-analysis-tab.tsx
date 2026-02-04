@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import Decimal from 'decimal.js';
 import { Card, Metric, Text, Flex, Grid } from '@tremor/react';
 import {
@@ -70,7 +70,6 @@ export function TaxAnalysisTab({
   const { taxSettings } = useTaxSettingsStore();
   const [sortField, setSortField] = useState<SortField>('purchaseDate');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
-  const [isCalculating, setIsCalculating] = useState(true);
 
   // Calculate tax analysis
   const taxAnalysis = useMemo(
@@ -123,12 +122,9 @@ export function TaxAnalysisTab({
     });
   }, [taxAnalysis.lots, sortField, sortDirection]);
 
-  // Simulate calculation delay for loading state
-  useEffect(() => {
-    setIsCalculating(true);
-    const timer = setTimeout(() => setIsCalculating(false), 100);
-    return () => clearTimeout(timer);
-  }, [holdings, prices, taxSettings]);
+  // Stable loading logic based on actual data state
+  // Only show loading if we have holdings but no tax lots AND no prices yet
+  const isLoading = holdings.length > 0 && taxAnalysis.lots.length === 0 && prices.size === 0;
 
   const SortButton = ({
     field,
@@ -150,8 +146,8 @@ export function TaxAnalysisTab({
     </Button>
   );
 
-  // Loading state
-  if (isCalculating) {
+  // Loading state - only show when genuinely waiting for price data
+  if (isLoading) {
     return (
       <div className="space-y-6">
         <Grid numItemsMd={2} numItemsLg={4} className="gap-6">
