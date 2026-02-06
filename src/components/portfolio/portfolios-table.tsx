@@ -16,8 +16,10 @@ import { Badge } from '@/components/ui/badge';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { formatCurrency } from '@/lib/utils/currency';
-import { calculateTotalValue, calculateGainPercent } from '@/lib/services/metrics-service';
+import { calculateTotalValue } from '@/lib/services/metrics-service';
 import { holdingQueries } from '@/lib/db';
+import { getSnapshots } from '@/lib/services/snapshot-service';
+import { startOfYear } from 'date-fns';
 import Decimal from 'decimal.js';
 import { Portfolio, PortfolioType } from '@/types/portfolio';
 import { PORTFOLIO_TYPE_LABELS } from '@/lib/constants/portfolio';
@@ -70,15 +72,19 @@ export function PortfoliosTable({
         try {
           const holdings = await holdingQueries.getByPortfolio(portfolio.id);
           const totalValue = calculateTotalValue(holdings);
-          const totalCost = holdings.reduce(
-            (sum, h) => sum.plus(h.costBasis),
-            new Decimal(0)
-          );
-          const totalGain = holdings.reduce(
-            (sum, h) => sum.plus(h.unrealizedGain),
-            new Decimal(0)
-          );
-          const ytdReturn = calculateGainPercent(totalGain, totalCost);
+
+          // Calculate true YTD return using performance snapshots
+          let ytdReturn = 0;
+          const now = new Date();
+          const yearStart = startOfYear(now);
+          const snapshots = await getSnapshots(portfolio.id, yearStart, now);
+          if (snapshots.length >= 2) {
+            const startValue = snapshots[0].totalValue;
+            if (!startValue.isZero()) {
+              const endValue = snapshots[snapshots.length - 1].totalValue;
+              ytdReturn = endValue.minus(startValue).div(startValue).mul(100).toNumber();
+            }
+          }
 
           return {
             portfolioId: portfolio.id,
