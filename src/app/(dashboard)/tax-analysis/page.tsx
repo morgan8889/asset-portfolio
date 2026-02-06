@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { Decimal } from 'decimal.js';
 import { TaxAnalysisTab } from '@/components/holdings/tax-analysis-tab';
 import { usePriceStore, useAssetStore, usePortfolioStore } from '@/lib/stores';
@@ -17,11 +17,53 @@ import Link from 'next/link';
  * estimated tax liability, and detailed lot-level analysis.
  */
 export default function TaxAnalysisPage() {
-  const { currentPortfolio, holdings } = usePortfolioStore();
-  const { prices } = usePriceStore();
-  const { assets } = useAssetStore();
+  const { currentPortfolio, holdings, loadHoldings, loading } = usePortfolioStore();
+  const {
+    prices,
+    lastFetchTime,
+    setWatchedSymbols,
+    startPolling,
+    stopPolling,
+    refreshAllPrices,
+    loadPreferences,
+  } = usePriceStore();
+  const { assets, loadAssets } = useAssetStore();
 
-  // Create asset symbol map
+  // Load holdings and assets when portfolio changes
+  useEffect(() => {
+    if (currentPortfolio) {
+      loadHoldings(currentPortfolio.id);
+      loadAssets();
+    }
+  }, [currentPortfolio, loadHoldings, loadAssets]);
+
+  // Initialize price polling
+  useEffect(() => {
+    loadPreferences();
+    return () => {
+      stopPolling();
+    };
+  }, [loadPreferences, stopPolling]);
+
+  // Set watched symbols and start price polling when holdings/assets load
+  useEffect(() => {
+    if (holdings.length > 0 && assets.length > 0) {
+      const symbols = holdings
+        .map((h) => {
+          const asset = assets.find((a) => a.id === h.assetId);
+          return asset?.symbol;
+        })
+        .filter((s): s is string => !!s);
+
+      if (symbols.length > 0) {
+        setWatchedSymbols(symbols);
+        refreshAllPrices();
+        startPolling();
+      }
+    }
+  }, [holdings, assets, setWatchedSymbols, refreshAllPrices, startPolling]);
+
+  // Create asset symbol map (assetId -> symbol)
   const assetSymbolMap = useMemo(() => {
     const map = new Map<string, string>();
     assets.forEach((asset) => {
@@ -30,29 +72,31 @@ export default function TaxAnalysisPage() {
     return map;
   }, [assets]);
 
-  // Create a stable key based on actual price values to prevent unnecessary re-renders
-  // This ensures pricesMap only changes when actual price values change, not on every poll cycle
-  const pricesKey = useMemo(
-    () =>
-      Object.entries(prices)
-        .filter(([, p]) => p != null)
-        .map(([id, p]) => `${id}:${p}`)
-        .sort()
-        .join('|'),
-    [prices]
-  );
+  // Create reverse lookup (symbol -> assetId)
+  const symbolToAssetId = useMemo(() => {
+    const map = new Map<string, string>();
+    assets.forEach((asset) => {
+      map.set(asset.symbol.toUpperCase(), asset.id);
+    });
+    return map;
+  }, [assets]);
 
-  // Convert prices to Map<string, Decimal> with stable dependency
+  // Convert prices Map (keyed by symbol) to Map<string, Decimal> (keyed by assetId)
+  // This is what the tax-estimator expects
+  // Use lastFetchTime as a recalculation trigger since Map reference doesn't change
   const pricesMap = useMemo(() => {
     const map = new Map<string, Decimal>();
-    Object.entries(prices).forEach(([assetId, price]) => {
-      if (price !== null && price !== undefined) {
-        map.set(assetId, new Decimal(price));
+    prices.forEach((priceData, symbol) => {
+      if (priceData?.displayPrice != null) {
+        const assetId = symbolToAssetId.get(symbol.toUpperCase());
+        if (assetId) {
+          map.set(assetId, new Decimal(priceData.displayPrice));
+        }
       }
     });
     return map;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pricesKey]);
+  }, [lastFetchTime, symbolToAssetId]);
 
   if (!currentPortfolio) {
     return (
@@ -64,6 +108,17 @@ export default function TaxAnalysisPage() {
             Please select a portfolio to view tax analysis.
           </AlertDescription>
         </Alert>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="container mx-auto space-y-6 p-6">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Tax Analysis</h1>
+          <p className="text-muted-foreground">Loading holdings data...</p>
+        </div>
       </div>
     );
   }
