@@ -16,10 +16,8 @@ import { Badge } from '@/components/ui/badge';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { formatCurrency } from '@/lib/utils/currency';
-import { calculateTotalValue } from '@/lib/services/metrics-service';
+import { calculateTotalValue, calculateYtdReturn } from '@/lib/services/metrics-service';
 import { holdingQueries } from '@/lib/db';
-import { getSnapshots } from '@/lib/services/snapshot-service';
-import { startOfYear } from 'date-fns';
 import Decimal from 'decimal.js';
 import { Portfolio, PortfolioType } from '@/types/portfolio';
 import { PORTFOLIO_TYPE_LABELS } from '@/lib/constants/portfolio';
@@ -40,7 +38,7 @@ export function PortfoliosTable({
   const portfolios = usePortfolioStore((state) => state.portfolios);
   const currentPortfolio = usePortfolioStore((state) => state.currentPortfolio);
   const [portfolioMetrics, setPortfolioMetrics] = useState<
-    Map<string, { totalValue: Decimal; ytdReturn: number; holdings: number }>
+    Map<string, { totalValue: Decimal; ytdReturn: number | null; holdings: number }>
   >(new Map());
   const [editingPortfolio, setEditingPortfolio] = useState<{
     id: string;
@@ -73,18 +71,9 @@ export function PortfoliosTable({
           const holdings = await holdingQueries.getByPortfolio(portfolio.id);
           const totalValue = calculateTotalValue(holdings);
 
-          // Calculate true YTD return using performance snapshots
-          let ytdReturn = 0;
-          const now = new Date();
-          const yearStart = startOfYear(now);
-          const snapshots = await getSnapshots(portfolio.id, yearStart, now);
-          if (snapshots.length >= 2) {
-            const startValue = snapshots[0].totalValue;
-            if (!startValue.isZero()) {
-              const endValue = snapshots[snapshots.length - 1].totalValue;
-              ytdReturn = endValue.minus(startValue).div(startValue).mul(100).toNumber();
-            }
-          }
+          // Calculate YTD return using the extracted service function
+          const ytdResult = await calculateYtdReturn(portfolio.id);
+          const ytdReturn = ytdResult.return;
 
           return {
             portfolioId: portfolio.id,
@@ -100,7 +89,7 @@ export function PortfoliosTable({
             portfolioId: portfolio.id,
             metrics: {
               totalValue: new Decimal(0),
-              ytdReturn: 0,
+              ytdReturn: null,
               holdings: 0,
             },
           };
@@ -134,7 +123,7 @@ export function PortfoliosTable({
     return (
       portfolioMetrics.get(portfolioId) || {
         totalValue: new Decimal(0),
-        ytdReturn: 0,
+        ytdReturn: null,
         holdings: 0,
       }
     );
@@ -203,16 +192,20 @@ export function PortfoliosTable({
                   {formatCurrency(metrics.totalValue, portfolio.currency)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <span
-                    className={
-                      metrics.ytdReturn >= 0
-                        ? 'text-green-600'
-                        : 'text-red-600'
-                    }
-                  >
-                    {metrics.ytdReturn >= 0 ? '+' : ''}
-                    {metrics.ytdReturn.toFixed(2)}%
-                  </span>
+                  {metrics.ytdReturn === null ? (
+                    <span className="text-muted-foreground">—</span>
+                  ) : (
+                    <span
+                      className={
+                        metrics.ytdReturn >= 0
+                          ? 'text-green-600'
+                          : 'text-red-600'
+                      }
+                    >
+                      {metrics.ytdReturn >= 0 ? '+' : ''}
+                      {metrics.ytdReturn.toFixed(2)}%
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">{metrics.holdings}</TableCell>
                 <TableCell className="text-right">
