@@ -206,10 +206,10 @@ describe('Pagination Queries', () => {
         portfolioId: testPortfolioId,
       });
 
-      // Should default to 25 per page
-      expect(result.data).toHaveLength(25);
-      expect(result.pageSize).toBe(25);
-      expect(result.totalPages).toBe(4);
+      // Should default to 10 per page
+      expect(result.data).toHaveLength(10);
+      expect(result.pageSize).toBe(10);
+      expect(result.totalPages).toBe(10);
     });
 
     it('should handle invalid page size (negative) gracefully', async () => {
@@ -219,10 +219,10 @@ describe('Pagination Queries', () => {
         portfolioId: testPortfolioId,
       });
 
-      // Should default to 25 per page
-      expect(result.data).toHaveLength(25);
-      expect(result.pageSize).toBe(25);
-      expect(result.totalPages).toBe(4);
+      // Should default to 10 per page
+      expect(result.data).toHaveLength(10);
+      expect(result.pageSize).toBe(10);
+      expect(result.totalPages).toBe(10);
     });
   });
 });

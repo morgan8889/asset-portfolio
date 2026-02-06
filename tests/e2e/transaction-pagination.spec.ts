@@ -27,7 +27,7 @@ test.describe('Transaction Pagination', () => {
     await page.waitForSelector('table tbody tr', { timeout: 10000 });
   });
 
-  test('should display pagination controls when more than 25 transactions exist', async ({ page }) => {
+  test('should display pagination controls when transactions exceed page size', async ({ page }) => {
     // With 50+ transactions, pagination must be visible
     await expect(page.locator('text=Per page:')).toBeVisible({ timeout: 5000 });
 
@@ -54,7 +54,7 @@ test.describe('Transaction Pagination', () => {
     const nextButton = page.locator('button[aria-label="Go to next page"]');
     const previousButton = page.locator('button[aria-label="Go to previous page"]');
 
-    // Next should be enabled (we have more than 25 transactions)
+    // Next should be enabled (we have more transactions than the page size)
     await expect(nextButton).toBeEnabled();
 
     // Click Next
