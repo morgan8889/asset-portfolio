@@ -7,7 +7,7 @@
 
 ## Summary
 
-Implement server-side pagination for the Transaction History page to improve performance for users with 100+ transactions. The system will display transactions in pages (default: 25 per page) with Previous/Next navigation controls, configurable page size (10, 25, 50, 100), and session-based state persistence. All pagination logic will be implemented client-side using IndexedDB queries with LIMIT/OFFSET to avoid loading all transactions into memory.
+Implement server-side pagination for the Transaction History page to improve performance for users with 100+ transactions. The system will display transactions in pages (default: 10 per page) with Previous/Next navigation controls, configurable page size (10, 25, 50, 100), and session-based state persistence. All pagination logic will be implemented client-side using IndexedDB queries with LIMIT/OFFSET to avoid loading all transactions into memory.
 
 ## Technical Context
 

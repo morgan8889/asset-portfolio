@@ -69,7 +69,7 @@ This document breaks down the transaction pagination feature into executable tas
 
 ## Phase 3: User Story 1 (P1) - Basic Pagination MVP
 
-**Goal**: Display transactions in pages (default 25) with Previous/Next navigation.
+**Goal**: Display transactions in pages (default 10) with Previous/Next navigation.
 
 **Duration**: 3-4 hours
 
