@@ -2,7 +2,10 @@
 
 import { useMemo, useState } from 'react';
 import Decimal from 'decimal.js';
-import { Card, Metric, Text, Flex, Grid } from '@tremor/react';
+import {
+  Card,
+  CardContent,
+} from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -150,7 +153,7 @@ export function TaxAnalysisTab({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <Grid numItemsMd={2} numItemsLg={4} className="gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="p-4">
               <Skeleton className="mb-2 h-4 w-32" />
@@ -158,7 +161,7 @@ export function TaxAnalysisTab({
               <Skeleton className="mt-2 h-3 w-40" />
             </Card>
           ))}
-        </Grid>
+        </div>
         <Card className="p-6">
           <Skeleton className="mb-4 h-6 w-48" />
           <Skeleton className="h-64 w-full" />
@@ -170,53 +173,54 @@ export function TaxAnalysisTab({
   return (
     <div className="space-y-4">
       {/* Summary Cards - Reduced to 3 for compactness */}
-      <Grid numItemsMd={2} numItemsLg={3} className="gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
-          <Text>Net Unrealized Gain/Loss</Text>
-          <Metric
-            className={cn(
-              taxAnalysis.netUnrealizedGain.lessThan(0) && 'text-red-600'
-            )}
-          >
-            ${taxAnalysis.netUnrealizedGain.toFixed(2)}
-          </Metric>
-          <Flex className="mt-2">
-            <Text className="truncate text-sm">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Net Unrealized Gain/Loss</p>
+            <p
+              className={cn(
+                'mt-1 text-2xl font-semibold',
+                taxAnalysis.netUnrealizedGain.lessThan(0) && 'text-red-600'
+              )}
+            >
+              ${taxAnalysis.netUnrealizedGain.toFixed(2)}
+            </p>
+            <p className="mt-2 truncate text-sm text-muted-foreground">
               Gains: ${taxAnalysis.totalUnrealizedGain.toFixed(0)} / Losses: $
               {taxAnalysis.totalUnrealizedLoss.toFixed(0)}
-            </Text>
-          </Flex>
+            </p>
+          </CardContent>
         </Card>
 
         <Card>
-          <Text>Short-Term / Long-Term</Text>
-          <Metric className="text-sm">
-            <span className="text-yellow-600">
-              ${taxAnalysis.shortTermGains.toFixed(0)}
-            </span>
-            {' / '}
-            <span className="text-green-600">
-              ${taxAnalysis.longTermGains.toFixed(0)}
-            </span>
-          </Metric>
-          <Flex className="mt-2">
-            <Text className="truncate text-sm">
-              {taxSettings.shortTermRate.mul(100).toFixed(1)}% /{' '}
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Short-Term / Long-Term</p>
+            <p className="mt-1 text-2xl font-semibold">
+              <span className="text-yellow-600">
+                ${taxAnalysis.shortTermGains.toFixed(0)}
+              </span>
+              {' / '}
+              <span className="text-green-600">
+                ${taxAnalysis.longTermGains.toFixed(0)}
+              </span>
+            </p>
+            <p className="mt-2 truncate text-sm text-muted-foreground">
+              Taxed at {taxSettings.shortTermRate.mul(100).toFixed(1)}% /{' '}
               {taxSettings.longTermRate.mul(100).toFixed(1)}%
-            </Text>
-          </Flex>
+            </p>
+          </CardContent>
         </Card>
 
         <Card>
-          <Text>Estimated Tax Liability</Text>
-          <Metric className="text-red-600">
-            ${taxAnalysis.totalEstimatedTax.toFixed(2)}
-          </Metric>
-          <Flex className="mt-2">
-            <Text className="truncate text-sm">If all sold today</Text>
-          </Flex>
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Estimated Tax Liability</p>
+            <p className="mt-1 text-2xl font-semibold text-red-600">
+              ${taxAnalysis.totalEstimatedTax.toFixed(2)}
+            </p>
+            <p className="mt-2 truncate text-sm text-muted-foreground">If all sold today</p>
+          </CardContent>
         </Card>
-      </Grid>
+      </div>
 
       {/* Tax Lot Table */}
       <Card>
