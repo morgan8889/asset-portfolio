@@ -27,7 +27,7 @@ test.describe('Transaction Pagination', () => {
     await page.waitForSelector('table tbody tr', { timeout: 10000 });
   });
 
-  test('should display pagination controls when more than 25 transactions exist', async ({ page }) => {
+  test('should display pagination controls when transactions exceed page size', async ({ page }) => {
     // With 50+ transactions, pagination must be visible
     await expect(page.locator('text=Per page:')).toBeVisible({ timeout: 5000 });
 
@@ -54,7 +54,7 @@ test.describe('Transaction Pagination', () => {
     const nextButton = page.locator('button[aria-label="Go to next page"]');
     const previousButton = page.locator('button[aria-label="Go to previous page"]');
 
-    // Next should be enabled (we have more than 25 transactions)
+    // Next should be enabled (we have more transactions than the page size)
     await expect(nextButton).toBeEnabled();
 
     // Click Next
@@ -204,7 +204,7 @@ test.describe('Transaction Pagination', () => {
 
     const nextButton = page.locator('button[aria-label="Go to next page"]');
 
-    // Navigate to page 2 (with 58 transactions and page size 25, there should be 3 pages)
+    // Navigate to page 2 (with 58 transactions and page size 50, there should be 2 pages)
     await expect(nextButton).toBeEnabled();
     await nextButton.click();
     await expect(page.locator('button[aria-label="Go to previous page"]')).toBeEnabled();
@@ -220,7 +220,7 @@ test.describe('Transaction Pagination', () => {
 
     // Verify pagination state is reset (pagination uses local state, not persisted)
     const pageSizeAfterNav = page.locator('[aria-label="Select page size"]');
-    await expect(pageSizeAfterNav).toContainText('25');
+    await expect(pageSizeAfterNav).toContainText('10');
 
     // Verify we're back on page 1
     const infoTextAfterNav = await page.locator('text=/Showing \\d+-\\d+ of \\d+ transactions/').textContent();
