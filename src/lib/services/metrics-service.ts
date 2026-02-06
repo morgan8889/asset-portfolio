@@ -6,6 +6,7 @@
  */
 
 import { Decimal } from 'decimal.js';
+import { startOfYear } from 'date-fns';
 import {
   Holding,
   Asset,
@@ -14,6 +15,7 @@ import {
   PerformanceMetrics,
   AssetType,
 } from '@/types';
+import { getSnapshots } from '@/lib/services/snapshot-service';
 
 export interface HoldingWithAsset {
   holding: Holding;
@@ -230,9 +232,6 @@ export function calculateDividendYield(
 // =============================================================================
 // YTD Performance Calculation
 // =============================================================================
-
-import { getSnapshots } from '@/lib/services/snapshot-service';
-import { startOfYear } from 'date-fns';
 
 export interface YtdReturnResult {
   return: number | null;  // null indicates N/A (insufficient data)
