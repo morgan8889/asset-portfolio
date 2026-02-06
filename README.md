@@ -1,5 +1,7 @@
 # Portfolio Tracker 📈
 
+[![CI](https://github.com/morgan8889/asset-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/morgan8889/asset-portfolio/actions/workflows/ci.yml)
+
 A modern, privacy-first financial portfolio tracking application with interactive visualizations for multi-asset investment management and financial planning.
 
 ![Portfolio Tracker Dashboard](docs/designs/dashboard-preview.png)
