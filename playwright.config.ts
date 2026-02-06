@@ -79,6 +79,9 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // 2 minutes
+    env: {
+      CI: 'true', // Explicitly set CI environment for consistency
+    },
   },
 
   /* Global test timeout */
