@@ -153,8 +153,8 @@ export function TaxAnalysisTab({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
             <Card key={i} className="p-4">
               <Skeleton className="mb-2 h-4 w-32" />
               <Skeleton className="h-8 w-24" />
@@ -180,7 +180,7 @@ export function TaxAnalysisTab({
             <p
               className={cn(
                 'mt-1 text-2xl font-semibold',
-                taxAnalysis.netUnrealizedGain.lessThan(0) && 'text-red-600'
+                taxAnalysis.netUnrealizedGain.lessThan(0) && 'text-red-600 dark:text-red-400'
               )}
             >
               ${taxAnalysis.netUnrealizedGain.toFixed(2)}
@@ -196,11 +196,11 @@ export function TaxAnalysisTab({
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Short-Term / Long-Term</p>
             <p className="mt-1 text-2xl font-semibold">
-              <span className="text-yellow-600">
+              <span className="text-yellow-600 dark:text-yellow-400">
                 ${taxAnalysis.shortTermGains.toFixed(0)}
               </span>
               {' / '}
-              <span className="text-green-600">
+              <span className="text-green-600 dark:text-green-400">
                 ${taxAnalysis.longTermGains.toFixed(0)}
               </span>
             </p>
@@ -214,7 +214,7 @@ export function TaxAnalysisTab({
         <Card>
           <CardContent className="p-4">
             <p className="text-sm text-muted-foreground">Estimated Tax Liability</p>
-            <p className="mt-1 text-2xl font-semibold text-red-600">
+            <p className="mt-1 text-2xl font-semibold text-red-600 dark:text-red-400">
               ${taxAnalysis.totalEstimatedTax.toFixed(2)}
             </p>
             <p className="mt-2 truncate text-sm text-muted-foreground">If all sold today</p>
@@ -294,9 +294,9 @@ export function TaxAnalysisTab({
                         className={cn(
                           'py-2 text-right text-sm font-medium',
                           lot.unrealizedGain.greaterThan(0)
-                            ? 'text-green-600'
+                            ? 'text-green-600 dark:text-green-400'
                             : lot.unrealizedGain.lessThan(0)
-                              ? 'text-red-600'
+                              ? 'text-red-600 dark:text-red-400'
                               : ''
                         )}
                       >
