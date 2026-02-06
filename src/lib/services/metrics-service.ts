@@ -6,6 +6,7 @@
  */
 
 import { Decimal } from 'decimal.js';
+import { startOfYear } from 'date-fns';
 import {
   Holding,
   Asset,
@@ -14,6 +15,7 @@ import {
   PerformanceMetrics,
   AssetType,
 } from '@/types';
+import { getSnapshots } from '@/lib/services/snapshot-service';
 
 export interface HoldingWithAsset {
   holding: Holding;
@@ -225,6 +227,75 @@ export function calculateDividendYield(
   currentPrice: Decimal
 ): number {
   return safePercent(annualDividend, currentPrice);
+}
+
+// =============================================================================
+// YTD Performance Calculation
+// =============================================================================
+
+export interface YtdReturnResult {
+  return: number | null;  // null indicates N/A (insufficient data)
+  startDate: Date;
+  endDate: Date;
+  snapshotCount: number;
+  startValue?: Decimal;
+  endValue?: Decimal;
+}
+
+/**
+ * Calculate Year-to-Date (YTD) return using performance snapshots.
+ *
+ * @param portfolioId - The portfolio ID to calculate YTD return for
+ * @param currentDate - The current date (defaults to now)
+ * @returns YTD return percentage or null if insufficient data
+ *
+ * Returns null when:
+ * - Less than 2 snapshots available
+ * - Starting value is zero (prevents division by zero)
+ * - Portfolio was created after Jan 1 (for mid-year portfolios, this is "since inception")
+ */
+export async function calculateYtdReturn(
+  portfolioId: string,
+  currentDate: Date = new Date()
+): Promise<YtdReturnResult> {
+  const yearStart = startOfYear(currentDate);
+
+  // Get snapshots from start of year to current date
+  const snapshots = await getSnapshots(portfolioId, yearStart, currentDate);
+
+  const result: YtdReturnResult = {
+    return: null,
+    startDate: yearStart,
+    endDate: currentDate,
+    snapshotCount: snapshots.length,
+  };
+
+  // Need at least 2 snapshots to calculate a return
+  if (snapshots.length < 2) {
+    return result;
+  }
+
+  const startValue = snapshots[0].totalValue;
+  const endValue = snapshots[snapshots.length - 1].totalValue;
+
+  result.startValue = startValue;
+  result.endValue = endValue;
+
+  // Can't calculate percentage if starting value is zero
+  if (startValue.isZero()) {
+    return result;
+  }
+
+  // Calculate YTD return as percentage
+  const ytdReturn = endValue
+    .minus(startValue)
+    .div(startValue)
+    .mul(100)
+    .toNumber();
+
+  result.return = ytdReturn;
+
+  return result;
 }
 
 // =============================================================================
