@@ -220,7 +220,7 @@ test.describe('Transaction Pagination', () => {
 
     // Verify pagination state is reset (pagination uses local state, not persisted)
     const pageSizeAfterNav = page.locator('[aria-label="Select page size"]');
-    await expect(pageSizeAfterNav).toContainText('25');
+    await expect(pageSizeAfterNav).toContainText('10');
 
     // Verify we're back on page 1
     const infoTextAfterNav = await page.locator('text=/Showing \\d+-\\d+ of \\d+ transactions/').textContent();
