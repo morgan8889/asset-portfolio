@@ -27,6 +27,7 @@ import {
   TRANSACTION_DECIMAL_FIELDS,
 } from '@/lib/utils/decimal-serialization';
 import { holdingToStorage } from './converters';
+import { DEFAULT_PAGE_SIZE } from '@/lib/constants/pagination';
 
 // Portfolio queries
 export const portfolioQueries = {
@@ -577,7 +578,7 @@ export async function getPaginatedTransactions(
   } = options;
 
   // Validate page size and page number to prevent edge cases
-  const validPageSize = pageSize > 0 ? pageSize : 25;
+  const validPageSize = pageSize > 0 ? pageSize : DEFAULT_PAGE_SIZE;
   const validPage = Math.max(1, page); // Ensure page >= 1
   const offset = (validPage - 1) * validPageSize;
 

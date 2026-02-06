@@ -73,7 +73,7 @@ As a user analyzing transactions across multiple pages, I want my current page a
 
 ### Functional Requirements
 
-- **FR-001**: System MUST display transactions in pages with a configurable page size (default: 25 transactions per page)
+- **FR-001**: System MUST display transactions in pages with a configurable page size (default: 10 transactions per page)
 - **FR-002**: System MUST provide "Previous Page" and "Next Page" navigation controls visible when multiple pages exist
 - **FR-003**: System MUST disable "Previous Page" button on the first page and "Next Page" button on the last page
 - **FR-004**: System MUST display current page information (e.g., "Showing 26-50 of 150 transactions")
