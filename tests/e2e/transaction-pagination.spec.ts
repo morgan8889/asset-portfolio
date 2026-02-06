@@ -204,7 +204,7 @@ test.describe('Transaction Pagination', () => {
 
     const nextButton = page.locator('button[aria-label="Go to next page"]');
 
-    // Navigate to page 2 (with 58 transactions and page size 25, there should be 3 pages)
+    // Navigate to page 2 (with 58 transactions and page size 50, there should be 2 pages)
     await expect(nextButton).toBeEnabled();
     await nextButton.click();
     await expect(page.locator('button[aria-label="Go to previous page"]')).toBeEnabled();

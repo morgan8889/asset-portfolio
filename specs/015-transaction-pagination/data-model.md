@@ -13,7 +13,7 @@ Represents the current pagination state in the Zustand transaction store.
 ```typescript
 interface PaginationState {
   currentPage: number;       // 1-indexed page number (default: 1)
-  pageSize: number;          // Items per page: 10 | 25 | 50 | 100 (default: 25)
+  pageSize: number;          // Items per page: 10 | 25 | 50 | 100 (default: 10)
   totalCount: number;        // Total transactions matching current filters
   totalPages: number;        // Calculated: Math.ceil(totalCount / pageSize)
 }
