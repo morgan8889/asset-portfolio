@@ -4,8 +4,6 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
-  merge_group:
-    branches: [main]
 
 # Cancel in-progress runs on same PR/branch
 concurrency:
