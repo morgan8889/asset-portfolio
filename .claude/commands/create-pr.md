@@ -138,7 +138,7 @@ git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/ori
 **Push and create**:
 ```bash
 git push -u origin "{branch-name}"
-gh pr create --draft --base "{base}" --title "{title}" --body "$(cat <<'EOF'
+gh pr create --base "{base}" --title "{title}" --body "$(cat <<'EOF'
 {description}
 EOF
 )"
@@ -152,11 +152,9 @@ gh pr view --json url -q .url
 
 **Final output**:
 ```
-Draft PR created: {URL}
+✅ Pull request created: {URL}
 
-Next steps:
-  - Fast checks (lint, types, unit tests) run automatically
-  - When ready: gh pr ready (triggers E2E tests)
+📋 To run E2E tests: Add the `run-e2e` label or comment `/run-e2e`
 ```
 
 ## Error Handling

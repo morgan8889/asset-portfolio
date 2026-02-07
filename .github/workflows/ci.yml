@@ -3,17 +3,20 @@ name: CI
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, synchronize, reopened, labeled]
+  issue_comment:
+    types: [created]
 
 # Cancel in-progress runs on same PR/branch
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   lint-and-typecheck:
     name: Lint & Type Check
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout repository
@@ -37,6 +40,7 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout repository
@@ -57,6 +61,9 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-e2e')) ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '/run-e2e'))
 
     steps:
       - name: Checkout repository
@@ -84,9 +91,10 @@ jobs:
   e2e-tests:
     name: E2E Tests (Chromium)
     runs-on: ubuntu-latest
-    # Run E2E tests when PR is ready for review (not draft)
-    if: github.event.pull_request.draft == false
     needs: build
+    if: |
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-e2e')) ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request && contains(github.event.comment.body, '/run-e2e'))
 
     steps:
       - name: Checkout repository
