@@ -646,4 +646,132 @@ describe('Price Store', () => {
       expect(state.getPrice('AAPL')).toBeDefined();
     });
   });
+
+  /**
+   * Bug #4 Prevention: lastFetchTime Updates
+   *
+   * These tests ensure that lastFetchTime is properly updated when prices change.
+   * This is critical because components using useMemo depend on lastFetchTime
+   * as a trigger to recalculate derived state (since Map reference doesn't change).
+   */
+  describe('lastFetchTime Updates', () => {
+    it('should update lastFetchTime when updatePrice is called', () => {
+      const beforeTime = usePriceStore.getState().lastFetchTime;
+
+      usePriceStore.getState().updatePrice('AAPL', {
+        symbol: 'AAPL',
+        price: '150.00',
+        currency: 'USD',
+        change: '1.50',
+        changePercent: 1.0,
+        timestamp: new Date(),
+        source: 'yahoo',
+      });
+
+      // Re-read state after mutation
+      const afterTime = usePriceStore.getState().lastFetchTime;
+
+      // lastFetchTime should be updated (not null, and different from before)
+      expect(afterTime).toBeDefined();
+      expect(afterTime).not.toBeNull();
+      if (beforeTime) {
+        expect(afterTime!.getTime()).toBeGreaterThanOrEqual(beforeTime.getTime());
+      }
+    });
+
+    it('should update lastFetchTime when updatePrices is called', () => {
+      const beforeTime = usePriceStore.getState().lastFetchTime;
+
+      usePriceStore.getState().updatePrices({
+        AAPL: {
+          symbol: 'AAPL',
+          price: '150.00',
+          currency: 'USD',
+          change: '1.50',
+          changePercent: 1.0,
+          timestamp: new Date(),
+          source: 'yahoo',
+        },
+        GOOGL: {
+          symbol: 'GOOGL',
+          price: '2800.00',
+          currency: 'USD',
+          change: '25.00',
+          changePercent: 0.9,
+          timestamp: new Date(),
+          source: 'yahoo',
+        },
+      });
+
+      // Re-read state after mutation
+      const afterTime = usePriceStore.getState().lastFetchTime;
+
+      // lastFetchTime should be updated
+      expect(afterTime).toBeDefined();
+      expect(afterTime).not.toBeNull();
+      if (beforeTime) {
+        expect(afterTime!.getTime()).toBeGreaterThanOrEqual(beforeTime.getTime());
+      }
+    });
+
+    it('should have lastFetchTime as a Date instance after price updates', () => {
+      usePriceStore.getState().updatePrice('AAPL', {
+        symbol: 'AAPL',
+        price: '150.00',
+        currency: 'USD',
+        change: '1.50',
+        changePercent: 1.0,
+        timestamp: new Date(),
+        source: 'yahoo',
+      });
+
+      const state = usePriceStore.getState();
+      expect(state.lastFetchTime).toBeInstanceOf(Date);
+    });
+
+    it('should allow components to detect price changes via lastFetchTime', () => {
+      // Simulate what a component with useMemo would do:
+      // Track lastFetchTime to know when to recalculate
+
+      // Initial state
+      usePriceStore.getState().updatePrice('AAPL', {
+        symbol: 'AAPL',
+        price: '150.00',
+        currency: 'USD',
+        change: '1.50',
+        changePercent: 1.0,
+        timestamp: new Date(),
+        source: 'yahoo',
+      });
+
+      const firstFetchTime = usePriceStore.getState().lastFetchTime;
+      const firstPrice = usePriceStore.getState().getPrice('AAPL')?.displayPrice;
+
+      // Wait a tiny bit to ensure time difference
+      const wait = (ms: number) =>
+        new Promise((resolve) => setTimeout(resolve, ms));
+
+      // Update price
+      usePriceStore.getState().updatePrice('AAPL', {
+        symbol: 'AAPL',
+        price: '175.00', // Changed price
+        currency: 'USD',
+        change: '26.50',
+        changePercent: 17.67,
+        timestamp: new Date(),
+        source: 'yahoo',
+      });
+
+      const secondFetchTime = usePriceStore.getState().lastFetchTime;
+      const secondPrice = usePriceStore.getState().getPrice('AAPL')?.displayPrice;
+
+      // Verify both price and fetchTime changed
+      expect(firstPrice).toBe('150');
+      expect(secondPrice).toBe('175');
+      expect(secondFetchTime).not.toBe(firstFetchTime);
+      expect(secondFetchTime!.getTime()).toBeGreaterThanOrEqual(
+        firstFetchTime!.getTime()
+      );
+    });
+  });
 });
