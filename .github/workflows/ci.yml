@@ -3,6 +3,7 @@ name: CI
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
   merge_group:
     branches: [main]
 
@@ -85,8 +86,8 @@ jobs:
   e2e-tests:
     name: E2E Tests (Chromium)
     runs-on: ubuntu-latest
-    # Only run E2E tests in merge queue - not on regular PRs
-    if: github.event_name == 'merge_group'
+    # Run E2E tests when PR is ready for review (not draft)
+    if: github.event.pull_request.draft == false
     needs: build
 
     steps:

@@ -237,20 +237,29 @@ Push the branch and create the pull request:
    - Ensure the title is concise (< 72 characters)
    - Use present tense ("Add feature" not "Added feature")
 
-3. **Create PR**:
-   - Report "🚀 Creating pull request..."
+3. **Create PR (as draft)**:
+   - Report "🚀 Creating draft pull request..."
    - Use the Bash tool with `gh pr create` using a heredoc for the body (to avoid temp file issues):
      ```bash
-     gh pr create --title "{title}" --body "$(cat <<'EOF'
+     gh pr create --draft --title "{title}" --body "$(cat <<'EOF'
      {generated PR description from step 6}
      EOF
      )"
      ```
    - This approach avoids the need for temporary file cleanup
+   - The `--draft` flag creates the PR as a draft, which skips E2E tests until ready for review
 
-4. **Get PR URL**:
+4. **Get PR URL and provide next steps**:
    - Use the Bash tool: `gh pr view --json url -q .url`
-   - Report "✅ Pull request created: {URL}"
+   - Report:
+     ```
+     ✅ Draft pull request created: {URL}
+
+     📋 Next steps:
+        • Fast checks (lint, types, unit tests) will run automatically
+        • When ready for full review, run: gh pr ready
+        • This will trigger E2E tests and mark the PR for review
+     ```
 
 **Note**: Using heredoc instead of temp files eliminates the need for cleanup and prevents issues if the command fails midway.
 
@@ -377,11 +386,13 @@ Automatically detect the base branch for the PR instead of assuming `main`:
 5. ✅ Tests passed
 6. 📝 Generated commit: `feat(tax): add ESPP/RSU tracking with capital gains analysis`
 7. ⬆️  Pushed to `origin/012-tax-features-stock`
-8. 🚀 Created PR: "Tax-Aware Portfolio Tracking (ESPP/RSU)"
+8. 🚀 Created draft PR: "Tax-Aware Portfolio Tracking (ESPP/RSU)"
    - Linked to spec.md and tasks.md
    - Included constitution checklist
    - Listed all changes from git diff
-9. ✅ PR URL: https://github.com/user/asset-portfolio/pull/123
+9. ✅ Draft PR URL: https://github.com/user/asset-portfolio/pull/123
+   - Fast checks running (lint, types, unit tests)
+   - Run `gh pr ready` when ready for E2E tests and review
 
 **Regular Branch Example** (user on `fix/dashboard-scrollbar`):
 
@@ -391,7 +402,9 @@ Automatically detect the base branch for the PR instead of assuming `main`:
 4. ✅ Tests passed
 5. 📝 Generated commit: `fix(ui): remove horizontal scrollbar from dashboard`
 6. ⬆️  Pushed to `origin/fix/dashboard-scrollbar`
-7. 🚀 Created PR: "Fix: Remove horizontal scrollbar from dashboard"
+7. 🚀 Created draft PR: "Fix: Remove horizontal scrollbar from dashboard"
    - Standard test plan
    - No spec links (not a feature branch)
-8. ✅ PR URL: https://github.com/user/asset-portfolio/pull/124
+8. ✅ Draft PR URL: https://github.com/user/asset-portfolio/pull/124
+   - Fast checks running (lint, types, unit tests)
+   - Run `gh pr ready` when ready for E2E tests and review
