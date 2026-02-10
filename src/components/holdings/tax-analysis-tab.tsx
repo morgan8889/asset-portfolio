@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Decimal from 'decimal.js';
 import {
   Card,
@@ -29,6 +29,8 @@ import { Holding } from '@/types/asset';
 import { estimateTaxLiability } from '@/lib/services/tax-estimator';
 import { useTaxSettingsStore } from '@/lib/stores/tax-settings';
 import { cn } from '@/lib/utils';
+import { PaginationControls } from '@/components/tables/pagination-controls';
+import { DEFAULT_PAGE_SIZE } from '@/lib/constants/pagination';
 import {
   checkDispositionStatus,
   getDispositionReason,
@@ -73,6 +75,8 @@ export function TaxAnalysisTab({
   const { taxSettings } = useTaxSettingsStore();
   const [sortField, setSortField] = useState<SortField>('purchaseDate');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   // Calculate tax analysis
   const taxAnalysis = useMemo(
@@ -124,6 +128,24 @@ export function TaxAnalysisTab({
       return sortDirection === 'asc' ? comparison : -comparison;
     });
   }, [taxAnalysis.lots, sortField, sortDirection]);
+
+  // Paginate sorted lots
+  const totalPages = Math.ceil(sortedLots.length / pageSize);
+  const paginatedLots = useMemo(
+    () => sortedLots.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [sortedLots, currentPage, pageSize]
+  );
+
+  // Reset page when sort changes or data changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortField, sortDirection]);
+
+  // Clamp page if out of bounds
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(sortedLots.length / pageSize));
+    setCurrentPage((prev) => (prev > maxPage ? maxPage : prev));
+  }, [sortedLots.length, pageSize]);
 
   // Stable loading logic based on actual data state
   // Only show loading if we have holdings but no tax lots AND no prices yet
@@ -273,7 +295,7 @@ export function TaxAnalysisTab({
                     </TableCell>
                   </TableRow>
                 ) : (
-                  sortedLots.map((lot, index) => (
+                  paginatedLots.map((lot, index) => (
                     <TableRow key={`${lot.lotId}-${index}`}>
                       <TableCell className="py-2 font-medium">
                         {lot.assetSymbol}
@@ -455,6 +477,21 @@ export function TaxAnalysisTab({
               </TableBody>
             </Table>
           </div>
+
+          {sortedLots.length > pageSize && (
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalCount={sortedLots.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              }}
+              className="px-4 pb-4"
+            />
+          )}
         </div>
       </Card>
     </div>
