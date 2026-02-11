@@ -12,7 +12,7 @@
  * - Test rebalancing with exclusions
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test';
 
 test.describe('Rebalancing Execution', () => {
   test.beforeEach(async ({ page }) => {

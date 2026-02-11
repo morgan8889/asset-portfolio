@@ -11,7 +11,7 @@
  * - Column span: columnSpan >= 2 for side-by-side (45%/55% split)
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page } from './fixtures/test';
 
 /**
  * Helper to enable pie chart setting in dashboard settings

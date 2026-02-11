@@ -12,7 +12,7 @@
  * - Holdings update verification
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test';
 
 test.describe('Sell Workflow', () => {
   test.beforeEach(async ({ page }) => {

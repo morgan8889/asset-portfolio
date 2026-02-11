@@ -12,7 +12,7 @@
  * - Test reinvested dividends
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test';
 
 test.describe('Dividend Workflow', () => {
   test.beforeEach(async ({ page }) => {

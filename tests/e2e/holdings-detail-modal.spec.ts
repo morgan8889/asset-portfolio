@@ -12,7 +12,7 @@
  * - Verifying updates persist
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test';
 
 test.describe('Holdings Detail Modal', () => {
   test.beforeEach(async ({ page }) => {

@@ -9,7 +9,7 @@
  * - Estimated tax liability calculations
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test';
 
 test.describe('Tax Analysis View', () => {
   test.beforeEach(async ({ page }) => {

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test';
 
 /**
  * E2E tests for Dashboard Performance (T061, T062)

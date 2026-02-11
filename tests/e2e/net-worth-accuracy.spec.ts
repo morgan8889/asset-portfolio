@@ -9,7 +9,7 @@
  * Target: Match manual calculations within 0.1% (per spec SC-002)
  */
 
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page } from './fixtures/test';
 
 test.describe('Net Worth Accuracy Tests', () => {
   test.beforeEach(async ({ page }) => {

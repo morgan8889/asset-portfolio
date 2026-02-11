@@ -5,7 +5,7 @@
  * including net shares calculation, tax withholding, and metadata display.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test';
 
 test.describe('RSU Workflow', () => {
   test.beforeEach(async ({ page }) => {
