@@ -17,35 +17,29 @@ test.describe('Property Addition Workflow', () => {
     const startTime = Date.now();
 
     // Open add asset dropdown
-    const addButton = page
-      .getByRole('button', { name: /add holding/i })
-      .or(page.locator('button:has-text("Add Holding")'));
+    const addButton = page.getByRole('button', { name: /add holding/i });
     await addButton.click();
 
     // Click on "Real Estate" option
-    const realEstateOption = page
-      .getByText(/real estate/i)
-      .or(page.locator('[role="menuitem"]:has-text("Real Estate")'));
+    const realEstateOption = page.getByRole('menuitem', { name: /real estate/i });
     await realEstateOption.click();
 
     // Wait for dialog
-    await page.waitForSelector('dialog, [role="dialog"]', { state: 'visible' });
+    await expect(page.getByRole('dialog')).toBeVisible();
 
     // Fill property form
-    await page.fill('input[name="name"]', 'Test Property');
-    await page.fill('input[name="purchasePrice"]', '500000');
-    await page.fill('input[name="currentValue"]', '500000');
-    await page.fill('input[name="purchaseDate"]', '2023-01-15');
-    await page.fill('input[name="ownershipPercentage"]', '100');
+    await page.locator('input[name="name"]').fill('Test Property');
+    await page.locator('input[name="purchasePrice"]').fill('500000');
+    await page.locator('input[name="currentValue"]').fill('500000');
+    await page.locator('input[name="purchaseDate"]').fill('2023-01-15');
+    await page.locator('input[name="ownershipPercentage"]').fill('100');
 
     // Submit form
-    const submitButton = page
-      .getByRole('button', { name: /add property/i })
-      .or(page.locator('button[type="submit"]:has-text("Add")'));
+    const submitButton = page.getByRole('button', { name: /add property/i });
     await submitButton.click();
 
     // Wait for success toast or property to appear in list
-    await page.waitForSelector('text=Test Property', { timeout: 10000 });
+    await expect(page.getByText('Test Property')).toBeVisible({ timeout: 10000 });
 
     const endTime = Date.now();
     const duration = endTime - startTime;
@@ -54,15 +48,14 @@ test.describe('Property Addition Workflow', () => {
     expect(duration).toBeLessThan(30000);
 
     // Verify property appears in list
-    const propertyText = page.locator('text=Test Property');
-    await expect(propertyText).toBeVisible();
+    await expect(page.getByText('Test Property')).toBeVisible();
 
     // Verify net value displayed (should be $500,000)
     const valuePattern = /\$500,000|\$500\.000|\$500\.00/;
     await expect(page.locator('body')).toContainText(valuePattern);
 
     // Verify "Manual" badge is visible (for manual valuation)
-    const manualBadge = page.locator('text=Manual').or(
+    const manualBadge = page.getByText('Manual').or(
       page.locator('[data-testid="manual-badge"]')
     );
     if (await manualBadge.count() > 0) {
@@ -74,26 +67,22 @@ test.describe('Property Addition Workflow', () => {
     page,
   }) => {
     // Open add asset dropdown
-    const addButton = page
-      .getByRole('button', { name: /add holding/i })
-      .or(page.locator('button:has-text("Add Holding")'));
+    const addButton = page.getByRole('button', { name: /add holding/i });
     await addButton.click();
 
     // Click on "Real Estate" option
-    const realEstateOption = page
-      .getByText(/real estate/i)
-      .or(page.locator('[role="menuitem"]:has-text("Real Estate")'));
+    const realEstateOption = page.getByRole('menuitem', { name: /real estate/i });
     await realEstateOption.click();
 
     // Wait for dialog
-    await page.waitForSelector('dialog, [role="dialog"]', { state: 'visible' });
+    await expect(page.getByRole('dialog')).toBeVisible();
 
     // Fill basic info
-    await page.fill('input[name="name"]', 'Rental Condo');
-    await page.fill('input[name="purchasePrice"]', '400000');
-    await page.fill('input[name="currentValue"]', '400000');
-    await page.fill('input[name="purchaseDate"]', '2023-06-01');
-    await page.fill('input[name="ownershipPercentage"]', '100');
+    await page.locator('input[name="name"]').fill('Rental Condo');
+    await page.locator('input[name="purchasePrice"]').fill('400000');
+    await page.locator('input[name="currentValue"]').fill('400000');
+    await page.locator('input[name="purchaseDate"]').fill('2023-06-01');
+    await page.locator('input[name="ownershipPercentage"]').fill('100');
 
     // Toggle rental property checkbox
     const rentalCheckbox = page.locator('input[name="isRental"]').or(
@@ -109,17 +98,11 @@ test.describe('Property Addition Workflow', () => {
     await monthlyRentInput.fill('2000');
 
     // Submit
-    const submitButton = page
-      .getByRole('button', { name: /add property/i })
-      .or(page.locator('button[type="submit"]:has-text("Add")'));
+    const submitButton = page.getByRole('button', { name: /add property/i });
     await submitButton.click();
 
     // Wait for property to appear
-    await page.waitForSelector('text=Rental Condo', { timeout: 10000 });
-
-    // Verify property added
-    const propertyText = page.locator('text=Rental Condo');
-    await expect(propertyText).toBeVisible();
+    await expect(page.getByText('Rental Condo')).toBeVisible({ timeout: 10000 });
 
     // Verify yield badge or display
     // Yield calculation: (2000 * 12 / 400000) * 100 = 6%
@@ -144,39 +127,29 @@ test.describe('Property Addition Workflow', () => {
     page,
   }) => {
     // Open add asset dropdown
-    const addButton = page
-      .getByRole('button', { name: /add holding/i })
-      .or(page.locator('button:has-text("Add Holding")'));
+    const addButton = page.getByRole('button', { name: /add holding/i });
     await addButton.click();
 
     // Click on "Real Estate" option
-    const realEstateOption = page
-      .getByText(/real estate/i)
-      .or(page.locator('[role="menuitem"]:has-text("Real Estate")'));
+    const realEstateOption = page.getByRole('menuitem', { name: /real estate/i });
     await realEstateOption.click();
 
     // Wait for dialog
-    await page.waitForSelector('dialog, [role="dialog"]', { state: 'visible' });
+    await expect(page.getByRole('dialog')).toBeVisible();
 
     // Add property with 50% ownership
-    await page.fill('input[name="name"]', 'Fractional Property');
-    await page.fill('input[name="purchasePrice"]', '600000');
-    await page.fill('input[name="currentValue"]', '650000');
-    await page.fill('input[name="purchaseDate"]', '2024-01-01');
-    await page.fill('input[name="ownershipPercentage"]', '50');
+    await page.locator('input[name="name"]').fill('Fractional Property');
+    await page.locator('input[name="purchasePrice"]').fill('600000');
+    await page.locator('input[name="currentValue"]').fill('650000');
+    await page.locator('input[name="purchaseDate"]').fill('2024-01-01');
+    await page.locator('input[name="ownershipPercentage"]').fill('50');
 
     // Submit
-    const submitButton = page
-      .getByRole('button', { name: /add property/i })
-      .or(page.locator('button[type="submit"]:has-text("Add")'));
+    const submitButton = page.getByRole('button', { name: /add property/i });
     await submitButton.click();
 
     // Wait for property to appear
-    await page.waitForSelector('text=Fractional Property', { timeout: 10000 });
-
-    // Verify property added
-    const propertyText = page.locator('text=Fractional Property');
-    await expect(propertyText).toBeVisible();
+    await expect(page.getByText('Fractional Property')).toBeVisible({ timeout: 10000 });
 
     // Verify net value calculation: 50% of $650,000 = $325,000
     const netValuePattern = /\$325,000|\$325\.000/;
@@ -201,50 +174,41 @@ test.describe('Property Addition Workflow', () => {
 
   test('T021.4: should validate required fields', async ({ page }) => {
     // Open add asset dropdown
-    const addButton = page
-      .getByRole('button', { name: /add holding/i })
-      .or(page.locator('button:has-text("Add Holding")'));
+    const addButton = page.getByRole('button', { name: /add holding/i });
     await addButton.click();
 
     // Click on "Real Estate" option
-    const realEstateOption = page
-      .getByText(/real estate/i)
-      .or(page.locator('[role="menuitem"]:has-text("Real Estate")'));
+    const realEstateOption = page.getByRole('menuitem', { name: /real estate/i });
     await realEstateOption.click();
 
     // Wait for dialog
-    await page.waitForSelector('dialog, [role="dialog"]', { state: 'visible' });
+    await expect(page.getByRole('dialog')).toBeVisible();
 
     // Try to submit empty form
-    const submitButton = page
-      .getByRole('button', { name: /add property/i })
-      .or(page.locator('button[type="submit"]:has-text("Add")'));
+    const submitButton = page.getByRole('button', { name: /add property/i });
     await submitButton.click();
 
-    // Verify error messages appear
-    await page.waitForTimeout(500); // Wait for validation
-
-    // Check for validation errors (exact message may vary)
+    // Check for validation errors (auto-retries)
     const errorMessages = page.locator('text=/required|invalid|enter/i');
+    await expect(errorMessages.first()).toBeVisible({ timeout: 3000 });
     const errorCount = await errorMessages.count();
     expect(errorCount).toBeGreaterThan(0);
 
     // Test invalid ownership percentage (> 100)
-    await page.fill('input[name="name"]', 'Test Property');
-    await page.fill('input[name="purchasePrice"]', '500000');
-    await page.fill('input[name="currentValue"]', '500000');
-    await page.fill('input[name="ownershipPercentage"]', '150');
+    await page.locator('input[name="name"]').fill('Test Property');
+    await page.locator('input[name="purchasePrice"]').fill('500000');
+    await page.locator('input[name="currentValue"]').fill('500000');
+    await page.locator('input[name="ownershipPercentage"]').fill('150');
     await submitButton.click();
 
     // Should show validation error for ownership percentage
-    await page.waitForTimeout(500);
     const ownershipError = page.locator('text=/exceed.*100|must be.*100/i');
     if (await ownershipError.count() > 0) {
       await expect(ownershipError.first()).toBeVisible();
     }
 
     // Test rental without monthly rent
-    await page.fill('input[name="ownershipPercentage"]', '100');
+    await page.locator('input[name="ownershipPercentage"]').fill('100');
     const rentalCheckbox = page.locator('input[name="isRental"]').or(
       page.getByLabel(/rental property/i)
     );
@@ -256,7 +220,6 @@ test.describe('Property Addition Workflow', () => {
 
     // Try to submit without monthly rent
     await submitButton.click();
-    await page.waitForTimeout(500);
 
     // Should show validation error for monthly rent
     const rentError = page.locator('text=/rent.*required|enter.*rent/i');
