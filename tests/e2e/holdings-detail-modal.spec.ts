@@ -40,11 +40,11 @@ test.describe('Holdings Detail Modal', () => {
     await expect(firstRow).toBeVisible();
 
     // Click the dropdown menu button (three dots)
-    const dropdownButton = firstRow.getByRole('button', { name: /more options/i }).or(firstRow.locator('button[aria-haspopup="menu"]'));
+    const dropdownButton = firstRow.locator('button[aria-haspopup="menu"]').first();
 
     // If dropdown exists, click it
     if (await dropdownButton.count() > 0) {
-      await dropdownButton.first().click();
+      await dropdownButton.click();
 
       // Click "View Details" option
       await page.getByRole('menuitem', { name: /view details/i }).click();
@@ -65,10 +65,10 @@ test.describe('Holdings Detail Modal', () => {
     const symbol = await symbolCell.textContent();
 
     // Open detail modal (if dropdown exists)
-    const dropdownButton = firstRow.getByRole('button', { name: /more options/i }).or(firstRow.locator('button[aria-haspopup="menu"]'));
+    const dropdownButton = firstRow.locator('button[aria-haspopup="menu"]').first();
 
     if (await dropdownButton.count() > 0) {
-      await dropdownButton.first().click();
+      await dropdownButton.click();
       await page.getByRole('menuitem', { name: /view details/i }).click();
 
       const modal = page.getByRole('dialog');
@@ -84,10 +84,10 @@ test.describe('Holdings Detail Modal', () => {
 
   test('should display tax lots tab with lot breakdown', async ({ page }) => {
     const firstRow = page.getByRole('table').locator('tbody tr').first();
-    const dropdownButton = firstRow.getByRole('button', { name: /more options/i }).or(firstRow.locator('button[aria-haspopup="menu"]'));
+    const dropdownButton = firstRow.locator('button[aria-haspopup="menu"]').first();
 
     if (await dropdownButton.count() > 0) {
-      await dropdownButton.first().click();
+      await dropdownButton.click();
       await page.getByRole('menuitem', { name: /view details/i }).click();
 
       const modal = page.getByRole('dialog');
@@ -110,10 +110,10 @@ test.describe('Holdings Detail Modal', () => {
 
   test('should display tax analysis tab with holding period info', async ({ page }) => {
     const firstRow = page.getByRole('table').locator('tbody tr').first();
-    const dropdownButton = firstRow.getByRole('button', { name: /more options/i }).or(firstRow.locator('button[aria-haspopup="menu"]'));
+    const dropdownButton = firstRow.locator('button[aria-haspopup="menu"]').first();
 
     if (await dropdownButton.count() > 0) {
-      await dropdownButton.first().click();
+      await dropdownButton.click();
       await page.getByRole('menuitem', { name: /view details/i }).click();
 
       const modal = page.getByRole('dialog');
@@ -159,10 +159,10 @@ test.describe('Holdings Detail Modal', () => {
     // Find the ESPP holding
     const esppRow = page.getByRole('table').locator('tbody tr', { hasText: 'ESPPTEST' });
     if (await esppRow.count() > 0) {
-      const dropdownButton = esppRow.getByRole('button', { name: /more options/i }).or(esppRow.locator('button[aria-haspopup="menu"]'));
+      const dropdownButton = esppRow.locator('button[aria-haspopup="menu"]').first();
 
       if (await dropdownButton.count() > 0) {
-        await dropdownButton.first().click();
+        await dropdownButton.click();
         await page.getByRole('menuitem', { name: /view details/i }).click();
 
         const modal = page.getByRole('dialog');
@@ -207,10 +207,10 @@ test.describe('Holdings Detail Modal', () => {
     // Find the RSU holding
     const rsuRow = page.getByRole('table').locator('tbody tr', { hasText: 'RSUTEST' });
     if (await rsuRow.count() > 0) {
-      const dropdownButton = rsuRow.getByRole('button', { name: /more options/i }).or(rsuRow.locator('button[aria-haspopup="menu"]'));
+      const dropdownButton = rsuRow.locator('button[aria-haspopup="menu"]').first();
 
       if (await dropdownButton.count() > 0) {
-        await dropdownButton.first().click();
+        await dropdownButton.click();
         await page.getByRole('menuitem', { name: /view details/i }).click();
 
         const modal = page.getByRole('dialog');
@@ -231,18 +231,18 @@ test.describe('Holdings Detail Modal', () => {
 
   test('should close modal on cancel button', async ({ page }) => {
     const firstRow = page.getByRole('table').locator('tbody tr').first();
-    const dropdownButton = firstRow.getByRole('button', { name: /more options/i }).or(firstRow.locator('button[aria-haspopup="menu"]'));
+    const dropdownButton = firstRow.locator('button[aria-haspopup="menu"]').first();
 
     if (await dropdownButton.count() > 0) {
-      await dropdownButton.first().click();
+      await dropdownButton.click();
       await page.getByRole('menuitem', { name: /view details/i }).click();
 
       const modal = page.getByRole('dialog');
       await expect(modal).toBeVisible({ timeout: 5000 });
 
       // Click close button
-      const closeButton = modal.getByRole('button', { name: /close/i }).or(modal.locator('button[aria-label="Close"]'));
-      await closeButton.first().click();
+      const closeButton = modal.getByRole('button', { name: /close/i }).first();
+      await closeButton.click();
 
       // Verify modal closes
       await expect(modal).not.toBeVisible({ timeout: 5000 });
@@ -251,10 +251,10 @@ test.describe('Holdings Detail Modal', () => {
 
   test('should show lot-level notes if present', async ({ page }) => {
     const firstRow = page.getByRole('table').locator('tbody tr').first();
-    const dropdownButton = firstRow.getByRole('button', { name: /more options/i }).or(firstRow.locator('button[aria-haspopup="menu"]'));
+    const dropdownButton = firstRow.locator('button[aria-haspopup="menu"]').first();
 
     if (await dropdownButton.count() > 0) {
-      await dropdownButton.first().click();
+      await dropdownButton.click();
       await page.getByRole('menuitem', { name: /view details/i }).click();
 
       const modal = page.getByRole('dialog');

@@ -2,13 +2,7 @@ import { test, expect } from './fixtures/test';
 
 test.describe('Settings Page', () => {
   test('should load without errors', async ({ page }) => {
-    // Navigate to settings page
-    await page.goto('/settings');
-
-    // Wait for page to load
-    await page.waitForLoadState('networkidle');
-
-    // Check for console errors
+    // Set up console error listener BEFORE navigation
     const errors: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error') {
@@ -16,11 +10,12 @@ test.describe('Settings Page', () => {
       }
     });
 
-    // Wait a bit for any async errors
-    await page.waitForTimeout(2000);
+    // Navigate to settings page
+    await page.goto('/settings');
+    await page.waitForLoadState('networkidle');
 
     // Check that page title is present
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Settings' }).first()).toBeVisible();
 
     // Check that cards are rendered
     await expect(page.getByText('General Settings')).toBeVisible();
@@ -63,12 +58,9 @@ test.describe('Settings Page', () => {
     // Click to toggle
     await darkModeSwitch.click();
 
-    // Wait for change
-    await page.waitForTimeout(500);
-
-    // Verify state changed
-    const newState = await darkModeSwitch.getAttribute('aria-checked');
-    expect(newState).not.toBe(initialState);
+    // Wait for state to change
+    const expectedState = initialState === 'true' ? 'false' : 'true';
+    await expect(darkModeSwitch).toHaveAttribute('aria-checked', expectedState);
   });
 
   test('should show reset confirmation dialog', async ({ page }) => {
@@ -78,10 +70,7 @@ test.describe('Settings Page', () => {
     // Click Reset All Data button
     await page.getByRole('button', { name: /Reset All Data/i }).click();
 
-    // Wait for dialog to appear
-    await page.waitForTimeout(500);
-
-    // Check dialog is visible
+    // Check dialog is visible (auto-retries, no timeout needed)
     await expect(page.getByText('Are you absolutely sure?')).toBeVisible();
 
     // Check dialog content
@@ -93,8 +82,7 @@ test.describe('Settings Page', () => {
     // Click Cancel
     await page.getByRole('button', { name: 'Cancel' }).click();
 
-    // Dialog should close
-    await page.waitForTimeout(500);
+    // Dialog should close (auto-retries)
     await expect(page.getByText('Are you absolutely sure?')).not.toBeVisible();
   });
 });

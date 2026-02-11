@@ -17,8 +17,8 @@ import { test, expect, Page } from './fixtures/test';
  * Helper to enable pie chart setting in dashboard settings
  */
 async function enablePieChartSetting(page: Page) {
-  await page.click('button:has-text("Settings")');
-  await page.waitForSelector('role=dialog[name="Dashboard Settings"]');
+  await page.getByRole('button', { name: /settings/i }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
 
   const pieChartToggle = page.locator('#category-pie-chart');
   const isChecked = await pieChartToggle.isChecked();
@@ -31,8 +31,8 @@ async function enablePieChartSetting(page: Page) {
  * Helper to disable pie chart setting in dashboard settings
  */
 async function disablePieChartSetting(page: Page) {
-  await page.click('button:has-text("Settings")');
-  await page.waitForSelector('role=dialog[name="Dashboard Settings"]');
+  await page.getByRole('button', { name: /settings/i }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
 
   const pieChartToggle = page.locator('#category-pie-chart');
   const isChecked = await pieChartToggle.isChecked();
@@ -57,7 +57,7 @@ async function setRowSpan(page: Page, rowSpan: '1h' | '2h' | '3h') {
   const rowSpanSelect = widgetRow.locator('[aria-label="Row span for Category Breakdown"]');
 
   await rowSpanSelect.click();
-  await page.click(`role=option[name="${rowSpan}"]`);
+  await page.getByRole('option', { name: rowSpan }).click();
 }
 
 /**
@@ -68,17 +68,15 @@ async function setColumnSpan(page: Page, colSpan: '1x' | '2x') {
   const colSpanSelect = widgetRow.locator('[aria-label="Column span for Category Breakdown"]');
 
   await colSpanSelect.click();
-  await page.click(`role=option[name="${colSpan}"]`);
+  await page.getByRole('option', { name: colSpan }).click();
 }
 
 /**
  * Helper to close settings dialog
  */
 async function closeSettings(page: Page) {
-  await page.click('button:has-text("Done")');
-  await page.waitForSelector('role=dialog[name="Dashboard Settings"]', {
-    state: 'hidden',
-  });
+  await page.getByRole('button', { name: /done/i }).click();
+  await expect(page.getByRole('dialog')).not.toBeVisible();
 }
 
 test.describe('Category Breakdown Pie Chart', () => {
@@ -86,15 +84,13 @@ test.describe('Category Breakdown Pie Chart', () => {
     await page.goto('/');
 
     // Generate mock data
-    await page.click('button:has-text("Generate Mock Data")');
+    await page.getByRole('button', { name: /generate mock data/i }).click();
 
     // Wait for navigation to dashboard
     await page.waitForURL('/', { timeout: 10000 });
 
     // Wait for dashboard to load
-    await page.waitForSelector('[data-testid="category-breakdown-widget"]', {
-      timeout: 10000,
-    });
+    await expect(page.locator('[data-testid="category-breakdown-widget"]')).toBeVisible({ timeout: 10000 });
   });
 
   test('pie chart is hidden by default', async ({ page }) => {
@@ -228,16 +224,14 @@ test.describe('Category Breakdown Pie Chart', () => {
 
     // Reload the page
     await page.reload();
-    await page.waitForSelector('[data-testid="category-breakdown-widget"]', {
-      timeout: 10000,
-    });
+    await expect(page.locator('[data-testid="category-breakdown-widget"]')).toBeVisible({ timeout: 10000 });
 
     // Pie chart should still be visible after reload
     await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 5000 });
 
     // Open settings and verify toggle is still checked
-    await page.click('button:has-text("Settings")');
-    await page.waitForSelector('role=dialog[name="Dashboard Settings"]');
+    await page.getByRole('button', { name: /settings/i }).click();
+    await expect(page.getByRole('dialog')).toBeVisible();
 
     const pieChartToggle = page.locator('#category-pie-chart');
     await expect(pieChartToggle).toBeChecked();

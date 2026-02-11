@@ -1,5 +1,12 @@
 import { test, expect } from './fixtures/test';
 
+/** Wait for delete dialog to be fully ready (transaction count loaded). */
+async function waitForDeleteDialogReady(page: import('@playwright/test').Page) {
+  await expect(page.getByRole('heading', { name: /delete portfolio/i })).toBeVisible();
+  // The delete button appears after the transaction count check completes
+  await expect(page.getByRole('button', { name: /delete portfolio/i })).toBeVisible({ timeout: 5000 });
+}
+
 test.describe('Portfolio Delete Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/portfolios');
@@ -34,7 +41,7 @@ test.describe('Portfolio Delete Workflow', () => {
     const deleteButton = page.getByRole('button', { name: /trash/i }).first();
     await deleteButton.click();
 
-    await expect(page.getByRole('heading', { name: /delete portfolio/i })).toBeVisible();
+    await waitForDeleteDialogReady(page);
 
     // Should not show checkbox or text input
     const checkbox = page.getByRole('checkbox');
@@ -85,13 +92,10 @@ test.describe('Portfolio Delete Workflow', () => {
     const deleteButton = page.getByRole('button', { name: /trash/i }).first();
     await deleteButton.click();
 
-    await expect(page.getByRole('heading', { name: /delete portfolio/i })).toBeVisible();
+    await waitForDeleteDialogReady(page);
 
     // Confirm deletion (if delete button is enabled)
     const confirmButton = page.getByRole('button', { name: /delete portfolio/i });
-    
-    // Wait for potential transaction count check
-    await page.waitForTimeout(500);
 
     if (await confirmButton.isEnabled()) {
       await confirmButton.click();
@@ -118,7 +122,7 @@ test.describe('Portfolio Delete Workflow', () => {
     for (let i = 0; i < count; i++) {
       await deleteButtons.nth(i).click();
 
-      await expect(page.getByRole('heading', { name: /delete portfolio/i })).toBeVisible();
+      await waitForDeleteDialogReady(page);
 
       // Check if checkbox confirmation is shown
       const checkbox = page.getByRole('checkbox');
@@ -153,12 +157,12 @@ test.describe('Portfolio Delete Workflow', () => {
 
     for (let i = 0; i < count; i++) {
       await deleteButtons.nth(i).click();
-      await page.waitForTimeout(500); // Wait for transaction count
+      await waitForDeleteDialogReady(page);
 
       const checkbox = page.getByRole('checkbox');
       if (await checkbox.isVisible().catch(() => false)) {
         const deleteButton = page.getByRole('button', { name: /delete portfolio/i });
-        
+
         // Initially disabled
         await expect(deleteButton).toBeDisabled();
 
@@ -184,7 +188,7 @@ test.describe('Portfolio Delete Workflow', () => {
 
     for (let i = 0; i < count; i++) {
       await deleteButtons.nth(i).click();
-      await page.waitForTimeout(500);
+      await waitForDeleteDialogReady(page);
 
       const textInput = page.getByPlaceholder(/type portfolio name/i);
       if (await textInput.isVisible().catch(() => false)) {
@@ -213,21 +217,23 @@ test.describe('Portfolio Delete Workflow', () => {
       const firstDeleteButton = page.getByRole('button', { name: /trash/i }).first();
       await firstDeleteButton.click();
 
-      await page.waitForTimeout(500);
+      await waitForDeleteDialogReady(page);
       const firstDeleteConfirm = page.getByRole('button', { name: /delete portfolio/i });
-      
+
       if (await firstDeleteConfirm.isEnabled()) {
         await firstDeleteConfirm.click();
         await expect(page.getByRole('heading', { name: /delete portfolio/i })).not.toBeVisible();
 
+        // Wait for table to update after deletion
+        await expect(page.getByRole('button', { name: /trash/i }).first()).toBeVisible({ timeout: 5000 });
+
         // Delete second portfolio (which is now first)
-        await page.waitForTimeout(500);
         const secondDeleteButton = page.getByRole('button', { name: /trash/i }).first();
         await secondDeleteButton.click();
 
-        await page.waitForTimeout(500);
+        await waitForDeleteDialogReady(page);
         const secondDeleteConfirm = page.getByRole('button', { name: /delete portfolio/i });
-        
+
         if (await secondDeleteConfirm.isEnabled()) {
           await secondDeleteConfirm.click();
           await expect(page.getByRole('heading', { name: /delete portfolio/i })).not.toBeVisible();
@@ -243,7 +249,7 @@ test.describe('Portfolio Delete Workflow', () => {
   test('should switch to next portfolio after deleting current portfolio', async ({ page }) => {
     // Find current portfolio (has "Current" badge)
     const currentBadge = page.getByText(/current/i).first();
-    
+
     if (await currentBadge.isVisible()) {
       // Get the current portfolio name
       const currentRow = page.locator('tr').filter({ has: currentBadge });
@@ -253,18 +259,15 @@ test.describe('Portfolio Delete Workflow', () => {
       const deleteButton = currentRow.getByRole('button', { name: /trash/i });
       await deleteButton.click();
 
-      await page.waitForTimeout(500);
+      await waitForDeleteDialogReady(page);
       const confirmButton = page.getByRole('button', { name: /delete portfolio/i });
-      
+
       if (await confirmButton.isEnabled()) {
         await confirmButton.click();
         await expect(page.getByRole('heading', { name: /delete portfolio/i })).not.toBeVisible();
 
-        // Wait for UI to update
-        await page.waitForTimeout(1000);
-
-        // Current badge should still exist (on a different portfolio)
-        await expect(page.getByText(/current/i).first()).toBeVisible();
+        // Wait for UI to update - current badge should appear on a different portfolio
+        await expect(page.getByText(/current/i).first()).toBeVisible({ timeout: 5000 });
 
         // But not with the deleted portfolio name
         const deletedPortfolio = page.locator('tr').filter({ hasText: currentName?.trim() || '' });
@@ -277,9 +280,9 @@ test.describe('Portfolio Delete Workflow', () => {
     const deleteButton = page.getByRole('button', { name: /trash/i }).first();
     await deleteButton.click();
 
-    await page.waitForTimeout(500);
+    await waitForDeleteDialogReady(page);
     const confirmButton = page.getByRole('button', { name: /delete portfolio/i });
-    
+
     if (await confirmButton.isEnabled()) {
       await confirmButton.click();
 
@@ -295,7 +298,7 @@ test.describe('Portfolio Delete Workflow', () => {
 
     for (let i = 0; i < count; i++) {
       await deleteButtons.nth(i).click();
-      await page.waitForTimeout(500);
+      await waitForDeleteDialogReady(page);
 
       // Check if transaction count is shown
       const transactionText = page.getByText(/\d+ transactions?/i);
