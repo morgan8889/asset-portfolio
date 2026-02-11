@@ -526,13 +526,17 @@ test.describe('Import with Duplicate Detection', () => {
     await page.getByRole('button', { name: 'Import' }).click();
     await expect(page.getByRole('heading', { name: /success/i })).toBeVisible({ timeout: 10000 });
 
-    // Close dialog
+    // Close dialog and wait for full unmount + store cleanup before reopening
     const closeButton = page.getByRole('button', { name: 'Done' });
     await closeButton.click();
+    await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 5000 });
+    await page.waitForTimeout(500);
 
     // Open second import dialog
-    await page.getByRole('button', { name: /import.*csv/i }).click();
-    await expect(page.getByRole('dialog')).toBeVisible();
+    const importButton = page.getByRole('button', { name: /import.*csv/i });
+    await expect(importButton).toBeVisible({ timeout: 5000 });
+    await importButton.click();
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
   });
 
   test('second import shows file preview', async ({ page }) => {
@@ -551,11 +555,18 @@ test.describe('Import with Duplicate Detection', () => {
     await page.getByRole('button', { name: 'Import' }).click();
     await expect(page.getByRole('heading', { name: /success/i })).toBeVisible({ timeout: 10000 });
 
-    // Close and re-open
+    // Close and wait for full unmount + store cleanup before reopening
     const closeButton = page.getByRole('button', { name: 'Done' });
     await closeButton.click();
+    await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 5000 });
+    await page.waitForTimeout(500);
 
-    await page.getByRole('button', { name: /import.*csv/i }).click();
+    // Reopen and upload a new file
+    const importButton = page.getByRole('button', { name: /import.*csv/i });
+    await expect(importButton).toBeVisible({ timeout: 5000 });
+    await importButton.click();
+    await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
+
     const fileInput2 = page.locator('input[type="file"]');
     await fileInput2.setInputFiles({
       name: 'transactions.csv',
