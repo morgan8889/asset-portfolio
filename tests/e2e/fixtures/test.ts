@@ -12,6 +12,7 @@
 import { test as base, expect } from '@playwright/test';
 
 const MOCK_PRICES: Record<string, { price: number; currency: string }> = {
+  // Real symbols
   AAPL: { price: 178.5, currency: 'USD' },
   GOOGL: { price: 142.3, currency: 'USD' },
   GOOG: { price: 141.8, currency: 'USD' },
@@ -24,7 +25,30 @@ const MOCK_PRICES: Record<string, { price: number; currency: string }> = {
   MSFT: { price: 415.0, currency: 'USD' },
   AMZN: { price: 185.0, currency: 'USD' },
   SPY: { price: 482.5, currency: 'USD' },
+  NVDA: { price: 450.0, currency: 'USD' },
   CASH: { price: 1.0, currency: 'USD' },
+  // Test-specific symbols used across E2E specs
+  TEST: { price: 100.0, currency: 'USD' },
+  WARN: { price: 110.0, currency: 'USD' },
+  QUAL: { price: 95.0, currency: 'USD' },
+  TABS: { price: 100.0, currency: 'USD' },
+  ESPPTEST: { price: 120.0, currency: 'USD' },
+  RSUTEST: { price: 150.0, currency: 'USD' },
+  TECH: { price: 150.0, currency: 'USD' },
+  VEST: { price: 180.0, currency: 'USD' },
+  NET: { price: 250.0, currency: 'USD' },
+  TAX: { price: 175.0, currency: 'USD' },
+  BLUE: { price: 220.0, currency: 'USD' },
+  MODAL: { price: 195.0, currency: 'USD' },
+  OLD: { price: 100.0, currency: 'USD' },
+  BASIS: { price: 200.0, currency: 'USD' },
+  DIVTEST: { price: 50.0, currency: 'USD' },
+  DRIP: { price: 75.0, currency: 'USD' },
+  MULTIDIV: { price: 120.0, currency: 'USD' },
+  FILTER: { price: 85.0, currency: 'USD' },
+  INCOME: { price: 60.0, currency: 'USD' },
+  STGAIN: { price: 55.0, currency: 'USD' },
+  LTGAIN: { price: 65.0, currency: 'USD' },
 };
 
 const DEFAULT_PRICE = { price: 100.0, currency: 'USD' };
