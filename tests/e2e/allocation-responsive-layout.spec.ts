@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test';
 
 test.describe('Allocation Responsive Layout', () => {
   test.beforeEach(async ({ page }) => {

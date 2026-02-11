@@ -4,7 +4,7 @@
  * Tests the complete user workflow for importing transactions from CSV files.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test';
 import path from 'path';
 
 // Test CSV file content

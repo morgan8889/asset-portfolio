@@ -3,7 +3,7 @@
  * @module tests/e2e/portfolio-ytd-return.spec
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test';
 
 test.describe('Portfolio YTD Return Display', () => {
   test.beforeEach(async ({ page }) => {

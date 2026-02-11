@@ -14,7 +14,7 @@
  * - Bug #4: useMemo staleness with Map updates
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test';
 
 /**
  * Helper function to set up test data using the mock data generator

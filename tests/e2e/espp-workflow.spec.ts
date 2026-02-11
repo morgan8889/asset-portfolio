@@ -5,7 +5,7 @@
  * including metadata entry, lot viewing, and tax analysis.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/test';
 
 test.describe('ESPP Workflow', () => {
   test.beforeEach(async ({ page }) => {
