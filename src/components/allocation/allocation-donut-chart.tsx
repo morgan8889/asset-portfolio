@@ -154,45 +154,42 @@ const AllocationDonutChartComponent = ({
   return (
     <div className="grid gap-6 md:grid-cols-[1fr_1fr] lg:grid-cols-[3fr_2fr]">
       {/* Donut Chart */}
-      <div className="relative h-[350px] w-full md:h-[400px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              label={renderCustomizedLabel}
-              outerRadius={120}
-              innerRadius={50}
-              fill="#8884d8"
-              dataKey="value"
-              strokeWidth={2}
-              stroke="white"
-              onClick={(data) => {
-                if (onCategoryClick) {
-                  onCategoryClick(data.name);
-                }
-              }}
-              cursor={onCategoryClick ? 'pointer' : 'default'}
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-          </PieChart>
-        </ResponsiveContainer>
-
-        {/* Center Text */}
-        <div
-          className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
-          style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))' }}
-        >
-          <div className="text-3xl font-bold text-white md:text-4xl">
+      <div className="flex flex-col items-center">
+        <div className="text-center -mb-12">
+          <div className="text-3xl font-bold md:text-4xl">
             {formatCurrency(totalValue)}
           </div>
-          <div className="text-sm text-white md:text-base">Total Value</div>
+          <div className="text-sm text-muted-foreground">Total Value</div>
+        </div>
+        <div className="relative h-[350px] w-full md:h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={renderCustomizedLabel}
+                outerRadius={120}
+                innerRadius={50}
+                fill="#8884d8"
+                dataKey="value"
+                strokeWidth={2}
+                stroke="white"
+                onClick={(data) => {
+                  if (onCategoryClick) {
+                    onCategoryClick(data.name);
+                  }
+                }}
+                cursor={onCategoryClick ? 'pointer' : 'default'}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
