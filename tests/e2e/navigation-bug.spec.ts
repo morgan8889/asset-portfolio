@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 /**
  * Regression test for navigation bug where AppInitializer
@@ -8,6 +8,10 @@ import { test, expect } from './fixtures/test';
  * remount, causing pages to hang on "Initializing..." forever.
  */
 test.describe('Navigation across dashboard pages', () => {
+  test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
+  });
+
   test('should navigate to Holdings page without timeout', async ({ page }) => {
     // Navigate to dashboard first
     await page.goto('/');

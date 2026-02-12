@@ -12,10 +12,11 @@
  * - Holdings update verification
  */
 
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 test.describe('Sell Workflow', () => {
   test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
     // Navigate to dashboard and ensure it's loaded
     await page.goto('/');
     await expect(page.getByText(/portfolio dashboard/i)).toBeVisible({ timeout: 10000 });

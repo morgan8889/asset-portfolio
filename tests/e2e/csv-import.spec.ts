@@ -4,7 +4,7 @@
  * Tests the complete user workflow for importing transactions from CSV files.
  */
 
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 import path from 'path';
 
 // Test CSV file content
@@ -20,7 +20,7 @@ invalid-date,GOOGL,5,175.50,buy
 
 test.describe('CSV Import Flow', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to transactions page
+    await seedMockData(page);
     await page.goto('/transactions');
   });
 
@@ -257,6 +257,7 @@ test.describe('Manual Column Mapping Correction', () => {
 2025-01-16,GOOGL,5,175.50,SELL`;
 
   test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
     await page.goto('/transactions');
   });
 
@@ -387,6 +388,7 @@ invalid-date,GOOGL,5,175.50,buy
 2025-01-19,NVDA,25,450.00,buy`;
 
   test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
     await page.goto('/transactions');
   });
 
@@ -490,6 +492,7 @@ test.describe('Import with Duplicate Detection', () => {
   // These tests verify the basic import workflow - actual duplicate detection is tested in unit tests.
 
   test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
     await page.goto('/transactions');
   });
 

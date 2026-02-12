@@ -5,13 +5,13 @@
  * including metadata entry, lot viewing, and tax analysis.
  */
 
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 test.describe('ESPP Workflow', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the dashboard and wait for it to load
+    await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('should add ESPP purchase transaction with all metadata', async ({ page }) => {

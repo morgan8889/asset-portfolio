@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 /**
  * Helper function to add a property via UI
@@ -81,9 +81,10 @@ async function addStock(
 
 test.describe('Real Estate Filter (SC-003)', () => {
   test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
     // Navigate to holdings page
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('T023.1: should filter to show only Real Estate assets', async ({

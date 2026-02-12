@@ -1,10 +1,10 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 test.describe('Allocation Responsive Layout', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the allocation page
+    await seedMockData(page);
     await page.goto('/allocation');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('should display allocation page with three tabs', async ({ page }) => {

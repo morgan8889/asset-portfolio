@@ -1,14 +1,12 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 test.describe('Property Addition Workflow', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to app and ensure clean state
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await seedMockData(page);
 
     // Ensure we're on the holdings page
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('T021.1: should add basic property in under 30 seconds (SC-001)', async ({

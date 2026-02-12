@@ -1,9 +1,10 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 test.describe('Portfolio Delete Workflow', () => {
   test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
     await page.goto('/portfolios');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('should open delete dialog when clicking Delete button', async ({ page }) => {
