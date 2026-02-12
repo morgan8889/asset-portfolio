@@ -1,64 +1,12 @@
 import { test, expect } from './fixtures/test';
-
-/**
- * Helper function to generate mock portfolio data
- */
-async function generateMockPortfolio(
-  page: any,
-  totalHoldings: number = 100,
-  propertyCount: number = 10
-) {
-  // Navigate to test data generation page if it exists
-  // Otherwise, assume data is pre-populated or use alternative method
-  try {
-    await page.goto('/test', { timeout: 5000 });
-
-    const generateButton = page
-      .getByRole('button', { name: /generate.*data/i })
-      .or(page.locator('[data-testid="generate-mock-data"]'));
-
-    if (await generateButton.isVisible({ timeout: 2000 })) {
-      await generateButton.click();
-
-      // Configure holdings count if options exist
-      const holdingCountSelect = page.locator(
-        'select[name="holdingCount"], [data-testid="holding-count"]'
-      );
-      if (await holdingCountSelect.isVisible({ timeout: 1000 })) {
-        await holdingCountSelect.selectOption(totalHoldings.toString());
-      }
-
-      const propertyCountSelect = page.locator(
-        'select[name="propertyCount"], [data-testid="property-count"]'
-      );
-      if (await propertyCountSelect.isVisible({ timeout: 1000 })) {
-        await propertyCountSelect.selectOption(propertyCount.toString());
-      }
-
-      const confirmButton = page
-        .getByRole('button', { name: /generate|confirm/i })
-        .or(page.locator('[data-testid="generate-button"]'));
-      await confirmButton.click();
-
-      // Wait for success message
-      await page.waitForSelector('text=/generated|success/i', {
-        timeout: 10000,
-      });
-    }
-  } catch (error) {
-    // If test page doesn't exist, skip mock data generation
-    console.log(
-      'Test data generation page not available, using existing data'
-    );
-  }
-}
+import { generateMockData } from './fixtures/seed-helpers';
 
 test.describe('Holdings List Performance (SC-002)', () => {
   test('T022.1: should render 100 holdings in under 200ms', async ({
     page,
   }) => {
     // Generate mock data with 100 holdings including 10 properties
-    await generateMockPortfolio(page, 100, 10);
+    await generateMockData(page);
 
     // Measure navigation and render time
     const navigationStart = Date.now();
@@ -114,10 +62,10 @@ test.describe('Holdings List Performance (SC-002)', () => {
     page,
   }) => {
     // Setup portfolio
-    await generateMockPortfolio(page, 100, 10);
+    await generateMockData(page);
 
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for table to load
     await page.waitForSelector(
@@ -173,10 +121,10 @@ test.describe('Holdings List Performance (SC-002)', () => {
   test('T022.3: should handle search filtering efficiently', async ({
     page,
   }) => {
-    await generateMockPortfolio(page, 100, 10);
+    await generateMockData(page);
 
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Find search input
     const searchInput = page.locator(
@@ -209,10 +157,10 @@ test.describe('Holdings List Performance (SC-002)', () => {
   test('T022.4: should handle sorting without performance degradation', async ({
     page,
   }) => {
-    await generateMockPortfolio(page, 100, 10);
+    await generateMockData(page);
 
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Find a sortable column header
     const symbolHeader = page
@@ -246,7 +194,7 @@ test.describe('Holdings List Performance (SC-002)', () => {
     page,
   }) => {
     // Generate portfolio with diverse asset types
-    await generateMockPortfolio(page, 100, 10);
+    await generateMockData(page);
 
     await page.goto('/holdings');
 

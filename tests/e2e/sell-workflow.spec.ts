@@ -12,23 +12,13 @@
  * - Holdings update verification
  */
 
-import { test, expect, seedMockData } from './fixtures/test';
+import { test, expect } from './fixtures/test';
+import { generateMockData } from './fixtures/seed-helpers';
 
 test.describe('Sell Workflow', () => {
   test.beforeEach(async ({ page }) => {
-    await seedMockData(page);
-    // Navigate to dashboard and ensure it's loaded
-    await page.goto('/');
-    await expect(page.getByText(/portfolio dashboard/i)).toBeVisible({ timeout: 10000 });
-
-    // Generate mock data to ensure we have holdings to sell
-    const generateButton = page.getByRole('button', { name: /generate mock data/i });
-    if (await generateButton.isVisible()) {
-      await generateButton.click();
-      // Wait for redirect to dashboard after mock data generation
-      await expect(page).toHaveURL('/', { timeout: 10000 });
-      await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 5000 });
-    }
+    await generateMockData(page);
+    await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 5000 });
   });
 
   test('should sell holding with automatic FIFO lot selection', async ({ page }) => {

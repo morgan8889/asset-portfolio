@@ -29,21 +29,14 @@ const DB_NAME = 'PortfolioTrackerDB';
  */
 export async function generateMockData(page: Page): Promise<void> {
   await page.goto('/test');
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('load');
 
-  const generateButton = page.getByRole('button', {
-    name: 'Generate Mock Data',
+  await page.getByRole('button', { name: 'Generate Mock Data' }).click();
+  await page.waitForSelector('text=Done! Redirecting...', {
+    timeout: 10000,
   });
-
-  if (await generateButton.isEnabled()) {
-    await generateButton.click();
-    await page.waitForSelector('text=Done! Redirecting...', {
-      timeout: 10000,
-    });
-    await page.waitForURL('/', { timeout: 10000 });
-  }
-
-  await page.waitForLoadState('networkidle');
+  await page.waitForURL('/', { timeout: 10000 });
+  await page.waitForLoadState('load');
 }
 
 // ============================================================================

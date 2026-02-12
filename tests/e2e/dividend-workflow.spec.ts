@@ -12,22 +12,13 @@
  * - Test reinvested dividends
  */
 
-import { test, expect, seedMockData } from './fixtures/test';
+import { test, expect } from './fixtures/test';
+import { generateMockData } from './fixtures/seed-helpers';
 
 test.describe('Dividend Workflow', () => {
   test.beforeEach(async ({ page }) => {
-    await seedMockData(page);
-    // Navigate to dashboard
-    await page.goto('/');
-    await expect(page.getByText(/portfolio dashboard/i)).toBeVisible({ timeout: 10000 });
-
-    // Generate mock data if needed to have holdings
-    const generateButton = page.getByRole('button', { name: /generate mock data/i });
-    if (await generateButton.isVisible()) {
-      await generateButton.click();
-      await expect(page).toHaveURL('/', { timeout: 10000 });
-      await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 5000 });
-    }
+    await generateMockData(page);
+    await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 5000 });
   });
 
   test('should record cash dividend payment', async ({ page }) => {
