@@ -493,7 +493,7 @@ function TransactionDialog({
       // Build common transaction fields
       const quantity = new Decimal(data.quantity);
       const price = new Decimal(data.price);
-      const transactionData: any = {
+      const transactionData: Omit<Transaction, 'id' | 'portfolioId' | 'assetId' | 'currency'> = {
         type: data.type as Transaction['type'],
         date: data.date,
         quantity,
@@ -627,7 +627,7 @@ function TransactionDialog({
                 <Select
                   value={watchedType}
                   onValueChange={(value: string) =>
-                    setValue('type', value as any, { shouldValidate: true })
+                    setValue('type', value as TransactionFormValues['type'], { shouldValidate: true })
                   }
                 >
                   <SelectTrigger>

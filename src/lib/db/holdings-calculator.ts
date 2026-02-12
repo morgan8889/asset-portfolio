@@ -319,7 +319,7 @@ export class HoldingsCalculator {
       // Detect lot type and extract metadata
       if (transaction.type === 'espp_purchase') {
         lot.lotType = 'espp';
-        const metadata = transaction.metadata as any;
+        const metadata = transaction.metadata;
         if (metadata?.grantDate) {
           lot.grantDate = new Date(metadata.grantDate);
         }
@@ -328,7 +328,7 @@ export class HoldingsCalculator {
         }
       } else if (transaction.type === 'rsu_vest') {
         lot.lotType = 'rsu';
-        const metadata = transaction.metadata as any;
+        const metadata = transaction.metadata;
         if (metadata?.vestingDate) {
           lot.vestingDate = new Date(metadata.vestingDate);
         }

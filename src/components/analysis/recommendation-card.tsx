@@ -69,6 +69,7 @@ export function RecommendationCard({
           {recommendation.description}
         </p>
         {recommendation.actionUrl && (
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Next.js Link requires literal route types
           <Link href={recommendation.actionUrl as any}>
             <Button variant="outline" size="sm" className="w-full sm:w-auto">
               {recommendation.actionLabel}

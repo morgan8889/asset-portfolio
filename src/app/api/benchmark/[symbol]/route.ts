@@ -85,7 +85,7 @@ async function fetchWithRetry(
       lastError = error as Error;
       logger.warn(
         `Failed to fetch benchmark data for ${symbol}, attempt ${attempt}:`,
-        error
+        { error: error instanceof Error ? error.message : String(error) }
       );
 
       if (attempt < MAX_RETRIES) {

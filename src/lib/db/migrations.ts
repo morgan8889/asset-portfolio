@@ -93,7 +93,7 @@ export class MigrationManager {
       const migrationState = state?.value as MigrationState | undefined;
       return migrationState?.version || 0;
     } catch (error) {
-      logger.warn('Could not get current migration version:', error);
+      logger.warn('Could not get current migration version', { error: error instanceof Error ? error.message : String(error) });
       return 0;
     }
   }
@@ -234,7 +234,7 @@ export class MigrationManager {
 
       return [];
     } catch (error) {
-      logger.warn('Could not get applied migrations:', error);
+      logger.warn('Could not get applied migrations', { error: error instanceof Error ? error.message : String(error) });
       return [];
     }
   }
