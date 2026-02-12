@@ -35,6 +35,14 @@ npm run test:e2e:ui           # Open Playwright test runner UI
 npx playwright test tests/e2e/portfolio-dashboard.spec.ts
 ```
 
+### CI / GitHub Actions
+
+- **Lint, type-check, unit tests**: Run automatically on every PR to `main`
+- **E2E tests**: Triggered on-demand (chromium-only, `MOCK_PRICES=1`):
+  - Add the `run-e2e` label to the PR, **or**
+  - Comment `/run-e2e` on the PR
+- Build artifacts are cached between the build and E2E jobs
+
 ### Production
 ```bash
 npm run build                 # Build production bundle
@@ -758,6 +766,35 @@ Make change → Build → Screenshot ALL modes → Self-verify → Fix if broken
 - Avoid conditional logic: `if (loading.isVisible())` masks failures
 - Verify real data: Check for $X.XX format, not $0.00
 - Test page reload: Exercises persist middleware rehydration
+
+## E2E Test Patterns
+
+### Imports and Fixtures
+
+All E2E tests import from the custom fixture, **not** directly from `@playwright/test`:
+
+```typescript
+import { test, expect, seedMockData } from './fixtures/test';
+```
+
+The fixture (`tests/e2e/fixtures/test.ts`) auto-intercepts `/api/prices/*` requests when `MOCK_PRICES=1` is set, returning deterministic mock prices.
+
+### seedMockData
+
+Tests that need portfolio/holdings/transaction data **must** call `seedMockData(page)` in `beforeEach`. It navigates to `/test`, clicks "Generate Mock Data", and waits for completion. The caller's next `page.goto()` cancels the auto-redirect.
+
+```typescript
+test.beforeEach(async ({ page }) => {
+  await seedMockData(page);
+  await page.goto('/holdings');
+  await page.waitForLoadState('load');
+});
+```
+
+### Performance
+
+- Use `waitForLoadState('load')`, **not** `'networkidle'` — `networkidle` adds ~500ms idle wait per call
+- `seedMockData` handles its own waiting internally; no extra `waitForLoadState` needed after it
 
 ## Common Debugging Scenarios
 
