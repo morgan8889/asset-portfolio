@@ -73,13 +73,14 @@ jobs:
           PR_URL="${{ github.event.issue.pull_request.url }}"
           PR_DATA=$(gh api "$PR_URL")
           echo "ref=$(echo "$PR_DATA" | jq -r .head.ref)" >> "$GITHUB_OUTPUT"
+          echo "sha=$(echo "$PR_DATA" | jq -r .head.sha)" >> "$GITHUB_OUTPUT"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.pr.outputs.ref || '' }}
+          ref: ${{ steps.pr.outputs.sha || '' }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -117,13 +118,14 @@ jobs:
           PR_URL="${{ github.event.issue.pull_request.url }}"
           PR_DATA=$(gh api "$PR_URL")
           echo "ref=$(echo "$PR_DATA" | jq -r .head.ref)" >> "$GITHUB_OUTPUT"
+          echo "sha=$(echo "$PR_DATA" | jq -r .head.sha)" >> "$GITHUB_OUTPUT"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.pr.outputs.ref || '' }}
+          ref: ${{ steps.pr.outputs.sha || '' }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
