@@ -12,10 +12,11 @@
  * - Test rebalancing with exclusions
  */
 
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 test.describe('Rebalancing Execution', () => {
   test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
     // Navigate to dashboard
     await page.goto('/');
     await expect(page.getByText(/portfolio dashboard/i)).toBeVisible({ timeout: 10000 });

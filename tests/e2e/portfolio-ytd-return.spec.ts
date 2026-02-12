@@ -3,10 +3,11 @@
  * @module tests/e2e/portfolio-ytd-return.spec
  */
 
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 test.describe('Portfolio YTD Return Display', () => {
   test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
     // Navigate to the portfolios page
     await page.goto('/portfolios');
 

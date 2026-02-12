@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 /**
  * E2E tests for Top Performers and Biggest Losers Widgets (US4)
@@ -7,8 +7,9 @@ import { test, expect } from './fixtures/test';
  */
 test.describe('Dashboard Performers Widgets', () => {
   test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test.describe('Top Performers Widget', () => {

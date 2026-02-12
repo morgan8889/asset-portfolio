@@ -120,8 +120,8 @@ describe('CreatePortfolioDialog - Edit Mode', () => {
   });
 
   it.skip('should show warning when changing type with existing transactions', async () => {
-    // Note: This test is skipped due to jsdom limitations with Radix UI Select pointer events.
-    // The functionality is covered by E2E tests in tests/e2e/portfolio-edit.spec.ts
+    // Skip: Radix Select inside Radix Dialog doesn't register value changes in jsdom
+    // (Dialog sets pointer-events:none on body). Covered by E2E: portfolio-edit.spec.ts
     const user = userEvent.setup();
     const mockCountTransactions = vi.fn(() => Promise.resolve(5));
     

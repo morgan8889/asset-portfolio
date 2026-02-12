@@ -1,10 +1,10 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 test.describe('Transaction Management', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the dashboard and wait for it to load
+    await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('should open add transaction dialog', async ({ page }) => {

@@ -1,10 +1,10 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 test.describe('Charts and Visualization', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the dashboard
+    await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('should display portfolio performance chart', async ({ page }) => {

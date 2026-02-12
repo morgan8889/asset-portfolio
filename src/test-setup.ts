@@ -7,6 +7,12 @@ import { beforeEach, afterEach, vi } from 'vitest';
 // Mock scrollIntoView - used by Radix UI Select component
 HTMLElement.prototype.scrollIntoView = vi.fn();
 
+// Mock pointer capture APIs - used by Radix UI Select and other Radix components
+// jsdom doesn't implement these: https://github.com/radix-ui/primitives/issues/420
+HTMLElement.prototype.setPointerCapture = vi.fn();
+HTMLElement.prototype.releasePointerCapture = vi.fn();
+HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
+
 // Mock ResizeObserver - used by Radix UI Popover, Dialog components
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),

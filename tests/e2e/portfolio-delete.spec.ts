@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 /** Wait for delete dialog to be fully ready (transaction count loaded). */
 async function waitForDeleteDialogReady(page: import('@playwright/test').Page) {
@@ -9,8 +9,9 @@ async function waitForDeleteDialogReady(page: import('@playwright/test').Page) {
 
 test.describe('Portfolio Delete Workflow', () => {
   test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
     await page.goto('/portfolios');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('should open delete dialog when clicking Delete button', async ({ page }) => {

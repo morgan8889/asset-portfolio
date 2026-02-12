@@ -127,3 +127,15 @@ export const test = base.extend<{ mockPriceApi: void }>({
 });
 
 export { expect, type Page } from '@playwright/test';
+
+/**
+ * Navigate to /test, generate mock portfolio data, and wait for completion.
+ * Call this in beforeEach for tests that need portfolio/holdings/transaction data.
+ * Does NOT wait for the auto-redirect — the caller's next page.goto() cancels it.
+ */
+export async function seedMockData(page: import('@playwright/test').Page) {
+  await page.goto('/test');
+  const btn = page.getByRole('button', { name: 'Generate Mock Data' });
+  await btn.click();
+  await page.getByText('Done! Redirecting...').waitFor({ timeout: 15000 });
+}

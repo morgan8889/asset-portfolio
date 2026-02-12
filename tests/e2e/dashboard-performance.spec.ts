@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 /**
  * E2E tests for Dashboard Performance (T061, T062)
@@ -8,6 +8,10 @@ import { test, expect } from './fixtures/test';
  * - SC-004: Chart range change < 1s
  */
 test.describe('Dashboard Performance', () => {
+  test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
+  });
+
   test.describe('Dashboard Load Time (SC-001)', () => {
     test('should load dashboard within 2 seconds', async ({ page }) => {
       const startTime = Date.now();

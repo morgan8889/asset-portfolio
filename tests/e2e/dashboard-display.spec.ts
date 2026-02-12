@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 /**
  * E2E tests for the Configurable Dashboard Display (US1)
@@ -8,8 +8,9 @@ import { test, expect } from './fixtures/test';
  */
 test.describe('Configurable Dashboard Display', () => {
   test.beforeEach(async ({ page }) => {
+    await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test.describe('Widget Display', () => {

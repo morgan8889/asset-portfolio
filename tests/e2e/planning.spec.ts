@@ -1,10 +1,10 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 test.describe('Net Worth Planning & FIRE Feature', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the planning page directly
+    await seedMockData(page);
     await page.goto('/planning');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
   });
 
   test('should load planning page with all sections', async ({ page }) => {
