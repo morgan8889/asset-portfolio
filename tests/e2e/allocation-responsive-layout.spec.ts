@@ -298,4 +298,57 @@ test.describe('Allocation Responsive Layout', () => {
       expect(foundTab).toBeTruthy();
     }
   });
+
+  test('should display total value above donut chart without cutoff', async ({ page }) => {
+    // Navigate to allocation page
+    await page.goto('/allocation');
+    await page.waitForLoadState('load');
+
+    // Check that total value text is visible and above the chart
+    const totalValueText = page.locator('text=/^\\$[0-9,]+\\.\\d{2}$/').first();
+    await expect(totalValueText).toBeVisible();
+
+    // Verify "Total Value" label is also visible
+    const totalValueLabel = page.getByText('Total Value', { exact: true });
+    await expect(totalValueLabel).toBeVisible();
+
+    // Get bounding boxes to verify positioning
+    const totalValueBox = await totalValueText.boundingBox();
+    const chartContainer = page.locator('.recharts-wrapper').first();
+    await expect(chartContainer).toBeVisible();
+    const chartBox = await chartContainer.boundingBox();
+
+    // Verify total value is positioned above the chart vertically
+    if (totalValueBox && chartBox) {
+      expect(totalValueBox.y).toBeLessThan(chartBox.y + chartBox.height / 2);
+    }
+
+    // Verify text is not cut off by checking it's within viewport
+    if (totalValueBox) {
+      const viewport = page.viewportSize();
+      if (viewport) {
+        expect(totalValueBox.y).toBeGreaterThanOrEqual(0);
+        expect(totalValueBox.x).toBeGreaterThanOrEqual(0);
+        expect(totalValueBox.y + totalValueBox.height).toBeLessThanOrEqual(viewport.height);
+      }
+    }
+  });
+
+  test('total value positioning works on mobile viewport', async ({ page }) => {
+    // Set mobile viewport
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto('/allocation');
+    await page.waitForLoadState('load');
+
+    // Total value should still be visible on mobile
+    const totalValueText = page.locator('text=/^\\$[0-9,]+\\.\\d{2}$/').first();
+    await expect(totalValueText).toBeVisible();
+
+    // Check it's not cut off at top of viewport
+    const totalValueBox = await totalValueText.boundingBox();
+    if (totalValueBox) {
+      expect(totalValueBox.y).toBeGreaterThanOrEqual(0);
+      expect(totalValueBox.x).toBeGreaterThanOrEqual(0);
+    }
+  });
 });
