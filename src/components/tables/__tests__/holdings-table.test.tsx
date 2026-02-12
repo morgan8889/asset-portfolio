@@ -257,10 +257,7 @@ describe('HoldingsTable', () => {
       });
     });
 
-    // SKIP: Radix UI Select component uses hasPointerCapture which is not implemented in jsdom
-    // This is a known limitation: https://github.com/radix-ui/primitives/issues/420
-    // The component works correctly in real browsers and E2E tests should cover this
-    it.skip('should filter by asset type', async () => {
+    it('should filter by asset type', async () => {
       render(<HoldingsTable />);
 
       const filterSelect = screen.getByRole('combobox');
@@ -278,10 +275,7 @@ describe('HoldingsTable', () => {
       });
     });
 
-    // SKIP: Radix UI Select component uses hasPointerCapture which is not implemented in jsdom
-    // This is a known limitation: https://github.com/radix-ui/primitives/issues/420
-    // The component works correctly in real browsers and E2E tests should cover this
-    it.skip('should combine search and filter', async () => {
+    it('should combine search and filter', async () => {
       render(<HoldingsTable />);
 
       // Filter by stock type
