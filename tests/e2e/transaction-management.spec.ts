@@ -4,7 +4,7 @@ test.describe('Transaction Management', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should open add transaction dialog', async ({ page }) => {

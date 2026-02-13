@@ -24,7 +24,7 @@ test.describe('Dashboard Responsive Layout', () => {
         await seedMockData(page);
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.goto('/');
-        await page.waitForLoadState('load');
+        await page.waitForLoadState('networkidle');
       });
 
       test('should render without horizontal overflow', async ({ page }) => {

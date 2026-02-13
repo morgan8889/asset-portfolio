@@ -4,7 +4,7 @@ test.describe('Allocation Responsive Layout', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/allocation');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display allocation page with three tabs', async ({ page }) => {
@@ -302,7 +302,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('should display total value above donut chart without cutoff', async ({ page }) => {
     // Navigate to allocation page
     await page.goto('/allocation');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
 
     // Check that total value text is visible and above the chart
     const totalValueText = page.locator('text=/^\\$[0-9,]+\\.\\d{2}$/').first();
@@ -338,7 +338,7 @@ test.describe('Allocation Responsive Layout', () => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/allocation');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
 
     // Total value should still be visible on mobile
     const totalValueText = page.locator('text=/^\\$[0-9,]+\\.\\d{2}$/').first();

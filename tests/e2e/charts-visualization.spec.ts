@@ -4,7 +4,7 @@ test.describe('Charts and Visualization', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display portfolio performance chart', async ({ page }) => {

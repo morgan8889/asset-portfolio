@@ -4,7 +4,7 @@ test.describe('Portfolios Management Page', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/portfolios');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should navigate to /portfolios route', async ({ page }) => {

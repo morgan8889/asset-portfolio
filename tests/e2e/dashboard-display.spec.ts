@@ -10,7 +10,7 @@ test.describe('Configurable Dashboard Display', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test.describe('Widget Display', () => {

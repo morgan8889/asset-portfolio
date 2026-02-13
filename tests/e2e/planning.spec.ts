@@ -4,7 +4,7 @@ test.describe('Net Worth Planning & FIRE Feature', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/planning');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should load planning page with all sections', async ({ page }) => {

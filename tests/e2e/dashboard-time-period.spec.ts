@@ -9,7 +9,7 @@ test.describe('Dashboard Time Period Selection', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test.describe('Time Period Selector', () => {

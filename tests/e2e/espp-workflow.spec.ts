@@ -11,7 +11,7 @@ test.describe('ESPP Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should add ESPP purchase transaction with all metadata', async ({ page }) => {

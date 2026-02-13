@@ -10,7 +10,7 @@ test.describe('Dashboard Settings Dialog Viewport', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display title at top of dialog', async ({ page }) => {

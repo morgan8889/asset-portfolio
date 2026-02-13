@@ -4,7 +4,7 @@ test.describe('Portfolio Switching', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should switch between portfolios and update dashboard', async ({ page }) => {

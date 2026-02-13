@@ -11,7 +11,7 @@ test.describe('Portfolio Delete Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/portfolios');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should open delete dialog when clicking Delete button', async ({ page }) => {

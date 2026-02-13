@@ -9,7 +9,7 @@ test.describe('Dashboard Performers Widgets', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test.describe('Top Performers Widget', () => {

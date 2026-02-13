@@ -65,7 +65,7 @@ test.describe('Holdings List Performance (SC-002)', () => {
     await generateMockData(page);
 
     await page.goto('/holdings');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
 
     // Wait for table to load
     await page.waitForSelector(
@@ -124,7 +124,7 @@ test.describe('Holdings List Performance (SC-002)', () => {
     await generateMockData(page);
 
     await page.goto('/holdings');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
 
     // Find search input
     const searchInput = page.locator(
@@ -160,7 +160,7 @@ test.describe('Holdings List Performance (SC-002)', () => {
     await generateMockData(page);
 
     await page.goto('/holdings');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
 
     // Find a sortable column header
     const symbolHeader = page

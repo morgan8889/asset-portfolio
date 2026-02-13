@@ -4,7 +4,7 @@ test.describe('Holdings Table', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display holdings table when data exists', async ({ page }) => {

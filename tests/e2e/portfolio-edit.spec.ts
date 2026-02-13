@@ -4,7 +4,7 @@ test.describe('Portfolio Edit Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/portfolios');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should open edit dialog when clicking Edit button', async ({ page }) => {

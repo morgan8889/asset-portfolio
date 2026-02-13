@@ -6,7 +6,7 @@ test.describe('Property Addition Workflow', () => {
 
     // Ensure we're on the holdings page
     await page.goto('/holdings');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('T021.1: should add basic property in under 30 seconds (SC-001)', async ({
