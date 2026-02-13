@@ -37,6 +37,10 @@ export async function generateMockData(page: Page): Promise<void> {
   // Full page reload ensures Zustand stores hydrate from IndexedDB.
   // The app's client-side redirect preserves stale in-memory store state.
   await page.goto('/');
+  // Wait for portfolio store to fully load and persist currentPortfolio.
+  // Without this, navigating to other pages before the store persists
+  // causes them to show "No Portfolio Selected".
+  await page.getByText(/total value/i).waitFor({ timeout: 15000 });
 }
 
 // ============================================================================

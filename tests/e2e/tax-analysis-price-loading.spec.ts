@@ -41,9 +41,9 @@ async function setupMockData(page: import('@playwright/test').Page) {
   }
 
 
-  // Wait for loading to complete
-  await expect(page.getByText('Loading portfolio data')).not.toBeVisible({
-    timeout: 5000,
+  // Wait for portfolio store to fully load and persist currentPortfolio
+  await expect(page.getByText(/total value/i)).toBeVisible({
+    timeout: 15000,
   });
 }
 

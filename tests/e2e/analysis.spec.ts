@@ -19,10 +19,15 @@ test.describe('Financial Analysis Page', () => {
       await expect(page.getByText('Done! Redirecting...')).toBeVisible({
         timeout: 10000,
       });
-      // Full page reload ensures Zustand stores hydrate from IndexedDB
-      await page.goto('/');
     }
-
+    // Full page reload ensures Zustand stores hydrate from IndexedDB
+    await page.goto('/');
+    // Wait for portfolio store to fully load and persist currentPortfolio.
+    // The analysis page depends on currentPortfolio being restored from
+    // persist middleware after page.goto('/analysis').
+    await expect(page.getByText(/total value/i)).toBeVisible({
+      timeout: 15000,
+    });
   });
 
   test('should display portfolio health score and metrics', async ({

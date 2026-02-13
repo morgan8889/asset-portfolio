@@ -60,7 +60,7 @@ export function TransactionFormFields({
             setValue('type', value as TransactionFormValues['type'], { shouldValidate: true })
           }
         >
-          <SelectTrigger>
+          <SelectTrigger id="type">
             <SelectValue placeholder="Select transaction type" />
           </SelectTrigger>
           <SelectContent>

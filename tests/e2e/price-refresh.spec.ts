@@ -29,9 +29,9 @@ test.describe('Price Refresh Workflow', () => {
     }
 
 
-    // Wait for loading to complete
-    await expect(page.getByText('Loading portfolio data')).not.toBeVisible({
-      timeout: 5000,
+    // Wait for portfolio store to fully load and persist currentPortfolio
+    await expect(page.getByText(/total value/i)).toBeVisible({
+      timeout: 15000,
     });
   });
 
@@ -146,9 +146,9 @@ test.describe('Offline Behavior', () => {
     }
 
 
-    // Wait for loading to complete
-    await expect(page.getByText('Loading portfolio data')).not.toBeVisible({
-      timeout: 5000,
+    // Wait for portfolio store to fully load and persist currentPortfolio
+    await expect(page.getByText(/total value/i)).toBeVisible({
+      timeout: 15000,
     });
 
     // Go offline
@@ -184,9 +184,9 @@ test.describe('Offline Behavior', () => {
     }
 
 
-    // Wait for loading to complete
-    await expect(page.getByText('Loading portfolio data')).not.toBeVisible({
-      timeout: 5000,
+    // Wait for portfolio store to fully load and persist currentPortfolio
+    await expect(page.getByText(/total value/i)).toBeVisible({
+      timeout: 15000,
     });
 
     // Verify refresh button is enabled when online

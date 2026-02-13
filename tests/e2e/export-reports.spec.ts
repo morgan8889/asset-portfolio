@@ -14,7 +14,8 @@ test.describe('Export Reports', () => {
     
     // Generate mock portfolio data
     await page.getByRole('button', { name: /generate mock data/i }).click();
-    
+    await page.getByText('Done! Redirecting...').waitFor({ timeout: 10000 });
+
     // Full page reload ensures Zustand stores hydrate from IndexedDB
     await page.goto('/');
 
@@ -174,13 +175,15 @@ test.describe('Export Client-Side Only', () => {
     // Navigate and generate data
     await page.goto('/test');
     await page.getByRole('button', { name: /generate mock data/i }).click();
+    await page.getByText('Done! Redirecting...').waitFor({ timeout: 10000 });
     await page.goto('/');
+    await page.getByText(/total value/i).waitFor({ timeout: 15000 });
     await page.getByRole('link', { name: /reports/i }).click();
     await page.waitForURL('/reports');
-    
+
     // Clear any initial requests
     networkRequests.length = 0;
-    
+
     // Trigger PDF export
     const pdfButton = page.getByRole('button', { name: /download pdf/i }).first();
     await pdfButton.click();
@@ -208,13 +211,15 @@ test.describe('Export Client-Side Only', () => {
     // Navigate and generate data
     await page.goto('/test');
     await page.getByRole('button', { name: /generate mock data/i }).click();
+    await page.getByText('Done! Redirecting...').waitFor({ timeout: 10000 });
     await page.goto('/');
+    await page.getByText(/total value/i).waitFor({ timeout: 15000 });
     await page.getByRole('link', { name: /reports/i }).click();
     await page.waitForURL('/reports');
-    
+
     // Clear any initial requests
     networkRequests.length = 0;
-    
+
     // Trigger transaction CSV export
     const csvButton = page.locator('text=Transaction History').locator('..').locator('..').getByRole('button', { name: /download csv/i });
     await csvButton.click();
