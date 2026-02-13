@@ -32,7 +32,7 @@ test.describe('Navigation across dashboard pages', () => {
     await page.goto('/');
     await expect(page.getByText('Initializing')).not.toBeVisible({ timeout: 10000 });
 
-    await page.getByRole('link', { name: /Analysis/i }).click();
+    await page.getByRole('link', { name: 'Analysis', exact: true }).click();
 
     await expect(page.getByRole('heading', { name: 'Analysis', exact: true, level: 1 })).toBeVisible({ timeout: 5000 });
     await expect(page.getByText('Initializing')).not.toBeVisible();

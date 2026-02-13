@@ -18,7 +18,7 @@ import { generateMockData } from './fixtures/seed-helpers';
 test.describe('Sell Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await generateMockData(page);
-    await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({ timeout: 15000 });
   });
 
   test('should sell holding with automatic FIFO lot selection', async ({ page }) => {

@@ -22,7 +22,7 @@ test.describe('Holdings Data Loading', () => {
     await page.goto('/');
 
     // Wait for portfolio store to fully load and persist currentPortfolio
-    await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({ timeout: 15000 });
   });
 
   test('should load holdings data when navigating directly to /holdings', async ({ page }) => {

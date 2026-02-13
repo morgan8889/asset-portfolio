@@ -33,7 +33,7 @@ test.describe('Configurable Dashboard Display', () => {
       // Should see dashboard with data (seedMockData creates holdings)
       await expect(
         page.getByRole('heading', { name: /Dashboard/i }).or(
-          page.getByText(/total value/i)
+          page.locator('[data-testid="total-value-widget"]')
         )
       ).toBeVisible({ timeout: 15000 });
     });

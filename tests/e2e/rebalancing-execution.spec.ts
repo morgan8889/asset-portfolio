@@ -18,7 +18,7 @@ import { generateMockData } from './fixtures/seed-helpers';
 test.describe('Rebalancing Execution', () => {
   test.beforeEach(async ({ page }) => {
     await generateMockData(page);
-    await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({ timeout: 15000 });
   });
 
   test('should navigate to allocation page', async ({ page }) => {

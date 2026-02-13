@@ -30,7 +30,7 @@ test.describe('Price Refresh Workflow', () => {
 
 
     // Wait for portfolio store to fully load and persist currentPortfolio
-    await expect(page.getByText(/total value/i)).toBeVisible({
+    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({
       timeout: 15000,
     });
   });
@@ -147,7 +147,7 @@ test.describe('Offline Behavior', () => {
 
 
     // Wait for portfolio store to fully load and persist currentPortfolio
-    await expect(page.getByText(/total value/i)).toBeVisible({
+    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({
       timeout: 15000,
     });
 
@@ -185,7 +185,7 @@ test.describe('Offline Behavior', () => {
 
 
     // Wait for portfolio store to fully load and persist currentPortfolio
-    await expect(page.getByText(/total value/i)).toBeVisible({
+    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({
       timeout: 15000,
     });
 

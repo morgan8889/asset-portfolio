@@ -25,7 +25,7 @@ test.describe('Financial Analysis Page', () => {
     // Wait for portfolio store to fully load and persist currentPortfolio.
     // The analysis page depends on currentPortfolio being restored from
     // persist middleware after page.goto('/analysis').
-    await expect(page.getByText(/total value/i)).toBeVisible({
+    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({
       timeout: 15000,
     });
   });

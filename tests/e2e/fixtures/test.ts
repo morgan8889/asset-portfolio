@@ -146,5 +146,5 @@ export async function seedMockData(page: import('@playwright/test').Page) {
   // Wait for portfolio store to fully load and persist currentPortfolio.
   // Without this, navigating to other pages (e.g. /analysis, /allocation)
   // before the store persists causes them to show "No Portfolio Selected".
-  await page.getByText(/total value/i).waitFor({ timeout: 15000 });
+  await page.locator('[data-testid="total-value-widget"]').waitFor({ timeout: 15000 });
 }

@@ -20,7 +20,7 @@ test.describe('Export Reports', () => {
     await page.goto('/');
 
     // Wait for dashboard to load
-    await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({ timeout: 15000 });
     
     // Navigate to Reports page
     await page.getByRole('link', { name: /reports/i }).click();
@@ -177,7 +177,7 @@ test.describe('Export Client-Side Only', () => {
     await page.getByRole('button', { name: /generate mock data/i }).click();
     await page.getByText('Done! Redirecting...').waitFor({ timeout: 10000 });
     await page.goto('/');
-    await page.getByText(/total value/i).waitFor({ timeout: 15000 });
+    await page.locator('[data-testid="total-value-widget"]').waitFor({ timeout: 15000 });
     await page.getByRole('link', { name: /reports/i }).click();
     await page.waitForURL('/reports');
 
@@ -213,7 +213,7 @@ test.describe('Export Client-Side Only', () => {
     await page.getByRole('button', { name: /generate mock data/i }).click();
     await page.getByText('Done! Redirecting...').waitFor({ timeout: 10000 });
     await page.goto('/');
-    await page.getByText(/total value/i).waitFor({ timeout: 15000 });
+    await page.locator('[data-testid="total-value-widget"]').waitFor({ timeout: 15000 });
     await page.getByRole('link', { name: /reports/i }).click();
     await page.waitForURL('/reports');
 
