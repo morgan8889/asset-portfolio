@@ -23,11 +23,9 @@ test.describe('Net Worth Accuracy Tests', () => {
   }) => {
     // Navigate to transactions page
     await page.goto('/transactions');
-    await page.waitForLoadState('networkidle');
 
     // Record initial portfolio state
     await page.goto('/planning/net-worth');
-    await page.waitForLoadState('networkidle');
 
     // Get initial net worth
     const initialNetWorthText = await page
@@ -74,7 +72,6 @@ test.describe('Net Worth Accuracy Tests', () => {
 
     // Navigate to net worth chart
     await page.goto('/planning/net-worth');
-    await page.waitForLoadState('networkidle');
 
     // Expected cash balance calculation:
     // Deposit: +$10,000
@@ -101,7 +98,6 @@ test.describe('Net Worth Accuracy Tests', () => {
 
     // Navigate to planning page to add liability
     await page.goto('/planning');
-    await page.waitForLoadState('networkidle');
 
     // Add a liability
     const addLiabilityButton = page.getByRole('button', {
@@ -126,7 +122,6 @@ test.describe('Net Worth Accuracy Tests', () => {
 
     // Navigate to net worth chart
     await page.goto('/planning/net-worth');
-    await page.waitForLoadState('networkidle');
 
     // Verify liabilities are shown
     const liabilitiesDisplay = await page.locator('text=/Liabilities/i').first();
@@ -151,7 +146,6 @@ test.describe('Net Worth Accuracy Tests', () => {
   test('reflects fees and taxes in cash balance', async ({ page }) => {
     // Navigate to transactions
     await page.goto('/transactions');
-    await page.waitForLoadState('networkidle');
 
     // Add deposit
     await page.getByRole('button', { name: /add transaction/i }).click();
@@ -185,7 +179,6 @@ test.describe('Net Worth Accuracy Tests', () => {
 
     // Check net worth
     await page.goto('/planning/net-worth');
-    await page.waitForLoadState('networkidle');
 
     // Expected: $5,000 - $50 - $100 = $4,850
     const cashDisplay = await page.locator('text=/Cash/i').first();
@@ -202,7 +195,6 @@ test.describe('Net Worth Accuracy Tests', () => {
   }) => {
     // Complex scenario: deposits, buys, dividends, fees, sells
     await page.goto('/transactions');
-    await page.waitForLoadState('networkidle');
 
     // Transaction 1: Deposit $10,000
     await addTransaction(page, {
@@ -248,7 +240,6 @@ test.describe('Net Worth Accuracy Tests', () => {
 
     // Navigate to net worth
     await page.goto('/planning/net-worth');
-    await page.waitForLoadState('networkidle');
 
     // Expected cash calculation:
     // $10,000 (deposit)
@@ -272,7 +263,6 @@ test.describe('Net Worth Accuracy Tests', () => {
 
   test('shows invested value and cash breakdown', async ({ page }) => {
     await page.goto('/planning/net-worth');
-    await page.waitForLoadState('networkidle');
 
     // Verify all 5 metrics are displayed
     await expect(page.locator('text=/Net Worth/i').first()).toBeVisible();
@@ -298,7 +288,6 @@ test.describe('Net Worth Accuracy Tests', () => {
 
     // Step 1: Add a liability with initial balance
     await page.goto('/planning');
-    await page.waitForLoadState('networkidle');
 
     const addLiabilityButton = page.getByRole('button', {
       name: /add liability/i,
@@ -324,7 +313,6 @@ test.describe('Net Worth Accuracy Tests', () => {
     // Navigate to liability details or payment recording page
     // This is a placeholder - adjust based on actual UI implementation
     await page.goto('/planning');
-    await page.waitForLoadState('networkidle');
 
     // Try to find and click on the liability to record payments
     const liabilityRow = page.locator('text=/Test Loan/i');
@@ -365,7 +353,6 @@ test.describe('Net Worth Accuracy Tests', () => {
 
     // Step 3: Navigate to net worth history and verify balances at different dates
     await page.goto('/planning/net-worth');
-    await page.waitForLoadState('networkidle');
 
     // Expected balances:
     // - Dec 2023: $100,000 (initial)

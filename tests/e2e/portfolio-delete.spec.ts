@@ -11,7 +11,6 @@ test.describe('Portfolio Delete Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/portfolios');
-    await page.waitForLoadState('networkidle');
   });
 
   test('should open delete dialog when clicking Delete button', async ({ page }) => {
@@ -317,7 +316,6 @@ test.describe('Portfolio Delete Workflow', () => {
 test.describe('Last Portfolio Warning', () => {
   test('should show warning when deleting last portfolio', async ({ page }) => {
     await page.goto('/portfolios');
-    await page.waitForLoadState('networkidle');
 
     // Count portfolios
     const rows = page.getByRole('row');

@@ -15,7 +15,6 @@ test.describe('Price Refresh Workflow', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to test page and ensure mock data exists
     await page.goto('/test');
-    await page.waitForLoadState('networkidle');
 
     const generateButton = page.getByRole('button', { name: 'Generate Mock Data' });
 
@@ -28,7 +27,6 @@ test.describe('Price Refresh Workflow', () => {
       await page.goto('/');
     }
 
-    await page.waitForLoadState('networkidle');
 
     // Wait for loading to complete
     await expect(page.getByText('Loading portfolio data')).not.toBeVisible({
@@ -57,7 +55,6 @@ test.describe('Price Refresh Workflow', () => {
   test('should display holdings with price information', async ({ page }) => {
     // Navigate to holdings page
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Wait for loading to complete
     await expect(page.getByText('Loading')).not.toBeVisible({ timeout: 5000 });
@@ -74,7 +71,6 @@ test.describe('Price Refresh Workflow', () => {
   test('should display price settings on settings page', async ({ page }) => {
     // Navigate to settings page
     await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
 
     // Wait for settings page to load
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible({ timeout: 5000 });
@@ -96,7 +92,6 @@ test.describe('Price Refresh Workflow', () => {
   test('should be able to change price update frequency', async ({ page }) => {
     // Navigate to settings page
     await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
 
     // Wait for settings page to load
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible({ timeout: 5000 });
@@ -114,7 +109,6 @@ test.describe('Price Refresh Workflow', () => {
   test('should display staleness toggle in settings', async ({ page }) => {
     // Navigate to settings page
     await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
 
     // Wait for settings page to load
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible({ timeout: 5000 });
@@ -126,7 +120,6 @@ test.describe('Price Refresh Workflow', () => {
   test('should display pause when hidden toggle in settings', async ({ page }) => {
     // Navigate to settings page
     await page.goto('/settings');
-    await page.waitForLoadState('networkidle');
 
     // Wait for settings page to load
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible({ timeout: 5000 });
@@ -140,7 +133,6 @@ test.describe('Offline Behavior', () => {
   test('should show offline indicator when network is unavailable', async ({ page, context }) => {
     // Generate mock data first
     await page.goto('/test');
-    await page.waitForLoadState('networkidle');
 
     const generateButton = page.getByRole('button', { name: 'Generate Mock Data' });
     if (await generateButton.isEnabled()) {
@@ -151,7 +143,6 @@ test.describe('Offline Behavior', () => {
       await page.goto('/');
     }
 
-    await page.waitForLoadState('networkidle');
 
     // Wait for loading to complete
     await expect(page.getByText('Loading portfolio data')).not.toBeVisible({
@@ -179,7 +170,6 @@ test.describe('Offline Behavior', () => {
   test('should disable refresh button when offline', async ({ page, context }) => {
     // Generate mock data first
     await page.goto('/test');
-    await page.waitForLoadState('networkidle');
 
     const generateButton = page.getByRole('button', { name: 'Generate Mock Data' });
     if (await generateButton.isEnabled()) {
@@ -190,7 +180,6 @@ test.describe('Offline Behavior', () => {
       await page.goto('/');
     }
 
-    await page.waitForLoadState('networkidle');
 
     // Wait for loading to complete
     await expect(page.getByText('Loading portfolio data')).not.toBeVisible({

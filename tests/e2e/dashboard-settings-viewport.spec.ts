@@ -10,7 +10,6 @@ test.describe('Dashboard Settings Dialog Viewport', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
   });
 
   test('should display title at top of dialog', async ({ page }) => {
@@ -110,7 +109,6 @@ test.describe('Dashboard Settings Dialog Viewport', () => {
     // Set small viewport (mobile-like)
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
 
     const settingsButton = page.locator('[data-testid="dashboard-settings-btn"]');
 

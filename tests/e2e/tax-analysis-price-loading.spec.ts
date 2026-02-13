@@ -21,7 +21,6 @@ import { test, expect } from './fixtures/test';
  */
 async function setupMockData(page: import('@playwright/test').Page) {
   await page.goto('/test');
-  await page.waitForLoadState('networkidle');
 
   // Wait for test page to load
   await expect(page.getByText('Component Testing Page')).toBeVisible({ timeout: 10000 });
@@ -41,7 +40,6 @@ async function setupMockData(page: import('@playwright/test').Page) {
     await page.goto('/');
   }
 
-  await page.waitForLoadState('networkidle');
 
   // Wait for loading to complete
   await expect(page.getByText('Loading portfolio data')).not.toBeVisible({
@@ -54,7 +52,6 @@ async function setupMockData(page: import('@playwright/test').Page) {
  */
 async function ensureEmptyPortfolioExists(page: import('@playwright/test').Page) {
   await page.goto('/');
-  await page.waitForLoadState('networkidle');
 
   // Check if we need to create a portfolio
   const createPortfolioButton = page.getByRole('button', { name: 'Create Portfolio' });
@@ -84,7 +81,6 @@ async function ensureEmptyPortfolioExists(page: import('@playwright/test').Page)
     await expect(dialog).not.toBeVisible({ timeout: 10000 });
   }
 
-  await page.waitForLoadState('networkidle');
 }
 
 test.describe('Tax Analysis Price Loading', () => {
@@ -94,7 +90,6 @@ test.describe('Tax Analysis Price Loading', () => {
 
     // Navigate directly to tax-analysis page
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Verify page title
     await expect(page.getByRole('heading', { name: 'Tax Analysis' })).toBeVisible();
@@ -112,7 +107,6 @@ test.describe('Tax Analysis Price Loading', () => {
 
     // Navigate to tax-analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Verify main heading
     await expect(page.getByRole('heading', { name: 'Tax Analysis' })).toBeVisible({ timeout: 10000 });
@@ -132,7 +126,6 @@ test.describe('Tax Analysis Price Loading', () => {
 
     // Navigate to tax-analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Verify tax analysis is loaded
     await expect(page.getByRole('heading', { name: 'Tax Analysis' })).toBeVisible();
@@ -142,14 +135,12 @@ test.describe('Tax Analysis Price Loading', () => {
 
     // Navigate away to holdings
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Verify we're on holdings page (use exact match to avoid multiple matches)
     await expect(page.getByRole('heading', { name: 'Holdings', exact: true })).toBeVisible();
 
     // Navigate back to tax-analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Data should still be visible
     await expect(page.getByRole('heading', { name: 'Tax Analysis' })).toBeVisible();
@@ -162,7 +153,6 @@ test.describe('Tax Analysis Price Loading', () => {
 
     // Navigate to tax-analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Verify page loaded
     await expect(page.getByRole('heading', { name: 'Tax Analysis' })).toBeVisible({ timeout: 10000 });
@@ -181,7 +171,6 @@ test.describe('Tax Analysis Price Loading', () => {
 
     // Navigate directly to tax-analysis with no transactions
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Should show empty state message
     await expect(
@@ -195,7 +184,6 @@ test.describe('Tax Analysis Price Loading', () => {
 
     // Navigate to tax-analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Find and click the Tax Settings button
     const taxSettingsButton = page.getByRole('button', { name: /tax settings/i });
@@ -216,7 +204,6 @@ test.describe('Tax Analysis Price Loading', () => {
 
     // Navigate to tax-analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Verify initial page load
     await expect(page.getByRole('heading', { name: 'Tax Analysis' })).toBeVisible({ timeout: 10000 });
@@ -224,7 +211,6 @@ test.describe('Tax Analysis Price Loading', () => {
 
     // Reload the page
     await page.reload();
-    await page.waitForLoadState('networkidle');
 
     // Data should still be visible after reload
     await expect(page.getByRole('heading', { name: 'Tax Analysis' })).toBeVisible();

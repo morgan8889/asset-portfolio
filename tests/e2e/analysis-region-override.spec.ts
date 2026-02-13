@@ -14,7 +14,6 @@ test.describe('Region Override Dialog', () => {
 
     // Navigate to holdings page
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Find first holding with dropdown menu
     const dropdownButtons = page.locator('button[aria-label*="actions" i], button:has-text("⋮")');
@@ -135,7 +134,6 @@ test.describe('Region Override Dialog', () => {
 
     // Navigate to holdings
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Find and click dropdown
     const dropdownButtons = page.locator('button[aria-label*="actions" i], button:has-text("⋮")');
@@ -207,7 +205,6 @@ test.describe('Region Override Dialog', () => {
 
     // Navigate to holdings
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Find and click dropdown
     const dropdownButtons = page.locator('button[aria-label*="actions" i], button:has-text("⋮")');

@@ -8,7 +8,6 @@ test.describe('Mock Data Generation Flow', () => {
   test('should generate mock data and display dashboard with widgets', async ({ page }) => {
     // Step 1: Navigate to test page
     await page.goto('/test');
-    await page.waitForLoadState('networkidle');
 
     // Verify test page loaded
     await expect(page.getByText('Component Testing Page')).toBeVisible();
@@ -35,7 +34,6 @@ test.describe('Mock Data Generation Flow', () => {
       await page.goto('/');
     }
 
-    await page.waitForLoadState('networkidle');
 
     // Step 3: Wait for loading to complete
     // CRITICAL: Hard assertion - FAILS if loading stuck (no conditional logic)
@@ -74,7 +72,6 @@ test.describe('Mock Data Generation Flow', () => {
   test('should show welcome state when no data exists', async ({ page }) => {
     // Navigate to dashboard
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
 
     // Wait for loading to finish
     // CRITICAL: Hard assertion - FAILS if loading stuck (no conditional logic)

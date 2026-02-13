@@ -10,7 +10,6 @@ test.describe('Configurable Dashboard Display', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
   });
 
   test.describe('Widget Display', () => {
@@ -31,7 +30,6 @@ test.describe('Configurable Dashboard Display', () => {
     test('should show empty state when no holdings exist', async ({ page }) => {
       // Navigate and wait for content
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Either welcome message (no portfolio) or no holdings message
       const noHoldings = page.getByText('No Holdings Yet');
@@ -107,14 +105,12 @@ test.describe('Configurable Dashboard Display', () => {
       );
 
       // Either loading state appears briefly or content loads immediately
-      await page.waitForLoadState('networkidle');
     });
 
     test('should handle graceful loading without flickering', async ({ page }) => {
       // Measure time from navigation to content visible
       const startTime = Date.now();
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Content should be visible - use heading roles to be more specific
       await expect(
@@ -131,7 +127,6 @@ test.describe('Configurable Dashboard Display', () => {
     test('should display widgets in grid on desktop', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Grid should be visible
       const gridContainer = page.locator('.grid.gap-4');
@@ -143,7 +138,6 @@ test.describe('Configurable Dashboard Display', () => {
     test('should stack widgets on mobile', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Main content should still be visible
       const mainContent = page.locator('main');
@@ -153,7 +147,6 @@ test.describe('Configurable Dashboard Display', () => {
     test('should disable drag handles on mobile', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Drag handles should not be visible on mobile
       const dragHandle = page.locator('[data-testid="drag-handle"]');
@@ -172,7 +165,6 @@ test.describe('Configurable Dashboard Display', () => {
   test.describe('Accessibility', () => {
     test('should have proper ARIA labels on widgets', async ({ page }) => {
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Check widgets have proper roles and labels
       const cards = page.locator('[data-testid$="-widget"]');
@@ -190,7 +182,6 @@ test.describe('Configurable Dashboard Display', () => {
 
     test('should support keyboard navigation between widgets', async ({ page }) => {
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Tab through interactive elements
       await page.keyboard.press('Tab');
@@ -239,7 +230,6 @@ test.describe('Configurable Dashboard Display', () => {
   test.describe('Data Staleness', () => {
     test('should show stale data banner when prices are outdated', async ({ page }) => {
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Stale data banner should appear if prices are old
       const staleBanner = page.locator('[role="alert"]').filter({

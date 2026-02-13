@@ -11,7 +11,6 @@ test.describe('RSU Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
   });
 
   test('should add RSU vest transaction with all metadata', async ({ page }) => {
@@ -113,7 +112,6 @@ test.describe('RSU Workflow', () => {
 
     // Navigate to holdings page
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Should see the holding with RSU badge
     await expect(page.getByText('VEST')).toBeVisible();
@@ -160,7 +158,6 @@ test.describe('RSU Workflow', () => {
 
     // Navigate to holdings page
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Should see NET shares = 100 - 28 = 72
     await expect(page.getByText('NET')).toBeVisible();
@@ -217,7 +214,6 @@ test.describe('RSU Workflow', () => {
 
     // Navigate to tax analysis page
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Should see the RSU lot in the table
     await expect(page.getByText('TAX')).toBeVisible();
@@ -246,7 +242,6 @@ test.describe('RSU Workflow', () => {
 
     // Go to holdings
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Open detail modal
     const dropdownButton = page.locator('[role="button"]').filter({ hasText: /⋮/ }).first();
@@ -285,7 +280,6 @@ test.describe('RSU Workflow', () => {
 
     // Go to holdings
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Open detail modal
     const dropdownButton = page.locator('[role="button"]').filter({ hasText: /⋮/ }).first();
@@ -329,7 +323,6 @@ test.describe('RSU Workflow', () => {
 
     // Navigate to tax analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Should show as long-term (>365 days from vesting)
     await expect(page.getByText('OLD')).toBeVisible();
@@ -352,7 +345,6 @@ test.describe('RSU Workflow', () => {
 
     // Go to holdings detail
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     const dropdownButton = page.locator('[role="button"]').filter({ hasText: /⋮/ }).first();
     await dropdownButton.click();

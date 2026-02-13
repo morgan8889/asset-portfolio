@@ -9,7 +9,6 @@ test.describe('Financial Analysis Page', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to test page and generate mock data if needed
     await page.goto('/test');
-    await page.waitForLoadState('networkidle');
 
     const generateButton = page.getByRole('button', {
       name: 'Generate Mock Data',
@@ -23,7 +22,6 @@ test.describe('Financial Analysis Page', () => {
       await page.waitForURL('/', { timeout: 10000 });
     }
 
-    await page.waitForLoadState('networkidle');
   });
 
   test('should display portfolio health score and metrics', async ({
@@ -206,7 +204,6 @@ test.describe('Financial Analysis Page', () => {
       indexedDB.deleteDatabase('PortfolioTrackerDB');
     });
     await page.reload();
-    await page.waitForLoadState('networkidle');
 
     // Should show "No Portfolio Selected" message
     const noPortfolioMessage = page.getByText('No Portfolio Selected');

@@ -13,12 +13,14 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   /* Use 2 workers on CI (2 vCPU runners), unlimited locally */
   workers: process.env.CI ? 2 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [
-    ['html'],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ['junit', { outputFile: 'test-results/results.xml' }],
-  ],
+  /* Reporter: use blob in CI for shard merging, full reporters locally */
+  reporter: process.env.CI
+    ? 'blob'
+    : [
+        ['html'],
+        ['json', { outputFile: 'test-results/results.json' }],
+        ['junit', { outputFile: 'test-results/results.xml' }],
+      ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */

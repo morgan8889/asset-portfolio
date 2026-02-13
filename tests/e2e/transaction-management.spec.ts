@@ -4,7 +4,6 @@ test.describe('Transaction Management', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
   });
 
   test('should open add transaction dialog', async ({ page }) => {
@@ -327,7 +326,6 @@ test.describe('Transaction Management', () => {
     await page.setViewportSize({ width: 375, height: 667 });
 
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
 
     // Find add transaction button (might be in a different location on mobile)
     const addButton = page.getByRole('button', { name: /add transaction/i }).or(

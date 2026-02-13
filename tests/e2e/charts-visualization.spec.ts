@@ -4,7 +4,6 @@ test.describe('Charts and Visualization', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
   });
 
   test('should display portfolio performance chart', async ({ page }) => {
@@ -152,7 +151,7 @@ test.describe('Charts and Visualization', () => {
   test('should be responsive on different screen sizes', async ({ page }) => {
     // Test desktop view (1200px)
     await page.setViewportSize({ width: 1200, height: 800 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     const chartsContainer = page.locator('[data-testid*="charts"]').or(
       page.locator('.grid').filter({ hasText: /portfolio performance|asset allocation/i })
@@ -176,7 +175,7 @@ test.describe('Charts and Visualization', () => {
 
     // Test tablet view (768px)
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // Charts should still be visible and functional
     const performanceChart = page.getByText('Portfolio Performance');
@@ -186,7 +185,7 @@ test.describe('Charts and Visualization', () => {
 
     // Test mobile view (375px)
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // Charts should stack vertically on mobile
     const allocationChart = page.getByText('Asset Allocation');
@@ -218,7 +217,7 @@ test.describe('Charts and Visualization', () => {
       }, 2000);
     });
 
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // Should show loading state
     const loadingIndicator = page.getByText(/loading/i).or(
@@ -254,7 +253,7 @@ test.describe('Charts and Visualization', () => {
       });
     });
 
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // Should show error message
     const errorMessage = page.getByText(/error.*chart/i).or(
@@ -445,7 +444,7 @@ test.describe('Charts and Visualization', () => {
       });
     });
 
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // Should show empty state message
     const emptyMessage = page.getByText(/no data/i).or(

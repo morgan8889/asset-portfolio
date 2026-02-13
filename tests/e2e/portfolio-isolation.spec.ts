@@ -18,13 +18,11 @@ test.describe('Portfolio Data Isolation', () => {
 
     // Reload to pick up the seeded data in stores
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
   });
 
   test('should not show holdings from Portfolio A when viewing Portfolio B', async ({ page }) => {
     // Navigate to holdings page
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Get current portfolio name and holdings
     const portfolioSelector = page.locator('[data-testid="portfolio-selector"]').or(
@@ -52,7 +50,6 @@ test.describe('Portfolio Data Isolation', () => {
 
     // Switch to a different portfolio (navigate to /portfolios and select another)
     await page.goto('/portfolios');
-    await page.waitForLoadState('networkidle');
 
     const portfolioRows = page.getByRole('row');
     const portfolioCount = await portfolioRows.count();
@@ -74,11 +71,9 @@ test.describe('Portfolio Data Isolation', () => {
 
     // Should navigate to dashboard
     await expect(page).toHaveURL('/');
-    await page.waitForLoadState('networkidle');
 
     // Navigate to holdings page for the new portfolio
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Get holdings for Portfolio B
     const holdingsTableB = page.getByRole('table');
@@ -104,7 +99,6 @@ test.describe('Portfolio Data Isolation', () => {
   test('should show correct transaction history for each portfolio', async ({ page }) => {
     // Navigate to transactions page
     await page.goto('/transactions');
-    await page.waitForLoadState('networkidle');
 
     // Get current portfolio identifier
     const portfolioSelector = page.locator('[data-testid="portfolio-selector"]').or(
@@ -121,7 +115,6 @@ test.describe('Portfolio Data Isolation', () => {
 
     // Switch to different portfolio via /portfolios
     await page.goto('/portfolios');
-    await page.waitForLoadState('networkidle');
 
     const portfolioRows = page.getByRole('row');
     const portfolioCount = await portfolioRows.count();
@@ -141,11 +134,9 @@ test.describe('Portfolio Data Isolation', () => {
     }
 
     await expect(page).toHaveURL('/');
-    await page.waitForLoadState('networkidle');
 
     // Navigate to transactions for Portfolio B
     await page.goto('/transactions');
-    await page.waitForLoadState('networkidle');
 
     const transactionsTableB = page.getByRole('table');
     const transactionRowsB = await transactionsTableB.getByRole('row').count();
@@ -158,7 +149,6 @@ test.describe('Portfolio Data Isolation', () => {
   test('should show correct metrics for each portfolio', async ({ page }) => {
     // Go to portfolios management page to see all portfolio metrics
     await page.goto('/portfolios');
-    await page.waitForLoadState('networkidle');
 
     const portfolioRows = page.getByRole('row');
     const portfolioCount = await portfolioRows.count();
@@ -190,7 +180,6 @@ test.describe('Portfolio Data Isolation', () => {
   test('should maintain separate allocation data per portfolio', async ({ page }) => {
     // Navigate to allocation page
     await page.goto('/allocation');
-    await page.waitForLoadState('networkidle');
 
     // Get current portfolio
     const portfolioSelector = page.locator('[data-testid="portfolio-selector"]').or(
@@ -222,7 +211,6 @@ test.describe('Portfolio Data Isolation', () => {
       if (optionCount > 1) {
         // Click second portfolio option
         await portfolioOptions.nth(1).click();
-        await page.waitForLoadState('networkidle');
 
         // Verify we switched portfolios
         let portfolio2Name = '';
@@ -240,7 +228,6 @@ test.describe('Portfolio Data Isolation', () => {
   test('should not leak filter state between portfolio switches', async ({ page }) => {
     // Navigate to holdings with filter
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Apply a filter if available
     const searchInput = page.getByPlaceholder(/search/i).or(
@@ -261,7 +248,6 @@ test.describe('Portfolio Data Isolation', () => {
 
         // Go back to holdings
         await page.goto('/holdings');
-        await page.waitForLoadState('networkidle');
 
         // Filter should be cleared for new portfolio
         if (await searchInput.isVisible().catch(() => false)) {
@@ -275,7 +261,6 @@ test.describe('Portfolio Data Isolation', () => {
   test('should delete only the specified portfolio without affecting others', async ({ page }) => {
     // Go to portfolios page
     await page.goto('/portfolios');
-    await page.waitForLoadState('networkidle');
 
     const portfolioRows = page.getByRole('row');
     const initialCount = await portfolioRows.count();

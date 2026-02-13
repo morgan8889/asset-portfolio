@@ -10,7 +10,6 @@ test.describe('Dashboard Dense Packing', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to test page and generate mock data for testing
     await page.goto('/test');
-    await page.waitForLoadState('networkidle');
 
     // Click generate mock data button if available
     const generateBtn = page.getByRole('button', { name: /generate mock/i });
@@ -19,7 +18,6 @@ test.describe('Dashboard Dense Packing', () => {
       // Wait for redirect to dashboard with data
       await page.waitForURL('/', { timeout: 10000 });
     }
-    await page.waitForLoadState('networkidle');
   });
 
   test.describe('Dense Packing Toggle', () => {
@@ -136,7 +134,6 @@ test.describe('Dashboard Dense Packing', () => {
 
             // Reload page
             await page.reload();
-            await page.waitForLoadState('networkidle');
 
             // Open settings again
             await settingsButton.click();
@@ -163,7 +160,6 @@ test.describe('Dashboard Dense Packing', () => {
       // Set mobile viewport
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/test');
-      await page.waitForLoadState('networkidle');
 
       // Generate mock data
       const generateBtn = page.getByRole('button', { name: /generate mock/i });
@@ -171,7 +167,6 @@ test.describe('Dashboard Dense Packing', () => {
         await generateBtn.click();
         await page.waitForURL('/', { timeout: 10000 });
       }
-      await page.waitForLoadState('networkidle');
 
       // On mobile, the grid should be single column (stacking mode)
       // The grid should not have grid-flow-row-dense class
@@ -187,7 +182,6 @@ test.describe('Dashboard Dense Packing', () => {
       // Set mobile viewport
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Open settings modal
       const settingsButton = page.locator('[data-testid="dashboard-settings-btn"]');

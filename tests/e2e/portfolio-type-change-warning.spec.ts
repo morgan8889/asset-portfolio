@@ -20,7 +20,6 @@ test.describe('Portfolio Type Change Warning', () => {
   test('should show warning when changing portfolio type with existing transactions', async ({ page }) => {
     // Navigate to portfolios page
     await page.goto('/portfolios');
-    await page.waitForLoadState('networkidle');
 
     // Click edit on the first portfolio with transactions
     const rows = page.getByRole('row');
@@ -90,7 +89,6 @@ test.describe('Portfolio Type Change Warning', () => {
   test('should not show warning for new portfolio', async ({ page }) => {
     // Navigate to portfolios page
     await page.goto('/portfolios');
-    await page.waitForLoadState('networkidle');
 
     // Click Create Portfolio button
     const createButton = page.getByRole('button', { name: /create portfolio/i });

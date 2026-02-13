@@ -84,7 +84,6 @@ test.describe('Real Estate Filter (SC-003)', () => {
     await seedMockData(page);
     // Navigate to holdings page
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
   });
 
   test('T023.1: should filter to show only Real Estate assets', async ({

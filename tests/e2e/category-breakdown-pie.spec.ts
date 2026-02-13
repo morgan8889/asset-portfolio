@@ -12,6 +12,7 @@
  */
 
 import { test, expect, Page } from './fixtures/test';
+import { generateMockData } from './fixtures/seed-helpers';
 
 /**
  * Helper to enable pie chart setting in dashboard settings
@@ -81,13 +82,7 @@ async function closeSettings(page: Page) {
 
 test.describe('Category Breakdown Pie Chart', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-
-    // Generate mock data
-    await page.getByRole('button', { name: /generate mock data/i }).click();
-
-    // Wait for navigation to dashboard
-    await page.waitForURL('/', { timeout: 10000 });
+    await generateMockData(page);
 
     // Wait for dashboard to load
     await expect(page.locator('[data-testid="category-breakdown-widget"]')).toBeVisible({ timeout: 10000 });

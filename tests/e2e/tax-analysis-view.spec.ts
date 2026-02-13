@@ -15,13 +15,11 @@ test.describe('Tax Analysis View', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
   });
 
   test('should display tax analysis page with empty state', async ({ page }) => {
     // Navigate to tax analysis page
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Should show summary cards
     await expect(page.getByText(/total unrealized gains/i)).toBeVisible();
@@ -100,7 +98,6 @@ test.describe('Tax Analysis View', () => {
 
     // Navigate to tax analysis page
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Verify all lots appear in table
     await expect(page.getByText('LT')).toBeVisible();
@@ -143,7 +140,6 @@ test.describe('Tax Analysis View', () => {
 
     // Navigate to tax analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Test sorting by date (now shortened from "Purchase Date")
     const dateHeader = page.getByRole('button', { name: /^date$/i });
@@ -185,7 +181,6 @@ test.describe('Tax Analysis View', () => {
 
     // Navigate to tax analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Verify summary cards show data
     const totalGains = page.locator('text=/total unrealized gains/i').locator('..').locator('..').getByText(/\$/);
@@ -201,7 +196,6 @@ test.describe('Tax Analysis View', () => {
   test('should navigate to tax settings and update rates', async ({ page }) => {
     // Navigate to tax settings
     await page.goto('/settings/tax');
-    await page.waitForLoadState('networkidle');
 
     // Should see tax rate sliders
     await expect(page.getByText(/short.*term.*rate/i)).toBeVisible();
@@ -236,14 +230,12 @@ test.describe('Tax Analysis View', () => {
 
     // Go to tax analysis and note the tax liability
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     const taxLiabilityCard = page.locator('text=/estimated tax liability/i').locator('..').locator('..');
     const initialTax = await taxLiabilityCard.textContent();
 
     // Navigate to settings
     await page.goto('/settings/tax');
-    await page.waitForLoadState('networkidle');
 
     // Try to change the short-term rate (rates affect calculations)
     // In a real test, you'd interact with the slider
@@ -251,7 +243,6 @@ test.describe('Tax Analysis View', () => {
 
     // Navigate back to tax analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Verify tax analysis still works
     await expect(taxLiabilityCard).toBeVisible();
@@ -273,7 +264,6 @@ test.describe('Tax Analysis View', () => {
 
     // Navigate to tax analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Should show lot count
     await expect(page.getByText(/3 lots/i)).toBeVisible();
@@ -292,7 +282,6 @@ test.describe('Tax Analysis View', () => {
 
     // Navigate to tax analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Verify all column headers (updated to match shortened labels)
     await expect(page.getByRole('columnheader', { name: /asset/i })).toBeVisible();
@@ -312,7 +301,6 @@ test.describe('Tax Analysis View', () => {
 
     // Should show skeleton loaders initially (they appear very briefly)
     // We'll just verify the page loads without error
-    await page.waitForLoadState('networkidle');
 
     // Verify page content is visible
     await expect(page.getByText(/tax lot analysis/i)).toBeVisible();
@@ -321,7 +309,6 @@ test.describe('Tax Analysis View', () => {
   test('should handle empty portfolio gracefully', async ({ page }) => {
     // Navigate directly to tax analysis with no transactions
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Should show zero values
     await expect(page.getByText(/\$0\.00/)).toBeVisible();
@@ -351,7 +338,6 @@ test.describe('Tax Analysis View', () => {
 
     // Navigate to tax analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Find and hover over the disqualifying badge (now ⚠️ emoji)
     const warningBadge = page.getByText('⚠️').first();
@@ -364,14 +350,12 @@ test.describe('Tax Analysis View', () => {
   test('should persist tax settings across page reloads', async ({ page }) => {
     // Navigate to settings
     await page.goto('/settings/tax');
-    await page.waitForLoadState('networkidle');
 
     // Note the current rate display
     const shortTermRateText = await page.locator('text=/short.*term.*rate/i').locator('..').textContent();
 
     // Reload the page
     await page.reload();
-    await page.waitForLoadState('networkidle');
 
     // Settings should still be visible
     await expect(page.getByText(/short.*term.*rate/i)).toBeVisible();
@@ -396,7 +380,6 @@ test.describe('Tax Analysis View', () => {
 
     // Navigate to tax analysis
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Look for gain/loss values in the table
     const gainCell = page.locator('td').filter({ hasText: /\$/ }).first();

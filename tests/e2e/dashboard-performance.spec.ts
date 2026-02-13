@@ -19,8 +19,6 @@ test.describe('Dashboard Performance', () => {
       // Navigate to dashboard
       await page.goto('/');
 
-      // Wait for page to be interactive (networkidle indicates main content loaded)
-      await page.waitForLoadState('networkidle');
 
       // Verify main content is visible (use .first() to handle multiple matches)
       await expect(page.locator('main').first()).toBeVisible();
@@ -36,7 +34,6 @@ test.describe('Dashboard Performance', () => {
       const startTime = Date.now();
 
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Wait for at least one widget to be visible
       const widgets = page.locator('[data-testid$="-widget"]');
@@ -93,7 +90,6 @@ test.describe('Dashboard Performance', () => {
   test.describe('Chart Range Change (SC-004)', () => {
     test('should change chart time period within 1 second', async ({ page }) => {
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Find chart period selector buttons
       const periodButtons = page.locator(
@@ -125,7 +121,6 @@ test.describe('Dashboard Performance', () => {
 
     test('should update gain/loss widget quickly on period change', async ({ page }) => {
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       const periodSelector = page.locator('[data-testid="time-period-selector"]');
 
@@ -159,7 +154,6 @@ test.describe('Dashboard Performance', () => {
 
     test('should handle rapid period changes gracefully', async ({ page }) => {
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       const periodButtons = page.locator(
         '[data-testid="time-period-selector"] button'
@@ -193,7 +187,6 @@ test.describe('Dashboard Performance', () => {
   test.describe('Memory and Resource Efficiency', () => {
     test('should not have memory leaks on navigation', async ({ page }) => {
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Get initial heap size
       const initialHeap = await page.evaluate(() => {
@@ -206,9 +199,7 @@ test.describe('Dashboard Performance', () => {
       // Navigate away and back multiple times
       for (let i = 0; i < 3; i++) {
         await page.goto('/holdings');
-        await page.waitForLoadState('networkidle');
         await page.goto('/');
-        await page.waitForLoadState('networkidle');
       }
 
       // Get final heap size
@@ -278,7 +269,6 @@ test.describe('Dashboard Performance', () => {
       });
 
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       // Log API calls for debugging
       console.log(`API calls on load: ${apiCalls.length}`);

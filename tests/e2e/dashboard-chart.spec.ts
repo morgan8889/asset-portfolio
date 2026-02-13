@@ -9,7 +9,6 @@ test.describe('Dashboard Growth Chart', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
   });
 
   test.describe('Time Range Selection', () => {
@@ -169,7 +168,6 @@ test.describe('Dashboard Growth Chart', () => {
     test('should adjust chart size on mobile viewport', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
 
       const chartWidget = page.locator('[data-testid="growth-chart-widget"]');
 

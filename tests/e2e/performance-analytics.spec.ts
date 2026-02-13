@@ -93,7 +93,6 @@ test.describe('Performance Analytics', () => {
       await page.goto('/performance');
 
       // Wait for page to load
-      await page.waitForLoadState('networkidle');
 
       // Should show no portfolio message or empty state
       const emptyState = page.getByText('No portfolio selected').or(

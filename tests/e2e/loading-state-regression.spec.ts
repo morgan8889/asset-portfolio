@@ -14,7 +14,6 @@ test.describe('Loading State Regression', () => {
   test.beforeEach(async ({ page }) => {
     // Generate fresh test data
     await page.goto('/test');
-    await page.waitForLoadState('networkidle');
 
     const generateButton = page.getByRole('button', {
       name: 'Generate Mock Data',
@@ -31,7 +30,6 @@ test.describe('Loading State Regression', () => {
   });
 
   test('loading completes within 5 seconds', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
 
     // CRITICAL: Hard assertion - FAILS if loading stuck
     await expect(page.getByText('Loading portfolio data')).not.toBeVisible({

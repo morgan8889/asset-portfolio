@@ -4,7 +4,6 @@ test.describe('Holdings Table', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
   });
 
   test('should display holdings table when data exists', async ({ page }) => {
@@ -178,7 +177,7 @@ test.describe('Holdings Table', () => {
   test('should be responsive on different screen sizes', async ({ page }) => {
     // Test desktop view
     await page.setViewportSize({ width: 1200, height: 800 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     const table = page.locator('table').or(page.locator('[role="table"]'));
 
@@ -192,7 +191,7 @@ test.describe('Holdings Table', () => {
 
     // Test tablet view
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     if (await table.isVisible()) {
       // Should still show essential columns
@@ -202,7 +201,7 @@ test.describe('Holdings Table', () => {
 
     // Test mobile view
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // On mobile, might switch to card layout or show fewer columns
     const mobileTable = page.locator('table').or(page.locator('[role="table"]'));
@@ -238,7 +237,7 @@ test.describe('Holdings Table', () => {
       });
     });
 
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // Look for pagination controls
     const paginationControls = page.locator('[data-testid*="pagination"]').or(

@@ -4,7 +4,6 @@ test.describe('Allocation Responsive Layout', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/allocation');
-    await page.waitForLoadState('networkidle');
   });
 
   test('should display allocation page with three tabs', async ({ page }) => {
@@ -17,7 +16,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('mobile layout (375px): should show vertical stack', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // Wait for the allocation chart container
     const chartContainer = page.locator('.grid').first();
@@ -49,7 +48,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('tablet layout (768px): should show side-by-side 1:1 grid', async ({ page }) => {
     // Set tablet viewport
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // Wait for the allocation chart container
     const chartContainer = page.locator('.grid').first();
@@ -81,7 +80,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('desktop layout (1440px): should show side-by-side 3:2 grid', async ({ page }) => {
     // Set desktop viewport
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // Wait for the allocation chart container
     const chartContainer = page.locator('.grid').first();
@@ -115,7 +114,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('should display donut chart with larger radius on all breakpoints', async ({ page }) => {
     // Test on desktop
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // Look for the pie chart
     const pieChart = page.locator('.recharts-pie');
@@ -133,7 +132,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('should display center label with responsive typography', async ({ page }) => {
     // Test mobile
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     const centerLabel = page.getByText('Total Value');
     if (await centerLabel.isVisible()) {
@@ -148,7 +147,7 @@ test.describe('Allocation Responsive Layout', () => {
 
     // Test desktop - label should be larger
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     if (await centerLabel.isVisible()) {
       await expect(centerLabel).toBeVisible();
@@ -158,7 +157,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('should show scrollable breakdown with custom scrollbar on desktop', async ({ page }) => {
     // Set desktop viewport
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // Look for scrollable breakdown container
     const breakdownContainer = page.locator('.scrollbar-thin').first();
@@ -184,7 +183,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('should maintain consistent layout across all three tabs', async ({ page }) => {
     // Set desktop viewport
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     const tabs = [
       'Asset Class',
@@ -239,7 +238,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('should display breakdown with percentages and values', async ({ page }) => {
     // Set desktop viewport
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
 
     // Look for breakdown items
     const breakdownItems = page.locator('.group').filter({ hasText: /\$/ });
@@ -264,7 +263,6 @@ test.describe('Allocation Responsive Layout', () => {
 
   test('should be accessible with keyboard navigation', async ({ page }) => {
     await page.goto('/allocation');
-    await page.waitForLoadState('networkidle');
 
     // Should be able to tab to allocation tabs
     await page.keyboard.press('Tab');
@@ -302,7 +300,6 @@ test.describe('Allocation Responsive Layout', () => {
   test('should display total value above donut chart without cutoff', async ({ page }) => {
     // Navigate to allocation page
     await page.goto('/allocation');
-    await page.waitForLoadState('networkidle');
 
     // Check that total value text is visible and above the chart
     const totalValueText = page.locator('text=/^\\$[0-9,]+\\.\\d{2}$/').first();
@@ -338,7 +335,6 @@ test.describe('Allocation Responsive Layout', () => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/allocation');
-    await page.waitForLoadState('networkidle');
 
     // Total value should still be visible on mobile
     const totalValueText = page.locator('text=/^\\$[0-9,]+\\.\\d{2}$/').first();

@@ -11,7 +11,6 @@ test.describe('ESPP Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
   });
 
   test('should add ESPP purchase transaction with all metadata', async ({ page }) => {
@@ -102,7 +101,6 @@ test.describe('ESPP Workflow', () => {
 
     // Navigate to holdings page
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Should see the holding with ESPP badge
     await expect(page.getByText('TEST')).toBeVisible();
@@ -159,7 +157,6 @@ test.describe('ESPP Workflow', () => {
 
     // Navigate to tax analysis page
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Should see the ESPP lot in the table
     await expect(page.getByText('WARN')).toBeVisible();
@@ -203,7 +200,6 @@ test.describe('ESPP Workflow', () => {
 
     // Navigate to tax analysis page
     await page.goto('/tax-analysis');
-    await page.waitForLoadState('networkidle');
 
     // Should see the ESPP lot
     await expect(page.getByText('QUAL')).toBeVisible();
@@ -257,7 +253,6 @@ test.describe('ESPP Workflow', () => {
 
     // Go to holdings
     await page.goto('/holdings');
-    await page.waitForLoadState('networkidle');
 
     // Open detail modal
     const dropdownButton = page.locator('[role="button"]').filter({ hasText: /⋮/ }).first();

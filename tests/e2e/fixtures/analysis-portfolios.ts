@@ -74,7 +74,6 @@ export async function waitForMockDataGeneration(page: Page) {
     await page.waitForURL('/', { timeout: 10000 });
   }
 
-  await page.waitForLoadState('networkidle');
 }
 
 /**
@@ -82,7 +81,6 @@ export async function waitForMockDataGeneration(page: Page) {
  */
 export async function navigateToAnalysisAndWait(page: Page) {
   await page.goto('/analysis');
-  await page.waitForLoadState('networkidle');
 
   // Wait for the Health Score card to appear (indicates calculations started)
   await page.waitForSelector('text=Portfolio Health Score', { timeout: 10000 });
