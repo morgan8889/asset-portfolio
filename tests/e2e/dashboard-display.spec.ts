@@ -9,7 +9,6 @@ import { test, expect, seedMockData } from './fixtures/test';
 test.describe('Configurable Dashboard Display', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
-    await page.goto('/');
   });
 
   test.describe('Widget Display', () => {

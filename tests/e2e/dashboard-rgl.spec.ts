@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 /**
  * E2E tests for React Grid Layout (RGL) Implementation
@@ -8,16 +8,7 @@ import { test, expect } from './fixtures/test';
  */
 test.describe('Dashboard React Grid Layout (RGL)', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to test page and generate mock data for testing
-    await page.goto('/test');
-
-    // Click generate mock data button if available
-    const generateBtn = page.getByRole('button', { name: /generate mock/i });
-    if (await generateBtn.isVisible({ timeout: 2000 })) {
-      await generateBtn.click();
-      // Wait for redirect to dashboard with data
-      await page.waitForURL('/', { timeout: 10000 });
-    }
+    await seedMockData(page);
   });
 
   test.describe('Feature Flag Toggle', () => {

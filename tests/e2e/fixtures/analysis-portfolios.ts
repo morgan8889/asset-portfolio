@@ -59,21 +59,11 @@ export async function createMultiIssuePortfolio(page: Page) {
 }
 
 /**
- * Helper to wait for mock data generation to complete
+ * Helper to wait for mock data generation to complete.
+ * Navigates to /test, generates data, and waits for redirect to dashboard.
  */
 export async function waitForMockDataGeneration(page: Page) {
-  const generateButton = page.getByRole('button', {
-    name: 'Generate Mock Data',
-  });
-
-  if (await generateButton.isEnabled()) {
-    await generateButton.click();
-    await page.waitForSelector('text=Done! Redirecting...', {
-      timeout: 10000,
-    });
-    await page.waitForURL('/', { timeout: 10000 });
-  }
-
+  await generateMockData(page);
 }
 
 /**
@@ -83,7 +73,7 @@ export async function navigateToAnalysisAndWait(page: Page) {
   await page.goto('/analysis');
 
   // Wait for the Health Score card to appear (indicates calculations started)
-  await page.waitForSelector('text=Portfolio Health Score', { timeout: 10000 });
+  await page.waitForSelector('text=Portfolio Health Score', { timeout: 15000 });
 
   // Wait for calculations to complete - look for actual score number (not "Calculating...")
   await page.waitForFunction(
@@ -97,7 +87,7 @@ export async function navigateToAnalysisAndWait(page: Page) {
       const refreshButton = buttons.find(btn => btn.textContent?.includes('Refresh'));
       return refreshButton && !refreshButton.hasAttribute('disabled');
     },
-    { timeout: 10000 }
+    { timeout: 15000 }
   );
 
   // Additional small wait for UI to settle

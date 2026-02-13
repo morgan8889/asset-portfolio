@@ -19,7 +19,7 @@ test.describe('Export Reports', () => {
     await page.waitForURL('/', { timeout: 10000 });
     
     // Wait for dashboard to load
-    await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 15000 });
     
     // Navigate to Reports page
     await page.getByRole('link', { name: /reports/i }).click();

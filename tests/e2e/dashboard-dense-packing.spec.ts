@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 /**
  * E2E tests for Dashboard Dense Packing (Feature 004)
@@ -8,16 +8,7 @@ import { test, expect } from './fixtures/test';
  */
 test.describe('Dashboard Dense Packing', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to test page and generate mock data for testing
-    await page.goto('/test');
-
-    // Click generate mock data button if available
-    const generateBtn = page.getByRole('button', { name: /generate mock/i });
-    if (await generateBtn.isVisible({ timeout: 2000 })) {
-      await generateBtn.click();
-      // Wait for redirect to dashboard with data
-      await page.waitForURL('/', { timeout: 10000 });
-    }
+    await seedMockData(page);
   });
 
   test.describe('Dense Packing Toggle', () => {
@@ -157,16 +148,9 @@ test.describe('Dashboard Dense Packing', () => {
 
   test.describe('Mobile Viewport', () => {
     test('dense packing is disabled on mobile viewport', async ({ page }) => {
-      // Set mobile viewport
+      // Set mobile viewport and reload (data already seeded by outer beforeEach)
       await page.setViewportSize({ width: 375, height: 667 });
-      await page.goto('/test');
-
-      // Generate mock data
-      const generateBtn = page.getByRole('button', { name: /generate mock/i });
-      if (await generateBtn.isVisible({ timeout: 2000 })) {
-        await generateBtn.click();
-        await page.waitForURL('/', { timeout: 10000 });
-      }
+      await page.goto('/');
 
       // On mobile, the grid should be single column (stacking mode)
       // The grid should not have grid-flow-row-dense class

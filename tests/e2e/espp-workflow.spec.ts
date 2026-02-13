@@ -10,7 +10,6 @@ import { test, expect, seedMockData } from './fixtures/test';
 test.describe('ESPP Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
-    await page.goto('/');
   });
 
   test('should add ESPP purchase transaction with all metadata', async ({ page }) => {

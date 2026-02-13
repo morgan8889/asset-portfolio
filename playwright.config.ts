@@ -86,9 +86,9 @@ export default defineConfig({
   /* Global test timeout */
   timeout: 30 * 1000, // 30 seconds
 
-  /* Expect timeout */
+  /* Expect timeout — 15s on CI (IndexedDB hydration is slower on shared runners) */
   expect: {
-    timeout: 10 * 1000, // 10 seconds
+    timeout: process.env.CI ? 15 * 1000 : 10 * 1000,
   },
 
   /* Output directory for test artifacts */

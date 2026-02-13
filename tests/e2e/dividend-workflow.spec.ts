@@ -18,7 +18,7 @@ import { generateMockData } from './fixtures/seed-helpers';
 test.describe('Dividend Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await generateMockData(page);
-    await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 15000 });
   });
 
   test('should record cash dividend payment', async ({ page }) => {
