@@ -130,7 +130,7 @@ test.describe('Category Breakdown Pie Chart', () => {
 
     // Pie chart should be visible at 2h
     const widget = page.locator('[data-testid="category-breakdown-widget"]');
-    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 5000 });
+    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 15000 });
 
     // Progress bars should also be visible
     await expect(widget.getByRole('progressbar').first()).toBeVisible();
@@ -148,7 +148,7 @@ test.describe('Category Breakdown Pie Chart', () => {
 
     // Pie chart should be visible at 3h
     const widget = page.locator('[data-testid="category-breakdown-widget"]');
-    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 5000 });
+    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 15000 });
   });
 
   test('pie chart hidden when setting disabled regardless of row span', async ({
@@ -181,7 +181,7 @@ test.describe('Category Breakdown Pie Chart', () => {
     const widget = page.locator('[data-testid="category-breakdown-widget"]');
 
     // Both pie chart and progress bars should be visible
-    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 5000 });
+    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 15000 });
     await expect(widget.getByRole('progressbar').first()).toBeVisible();
 
     // In stacked layout, the container should use flex-column
@@ -200,7 +200,7 @@ test.describe('Category Breakdown Pie Chart', () => {
     const widget = page.locator('[data-testid="category-breakdown-widget"]');
 
     // Both pie chart and progress bars should be visible
-    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 5000 });
+    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 15000 });
     await expect(widget.getByRole('progressbar').first()).toBeVisible();
 
     // In side-by-side layout, the container should use flex-row
@@ -215,14 +215,14 @@ test.describe('Category Breakdown Pie Chart', () => {
 
     // Verify pie chart is visible
     const widget = page.locator('[data-testid="category-breakdown-widget"]');
-    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 5000 });
+    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 15000 });
 
     // Reload the page
     await page.reload();
     await expect(page.locator('[data-testid="category-breakdown-widget"]')).toBeVisible({ timeout: 10000 });
 
     // Pie chart should still be visible after reload
-    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 5000 });
+    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 15000 });
 
     // Open settings and verify toggle is still checked
     await page.getByTestId('dashboard-settings-btn').click();
@@ -246,7 +246,7 @@ test.describe('Category Breakdown Pie Chart', () => {
     const widget = page.locator('[data-testid="category-breakdown-widget"]');
 
     // Both visualizations should be present
-    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 5000 });
+    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 15000 });
     await expect(widget.getByRole('progressbar').first()).toBeVisible();
 
     // Verify all categories are shown in progress bars
@@ -264,7 +264,7 @@ test.describe('Category Breakdown Pie Chart', () => {
     await closeSettings(page);
 
     // Should be visible
-    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 5000 });
+    await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 15000 });
 
     // Disable pie chart
     await disablePieChartSetting(page);

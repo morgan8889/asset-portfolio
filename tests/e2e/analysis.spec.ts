@@ -301,7 +301,7 @@ test.describe('Financial Analysis Page', () => {
     // Should show concentration risk recommendation
     const concentrationCard = page.locator(
       'text=/Concentration.*Risk|Asset.*Concentration/i'
-    );
+    ).first();
     await expect(concentrationCard).toBeVisible({ timeout: 5000 });
 
     // Verify severity indicator (should be High or Medium)
@@ -311,7 +311,7 @@ test.describe('Financial Analysis Page', () => {
     // Verify affected asset is mentioned (AAPL)
     const cardContent = page.locator('[class*="border"][class*="rounded"]').filter({
       has: concentrationCard,
-    });
+    }).first();
     const contentText = await cardContent.textContent();
     expect(contentText).toMatch(/AAPL|90%|concentrated/i);
 

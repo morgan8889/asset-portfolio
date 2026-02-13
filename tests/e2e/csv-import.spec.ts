@@ -86,7 +86,7 @@ test.describe('CSV Import Flow', () => {
 
     // At minimum, should show the data preview
     await expect(page.getByText('AAPL').first()).toBeVisible();
-    await expect(page.getByText('GOOGL')).toBeVisible();
+    await expect(page.getByText('GOOGL').first()).toBeVisible();
   });
 
   test('shows preview of first 10 rows', async ({ page }) => {
@@ -104,8 +104,8 @@ test.describe('CSV Import Flow', () => {
 
     // Wait for preview to appear
     await expect(page.getByText('AAPL').first()).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText('GOOGL')).toBeVisible();
-    await expect(page.getByText('MSFT')).toBeVisible();
+    await expect(page.getByText('GOOGL').first()).toBeVisible();
+    await expect(page.getByText('MSFT').first()).toBeVisible();
 
     // Should show row count
     await expect(page.getByText(/3.*rows|rows.*3/i)).toBeVisible();

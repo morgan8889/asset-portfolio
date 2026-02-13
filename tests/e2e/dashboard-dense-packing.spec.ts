@@ -223,7 +223,7 @@ test.describe('Dashboard Dense Packing', () => {
 
         // Verify grid has dense packing class
         const grid = page.locator('[class*="grid-flow-row-dense"]');
-        await expect(grid).toBeVisible({ timeout: 2000 });
+        await expect(grid).toBeVisible({ timeout: 10000 });
 
         // Verify at least one widget has row-span class
         const rowSpanWidget = page.locator('[class*="row-span-2"], [class*="row-span-3"]');

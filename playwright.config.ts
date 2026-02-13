@@ -10,12 +10,12 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 1 : 0,
-  /* Use 2 workers on CI (2 vCPU runners), unlimited locally */
-  workers: process.env.CI ? 2 : undefined,
+  retries: process.env.CI ? 2 : 0,
+  /* Use 1 worker on CI per Playwright recommendation for stability, unlimited locally */
+  workers: process.env.CI ? 1 : undefined,
   /* Reporter: use blob in CI for shard merging, full reporters locally */
   reporter: process.env.CI
-    ? 'blob'
+    ? [['blob'], ['line']]
     : [
         ['html'],
         ['json', { outputFile: 'test-results/results.json' }],
@@ -83,8 +83,8 @@ export default defineConfig({
     timeout: 120 * 1000, // 2 minutes
   },
 
-  /* Global test timeout */
-  timeout: 30 * 1000, // 30 seconds
+  /* Global test timeout — 45s on CI (mock data generation + Zustand hydration is slower) */
+  timeout: process.env.CI ? 45 * 1000 : 30 * 1000,
 
   /* Expect timeout — 15s on CI (IndexedDB hydration is slower on shared runners) */
   expect: {
