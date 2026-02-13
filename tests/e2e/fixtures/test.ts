@@ -131,12 +131,16 @@ export { expect, type Page } from '@playwright/test';
 /**
  * Navigate to /test, generate mock portfolio data, and wait for completion.
  * Call this in beforeEach for tests that need portfolio/holdings/transaction data.
- * Waits for the redirect to dashboard so Zustand stores persist before the test navigates.
+ *
+ * After data generation, forces a full page reload so Zustand stores
+ * re-initialize from IndexedDB (client-side redirects don't trigger this).
  */
 export async function seedMockData(page: import('@playwright/test').Page) {
   await page.goto('/test');
   const btn = page.getByRole('button', { name: 'Generate Mock Data' });
   await btn.click();
   await page.getByText('Done! Redirecting...').waitFor({ timeout: 15000 });
-  await page.waitForURL('/', { timeout: 15000 });
+  // Full page reload ensures Zustand stores hydrate from IndexedDB.
+  // The app's client-side redirect preserves stale in-memory store state.
+  await page.goto('/');
 }

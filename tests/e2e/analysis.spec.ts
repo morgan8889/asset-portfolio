@@ -19,7 +19,8 @@ test.describe('Financial Analysis Page', () => {
       await expect(page.getByText('Done! Redirecting...')).toBeVisible({
         timeout: 10000,
       });
-      await page.waitForURL('/', { timeout: 10000 });
+      // Full page reload ensures Zustand stores hydrate from IndexedDB
+      await page.goto('/');
     }
 
   });

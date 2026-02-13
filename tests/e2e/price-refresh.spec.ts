@@ -22,7 +22,8 @@ test.describe('Price Refresh Workflow', () => {
     if (await generateButton.isEnabled()) {
       await generateButton.click();
       await expect(page.getByText('Done! Redirecting...')).toBeVisible({ timeout: 10000 });
-      await page.waitForURL('/', { timeout: 10000 });
+      // Full page reload ensures Zustand stores hydrate from IndexedDB
+      await page.goto('/');
     } else {
       await page.goto('/');
     }
@@ -138,7 +139,8 @@ test.describe('Offline Behavior', () => {
     if (await generateButton.isEnabled()) {
       await generateButton.click();
       await expect(page.getByText('Done! Redirecting...')).toBeVisible({ timeout: 10000 });
-      await page.waitForURL('/', { timeout: 10000 });
+      // Full page reload ensures Zustand stores hydrate from IndexedDB
+      await page.goto('/');
     } else {
       await page.goto('/');
     }
@@ -175,7 +177,8 @@ test.describe('Offline Behavior', () => {
     if (await generateButton.isEnabled()) {
       await generateButton.click();
       await expect(page.getByText('Done! Redirecting...')).toBeVisible({ timeout: 10000 });
-      await page.waitForURL('/', { timeout: 10000 });
+      // Full page reload ensures Zustand stores hydrate from IndexedDB
+      await page.goto('/');
     } else {
       await page.goto('/');
     }

@@ -18,7 +18,7 @@ import { generateMockData } from './fixtures/seed-helpers';
  * Helper to enable pie chart setting in dashboard settings
  */
 async function enablePieChartSetting(page: Page) {
-  await page.getByRole('button', { name: /settings/i }).click();
+  await page.getByTestId('dashboard-settings-btn').click();
   await expect(page.getByRole('dialog')).toBeVisible();
 
   const pieChartToggle = page.locator('#category-pie-chart');
@@ -32,7 +32,7 @@ async function enablePieChartSetting(page: Page) {
  * Helper to disable pie chart setting in dashboard settings
  */
 async function disablePieChartSetting(page: Page) {
-  await page.getByRole('button', { name: /settings/i }).click();
+  await page.getByTestId('dashboard-settings-btn').click();
   await expect(page.getByRole('dialog')).toBeVisible();
 
   const pieChartToggle = page.locator('#category-pie-chart');
@@ -225,7 +225,7 @@ test.describe('Category Breakdown Pie Chart', () => {
     await expect(widget.locator('.recharts-pie')).toBeVisible({ timeout: 5000 });
 
     // Open settings and verify toggle is still checked
-    await page.getByRole('button', { name: /settings/i }).click();
+    await page.getByTestId('dashboard-settings-btn').click();
     await expect(page.getByRole('dialog')).toBeVisible();
 
     const pieChartToggle = page.locator('#category-pie-chart');

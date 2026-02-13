@@ -5,7 +5,9 @@ test.describe('Performance Analytics', () => {
     // Navigate to the test page and generate mock data
     await page.goto('/test');
     await page.getByRole('button', { name: /generate mock data/i }).click();
-    await page.waitForURL('/');
+    await page.getByText('Done! Redirecting...').waitFor({ timeout: 10000 });
+    // Full page reload ensures Zustand stores hydrate from IndexedDB
+    await page.goto('/');
   });
 
   test.describe('Performance Page', () => {

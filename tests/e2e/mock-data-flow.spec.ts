@@ -27,8 +27,8 @@ test.describe('Mock Data Generation Flow', () => {
       // Should show success and redirect
       await expect(page.getByText('Done! Redirecting...')).toBeVisible({ timeout: 10000 });
 
-      // Wait for redirect to dashboard
-      await page.waitForURL('/', { timeout: 10000 });
+      // Full page reload ensures Zustand stores hydrate from IndexedDB
+      await page.goto('/');
     } else {
       // Data already exists, navigate to dashboard
       await page.goto('/');

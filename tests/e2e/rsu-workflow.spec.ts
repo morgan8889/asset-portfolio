@@ -10,7 +10,7 @@ import { test, expect, seedMockData } from './fixtures/test';
 test.describe('RSU Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
-    await page.goto('/');
+    await page.goto('/transactions');
   });
 
   test('should add RSU vest transaction with all metadata', async ({ page }) => {

@@ -17,8 +17,8 @@ test.describe('Holdings Data Loading', () => {
     await page.goto('/test');
     await page.getByRole('button', { name: /generate mock data/i }).click();
 
-    // Wait for redirect to dashboard
-    await page.waitForURL('/', { timeout: 10000 });
+    // Full page reload ensures Zustand stores hydrate from IndexedDB
+    await page.goto('/');
 
     // Wait for loading to complete
     await expect(page.getByText('Loading')).toBeHidden({ timeout: 10000 });

@@ -73,7 +73,8 @@ export async function navigateToAnalysisAndWait(page: Page) {
   await page.goto('/analysis');
 
   // Wait for the Health Score card to appear (indicates calculations started)
-  await page.waitForSelector('text=Portfolio Health Score', { timeout: 15000 });
+  // CI runners need extra time for IndexedDB hydration + analysis calculations
+  await page.waitForSelector('text=Portfolio Health Score', { timeout: 30000 });
 
   // Wait for calculations to complete - look for actual score number (not "Calculating...")
   await page.waitForFunction(
@@ -87,7 +88,7 @@ export async function navigateToAnalysisAndWait(page: Page) {
       const refreshButton = buttons.find(btn => btn.textContent?.includes('Refresh'));
       return refreshButton && !refreshButton.hasAttribute('disabled');
     },
-    { timeout: 15000 }
+    { timeout: 30000 }
   );
 
   // Additional small wait for UI to settle

@@ -15,9 +15,9 @@ test.describe('Export Reports', () => {
     // Generate mock portfolio data
     await page.getByRole('button', { name: /generate mock data/i }).click();
     
-    // Wait for redirect to dashboard
-    await page.waitForURL('/', { timeout: 10000 });
-    
+    // Full page reload ensures Zustand stores hydrate from IndexedDB
+    await page.goto('/');
+
     // Wait for dashboard to load
     await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 15000 });
     
@@ -174,7 +174,7 @@ test.describe('Export Client-Side Only', () => {
     // Navigate and generate data
     await page.goto('/test');
     await page.getByRole('button', { name: /generate mock data/i }).click();
-    await page.waitForURL('/');
+    await page.goto('/');
     await page.getByRole('link', { name: /reports/i }).click();
     await page.waitForURL('/reports');
     
@@ -208,7 +208,7 @@ test.describe('Export Client-Side Only', () => {
     // Navigate and generate data
     await page.goto('/test');
     await page.getByRole('button', { name: /generate mock data/i }).click();
-    await page.waitForURL('/');
+    await page.goto('/');
     await page.getByRole('link', { name: /reports/i }).click();
     await page.waitForURL('/reports');
     

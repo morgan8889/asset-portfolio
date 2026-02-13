@@ -34,7 +34,9 @@ export async function generateMockData(page: Page): Promise<void> {
   await page.waitForSelector('text=Done! Redirecting...', {
     timeout: 10000,
   });
-  await page.waitForURL('/', { timeout: 10000 });
+  // Full page reload ensures Zustand stores hydrate from IndexedDB.
+  // The app's client-side redirect preserves stale in-memory store state.
+  await page.goto('/');
 }
 
 // ============================================================================

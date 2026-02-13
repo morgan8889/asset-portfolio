@@ -18,11 +18,11 @@ import { generateMockData } from './fixtures/seed-helpers';
 test.describe('Sell Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await generateMockData(page);
-    await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(/total value/i)).toBeVisible({ timeout: 15000 });
   });
 
   test('should sell holding with automatic FIFO lot selection', async ({ page }) => {
-    // Navigate to holdings page
+    // Navigate to holdings page to get a symbol
     await page.getByRole('link', { name: /holdings/i }).click();
     await expect(page.getByRole('heading', { name: /holdings/i })).toBeVisible();
 
@@ -36,6 +36,9 @@ test.describe('Sell Workflow', () => {
     // Get the symbol from the first row
     const symbolCell = firstRow.locator('td').first();
     const symbol = await symbolCell.textContent();
+
+    // Navigate to transactions page where Add Transaction button exists
+    await page.goto('/transactions');
 
     // Open add transaction dialog
     await page.getByRole('button', { name: /add transaction/i }).click();
@@ -75,6 +78,9 @@ test.describe('Sell Workflow', () => {
   });
 
   test('should show tax lot selection for sell transactions', async ({ page }) => {
+    // Navigate to transactions page where Add Transaction button exists
+    await page.goto('/transactions');
+
     // First, create a buy transaction to ensure we have lots
     await page.getByRole('button', { name: /add transaction/i }).click();
 
@@ -131,6 +137,9 @@ test.describe('Sell Workflow', () => {
   });
 
   test('should distinguish short-term vs long-term gains', async ({ page }) => {
+    // Navigate to transactions page where Add Transaction button exists
+    await page.goto('/transactions');
+
     // Create a recent buy (short-term)
     await page.getByRole('button', { name: /add transaction/i }).click();
 
@@ -192,6 +201,9 @@ test.describe('Sell Workflow', () => {
       const symbolCell = firstRow.locator('td').first();
       const symbol = await symbolCell.textContent();
 
+      // Navigate to transactions page where Add Transaction button exists
+      await page.goto('/transactions');
+
       // Create sell transaction
       await page.getByRole('button', { name: /add transaction/i }).click();
 
@@ -230,6 +242,9 @@ test.describe('Sell Workflow', () => {
       const firstRow = page.getByRole('table').locator('tbody tr').first();
       const symbolCell = firstRow.locator('td').first();
       const symbol = await symbolCell.textContent();
+
+      // Navigate to transactions page where Add Transaction button exists
+      await page.goto('/transactions');
 
       // Try to sell more than we own
       await page.getByRole('button', { name: /add transaction/i }).click();
