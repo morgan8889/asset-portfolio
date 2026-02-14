@@ -9,6 +9,7 @@ test.describe('Financial Analysis Page', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to test page and generate mock data if needed
     await page.goto('/test');
+    await page.waitForLoadState('networkidle');
 
     const generateButton = page.getByRole('button', {
       name: 'Generate Mock Data',
@@ -19,15 +20,10 @@ test.describe('Financial Analysis Page', () => {
       await expect(page.getByText('Done! Redirecting...')).toBeVisible({
         timeout: 10000,
       });
+      await page.waitForURL('/', { timeout: 10000 });
     }
-    // Full page reload ensures Zustand stores hydrate from IndexedDB
-    await page.goto('/');
-    // Wait for portfolio store to fully load and persist currentPortfolio.
-    // The analysis page depends on currentPortfolio being restored from
-    // persist middleware after page.goto('/analysis').
-    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({
-      timeout: 15000,
-    });
+
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display portfolio health score and metrics', async ({
@@ -210,6 +206,7 @@ test.describe('Financial Analysis Page', () => {
       indexedDB.deleteDatabase('PortfolioTrackerDB');
     });
     await page.reload();
+    await page.waitForLoadState('networkidle');
 
     // Should show "No Portfolio Selected" message
     const noPortfolioMessage = page.getByText('No Portfolio Selected');
@@ -301,7 +298,7 @@ test.describe('Financial Analysis Page', () => {
     // Should show concentration risk recommendation
     const concentrationCard = page.locator(
       'text=/Concentration.*Risk|Asset.*Concentration/i'
-    ).first();
+    );
     await expect(concentrationCard).toBeVisible({ timeout: 5000 });
 
     // Verify severity indicator (should be High or Medium)
@@ -311,7 +308,7 @@ test.describe('Financial Analysis Page', () => {
     // Verify affected asset is mentioned (AAPL)
     const cardContent = page.locator('[class*="border"][class*="rounded"]').filter({
       has: concentrationCard,
-    }).first();
+    });
     const contentText = await cardContent.textContent();
     expect(contentText).toMatch(/AAPL|90%|concentrated/i);
 

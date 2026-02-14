@@ -10,17 +10,15 @@ export default defineConfig({
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Use 1 worker on CI per Playwright recommendation for stability, unlimited locally */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter: use blob in CI for shard merging, full reporters locally */
-  reporter: process.env.CI
-    ? [['blob'], ['line']]
-    : [
-        ['html'],
-        ['json', { outputFile: 'test-results/results.json' }],
-        ['junit', { outputFile: 'test-results/results.xml' }],
-      ],
+  retries: process.env.CI ? 1 : 0,
+  /* Use 2 workers on CI (2 vCPU runners), unlimited locally */
+  workers: process.env.CI ? 2 : undefined,
+  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  reporter: [
+    ['html'],
+    ['json', { outputFile: 'test-results/results.json' }],
+    ['junit', { outputFile: 'test-results/results.xml' }],
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -83,12 +81,12 @@ export default defineConfig({
     timeout: 120 * 1000, // 2 minutes
   },
 
-  /* Global test timeout — 45s on CI (mock data generation + Zustand hydration is slower) */
-  timeout: process.env.CI ? 45 * 1000 : 30 * 1000,
+  /* Global test timeout */
+  timeout: 30 * 1000, // 30 seconds
 
-  /* Expect timeout — 15s on CI (IndexedDB hydration is slower on shared runners) */
+  /* Expect timeout */
   expect: {
-    timeout: process.env.CI ? 15 * 1000 : 10 * 1000,
+    timeout: 10 * 1000, // 10 seconds
   },
 
   /* Output directory for test artifacts */

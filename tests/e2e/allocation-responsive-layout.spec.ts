@@ -4,6 +4,7 @@ test.describe('Allocation Responsive Layout', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
     await page.goto('/allocation');
+    await page.waitForLoadState('load');
   });
 
   test('should display allocation page with three tabs', async ({ page }) => {
@@ -16,7 +17,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('mobile layout (375px): should show vertical stack', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
 
     // Wait for the allocation chart container
     const chartContainer = page.locator('.grid').first();
@@ -48,7 +49,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('tablet layout (768px): should show side-by-side 1:1 grid', async ({ page }) => {
     // Set tablet viewport
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
 
     // Wait for the allocation chart container
     const chartContainer = page.locator('.grid').first();
@@ -80,23 +81,33 @@ test.describe('Allocation Responsive Layout', () => {
   test('desktop layout (1440px): should show side-by-side 3:2 grid', async ({ page }) => {
     // Set desktop viewport
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
 
-    // Verify side-by-side layout via bounding boxes (more reliable than class assertions)
-    const chartElement = page.locator('.recharts-wrapper').first();
-    const breakdownElement = page.locator('.scrollbar-thin').first();
+    // Wait for the allocation chart container
+    const chartContainer = page.locator('.grid').first();
 
-    if (await chartElement.isVisible() && await breakdownElement.isVisible()) {
-      const chartBox = await chartElement.boundingBox();
-      const breakdownBox = await breakdownElement.boundingBox();
+    if (await chartContainer.isVisible()) {
+      // Should have grid layout classes
+      const gridClasses = await chartContainer.getAttribute('class');
+      expect(gridClasses).toContain('grid');
+      expect(gridClasses).toContain('lg:grid-cols-[3fr_2fr]');
 
-      if (chartBox && breakdownBox) {
-        // Chart and breakdown should be roughly side-by-side (same y position)
-        expect(Math.abs(chartBox.y - breakdownBox.y)).toBeLessThan(50);
+      // Chart should be larger than breakdown (60/40 split)
+      const chartElement = page.locator('.recharts-wrapper').first();
+      const breakdownElement = page.locator('.scrollbar-thin').first();
 
-        // Chart width should be larger than breakdown (approximately 60/40)
-        // Allow some margin for padding/gaps
-        expect(chartBox.width).toBeGreaterThan(breakdownBox.width);
+      if (await chartElement.isVisible() && await breakdownElement.isVisible()) {
+        const chartBox = await chartElement.boundingBox();
+        const breakdownBox = await breakdownElement.boundingBox();
+
+        if (chartBox && breakdownBox) {
+          // Chart and breakdown should be roughly side-by-side (same y position)
+          expect(Math.abs(chartBox.y - breakdownBox.y)).toBeLessThan(50);
+
+          // Chart width should be larger than breakdown (approximately 60/40)
+          // Allow some margin for padding/gaps
+          expect(chartBox.width).toBeGreaterThan(breakdownBox.width);
+        }
       }
     }
   });
@@ -104,7 +115,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('should display donut chart with larger radius on all breakpoints', async ({ page }) => {
     // Test on desktop
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
 
     // Look for the pie chart
     const pieChart = page.locator('.recharts-pie');
@@ -122,7 +133,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('should display center label with responsive typography', async ({ page }) => {
     // Test mobile
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
 
     const centerLabel = page.getByText('Total Value');
     if (await centerLabel.isVisible()) {
@@ -137,7 +148,7 @@ test.describe('Allocation Responsive Layout', () => {
 
     // Test desktop - label should be larger
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
 
     if (await centerLabel.isVisible()) {
       await expect(centerLabel).toBeVisible();
@@ -147,7 +158,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('should show scrollable breakdown with custom scrollbar on desktop', async ({ page }) => {
     // Set desktop viewport
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
 
     // Look for scrollable breakdown container
     const breakdownContainer = page.locator('.scrollbar-thin').first();
@@ -173,7 +184,7 @@ test.describe('Allocation Responsive Layout', () => {
   test('should maintain consistent layout across all three tabs', async ({ page }) => {
     // Set desktop viewport
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
 
     const tabs = [
       'Asset Class',
@@ -192,6 +203,7 @@ test.describe('Allocation Responsive Layout', () => {
       if (await chartContainer.isVisible()) {
         const gridClasses = await chartContainer.getAttribute('class');
         expect(gridClasses).toContain('grid');
+        expect(gridClasses).toContain('lg:grid-cols-[3fr_2fr]');
       }
 
       // Should show donut chart
@@ -217,14 +229,17 @@ test.describe('Allocation Responsive Layout', () => {
     // Either shows data or empty state
     const chartElement = page.locator('.recharts-wrapper').first();
 
-    // Should show either chart or empty message (use auto-retry)
-    await expect(chartElement.or(emptyMessage)).toBeVisible({ timeout: 10000 });
+    const hasChart = await chartElement.isVisible();
+    const hasEmptyMessage = await emptyMessage.isVisible();
+
+    // Should show either chart or empty message
+    expect(hasChart || hasEmptyMessage).toBeTruthy();
   });
 
   test('should display breakdown with percentages and values', async ({ page }) => {
     // Set desktop viewport
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.reload();
+    await page.reload({ waitUntil: 'networkidle' });
 
     // Look for breakdown items
     const breakdownItems = page.locator('.group').filter({ hasText: /\$/ });
@@ -249,15 +264,45 @@ test.describe('Allocation Responsive Layout', () => {
 
   test('should be accessible with keyboard navigation', async ({ page }) => {
     await page.goto('/allocation');
+    await page.waitForLoadState('networkidle');
 
-    // Verify tabs are keyboard-accessible (tabs are always visible on allocation page)
-    const tabs = page.locator('[role="tab"]');
-    await expect(tabs.first()).toBeVisible();
+    // Should be able to tab to allocation tabs
+    await page.keyboard.press('Tab');
+
+    let foundTab = false;
+    for (let i = 0; i < 20; i++) {
+      const focused = page.locator(':focus');
+      if (await focused.isVisible()) {
+        const role = await focused.getAttribute('role');
+        if (role === 'tab') {
+          foundTab = true;
+
+          // Should be able to navigate between tabs with arrow keys
+          await page.keyboard.press('ArrowRight');
+          await page.waitForTimeout(200);
+
+          const newFocused = page.locator(':focus');
+          const newRole = await newFocused.getAttribute('role');
+          expect(newRole).toBe('tab');
+
+          break;
+        }
+      }
+      await page.keyboard.press('Tab');
+    }
+
+    // If tabs are present, keyboard navigation should work
+    const tabs = page.getByRole('tab');
+    const tabCount = await tabs.count();
+    if (tabCount > 0) {
+      expect(foundTab).toBeTruthy();
+    }
   });
 
   test('should display total value above donut chart without cutoff', async ({ page }) => {
     // Navigate to allocation page
     await page.goto('/allocation');
+    await page.waitForLoadState('load');
 
     // Check that total value text is visible and above the chart
     const totalValueText = page.locator('text=/^\\$[0-9,]+\\.\\d{2}$/').first();
@@ -293,6 +338,7 @@ test.describe('Allocation Responsive Layout', () => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/allocation');
+    await page.waitForLoadState('load');
 
     // Total value should still be visible on mobile
     const totalValueText = page.locator('text=/^\\$[0-9,]+\\.\\d{2}$/').first();

@@ -9,6 +9,8 @@ import { test, expect, seedMockData } from './fixtures/test';
 test.describe('Configurable Dashboard Display', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
+    await page.goto('/');
+    await page.waitForLoadState('load');
   });
 
   test.describe('Widget Display', () => {
@@ -23,17 +25,23 @@ test.describe('Configurable Dashboard Display', () => {
       }
 
       // Dashboard should be visible with widgets
-      await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+      await expect(page.getByText('Dashboard')).toBeVisible();
     });
 
-    test('should show dashboard with data after seeding', async ({ page }) => {
-      // After seedMockData, dashboard should show portfolio data
+    test('should show empty state when no holdings exist', async ({ page }) => {
+      // Navigate and wait for content
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
-      // Should see dashboard with data (seedMockData creates holdings)
-      await expect(
-        page.locator('[data-testid="total-value-widget"]')
-      ).toBeVisible({ timeout: 15000 });
+      // Either welcome message (no portfolio) or no holdings message
+      const noHoldings = page.getByText('No Holdings Yet');
+      const welcomeMessage = page.getByText('Welcome to Portfolio Tracker');
+
+      // At least one of these should be visible for a new user
+      const isNoHoldings = await noHoldings.isVisible();
+      const isWelcome = await welcomeMessage.isVisible();
+
+      expect(isNoHoldings || isWelcome).toBe(true);
     });
 
     test('should display Total Value widget with correct format', async ({ page }) => {
@@ -59,7 +67,7 @@ test.describe('Configurable Dashboard Display', () => {
         // Check for green or red text color based on gain/loss
         const valueElement = gainLossWidget.locator('.text-2xl');
         const classes = await valueElement.getAttribute('class');
-        expect(classes).toMatch(/text-(green|red)-600|text-muted-foreground/);
+        expect(classes).toMatch(/text-(green|red)-600/);
       }
     });
 
@@ -99,12 +107,14 @@ test.describe('Configurable Dashboard Display', () => {
       );
 
       // Either loading state appears briefly or content loads immediately
+      await page.waitForLoadState('networkidle');
     });
 
     test('should handle graceful loading without flickering', async ({ page }) => {
       // Measure time from navigation to content visible
       const startTime = Date.now();
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       // Content should be visible - use heading roles to be more specific
       await expect(
@@ -121,6 +131,7 @@ test.describe('Configurable Dashboard Display', () => {
     test('should display widgets in grid on desktop', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       // Grid should be visible
       const gridContainer = page.locator('.grid.gap-4');
@@ -132,6 +143,7 @@ test.describe('Configurable Dashboard Display', () => {
     test('should stack widgets on mobile', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       // Main content should still be visible
       const mainContent = page.locator('main');
@@ -141,6 +153,7 @@ test.describe('Configurable Dashboard Display', () => {
     test('should disable drag handles on mobile', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       // Drag handles should not be visible on mobile
       const dragHandle = page.locator('[data-testid="drag-handle"]');
@@ -159,6 +172,7 @@ test.describe('Configurable Dashboard Display', () => {
   test.describe('Accessibility', () => {
     test('should have proper ARIA labels on widgets', async ({ page }) => {
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       // Check widgets have proper roles and labels
       const cards = page.locator('[data-testid$="-widget"]');
@@ -176,13 +190,12 @@ test.describe('Configurable Dashboard Display', () => {
 
     test('should support keyboard navigation between widgets', async ({ page }) => {
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       // Tab through interactive elements
       await page.keyboard.press('Tab');
-      await page.keyboard.press('Tab');
       const focused = page.locator(':focus');
-      const hasFocus = await focused.count();
-      expect(hasFocus).toBeGreaterThanOrEqual(0);
+      await expect(focused).toBeVisible();
     });
 
     test('should have sufficient color contrast for gain/loss indicators', async ({ page }) => {
@@ -192,8 +205,8 @@ test.describe('Configurable Dashboard Display', () => {
         const valueElement = gainLossWidget.locator('.text-2xl');
         const classes = await valueElement.getAttribute('class');
 
-        // Should use high-contrast colors (600 shade) or muted for zero change
-        expect(classes).toMatch(/(green|red)-600|text-muted-foreground/);
+        // Should use high-contrast colors (600 shade)
+        expect(classes).toMatch(/(green|red)-600/);
       }
     });
   });
@@ -226,6 +239,7 @@ test.describe('Configurable Dashboard Display', () => {
   test.describe('Data Staleness', () => {
     test('should show stale data banner when prices are outdated', async ({ page }) => {
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       // Stale data banner should appear if prices are old
       const staleBanner = page.locator('[role="alert"]').filter({
