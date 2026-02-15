@@ -103,3 +103,8 @@ export type AssetType =
   | 'cash'
   | 'index'
   | 'other';
+
+/** Asset types that have live market prices (excludes manually-valued assets like real estate) */
+export const PRICEABLE_ASSET_TYPES: ReadonlySet<AssetType> = new Set<AssetType>(
+  ['stock', 'etf', 'crypto', 'bond', 'commodity', 'index']
+);

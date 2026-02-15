@@ -782,4 +782,150 @@ describe('Price Store', () => {
       );
     });
   });
+
+  /**
+   * Duplicate Request Prevention
+   *
+   * Tests for the _refreshInFlight guard that prevents concurrent
+   * duplicate API calls from being triggered by React effect re-runs.
+   */
+  describe('Duplicate Request Prevention', () => {
+    it('should ignore concurrent refreshAllPrices calls', async () => {
+      usePriceStore.getState().setWatchedSymbols(['AAPL', 'GOOGL']);
+
+      // Mock slow response to ensure concurrent calls overlap
+      mockFetch.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: async () => ({
+                    successful: [
+                      {
+                        symbol: 'AAPL',
+                        price: 150,
+                        source: 'yahoo',
+                        timestamp: new Date().toISOString(),
+                        metadata: {
+                          currency: 'USD',
+                          change: 1.5,
+                          changePercent: 1.0,
+                        },
+                        cached: false,
+                      },
+                      {
+                        symbol: 'GOOGL',
+                        price: 2800,
+                        source: 'yahoo',
+                        timestamp: new Date().toISOString(),
+                        metadata: {
+                          currency: 'USD',
+                          change: 25,
+                          changePercent: 0.9,
+                        },
+                        cached: false,
+                      },
+                    ],
+                    failed: [],
+                    total: 2,
+                    timestamp: new Date().toISOString(),
+                  }),
+                }),
+              100
+            )
+          )
+      );
+
+      // Trigger multiple concurrent calls (simulating React effect re-runs)
+      const calls = [
+        usePriceStore.getState().refreshAllPrices(),
+        usePriceStore.getState().refreshAllPrices(),
+        usePriceStore.getState().refreshAllPrices(),
+      ];
+
+      await Promise.all(calls);
+
+      // Should only fetch once due to _refreshInFlight guard
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(mockFetch).toHaveBeenCalledWith('/api/prices/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbols: ['AAPL', 'GOOGL'] }),
+      });
+    });
+
+    it('should allow subsequent refreshAllPrices after first completes', async () => {
+      usePriceStore.getState().setWatchedSymbols(['AAPL']);
+
+      const mockResponse = {
+        ok: true,
+        json: async () => ({
+          successful: [
+            {
+              symbol: 'AAPL',
+              price: 150,
+              source: 'yahoo',
+              timestamp: new Date().toISOString(),
+              metadata: { currency: 'USD', change: 1.5, changePercent: 1.0 },
+              cached: false,
+            },
+          ],
+          failed: [],
+          total: 1,
+          timestamp: new Date().toISOString(),
+        }),
+      };
+
+      mockFetch.mockResolvedValueOnce(mockResponse);
+
+      // First call
+      await usePriceStore.getState().refreshAllPrices();
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      mockFetch.mockResolvedValueOnce(mockResponse);
+
+      // Second call should work (flag reset)
+      await usePriceStore.getState().refreshAllPrices();
+
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('should reset _refreshInFlight flag on error', async () => {
+      usePriceStore.getState().setWatchedSymbols(['AAPL']);
+
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      // First call fails
+      await usePriceStore.getState().refreshAllPrices();
+
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          successful: [
+            {
+              symbol: 'AAPL',
+              price: 150,
+              source: 'yahoo',
+              timestamp: new Date().toISOString(),
+              metadata: { currency: 'USD', change: 1.5, changePercent: 1.0 },
+              cached: false,
+            },
+          ],
+          failed: [],
+          total: 1,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      // Second call should work (flag reset by finally block)
+      await usePriceStore.getState().refreshAllPrices();
+
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+  });
 });
