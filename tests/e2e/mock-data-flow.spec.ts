@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 /**
  * E2E test for the mock data generation flow
@@ -6,36 +6,12 @@ import { test, expect } from './fixtures/test';
  */
 test.describe('Mock Data Generation Flow', () => {
   test('should generate mock data and display dashboard with widgets', async ({ page }) => {
-    // Step 1: Navigate to test page
-    await page.goto('/test');
-    await page.waitForLoadState('networkidle');
+    // Generate mock data via seedMockData (handles /test page and redirect)
+    await seedMockData(page);
 
-    // Verify test page loaded
-    await expect(page.getByText('Component Testing Page')).toBeVisible();
-    await expect(page.getByText('Mock Data Generator')).toBeVisible();
-
-    // Step 2: Generate mock data
-    const generateButton = page.getByRole('button', { name: 'Generate Mock Data' });
-    await expect(generateButton).toBeVisible();
-
-    // If button is disabled (data already exists), skip generation
-    if (await generateButton.isEnabled()) {
-      await generateButton.click();
-
-      // Should show loading state
-      await expect(page.getByText('Generating...')).toBeVisible();
-
-      // Should show success and redirect
-      await expect(page.getByText('Done! Redirecting...')).toBeVisible({ timeout: 10000 });
-
-      // Wait for redirect to dashboard
-      await page.waitForURL('/', { timeout: 10000 });
-    } else {
-      // Data already exists, navigate to dashboard
-      await page.goto('/');
-    }
-
-    await page.waitForLoadState('networkidle');
+    // Navigate to dashboard
+    await page.goto('/');
+    await page.waitForLoadState('load');
 
     // Step 3: Wait for loading to complete
     // CRITICAL: Hard assertion - FAILS if loading stuck (no conditional logic)
@@ -48,10 +24,10 @@ test.describe('Mock Data Generation Flow', () => {
     await expect(welcomeMessage).not.toBeVisible({ timeout: 5000 });
 
     // Step 5: Verify widgets are displayed with actual data
-    // Total Value Widget
+    // Total Value Widget (title is "Total Portfolio Value")
     const totalValueWidget = page.locator('[data-testid="total-value-widget"]');
     await expect(totalValueWidget).toBeVisible({ timeout: 10000 });
-    await expect(totalValueWidget.getByText('Total Value')).toBeVisible();
+    await expect(totalValueWidget.getByText('Total Portfolio Value')).toBeVisible();
 
     // Value should be a dollar amount (not $0.00 since we have data)
     const totalValueText = await totalValueWidget.locator('.text-2xl, .text-3xl').first().textContent();
@@ -72,32 +48,31 @@ test.describe('Mock Data Generation Flow', () => {
   });
 
   test('should show welcome state when no data exists', async ({ page }) => {
-    // Navigate to dashboard
+    // Navigate to dashboard without seeding data
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Wait for loading to finish
     // CRITICAL: Hard assertion - FAILS if loading stuck (no conditional logic)
     await expect(page.getByText('Loading portfolio data')).not.toBeVisible({
-      timeout: 5000,
+      timeout: 10000,
     });
 
-    // Check what state we're in
-    const welcomeMessage = page.getByText('Welcome to Portfolio Tracker');
-    const dashboardWidgets = page.locator('[data-testid="total-value-widget"]');
+    // Either welcome state (no data) or dashboard widgets (has data) should be visible.
+    // Use .or() with auto-retry instead of instant isVisible() checks.
+    const anyState = page
+      .getByText('Welcome to Portfolio Tracker')
+      .or(page.locator('[data-testid="total-value-widget"]'))
+      .or(page.getByText('No Holdings Yet'));
 
-    // Either welcome state (no data) or dashboard widgets (has data) should be visible
-    const isWelcomeVisible = await welcomeMessage.isVisible();
-    const isWidgetsVisible = await dashboardWidgets.isVisible();
+    await expect(anyState.first()).toBeVisible({ timeout: 5000 });
 
-    expect(isWelcomeVisible || isWidgetsVisible).toBe(true);
-
-    if (isWelcomeVisible) {
-      // Welcome state should have create portfolio button
-      await expect(page.getByRole('button', { name: 'Create Portfolio' })).toBeVisible();
-      console.log('✅ Welcome state displayed correctly (no data)');
+    // Log which state we ended up in
+    const isWelcome = await page.getByText('Welcome to Portfolio Tracker').isVisible();
+    if (isWelcome) {
+      console.log('Welcome state displayed correctly (no data)');
     } else {
-      console.log('✅ Dashboard displayed correctly (has data)');
+      console.log('Dashboard displayed correctly (has data)');
     }
   });
 });

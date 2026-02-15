@@ -82,15 +82,16 @@ export function CreatePortfolioDialog({
     formState: { errors },
   } = useForm<PortfolioFormData>({
     resolver: zodResolver(portfolioSchema),
-    defaultValues: mode === 'edit' && portfolio
-      ? {
-          name: portfolio.name,
-          type: portfolio.type,
-          currency: portfolio.currency,
-        }
-      : {
-          currency: 'USD',
-        },
+    defaultValues:
+      mode === 'edit' && portfolio
+        ? {
+            name: portfolio.name,
+            type: portfolio.type,
+            currency: portfolio.currency,
+          }
+        : {
+            currency: 'USD',
+          },
   });
 
   const portfolioType = watch('type');
@@ -112,17 +113,22 @@ export function CreatePortfolioDialog({
 
   // Check transaction count when type changes in edit mode
   useEffect(() => {
-    if (mode === 'edit' && portfolio && portfolioType && portfolioType !== initialType) {
+    if (
+      mode === 'edit' &&
+      portfolio &&
+      portfolioType &&
+      portfolioType !== initialType
+    ) {
       // Check if portfolio has transactions
       transactionQueries
         .countByPortfolio(portfolio.id)
-        .then(count => {
+        .then((count) => {
           setTransactionCount(count);
           if (count > 0) {
             setShowTypeChangeWarning(true);
           }
         })
-        .catch(error => {
+        .catch((error) => {
           logger.error('Failed to check transaction count', error);
           // Show warning as a safety measure if we can't check
           setShowTypeChangeWarning(true);
@@ -199,7 +205,7 @@ export function CreatePortfolioDialog({
           </DialogHeader>
 
           {showTypeChangeWarning && (
-            <div className="rounded-md bg-yellow-50 dark:bg-yellow-950 p-4 my-2 border border-yellow-200 dark:border-yellow-800">
+            <div className="my-2 rounded-md border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950">
               <div className="flex">
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
@@ -207,9 +213,10 @@ export function CreatePortfolioDialog({
                   </h3>
                   <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
                     <p>
-                      This portfolio has {transactionCount} transaction{transactionCount !== 1 ? 's' : ''}.
-                      Changing the account type may affect tax calculations and reporting.
-                      Please ensure this change is intentional.
+                      This portfolio has {transactionCount} transaction
+                      {transactionCount !== 1 ? 's' : ''}. Changing the account
+                      type may affect tax calculations and reporting. Please
+                      ensure this change is intentional.
                     </p>
                   </div>
                 </div>
@@ -289,8 +296,12 @@ export function CreatePortfolioDialog({
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting
-                ? mode === 'edit' ? 'Updating...' : 'Creating...'
-                : mode === 'edit' ? 'Update Portfolio' : 'Create Portfolio'}
+                ? mode === 'edit'
+                  ? 'Updating...'
+                  : 'Creating...'
+                : mode === 'edit'
+                  ? 'Update Portfolio'
+                  : 'Create Portfolio'}
             </Button>
           </DialogFooter>
         </form>

@@ -350,7 +350,9 @@ describe('TaxAnalysisPage', () => {
       render(<TaxAnalysisPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/don't have any holdings/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/don't have any holdings/i)
+        ).toBeInTheDocument();
       });
     });
 

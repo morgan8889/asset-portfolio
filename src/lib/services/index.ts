@@ -26,7 +26,6 @@ export {
   calculateMaxDrawdown,
   calculateSharpeRatio,
   calculateDailyReturns,
-  type HoldingWithAsset,
 } from './metrics-service';
 
 // Holdings and tax lot calculations

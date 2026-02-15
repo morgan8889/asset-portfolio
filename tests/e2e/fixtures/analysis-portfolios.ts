@@ -4,8 +4,8 @@
  */
 
 import { Page } from '@playwright/test';
+import { seedMockData } from './test';
 import {
-  generateMockData,
   makePortfolioConcentrated,
   makePortfolioHighCash,
   makePortfolioMultiIssue,
@@ -59,22 +59,10 @@ export async function createMultiIssuePortfolio(page: Page) {
 }
 
 /**
- * Helper to wait for mock data generation to complete
+ * Helper to seed mock data via the standard fixture
  */
 export async function waitForMockDataGeneration(page: Page) {
-  const generateButton = page.getByRole('button', {
-    name: 'Generate Mock Data',
-  });
-
-  if (await generateButton.isEnabled()) {
-    await generateButton.click();
-    await page.waitForSelector('text=Done! Redirecting...', {
-      timeout: 10000,
-    });
-    await page.waitForURL('/', { timeout: 10000 });
-  }
-
-  await page.waitForLoadState('networkidle');
+  await seedMockData(page);
 }
 
 /**
@@ -82,7 +70,7 @@ export async function waitForMockDataGeneration(page: Page) {
  */
 export async function navigateToAnalysisAndWait(page: Page) {
   await page.goto('/analysis');
-  await page.waitForLoadState('networkidle');
+  await page.waitForLoadState('load');
 
   // Wait for the Health Score card to appear (indicates calculations started)
   await page.waitForSelector('text=Portfolio Health Score', { timeout: 10000 });

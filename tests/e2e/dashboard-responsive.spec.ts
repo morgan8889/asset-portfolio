@@ -1,4 +1,4 @@
-import { test, expect, seedMockData } from './fixtures/test';
+import { test, expect } from './fixtures/test';
 
 /**
  * E2E tests for Dashboard Responsive Layout (T060)
@@ -21,10 +21,9 @@ test.describe('Dashboard Responsive Layout', () => {
   for (const vp of viewports) {
     test.describe(`${vp.name} (${vp.width}x${vp.height})`, () => {
       test.beforeEach(async ({ page }) => {
-        await seedMockData(page);
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.goto('/');
-        await page.waitForLoadState('load');
+        await page.waitForLoadState('networkidle');
       });
 
       test('should render without horizontal overflow', async ({ page }) => {

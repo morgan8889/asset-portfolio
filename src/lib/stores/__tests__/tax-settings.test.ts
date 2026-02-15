@@ -30,19 +30,25 @@ describe('Tax Settings Store', () => {
   describe('setShortTermRate', () => {
     it('should update short-term capital gains rate', () => {
       useTaxSettingsStore.getState().setShortTermRate(new Decimal(0.32));
-      expect(useTaxSettingsStore.getState().taxSettings.shortTermRate.toNumber()).toBe(0.32);
+      expect(
+        useTaxSettingsStore.getState().taxSettings.shortTermRate.toNumber()
+      ).toBe(0.32);
     });
 
     it('should handle percentage input correctly', () => {
       useTaxSettingsStore.getState().setShortTermRate(new Decimal(0.37));
-      expect(useTaxSettingsStore.getState().taxSettings.shortTermRate.toNumber()).toBe(0.37);
+      expect(
+        useTaxSettingsStore.getState().taxSettings.shortTermRate.toNumber()
+      ).toBe(0.37);
     });
   });
 
   describe('setLongTermRate', () => {
     it('should update long-term capital gains rate', () => {
-      useTaxSettingsStore.getState().setLongTermRate(new Decimal(0.20));
-      expect(useTaxSettingsStore.getState().taxSettings.longTermRate.toNumber()).toBe(0.20);
+      useTaxSettingsStore.getState().setLongTermRate(new Decimal(0.2));
+      expect(
+        useTaxSettingsStore.getState().taxSettings.longTermRate.toNumber()
+      ).toBe(0.2);
     });
   });
 
@@ -50,8 +56,8 @@ describe('Tax Settings Store', () => {
     it('should reset to default rates', () => {
       useTaxSettingsStore.setState({
         taxSettings: {
-          shortTermRate: new Decimal(0.50),
-          longTermRate: new Decimal(0.30),
+          shortTermRate: new Decimal(0.5),
+          longTermRate: new Decimal(0.3),
           updatedAt: new Date('2025-01-01'),
         },
       });
@@ -68,14 +74,17 @@ describe('Tax Settings Store', () => {
     it('should maintain precision with Decimal type', () => {
       const rate = new Decimal(0.123456789);
       useTaxSettingsStore.getState().setShortTermRate(rate);
-      
-      const storedRate = useTaxSettingsStore.getState().taxSettings.shortTermRate;
+
+      const storedRate =
+        useTaxSettingsStore.getState().taxSettings.shortTermRate;
       expect(storedRate.equals(rate)).toBe(true);
     });
 
     it('should handle zero rate', () => {
       useTaxSettingsStore.getState().setLongTermRate(new Decimal(0));
-      expect(useTaxSettingsStore.getState().taxSettings.longTermRate.toNumber()).toBe(0);
+      expect(
+        useTaxSettingsStore.getState().taxSettings.longTermRate.toNumber()
+      ).toBe(0);
     });
   });
 });

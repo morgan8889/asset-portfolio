@@ -7,7 +7,7 @@ interface LogEntry {
   timestamp: string;
   level: LogLevel;
   message: string;
-  data?: any;
+  data?: Record<string, unknown>;
   userId?: string;
   sessionId?: string;
   ip?: string;
@@ -39,7 +39,7 @@ class Logger {
   private createLogEntry(
     level: LogLevel,
     message: string,
-    data?: any
+    data?: Record<string, unknown>
   ): LogEntry {
     return {
       timestamp: this.formatTimestamp(),
@@ -102,23 +102,23 @@ class Logger {
     // await sendToDataDog(entry);
   }
 
-  debug(message: string, data?: any): void {
+  debug(message: string, data?: Record<string, unknown>): void {
     const entry = this.createLogEntry('debug', message, data);
     this.writeLog(entry);
   }
 
-  info(message: string, data?: any): void {
+  info(message: string, data?: Record<string, unknown>): void {
     const entry = this.createLogEntry('info', message, data);
     this.writeLog(entry);
   }
 
-  warn(message: string, data?: any): void {
+  warn(message: string, data?: Record<string, unknown>): void {
     const entry = this.createLogEntry('warn', message, data);
     this.writeLog(entry);
   }
 
-  error(message: string, error?: any): void {
-    let errorData = error;
+  error(message: string, error?: unknown): void {
+    let errorData: Record<string, unknown> | undefined;
 
     // Extract useful information from Error objects
     if (error instanceof Error) {
@@ -126,8 +126,10 @@ class Logger {
         name: error.name,
         message: error.message,
         stack: error.stack,
-        cause: (error as any).cause,
+        cause: error.cause,
       };
+    } else if (error !== undefined) {
+      errorData = { raw: error };
     }
 
     const entry = this.createLogEntry('error', message, errorData);
@@ -141,7 +143,7 @@ class Logger {
     contextualLogger.createLogEntry = (
       level: LogLevel,
       message: string,
-      data?: any
+      data?: Record<string, unknown>
     ): LogEntry => {
       return {
         ...this.createLogEntry(level, message, data),
@@ -153,7 +155,7 @@ class Logger {
   }
 
   // Security-focused logging
-  security(message: string, data?: any): void {
+  security(message: string, data?: Record<string, unknown>): void {
     const entry = this.createLogEntry('warn', `[SECURITY] ${message}`, {
       ...data,
       timestamp: this.formatTimestamp(),
@@ -168,7 +170,11 @@ class Logger {
   }
 
   // Performance logging
-  performance(operation: string, duration: number, data?: any): void {
+  performance(
+    operation: string,
+    duration: number,
+    data?: Record<string, unknown>
+  ): void {
     const entry = this.createLogEntry(
       'info',
       `[PERFORMANCE] ${operation} took ${duration}ms`,
@@ -183,7 +189,7 @@ class Logger {
   }
 
   // Audit logging for important actions
-  audit(action: string, userId?: string, data?: any): void {
+  audit(action: string, userId?: string, data?: Record<string, unknown>): void {
     const entry = this.createLogEntry('info', `[AUDIT] ${action}`, {
       ...data,
       action,

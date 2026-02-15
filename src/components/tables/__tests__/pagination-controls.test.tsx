@@ -20,13 +20,17 @@ describe('PaginationControls', () => {
     it('should display correct range for first page', () => {
       render(<PaginationControls {...defaultProps} />);
 
-      expect(screen.getByText('Showing 1-25 of 100 transactions')).toBeInTheDocument();
+      expect(
+        screen.getByText('Showing 1-25 of 100 transactions')
+      ).toBeInTheDocument();
     });
 
     it('should display correct range for middle page', () => {
       render(<PaginationControls {...defaultProps} currentPage={2} />);
 
-      expect(screen.getByText('Showing 26-50 of 100 transactions')).toBeInTheDocument();
+      expect(
+        screen.getByText('Showing 26-50 of 100 transactions')
+      ).toBeInTheDocument();
     });
 
     it('should display correct range for last page with partial results', () => {
@@ -40,7 +44,9 @@ describe('PaginationControls', () => {
       );
 
       // 4th page with size 30: starts at 91, ends at 100
-      expect(screen.getByText('Showing 91-100 of 100 transactions')).toBeInTheDocument();
+      expect(
+        screen.getByText('Showing 91-100 of 100 transactions')
+      ).toBeInTheDocument();
     });
 
     it('should display 0-0 for empty results', () => {
@@ -53,7 +59,9 @@ describe('PaginationControls', () => {
         />
       );
 
-      expect(screen.getByText('Showing 0-0 of 0 transactions')).toBeInTheDocument();
+      expect(
+        screen.getByText('Showing 0-0 of 0 transactions')
+      ).toBeInTheDocument();
     });
   });
 
@@ -91,7 +99,9 @@ describe('PaginationControls', () => {
 
       const previousButton = screen.getByRole('button', { name: /previous/i });
       const nextButton = screen.getByRole('button', { name: /next/i });
-      const select = screen.getByRole('combobox', { name: /select page size/i });
+      const select = screen.getByRole('combobox', {
+        name: /select page size/i,
+      });
 
       expect(previousButton).toBeDisabled();
       expect(nextButton).toBeDisabled();
@@ -169,14 +179,18 @@ describe('PaginationControls', () => {
     it('should display current page size', () => {
       render(<PaginationControls {...defaultProps} pageSize={25} />);
 
-      const select = screen.getByRole('combobox', { name: /select page size/i });
+      const select = screen.getByRole('combobox', {
+        name: /select page size/i,
+      });
       expect(select).toHaveTextContent('25');
     });
 
     it('should have correct page size options', () => {
       render(<PaginationControls {...defaultProps} />);
 
-      const select = screen.getByRole('combobox', { name: /select page size/i });
+      const select = screen.getByRole('combobox', {
+        name: /select page size/i,
+      });
       fireEvent.click(select);
 
       // Use getAllByText since '25' appears both in the trigger and in the dropdown
@@ -212,7 +226,9 @@ describe('PaginationControls', () => {
         />
       );
 
-      expect(screen.getByText('Failed to load transactions')).toBeInTheDocument();
+      expect(
+        screen.getByText('Failed to load transactions')
+      ).toBeInTheDocument();
     });
 
     it('should show retry button when error and onRetry provided', () => {
@@ -240,7 +256,9 @@ describe('PaginationControls', () => {
         />
       );
 
-      expect(screen.queryByRole('button', { name: /retry/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /retry/i })
+      ).not.toBeInTheDocument();
     });
 
     it('should hide error when loading', () => {
@@ -253,8 +271,12 @@ describe('PaginationControls', () => {
       );
 
       // When loading, should show normal pagination controls, not error
-      expect(screen.queryByText('Failed to load transactions')).not.toBeInTheDocument();
-      expect(screen.getByText('Showing 1-25 of 100 transactions')).toBeInTheDocument();
+      expect(
+        screen.queryByText('Failed to load transactions')
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByText('Showing 1-25 of 100 transactions')
+      ).toBeInTheDocument();
     });
   });
 

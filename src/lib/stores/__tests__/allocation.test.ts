@@ -7,7 +7,11 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useAllocationStore } from '../allocation';
-import { TargetModel, AllocationDimension, AllocationData } from '@/types/allocation';
+import {
+  TargetModel,
+  AllocationDimension,
+  AllocationData,
+} from '@/types/allocation';
 
 // Mock the allocation services
 vi.mock('@/lib/services/allocation/target-service', () => ({
@@ -86,7 +90,9 @@ describe('Allocation Store', () => {
         },
       ];
 
-      const { getTargetModels } = await import('@/lib/services/allocation/target-service');
+      const { getTargetModels } = await import(
+        '@/lib/services/allocation/target-service'
+      );
       (getTargetModels as any).mockResolvedValue(mockModels);
 
       await useAllocationStore.getState().loadTargetModels();
@@ -98,7 +104,9 @@ describe('Allocation Store', () => {
     });
 
     it('should handle load errors gracefully', async () => {
-      const { getTargetModels } = await import('@/lib/services/allocation/target-service');
+      const { getTargetModels } = await import(
+        '@/lib/services/allocation/target-service'
+      );
       (getTargetModels as any).mockRejectedValue(new Error('Database error'));
 
       await useAllocationStore.getState().loadTargetModels();
@@ -110,7 +118,9 @@ describe('Allocation Store', () => {
     });
 
     it('should set loading state during fetch', async () => {
-      const { getTargetModels } = await import('@/lib/services/allocation/target-service');
+      const { getTargetModels } = await import(
+        '@/lib/services/allocation/target-service'
+      );
 
       let resolvePromise: (value: any) => void;
       const promise = new Promise((resolve) => {
@@ -142,7 +152,9 @@ describe('Allocation Store', () => {
 
       useAllocationStore.getState().setActiveTargetModel(mockModel);
 
-      expect(useAllocationStore.getState().activeTargetModel).toEqual(mockModel);
+      expect(useAllocationStore.getState().activeTargetModel).toEqual(
+        mockModel
+      );
     });
 
     it('should allow clearing active model', () => {
@@ -154,7 +166,9 @@ describe('Allocation Store', () => {
       };
 
       useAllocationStore.getState().setActiveTargetModel(mockModel);
-      expect(useAllocationStore.getState().activeTargetModel).toEqual(mockModel);
+      expect(useAllocationStore.getState().activeTargetModel).toEqual(
+        mockModel
+      );
 
       useAllocationStore.getState().setActiveTargetModel(null);
       expect(useAllocationStore.getState().activeTargetModel).toBeNull();
@@ -171,18 +185,26 @@ describe('Allocation Store', () => {
         lastUpdated: new Date(),
       };
 
-      const { createTargetModel } = await import('@/lib/services/allocation/target-service');
+      const { createTargetModel } = await import(
+        '@/lib/services/allocation/target-service'
+      );
       (createTargetModel as any).mockResolvedValue(mockModel);
 
       await useAllocationStore.getState().createTarget('Growth', targets);
 
       expect(createTargetModel).toHaveBeenCalledWith('Growth', targets);
-      expect(useAllocationStore.getState().activeTargetModel).toEqual(mockModel);
+      expect(useAllocationStore.getState().activeTargetModel).toEqual(
+        mockModel
+      );
     });
 
     it('should handle creation errors', async () => {
-      const { createTargetModel, getTargetModels } = await import('@/lib/services/allocation/target-service');
-      (createTargetModel as any).mockRejectedValue(new Error('Creation failed'));
+      const { createTargetModel, getTargetModels } = await import(
+        '@/lib/services/allocation/target-service'
+      );
+      (createTargetModel as any).mockRejectedValue(
+        new Error('Creation failed')
+      );
       (getTargetModels as any).mockResolvedValue([]); // Don't throw on reload
 
       // The store re-throws the error, so we need to catch it
@@ -201,14 +223,20 @@ describe('Allocation Store', () => {
 
       await useAllocationStore.getState().updateTarget('model-1', updates);
 
-      const { updateTargetModel } = await import('@/lib/services/allocation/target-service');
+      const { updateTargetModel } = await import(
+        '@/lib/services/allocation/target-service'
+      );
       expect(updateTargetModel).toHaveBeenCalledWith('model-1', updates);
     });
 
     it('should reload models after update', async () => {
-      const { getTargetModels } = await import('@/lib/services/allocation/target-service');
+      const { getTargetModels } = await import(
+        '@/lib/services/allocation/target-service'
+      );
 
-      await useAllocationStore.getState().updateTarget('model-1', { name: 'New Name' });
+      await useAllocationStore
+        .getState()
+        .updateTarget('model-1', { name: 'New Name' });
 
       expect(getTargetModels).toHaveBeenCalled();
     });
@@ -218,12 +246,16 @@ describe('Allocation Store', () => {
     it('should delete target model', async () => {
       await useAllocationStore.getState().deleteTarget('model-1');
 
-      const { deleteTargetModel } = await import('@/lib/services/allocation/target-service');
+      const { deleteTargetModel } = await import(
+        '@/lib/services/allocation/target-service'
+      );
       expect(deleteTargetModel).toHaveBeenCalledWith('model-1');
     });
 
     it('should reload models after deletion', async () => {
-      const { getTargetModels } = await import('@/lib/services/allocation/target-service');
+      const { getTargetModels } = await import(
+        '@/lib/services/allocation/target-service'
+      );
 
       await useAllocationStore.getState().deleteTarget('model-1');
 
@@ -250,29 +282,41 @@ describe('Allocation Store', () => {
     it('should load exclusions', async () => {
       const mockExclusions = ['portfolio-1', 'portfolio-2'];
 
-      const { getRebalancingExclusions } = await import('@/lib/services/allocation/target-service');
+      const { getRebalancingExclusions } = await import(
+        '@/lib/services/allocation/target-service'
+      );
       (getRebalancingExclusions as any).mockResolvedValue(mockExclusions);
 
       await useAllocationStore.getState().loadExclusions();
 
-      expect(useAllocationStore.getState().excludedPortfolioIds).toEqual(mockExclusions);
+      expect(useAllocationStore.getState().excludedPortfolioIds).toEqual(
+        mockExclusions
+      );
     });
 
     it('should toggle portfolio exclusion - add', async () => {
       useAllocationStore.setState({ excludedPortfolioIds: [] });
 
-      await useAllocationStore.getState().togglePortfolioExclusion('portfolio-1');
+      await useAllocationStore
+        .getState()
+        .togglePortfolioExclusion('portfolio-1');
 
-      const { addRebalancingExclusion } = await import('@/lib/services/allocation/target-service');
+      const { addRebalancingExclusion } = await import(
+        '@/lib/services/allocation/target-service'
+      );
       expect(addRebalancingExclusion).toHaveBeenCalledWith('portfolio-1');
     });
 
     it('should toggle portfolio exclusion - remove', async () => {
       useAllocationStore.setState({ excludedPortfolioIds: ['portfolio-1'] });
 
-      await useAllocationStore.getState().togglePortfolioExclusion('portfolio-1');
+      await useAllocationStore
+        .getState()
+        .togglePortfolioExclusion('portfolio-1');
 
-      const { removeRebalancingExclusion } = await import('@/lib/services/allocation/target-service');
+      const { removeRebalancingExclusion } = await import(
+        '@/lib/services/allocation/target-service'
+      );
       expect(removeRebalancingExclusion).toHaveBeenCalledWith('portfolio-1');
     });
   });
@@ -281,7 +325,9 @@ describe('Allocation Store', () => {
     it('should set selected dimension', () => {
       useAllocationStore.getState().setSelectedDimension('assetClass');
 
-      expect(useAllocationStore.getState().selectedDimension).toBe('assetClass');
+      expect(useAllocationStore.getState().selectedDimension).toBe(
+        'assetClass'
+      );
     });
 
     it('should update dimension to region', () => {
@@ -294,13 +340,18 @@ describe('Allocation Store', () => {
   describe('Rebalancing Calculations', () => {
     it('should not calculate rebalancing plan when no active target model', () => {
       const mockHoldings: any[] = [
-        { holding: { quantity: 100 }, asset: { symbol: 'AAPL', assetClass: 'stocks' } },
+        {
+          holding: { quantity: 100 },
+          asset: { symbol: 'AAPL', assetClass: 'stocks' },
+        },
       ];
 
       // No active target model set
       useAllocationStore.setState({ activeTargetModel: null });
 
-      useAllocationStore.getState().calculateRebalancing(mockHoldings, 'assetClass');
+      useAllocationStore
+        .getState()
+        .calculateRebalancing(mockHoldings, 'assetClass');
 
       // Should set rebalancing plan to null when no target model
       expect(useAllocationStore.getState().rebalancingPlan).toBeNull();
@@ -317,12 +368,19 @@ describe('Allocation Store', () => {
       useAllocationStore.setState({ activeTargetModel: mockModel });
 
       const mockHoldings: any[] = [
-        { holding: { quantity: 100 }, asset: { symbol: 'AAPL', assetClass: 'stocks' } },
+        {
+          holding: { quantity: 100 },
+          asset: { symbol: 'AAPL', assetClass: 'stocks' },
+        },
       ];
 
-      useAllocationStore.getState().calculateRebalancing(mockHoldings, 'assetClass');
+      useAllocationStore
+        .getState()
+        .calculateRebalancing(mockHoldings, 'assetClass');
 
-      const { calculateRebalancingPlan } = await import('@/lib/services/allocation/rebalancing-service');
+      const { calculateRebalancingPlan } = await import(
+        '@/lib/services/allocation/rebalancing-service'
+      );
       expect(calculateRebalancingPlan).toHaveBeenCalledWith(
         mockHoldings,
         'Balanced',
@@ -349,7 +407,9 @@ describe('Allocation Store', () => {
       const mockHoldings: any[] = [];
       useAllocationStore.getState().calculateRebalancing(mockHoldings); // No dimension specified
 
-      const { calculateRebalancingPlan } = await import('@/lib/services/allocation/rebalancing-service');
+      const { calculateRebalancingPlan } = await import(
+        '@/lib/services/allocation/rebalancing-service'
+      );
       expect(calculateRebalancingPlan).toHaveBeenCalledWith(
         mockHoldings,
         'Test',
@@ -374,13 +434,17 @@ describe('Allocation Store', () => {
 
       useAllocationStore.getState().setCurrentAllocation(mockAllocation);
 
-      expect(useAllocationStore.getState().currentAllocation).toEqual(mockAllocation);
+      expect(useAllocationStore.getState().currentAllocation).toEqual(
+        mockAllocation
+      );
     });
 
     it('should allow clearing current allocation', () => {
       const mockAllocation: AllocationData = {
         dimension: 'assetClass' as AllocationDimension,
-        breakdown: [{ category: 'stocks', value: '100000', percentage: 100, count: 1 }],
+        breakdown: [
+          { category: 'stocks', value: '100000', percentage: 100, count: 1 },
+        ],
         totalValue: '100000',
         hasUnclassified: false,
       };
@@ -409,7 +473,12 @@ describe('Allocation Store', () => {
         targetModels: [
           { id: '1', name: 'Test', targets: {}, lastUpdated: new Date() },
         ],
-        activeTargetModel: { id: '1', name: 'Test', targets: {}, lastUpdated: new Date() },
+        activeTargetModel: {
+          id: '1',
+          name: 'Test',
+          targets: {},
+          lastUpdated: new Date(),
+        },
         excludedPortfolioIds: ['portfolio-1'],
         error: 'Some error',
         selectedDimension: 'region',

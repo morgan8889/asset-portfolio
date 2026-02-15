@@ -234,7 +234,7 @@ export function calculateDividendYield(
 // =============================================================================
 
 export interface YtdReturnResult {
-  return: number | null;  // null indicates N/A (insufficient data)
+  return: number | null; // null indicates N/A (insufficient data)
   startDate: Date;
   endDate: Date;
   snapshotCount: number;

@@ -4,7 +4,7 @@
  * Tests the complete user workflow for importing transactions from CSV files.
  */
 
-import { test, expect, seedMockData } from './fixtures/test';
+import { test, expect } from './fixtures/test';
 import path from 'path';
 
 // Test CSV file content
@@ -20,7 +20,7 @@ invalid-date,GOOGL,5,175.50,buy
 
 test.describe('CSV Import Flow', () => {
   test.beforeEach(async ({ page }) => {
-    await seedMockData(page);
+    // Navigate to transactions page
     await page.goto('/transactions');
   });
 
@@ -127,12 +127,12 @@ test.describe('CSV Import Flow', () => {
     // Wait for preview
     await expect(page.getByText('AAPL').first()).toBeVisible({ timeout: 5000 });
 
-    // Click import button
-    const importConfirmButton = page.getByRole('button', { name: 'Import' });
+    // Click import button (text is "Import N Transactions")
+    const importConfirmButton = page.getByRole('button', { name: /^Import \d+ Transactions?$/i });
     await importConfirmButton.click();
 
     // Should show success message or results - look for heading specifically
-    await expect(page.getByRole('heading', { name: /success/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /Import Successful/i })).toBeVisible({ timeout: 10000 });
 
     // Should show count of imported transactions
     await expect(page.getByText(/3.*imported|imported.*3/i).first()).toBeVisible();
@@ -217,8 +217,8 @@ test.describe('CSV Import Flow', () => {
       buffer: csvBuffer,
     });
 
-    // Should show message about no data - use specific message
-    await expect(page.getByText('CSV file has no data rows')).toBeVisible({ timeout: 5000 });
+    // Should show message about no data rows (error message includes filename)
+    await expect(page.getByText(/has no data rows/i)).toBeVisible({ timeout: 5000 });
   });
 
   test('shows progress indicator during import', async ({ page }) => {
@@ -241,12 +241,12 @@ test.describe('CSV Import Flow', () => {
     // Wait for preview - use first() since there are many AAPL rows in the large file
     await expect(page.getByText('AAPL').first()).toBeVisible({ timeout: 5000 });
 
-    // Click import - progress should show
-    const importConfirmButton = page.getByRole('button', { name: 'Import' });
+    // Click import - progress should show (button text is "Import N Transactions")
+    const importConfirmButton = page.getByRole('button', { name: /^Import \d+ Transactions?$/i });
     await importConfirmButton.click();
 
     // Progress indicator might flash quickly, but result should show
-    await expect(page.getByRole('heading', { name: /success/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /Import Successful/i })).toBeVisible({ timeout: 10000 });
   });
 });
 
@@ -257,7 +257,6 @@ test.describe('Manual Column Mapping Correction', () => {
 2025-01-16,GOOGL,5,175.50,SELL`;
 
   test.beforeEach(async ({ page }) => {
-    await seedMockData(page);
     await page.goto('/transactions');
   });
 
@@ -346,7 +345,7 @@ test.describe('Manual Column Mapping Correction', () => {
 
     // After mapping correction, should be able to import
     // Note: This test assumes mappings are either auto-corrected or manually fixed
-    const importButton = page.getByRole('button', { name: 'Import' });
+    const importButton = page.getByRole('button', { name: /^Import \d+ Transactions?$/i });
 
     // If import button is disabled, we need to fix mappings first
     // For now, just verify the flow can proceed
@@ -388,7 +387,6 @@ invalid-date,GOOGL,5,175.50,buy
 2025-01-19,NVDA,25,450.00,buy`;
 
   test.beforeEach(async ({ page }) => {
-    await seedMockData(page);
     await page.goto('/transactions');
   });
 
@@ -451,11 +449,11 @@ invalid-date,GOOGL,5,175.50,buy
     await expect(page.getByText('AAPL').first()).toBeVisible({ timeout: 5000 });
 
     // Click import button
-    const importButton = page.getByRole('button', { name: 'Import' });
+    const importButton = page.getByRole('button', { name: /^Import \d+ Transactions?$/i });
     await importButton.click();
 
     // Should show partial success - look for success heading
-    await expect(page.getByRole('heading', { name: /success/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /Import (Successful|Completed)/i })).toBeVisible({ timeout: 10000 });
   });
 
   test('offers download of failed rows', async ({ page }) => {
@@ -474,16 +472,16 @@ invalid-date,GOOGL,5,175.50,buy
     await expect(page.getByText('AAPL').first()).toBeVisible({ timeout: 5000 });
 
     // Click import button
-    const importButton = page.getByRole('button', { name: 'Import' });
+    const importButton = page.getByRole('button', { name: /^Import \d+ Transactions?$/i });
     await importButton.click();
 
     // Wait for results - look for success heading
-    await expect(page.getByRole('heading', { name: /success/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /Import (Successful|Completed)/i })).toBeVisible({ timeout: 10000 });
 
     // Verify results show - either download button or error count in summary
     // Note: download button only shows when there are actual failed rows
     const resultsArea = page.locator('[data-testid="import-results"], .import-results');
-    await expect(page.getByRole('heading', { name: /success/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Import (Successful|Completed)/i })).toBeVisible();
   });
 });
 
@@ -492,7 +490,6 @@ test.describe('Import with Duplicate Detection', () => {
   // These tests verify the basic import workflow - actual duplicate detection is tested in unit tests.
 
   test.beforeEach(async ({ page }) => {
-    await seedMockData(page);
     await page.goto('/transactions');
   });
 
@@ -509,8 +506,8 @@ test.describe('Import with Duplicate Detection', () => {
     });
 
     await expect(page.getByText('AAPL').first()).toBeVisible({ timeout: 5000 });
-    await page.getByRole('button', { name: 'Import' }).click();
-    await expect(page.getByRole('heading', { name: /success/i })).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: /^Import \d+ Transactions?$/i }).click();
+    await expect(page.getByRole('heading', { name: /Import (Successful|Completed)/i })).toBeVisible({ timeout: 10000 });
   });
 
   test('can open second import dialog after first', async ({ page }) => {
@@ -526,8 +523,8 @@ test.describe('Import with Duplicate Detection', () => {
     });
 
     await expect(page.getByText('AAPL').first()).toBeVisible({ timeout: 5000 });
-    await page.getByRole('button', { name: 'Import' }).click();
-    await expect(page.getByRole('heading', { name: /success/i })).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: /^Import \d+ Transactions?$/i }).click();
+    await expect(page.getByRole('heading', { name: /Import (Successful|Completed)/i })).toBeVisible({ timeout: 10000 });
 
     // Close dialog and wait for full unmount + store cleanup before reopening
     const closeButton = page.getByRole('button', { name: 'Done' });
@@ -555,20 +552,28 @@ test.describe('Import with Duplicate Detection', () => {
     });
 
     await expect(page.getByText('AAPL').first()).toBeVisible({ timeout: 5000 });
-    await page.getByRole('button', { name: 'Import' }).click();
-    await expect(page.getByRole('heading', { name: /success/i })).toBeVisible({ timeout: 10000 });
+    await page.getByRole('button', { name: /^Import \d+ Transactions?$/i }).click();
+    await expect(page.getByRole('heading', { name: /Import (Successful|Completed)/i })).toBeVisible({ timeout: 10000 });
 
     // Close and wait for full unmount + store cleanup before reopening
     const closeButton = page.getByRole('button', { name: 'Done' });
     await closeButton.click();
     await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 5000 });
-    await page.waitForTimeout(500);
+    // Wait longer for store cleanup and portfolio validation state to reset
+    await page.waitForTimeout(1000);
 
     // Reopen and upload a new file
     const importButton = page.getByRole('button', { name: /import.*csv/i });
     await expect(importButton).toBeVisible({ timeout: 5000 });
     await importButton.click();
     await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
+
+    // Wait for portfolio validation to complete before uploading file.
+    // The dialog runs ensureValidPortfolio() on open - if validation is
+    // still in progress, file upload will be rejected with an error.
+    await expect(page.getByText('Portfolio validation is still in progress')).not.toBeVisible({
+      timeout: 10000,
+    });
 
     const fileInput2 = page.locator('input[type="file"]');
     await fileInput2.setInputFiles({
@@ -579,6 +584,6 @@ test.describe('Import with Duplicate Detection', () => {
 
     // Preview shows
     await expect(page.getByText('AAPL').first()).toBeVisible({ timeout: 5000 });
-    await expect(page.getByRole('button', { name: 'Import' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Import \d+ Transactions?$/i })).toBeVisible();
   });
 });

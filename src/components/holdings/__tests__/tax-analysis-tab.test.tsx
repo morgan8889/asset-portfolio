@@ -154,7 +154,9 @@ describe('TaxAnalysisTab', () => {
       await waitFor(() => {
         expect(screen.getByText(/net unrealized gain/i)).toBeInTheDocument();
         expect(screen.getByText(/short-term.*long-term/i)).toBeInTheDocument();
-        expect(screen.getByText(/estimated tax liability/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/estimated tax liability/i)
+        ).toBeInTheDocument();
       });
 
       // Should show tax lot table
@@ -246,7 +248,9 @@ describe('TaxAnalysisTab', () => {
       await waitFor(() => {
         expect(screen.getByText(/net unrealized gain/i)).toBeInTheDocument();
         expect(screen.getByText(/short-term.*long-term/i)).toBeInTheDocument();
-        expect(screen.getByText(/estimated tax liability/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/estimated tax liability/i)
+        ).toBeInTheDocument();
         expect(screen.getByText(/if all sold today/i)).toBeInTheDocument();
       });
     });
@@ -296,15 +300,33 @@ describe('TaxAnalysisTab', () => {
 
       await waitFor(() => {
         // Verify table headers
-        expect(screen.getByRole('columnheader', { name: /asset/i })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: /date/i })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: /qty/i })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: /cost/i })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: /value/i })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: /gain/i })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: /period/i })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: /type/i })).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', { name: /status/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('columnheader', { name: /asset/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('columnheader', { name: /date/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('columnheader', { name: /qty/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('columnheader', { name: /cost/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('columnheader', { name: /value/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('columnheader', { name: /gain/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('columnheader', { name: /period/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('columnheader', { name: /type/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('columnheader', { name: /status/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -456,7 +478,9 @@ describe('TaxAnalysisTab', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /date/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /date/i })
+        ).toBeInTheDocument();
       });
 
       // Click to sort
@@ -491,7 +515,9 @@ describe('TaxAnalysisTab', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /qty/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /qty/i })
+        ).toBeInTheDocument();
       });
 
       const qtyButton = screen.getByRole('button', { name: /qty/i });

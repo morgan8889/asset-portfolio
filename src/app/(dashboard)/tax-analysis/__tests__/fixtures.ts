@@ -140,30 +140,36 @@ export const mockHoldings: Holding[] = [
  * This is what priceStore.prices contains
  */
 export const mockPricesSymbolKeyed = new Map([
-  ['AAPL', {
-    symbol: 'AAPL',
-    displayPrice: '175.00',
-    displayCurrency: 'USD',
-    price: '175.00',
-    currency: 'USD',
-    change: '1.50',
-    changePercent: 0.86,
-    timestamp: new Date(),
-    source: 'yahoo',
-    staleness: 'fresh' as const,
-  }],
-  ['MSFT', {
-    symbol: 'MSFT',
-    displayPrice: '420.00',
-    displayCurrency: 'USD',
-    price: '420.00',
-    currency: 'USD',
-    change: '5.00',
-    changePercent: 1.2,
-    timestamp: new Date(),
-    source: 'yahoo',
-    staleness: 'fresh' as const,
-  }],
+  [
+    'AAPL',
+    {
+      symbol: 'AAPL',
+      displayPrice: '175.00',
+      displayCurrency: 'USD',
+      price: '175.00',
+      currency: 'USD',
+      change: '1.50',
+      changePercent: 0.86,
+      timestamp: new Date(),
+      source: 'yahoo',
+      staleness: 'fresh' as const,
+    },
+  ],
+  [
+    'MSFT',
+    {
+      symbol: 'MSFT',
+      displayPrice: '420.00',
+      displayCurrency: 'USD',
+      price: '420.00',
+      currency: 'USD',
+      change: '5.00',
+      changePercent: 1.2,
+      timestamp: new Date(),
+      source: 'yahoo',
+      staleness: 'fresh' as const,
+    },
+  ],
 ]);
 
 /**
@@ -212,7 +218,10 @@ export const mockTaxSettings = {
  * Demonstrates Bug #1: Object.entries on Map returns empty array
  * This proves why forEach must be used instead
  */
-export function demonstrateMapIterationBug(): { bugBehavior: number; correctBehavior: number } {
+export function demonstrateMapIterationBug(): {
+  bugBehavior: number;
+  correctBehavior: number;
+} {
   const map = new Map([['AAPL', { displayPrice: '150' }]]);
 
   // BUG: Object.entries returns [] for Maps

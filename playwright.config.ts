@@ -14,11 +14,13 @@ export default defineConfig({
   /* Use 2 workers on CI (2 vCPU runners), unlimited locally */
   workers: process.env.CI ? 2 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [
-    ['html'],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ['junit', { outputFile: 'test-results/results.xml' }],
-  ],
+  reporter: process.env.CI
+    ? [['blob'], ['github']]
+    : [
+        ['html'],
+        ['json', { outputFile: 'test-results/results.json' }],
+        ['junit', { outputFile: 'test-results/results.xml' }],
+      ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -74,8 +76,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    // Use production server in CI for faster startup with pre-built artifacts
-    command: process.env.CI ? 'npm run start' : 'npm run dev',
+    command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // 2 minutes

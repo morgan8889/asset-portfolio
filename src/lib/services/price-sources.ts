@@ -233,6 +233,21 @@ export interface FetchPriceWithRetryResult {
 export async function fetchPriceWithRetry(
   symbol: string
 ): Promise<FetchPriceWithRetryResult> {
+  // In test environments, return mock prices to avoid external API calls
+  if (process.env.MOCK_PRICES === '1') {
+    return {
+      price: 100.0,
+      source: 'mock',
+      metadata: {
+        currency: 'USD',
+        change: 0.5,
+        changePercent: 0.5,
+        marketState: 'REGULAR',
+        previousClose: 99.5,
+      },
+    };
+  }
+
   const applicableSources = priceSources.filter((source) =>
     source.supports(symbol)
   );

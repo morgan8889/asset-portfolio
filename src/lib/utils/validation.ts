@@ -222,15 +222,6 @@ export function validateFileUpload(file: File): boolean {
   return true;
 }
 
-// SQL injection prevention (for any raw queries)
-export function sanitizeSqlInput(input: string): string {
-  return input
-    .replace(/['"\\;]/g, '') // Remove quotes, backslashes, semicolons
-    .replace(/\s*--\s*/g, ' ') // Replace SQL line comments with single space
-    .replace(/\/\*[\s\S]*?\*\//g, '') // Remove SQL block comments
-    .trim();
-}
-
 // XSS prevention for display values
 export function sanitizeForDisplay(input: string): string {
   return input
@@ -240,67 +231,6 @@ export function sanitizeForDisplay(input: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;')
     .replace(/\//g, '&#x2F;');
-}
-
-// Email validation (for future features)
-export function validateEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email) && email.length <= 254;
-}
-
-// Password strength validation (for future features)
-export function validatePasswordStrength(password: string): {
-  isValid: boolean;
-  score: number;
-  feedback: string[];
-} {
-  const feedback: string[] = [];
-  let score = 0;
-
-  if (password.length < 8) {
-    feedback.push('Password must be at least 8 characters long');
-  } else {
-    score += 1;
-  }
-
-  if (!/[a-z]/.test(password)) {
-    feedback.push('Password must contain at least one lowercase letter');
-  } else {
-    score += 1;
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    feedback.push('Password must contain at least one uppercase letter');
-  } else {
-    score += 1;
-  }
-
-  if (!/[0-9]/.test(password)) {
-    feedback.push('Password must contain at least one number');
-  } else {
-    score += 1;
-  }
-
-  if (!/[^a-zA-Z0-9]/.test(password)) {
-    feedback.push('Password must contain at least one special character');
-  } else {
-    score += 1;
-  }
-
-  if (password.length >= 12) {
-    score += 1;
-  }
-
-  return {
-    isValid: feedback.length === 0,
-    score: Math.min(score, 6), // Cap at 6: 5 base requirements + 1 length bonus
-    feedback,
-  };
-}
-
-// Rate limiting key generation
-export function generateRateLimitKey(ip: string, endpoint: string): string {
-  return `rate_limit:${endpoint}:${ip}`;
 }
 
 // Data export validation

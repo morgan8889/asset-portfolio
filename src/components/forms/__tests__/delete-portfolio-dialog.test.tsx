@@ -50,7 +50,9 @@ describe('DeletePortfolioDialog', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /delete portfolio/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /delete portfolio/i })
+      ).toBeInTheDocument();
       expect(screen.getByText('Test Portfolio')).toBeInTheDocument();
     });
   });
@@ -75,10 +77,14 @@ describe('DeletePortfolioDialog', () => {
 
     // Should not show checkbox or text input
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
-    expect(screen.queryByPlaceholderText(/type portfolio name/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByPlaceholderText(/type portfolio name/i)
+    ).not.toBeInTheDocument();
 
     // Delete button should be enabled immediately
-    const deleteButton = screen.getByRole('button', { name: /delete portfolio/i });
+    const deleteButton = screen.getByRole('button', {
+      name: /delete portfolio/i,
+    });
     expect(deleteButton).toBeEnabled();
   });
 
@@ -107,7 +113,9 @@ describe('DeletePortfolioDialog', () => {
     expect(checkbox).toBeInTheDocument();
 
     // Delete button should be disabled initially
-    const deleteButton = screen.getByRole('button', { name: /delete portfolio/i });
+    const deleteButton = screen.getByRole('button', {
+      name: /delete portfolio/i,
+    });
     expect(deleteButton).toBeDisabled();
   });
 
@@ -133,7 +141,9 @@ describe('DeletePortfolioDialog', () => {
     });
 
     const checkbox = screen.getByRole('checkbox');
-    const deleteButton = screen.getByRole('button', { name: /delete portfolio/i });
+    const deleteButton = screen.getByRole('button', {
+      name: /delete portfolio/i,
+    });
 
     // Initially disabled
     expect(deleteButton).toBeDisabled();
@@ -170,7 +180,9 @@ describe('DeletePortfolioDialog', () => {
     expect(input).toBeInTheDocument();
 
     // Delete button should be disabled initially
-    const deleteButton = screen.getByRole('button', { name: /delete portfolio/i });
+    const deleteButton = screen.getByRole('button', {
+      name: /delete portfolio/i,
+    });
     expect(deleteButton).toBeDisabled();
   });
 
@@ -192,11 +204,15 @@ describe('DeletePortfolioDialog', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/type portfolio name/i)).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(/type portfolio name/i)
+      ).toBeInTheDocument();
     });
 
     const input = screen.getByPlaceholderText(/type portfolio name/i);
-    const deleteButton = screen.getByRole('button', { name: /delete portfolio/i });
+    const deleteButton = screen.getByRole('button', {
+      name: /delete portfolio/i,
+    });
 
     // Initially disabled
     expect(deleteButton).toBeDisabled();
@@ -235,7 +251,9 @@ describe('DeletePortfolioDialog', () => {
       expect(screen.getByText('Test Portfolio')).toBeInTheDocument();
     });
 
-    const deleteButton = screen.getByRole('button', { name: /delete portfolio/i });
+    const deleteButton = screen.getByRole('button', {
+      name: /delete portfolio/i,
+    });
     await user.click(deleteButton);
 
     await waitFor(() => {
@@ -260,8 +278,12 @@ describe('DeletePortfolioDialog', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /last portfolio/i, level: 3 })).toBeInTheDocument();
-      expect(screen.getByText(/this is your last portfolio/i)).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /last portfolio/i, level: 3 })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/this is your last portfolio/i)
+      ).toBeInTheDocument();
     });
   });
 
@@ -284,7 +306,9 @@ describe('DeletePortfolioDialog', () => {
       expect(screen.getByText('Test Portfolio')).toBeInTheDocument();
     });
 
-    expect(screen.queryByText(/this is your last portfolio/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/this is your last portfolio/i)
+    ).not.toBeInTheDocument();
   });
 
   it('should close dialog on cancel', async () => {
@@ -331,7 +355,9 @@ describe('DeletePortfolioDialog', () => {
       />
     );
 
-    const deleteButton = await screen.findByRole('button', { name: /delete portfolio/i });
+    const deleteButton = await screen.findByRole('button', {
+      name: /delete portfolio/i,
+    });
     await user.click(deleteButton);
 
     // Should show loading state

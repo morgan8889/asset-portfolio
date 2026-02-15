@@ -200,8 +200,11 @@ const TransactionTableComponent = ({
 
   // Clamp current page when displayTransactions changes to prevent out-of-bounds
   useEffect(() => {
-    const maxPage = Math.max(1, Math.ceil(displayTransactions.length / pageSize));
-    setCurrentPage(prev => prev > maxPage ? maxPage : prev);
+    const maxPage = Math.max(
+      1,
+      Math.ceil(displayTransactions.length / pageSize)
+    );
+    setCurrentPage((prev) => (prev > maxPage ? maxPage : prev));
   }, [displayTransactions.length, pageSize]);
 
   // Pagination
@@ -340,83 +343,85 @@ const TransactionTableComponent = ({
           <>
             <div className="overflow-x-auto">
               <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Symbol</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-right">Fees</TableHead>
-                  <TableHead>Notes</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedTransactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        {formatDate(transaction.date)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {getTransactionTypeBadge(transaction.type)}
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {transaction.assetId}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {transaction.quantity.toString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatCurrency(parseFloat(transaction.price.toString()))}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatCurrency(
-                        parseFloat(transaction.totalAmount.toString())
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      {transaction.fees.toString() !== '0'
-                        ? formatCurrency(
-                            parseFloat(transaction.fees.toString())
-                          )
-                        : '-'}
-                    </TableCell>
-                    <TableCell className="max-w-[200px] truncate text-muted-foreground">
-                      {transaction.notes || '-'}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => setEditTransaction(transaction)}
-                          >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => setDeleteTransaction(transaction)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Symbol</TableHead>
+                    <TableHead className="text-right">Quantity</TableHead>
+                    <TableHead className="text-right">Price</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="text-right">Fees</TableHead>
+                    <TableHead>Notes</TableHead>
+                    <TableHead></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
+                </TableHeader>
+                <TableBody>
+                  {paginatedTransactions.map((transaction) => (
+                    <TableRow key={transaction.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          {formatDate(transaction.date)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {getTransactionTypeBadge(transaction.type)}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {transaction.assetId}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {transaction.quantity.toString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(
+                          parseFloat(transaction.price.toString())
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatCurrency(
+                          parseFloat(transaction.totalAmount.toString())
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {transaction.fees.toString() !== '0'
+                          ? formatCurrency(
+                              parseFloat(transaction.fees.toString())
+                            )
+                          : '-'}
+                      </TableCell>
+                      <TableCell className="max-w-[200px] truncate text-muted-foreground">
+                        {transaction.notes || '-'}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => setEditTransaction(transaction)}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => setDeleteTransaction(transaction)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
               </Table>
             </div>
             {displayTransactions.length > pageSize && (

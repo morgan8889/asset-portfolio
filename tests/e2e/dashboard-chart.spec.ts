@@ -1,4 +1,4 @@
-import { test, expect, seedMockData } from './fixtures/test';
+import { test, expect } from './fixtures/test';
 
 /**
  * E2E tests for the Growth Chart Widget (US2)
@@ -7,9 +7,8 @@ import { test, expect, seedMockData } from './fixtures/test';
  */
 test.describe('Dashboard Growth Chart', () => {
   test.beforeEach(async ({ page }) => {
-    await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test.describe('Time Range Selection', () => {

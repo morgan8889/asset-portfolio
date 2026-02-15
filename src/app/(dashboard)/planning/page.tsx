@@ -33,6 +33,7 @@ export default function PlanningPage() {
   const {
     fireConfig,
     scenarios,
+    liabilities,
     netWorthHistory,
     setNetWorthHistory,
     fireProjection,
@@ -135,7 +136,7 @@ export default function PlanningPage() {
     if (currentPortfolio) {
       loadNetWorthHistory();
     }
-  }, [currentPortfolio, timeRange, loadNetWorthHistory]);
+  }, [currentPortfolio, timeRange, liabilities, loadNetWorthHistory]);
 
   useEffect(() => {
     if (currentPortfolio && netWorthHistory.length > 0) {

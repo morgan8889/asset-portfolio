@@ -45,7 +45,7 @@ export function DashboardHeader() {
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         </div>
         <div className="flex items-center gap-2">
-          <p className="text-muted-foreground text-sm">Portfolio:</p>
+          <p className="text-sm text-muted-foreground">Portfolio:</p>
           <Select
             value={currentPortfolio.id}
             onValueChange={handlePortfolioChange}
@@ -54,7 +54,7 @@ export function DashboardHeader() {
               <SelectValue>
                 <span className="flex items-center gap-2">
                   <span className="truncate">{currentPortfolio.name}</span>
-                  <Badge variant="secondary" className="text-xs shrink-0">
+                  <Badge variant="secondary" className="shrink-0 text-xs">
                     {currentPortfolio.type.charAt(0).toUpperCase() +
                       currentPortfolio.type.slice(1)}
                   </Badge>
@@ -95,10 +95,7 @@ export function DashboardHeader() {
           <FileSpreadsheet className="mr-2 h-4 w-4" />
           Import CSV
         </Button>
-        <Button
-          size="sm"
-          onClick={() => router.push('/portfolios')}
-        >
+        <Button size="sm" onClick={() => router.push('/portfolios')}>
           <Briefcase className="mr-2 h-4 w-4" />
           Manage Portfolio
         </Button>

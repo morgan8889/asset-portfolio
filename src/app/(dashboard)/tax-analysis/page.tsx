@@ -17,7 +17,8 @@ import Link from 'next/link';
  * estimated tax liability, and detailed lot-level analysis.
  */
 export default function TaxAnalysisPage() {
-  const { currentPortfolio, holdings, loadHoldings, loading } = usePortfolioStore();
+  const { currentPortfolio, holdings, loadHoldings, loading } =
+    usePortfolioStore();
   const {
     prices,
     lastFetchTime,

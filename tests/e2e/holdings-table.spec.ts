@@ -3,22 +3,18 @@ import { test, expect, seedMockData } from './fixtures/test';
 test.describe('Holdings Table', () => {
   test.beforeEach(async ({ page }) => {
     await seedMockData(page);
-    await page.goto('/');
+    await page.goto('/holdings');
     await page.waitForLoadState('load');
   });
 
   test('should display holdings table when data exists', async ({ page }) => {
-    // Look for holdings table or section
-    const holdingsSection = page.getByText('Holdings').or(page.locator('[data-testid="holdings-table"]'));
+    // Should show holdings table
+    await expect(page.getByRole('table')).toBeVisible({ timeout: 10000 });
 
-    if (await holdingsSection.isVisible()) {
-      // Should have table headers
-      await expect(page.getByText('Symbol')).toBeVisible();
-      await expect(page.getByText('Name')).toBeVisible();
-      await expect(page.getByText('Quantity')).toBeVisible();
-      await expect(page.getByText('Market Value')).toBeVisible();
-      await expect(page.getByText('Gain/Loss')).toBeVisible();
-    }
+    // Should have table rows
+    const rows = page.locator('tbody tr');
+    const count = await rows.count();
+    expect(count).toBeGreaterThan(0);
   });
 
   test('should display empty state when no holdings exist', async ({ page }) => {
@@ -178,44 +174,36 @@ test.describe('Holdings Table', () => {
   test('should be responsive on different screen sizes', async ({ page }) => {
     // Test desktop view
     await page.setViewportSize({ width: 1200, height: 800 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
+    await page.waitForLoadState('load');
 
-    const table = page.locator('table').or(page.locator('[role="table"]'));
+    const table = page.locator('table').first();
+    await expect(table).toBeVisible({ timeout: 10000 });
 
-    if (await table.isVisible()) {
-      // All columns should be visible on desktop
-      await expect(page.getByText('Symbol')).toBeVisible();
-      await expect(page.getByText('Name')).toBeVisible();
-      await expect(page.getByText('Quantity')).toBeVisible();
-      await expect(page.getByText('Market Value')).toBeVisible();
-    }
+    // All columns should be visible on desktop
+    // Actual column headers: Symbol, Name, Quantity, Price, Net Value, Gain/Loss
+    await expect(page.locator('th').filter({ hasText: 'Symbol' })).toBeVisible();
+    await expect(page.locator('th').filter({ hasText: 'Name' })).toBeVisible();
+    await expect(page.locator('th').filter({ hasText: 'Quantity' })).toBeVisible();
+    await expect(page.locator('th').filter({ hasText: 'Net Value' })).toBeVisible();
 
     // Test tablet view
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
+    await page.waitForLoadState('load');
 
-    if (await table.isVisible()) {
-      // Should still show essential columns
-      await expect(page.getByText('Symbol')).toBeVisible();
-      await expect(page.getByText('Market Value')).toBeVisible();
-    }
+    // Table should still render on tablet
+    await expect(table).toBeVisible({ timeout: 10000 });
 
     // Test mobile view
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.reload({ waitUntil: 'networkidle' });
+    await page.reload();
+    await page.waitForLoadState('load');
 
-    // On mobile, might switch to card layout or show fewer columns
-    const mobileTable = page.locator('table').or(page.locator('[role="table"]'));
-    const cardLayout = page.locator('[data-testid*="holding-card"]').or(
-      page.locator('.card').filter({ hasText: /AAPL|BTC|ETH/i })
-    );
-
-    // Either table or card layout should be visible
-    if (await mobileTable.isVisible()) {
-      await expect(mobileTable).toBeVisible();
-    } else if (await cardLayout.isVisible()) {
-      await expect(cardLayout).toBeVisible();
-    }
+    // On mobile, the table may overflow horizontally but should still be in the DOM.
+    // The page itself should not crash.
+    const heading = page.locator('h1').filter({ hasText: /holdings/i });
+    await expect(heading).toBeVisible({ timeout: 10000 });
   });
 
   test('should handle pagination for large datasets', async ({ page }) => {

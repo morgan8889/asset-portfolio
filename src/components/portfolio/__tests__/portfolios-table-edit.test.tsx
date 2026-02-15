@@ -79,9 +79,7 @@ describe('PortfoliosTable - Edit Functionality', () => {
   });
 
   it('should render Edit button for each portfolio', async () => {
-    render(
-      <PortfoliosTable onView={vi.fn()} onEdit={vi.fn()} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} onEdit={vi.fn()} />);
 
     await waitFor(() => {
       const editButtons = screen.getAllByRole('button', { name: 'Edit' });
@@ -92,9 +90,7 @@ describe('PortfoliosTable - Edit Functionality', () => {
   it('should open edit dialog when Edit button is clicked', async () => {
     const user = userEvent.setup();
 
-    render(
-      <PortfoliosTable onView={vi.fn()} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} />);
 
     // Wait for portfolios to load
     await screen.findByText('Retirement Portfolio');
@@ -106,16 +102,16 @@ describe('PortfoliosTable - Edit Functionality', () => {
     // Dialog should open with edit mode
     await waitFor(() => {
       expect(screen.getByText('Edit Portfolio')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('Retirement Portfolio')).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue('Retirement Portfolio')
+      ).toBeInTheDocument();
     });
   });
 
   it('should pre-fill form with portfolio data', async () => {
     const user = userEvent.setup();
 
-    render(
-      <PortfoliosTable onView={vi.fn()} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} />);
 
     await screen.findByText('Retirement Portfolio');
 
@@ -123,7 +119,9 @@ describe('PortfoliosTable - Edit Functionality', () => {
     await user.click(editButtons[0]);
 
     await waitFor(() => {
-      expect(screen.getByDisplayValue('Retirement Portfolio')).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue('Retirement Portfolio')
+      ).toBeInTheDocument();
       // IRA type should be selected (may appear in both select trigger and option)
       expect(screen.getAllByText(/traditional ira/i).length).toBeGreaterThan(0);
     });
@@ -134,9 +132,7 @@ describe('PortfoliosTable - Edit Functionality', () => {
     const mockUpdatePortfolio = vi.fn(() => Promise.resolve());
     mockStoreState.updatePortfolio = mockUpdatePortfolio;
 
-    render(
-      <PortfoliosTable onView={vi.fn()} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} />);
 
     await screen.findByText('Retirement Portfolio');
 
@@ -150,7 +146,9 @@ describe('PortfoliosTable - Edit Functionality', () => {
     await user.type(nameInput, 'Updated Portfolio');
 
     // Submit
-    const updateButton = screen.getByRole('button', { name: /update portfolio/i });
+    const updateButton = screen.getByRole('button', {
+      name: /update portfolio/i,
+    });
     await user.click(updateButton);
 
     // Dialog should close
@@ -163,9 +161,7 @@ describe('PortfoliosTable - Edit Functionality', () => {
     const user = userEvent.setup();
     const mockOnEdit = vi.fn();
 
-    render(
-      <PortfoliosTable onView={vi.fn()} onEdit={mockOnEdit} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} onEdit={mockOnEdit} />);
 
     await screen.findByText('Trading Account');
 
@@ -180,9 +176,7 @@ describe('PortfoliosTable - Edit Functionality', () => {
     const user = userEvent.setup();
     const mockOnEdit = vi.fn();
 
-    render(
-      <PortfoliosTable onView={vi.fn()} onEdit={mockOnEdit} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} onEdit={mockOnEdit} />);
 
     await screen.findByText('Retirement Portfolio');
 
@@ -195,9 +189,7 @@ describe('PortfoliosTable - Edit Functionality', () => {
   it('should maintain table state after closing edit dialog', async () => {
     const user = userEvent.setup();
 
-    render(
-      <PortfoliosTable onView={vi.fn()} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} />);
 
     await screen.findByText('Retirement Portfolio');
     await screen.findByText('Trading Account');

@@ -86,6 +86,7 @@ export function AddPropertyDialog({
     register,
     handleSubmit,
     watch,
+    setValue,
     reset,
     formState: { errors },
   } = useForm<PropertyFormValues>({
@@ -264,8 +265,8 @@ export function AddPropertyDialog({
           <div className="flex items-center space-x-2 rounded-lg border p-4">
             <Switch
               id="isRental"
-              {...register('isRental')}
               checked={isRental}
+              onCheckedChange={(checked) => setValue('isRental', checked)}
             />
             <Label htmlFor="isRental" className="cursor-pointer">
               This is a rental property

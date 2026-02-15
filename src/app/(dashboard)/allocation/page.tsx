@@ -175,7 +175,7 @@ export default function AllocationPage() {
 
   // Handle drill-down (T016)
   const handleCategoryClick = (_category: string) => {
-    // TODO: Implement hierarchical drill-down to show sector breakdown
+    // Placeholder for hierarchical drill-down (sector breakdown)
   };
 
   return (

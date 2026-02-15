@@ -84,7 +84,9 @@ export const usePortfolioStore = create<PortfolioState>()(
             // Track lastAccessedAt for recency-based sorting
             const now = new Date();
             try {
-              await portfolioQueries.update(portfolio.id, { lastAccessedAt: now });
+              await portfolioQueries.update(portfolio.id, {
+                lastAccessedAt: now,
+              });
             } catch (error) {
               // Log error but don't fail the operation since this is non-critical
               const { logger } = await import('@/lib/utils/logger');
@@ -185,7 +187,7 @@ export const usePortfolioStore = create<PortfolioState>()(
           const { _loadingHoldingsForId } = get();
           if (_loadingHoldingsForId === portfolioId) {
             // Wait a bit and retry if the previous request might have failed
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
             // Check again after wait - if still loading, skip
             if (get()._loadingHoldingsForId === portfolioId) {
               return;

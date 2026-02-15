@@ -16,7 +16,10 @@ import { Badge } from '@/components/ui/badge';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { formatCurrency } from '@/lib/utils/currency';
-import { calculateTotalValue, calculateYtdReturn } from '@/lib/services/metrics-service';
+import {
+  calculateTotalValue,
+  calculateYtdReturn,
+} from '@/lib/services/metrics-service';
 import { holdingQueries } from '@/lib/db';
 import Decimal from 'decimal.js';
 import { Portfolio, PortfolioType } from '@/types/portfolio';
@@ -38,7 +41,10 @@ export function PortfoliosTable({
   const portfolios = usePortfolioStore((state) => state.portfolios);
   const currentPortfolio = usePortfolioStore((state) => state.currentPortfolio);
   const [portfolioMetrics, setPortfolioMetrics] = useState<
-    Map<string, { totalValue: Decimal; ytdReturn: number | null; holdings: number }>
+    Map<
+      string,
+      { totalValue: Decimal; ytdReturn: number | null; holdings: number }
+    >
   >(new Map());
   const [editingPortfolio, setEditingPortfolio] = useState<{
     id: string;
@@ -55,7 +61,9 @@ export function PortfoliosTable({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Use the store's getSortedPortfolios method for consistency
-  const getSortedPortfolios = usePortfolioStore((state) => state.getSortedPortfolios);
+  const getSortedPortfolios = usePortfolioStore(
+    (state) => state.getSortedPortfolios
+  );
   const sortedPortfolios = useMemo(() => {
     return getSortedPortfolios();
   }, [portfolios, getSortedPortfolios]);
@@ -84,7 +92,10 @@ export function PortfoliosTable({
             },
           };
         } catch (error) {
-          logger.error(`Failed to load metrics for portfolio ${portfolio.id}`, error);
+          logger.error(
+            `Failed to load metrics for portfolio ${portfolio.id}`,
+            error
+          );
           return {
             portfolioId: portfolio.id,
             metrics: {
@@ -215,7 +226,7 @@ export function PortfoliosTable({
                       size="sm"
                       onClick={() => onView(portfolio.id)}
                     >
-                      <Eye className="h-4 w-4 mr-1" />
+                      <Eye className="mr-1 h-4 w-4" />
                       View
                     </Button>
                     <Button

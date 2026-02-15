@@ -68,7 +68,9 @@ describe('calculateYtdReturn', () => {
         totalCost: new Decimal(10000),
         holdingCount: 5,
       });
-      vi.mocked(snapshotService.getSnapshots).mockResolvedValue([singleSnapshot]);
+      vi.mocked(snapshotService.getSnapshots).mockResolvedValue([
+        singleSnapshot,
+      ]);
 
       const result = await calculateYtdReturn(mockPortfolioId, currentDate);
 
@@ -322,7 +324,9 @@ describe('calculateYtdReturn', () => {
           holdingCount: 3,
         }),
       ];
-      vi.mocked(snapshotService.getSnapshots).mockResolvedValue(midYearSnapshots);
+      vi.mocked(snapshotService.getSnapshots).mockResolvedValue(
+        midYearSnapshots
+      );
 
       const result = await calculateYtdReturn(mockPortfolioId, currentDate);
 

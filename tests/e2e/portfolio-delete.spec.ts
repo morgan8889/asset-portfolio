@@ -1,4 +1,5 @@
 import { test, expect, seedMockData } from './fixtures/test';
+import { seedSecondPortfolio } from './fixtures/seed-helpers';
 
 /** Wait for delete dialog to be fully ready (transaction count loaded). */
 async function waitForDeleteDialogReady(page: import('@playwright/test').Page) {
@@ -15,8 +16,8 @@ test.describe('Portfolio Delete Workflow', () => {
   });
 
   test('should open delete dialog when clicking Delete button', async ({ page }) => {
-    // Click Delete button on first portfolio
-    const deleteButton = page.getByRole('button', { name: /trash/i }).first();
+    // Click Delete button on first portfolio (aria-label="Delete")
+    const deleteButton = page.getByRole('button', { name: 'Delete' }).first();
     await deleteButton.click();
 
     // Dialog should open with "Delete Portfolio" title
@@ -28,44 +29,55 @@ test.describe('Portfolio Delete Workflow', () => {
     // Get portfolio name from table
     const firstPortfolioRow = page.getByRole('row').nth(1);
     const portfolioName = await firstPortfolioRow.getByRole('cell').first().textContent();
+    const cleanName = portfolioName?.trim().replace(/Current$/, '').trim() || '';
 
     // Click Delete button
-    const deleteButton = page.getByRole('button', { name: /trash/i }).first();
+    const deleteButton = page.getByRole('button', { name: 'Delete' }).first();
     await deleteButton.click();
 
-    // Portfolio name should appear in dialog
-    await expect(page.getByText(portfolioName?.trim().replace(/Current$/, '').trim() || '')).toBeVisible();
+    // Portfolio name should appear inside the dialog (scoped to avoid matching table row)
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByText(cleanName)).toBeVisible();
   });
 
   test('should show simple confirmation for portfolio with no transactions', async ({ page }) => {
-    // Assuming first portfolio has no transactions
-    const deleteButton = page.getByRole('button', { name: /trash/i }).first();
-    await deleteButton.click();
+    // Seed a portfolio with 0 transactions so it gets "simple" confirmation
+    await seedSecondPortfolio(page, {
+      name: 'Empty Portfolio',
+      transactionCount: 0,
+    });
+
+    // Reload the page so the new portfolio appears in the table
+    await page.goto('/portfolios');
+    await page.waitForLoadState('load');
+
+    // Find the row containing the empty portfolio and click its Delete button
+    const emptyRow = page.getByRole('row').filter({ hasText: 'Empty Portfolio' });
+    await emptyRow.getByRole('button', { name: 'Delete' }).click();
 
     await waitForDeleteDialogReady(page);
 
     // Should not show checkbox or text input
     const checkbox = page.getByRole('checkbox');
     const textInput = page.getByPlaceholder(/type portfolio name/i);
+    await expect(checkbox).not.toBeVisible();
+    await expect(textInput).not.toBeVisible();
 
-    // These should either not exist or not be visible
-    if (await checkbox.isVisible().catch(() => false)) {
-      // If visible, test will handle accordingly
-    } else {
-      expect(await textInput.isVisible().catch(() => false)).toBeFalsy();
-    }
-
-    // Delete button should be enabled
+    // Delete button should be enabled (simple confirmation = no extra step)
     const confirmButton = page.getByRole('button', { name: /delete portfolio/i });
     await expect(confirmButton).toBeEnabled();
   });
 
   test('should cancel deletion without removing portfolio', async ({ page }) => {
-    // Get original portfolio count
-    const originalRows = await page.getByRole('row').count();
+    // Wait for the table to have at least one data row (header + 1 portfolio)
+    await expect(page.getByRole('button', { name: 'Delete' }).first()).toBeVisible({ timeout: 5000 });
+
+    // Count rows scoped to the table element to avoid counting dialog rows
+    const table = page.getByRole('table');
+    const originalRows = await table.getByRole('row').count();
 
     // Click Delete button
-    const deleteButton = page.getByRole('button', { name: /trash/i }).first();
+    const deleteButton = page.getByRole('button', { name: 'Delete' }).first();
     await deleteButton.click();
 
     await expect(page.getByRole('heading', { name: /delete portfolio/i })).toBeVisible();
@@ -76,8 +88,8 @@ test.describe('Portfolio Delete Workflow', () => {
     // Dialog should close
     await expect(page.getByRole('heading', { name: /delete portfolio/i })).not.toBeVisible();
 
-    // Portfolio count should remain the same
-    const currentRows = await page.getByRole('row').count();
+    // Portfolio count should remain the same (scoped to table)
+    const currentRows = await table.getByRole('row').count();
     expect(currentRows).toBe(originalRows);
   });
 
@@ -90,7 +102,7 @@ test.describe('Portfolio Delete Workflow', () => {
     const portfolioName = await firstPortfolioRow.getByRole('cell').first().textContent();
 
     // Click Delete button
-    const deleteButton = page.getByRole('button', { name: /trash/i }).first();
+    const deleteButton = page.getByRole('button', { name: 'Delete' }).first();
     await deleteButton.click();
 
     await waitForDeleteDialogReady(page);
@@ -117,7 +129,7 @@ test.describe('Portfolio Delete Workflow', () => {
     // This test assumes we can find a portfolio with transactions
     // May need to create test data first
 
-    const deleteButtons = page.getByRole('button', { name: /trash/i });
+    const deleteButtons = page.getByRole('button', { name: 'Delete' });
     const count = await deleteButtons.count();
 
     for (let i = 0; i < count; i++) {
@@ -133,14 +145,14 @@ test.describe('Portfolio Delete Workflow', () => {
         await expect(page.getByText(/permanently delete/i)).toBeVisible();
 
         // Delete button should be disabled initially
-        const deleteButton = page.getByRole('button', { name: /delete portfolio/i });
-        await expect(deleteButton).toBeDisabled();
+        const deleteBtn = page.getByRole('button', { name: /delete portfolio/i });
+        await expect(deleteBtn).toBeDisabled();
 
         // Check the checkbox
         await checkbox.click();
 
         // Delete button should now be enabled
-        await expect(deleteButton).toBeEnabled();
+        await expect(deleteBtn).toBeEnabled();
 
         // Cancel and exit loop
         await page.getByRole('button', { name: /cancel/i }).click();
@@ -148,12 +160,13 @@ test.describe('Portfolio Delete Workflow', () => {
       } else {
         // Not the right portfolio, cancel and try next
         await page.getByRole('button', { name: /cancel/i }).click();
+        await expect(page.getByRole('heading', { name: /delete portfolio/i })).not.toBeVisible();
       }
     }
   });
 
   test('should enable delete after checkbox is checked', async ({ page }) => {
-    const deleteButtons = page.getByRole('button', { name: /trash/i });
+    const deleteButtons = page.getByRole('button', { name: 'Delete' });
     const count = await deleteButtons.count();
 
     for (let i = 0; i < count; i++) {
@@ -162,29 +175,30 @@ test.describe('Portfolio Delete Workflow', () => {
 
       const checkbox = page.getByRole('checkbox');
       if (await checkbox.isVisible().catch(() => false)) {
-        const deleteButton = page.getByRole('button', { name: /delete portfolio/i });
+        const deleteBtn = page.getByRole('button', { name: /delete portfolio/i });
 
         // Initially disabled
-        await expect(deleteButton).toBeDisabled();
+        await expect(deleteBtn).toBeDisabled();
 
         // Check the checkbox
         await checkbox.click();
 
         // Now enabled
-        await expect(deleteButton).toBeEnabled();
+        await expect(deleteBtn).toBeEnabled();
 
         // Cancel
         await page.getByRole('button', { name: /cancel/i }).click();
         break;
       } else {
         await page.getByRole('button', { name: /cancel/i }).click();
+        await expect(page.getByRole('heading', { name: /delete portfolio/i })).not.toBeVisible();
       }
     }
   });
 
   test('should show typed confirmation for portfolios with many transactions', async ({ page }) => {
     // This test looks for a portfolio requiring typed confirmation
-    const deleteButtons = page.getByRole('button', { name: /trash/i });
+    const deleteButtons = page.getByRole('button', { name: 'Delete' });
     const count = await deleteButtons.count();
 
     for (let i = 0; i < count; i++) {
@@ -196,14 +210,15 @@ test.describe('Portfolio Delete Workflow', () => {
         // Found a portfolio with typed confirmation
         await expect(textInput).toBeVisible();
 
-        const deleteButton = page.getByRole('button', { name: /delete portfolio/i });
-        await expect(deleteButton).toBeDisabled();
+        const deleteBtn = page.getByRole('button', { name: /delete portfolio/i });
+        await expect(deleteBtn).toBeDisabled();
 
         // Cancel
         await page.getByRole('button', { name: /cancel/i }).click();
         break;
       } else {
         await page.getByRole('button', { name: /cancel/i }).click();
+        await expect(page.getByRole('heading', { name: /delete portfolio/i })).not.toBeVisible();
       }
     }
   });
@@ -215,7 +230,7 @@ test.describe('Portfolio Delete Workflow', () => {
     // Only proceed if we have more than 2 portfolios (1 header + at least 2 data rows)
     if (initialRows > 2) {
       // Delete first portfolio
-      const firstDeleteButton = page.getByRole('button', { name: /trash/i }).first();
+      const firstDeleteButton = page.getByRole('button', { name: 'Delete' }).first();
       await firstDeleteButton.click();
 
       await waitForDeleteDialogReady(page);
@@ -226,10 +241,10 @@ test.describe('Portfolio Delete Workflow', () => {
         await expect(page.getByRole('heading', { name: /delete portfolio/i })).not.toBeVisible();
 
         // Wait for table to update after deletion
-        await expect(page.getByRole('button', { name: /trash/i }).first()).toBeVisible({ timeout: 5000 });
+        await expect(page.getByRole('button', { name: 'Delete' }).first()).toBeVisible({ timeout: 5000 });
 
         // Delete second portfolio (which is now first)
-        const secondDeleteButton = page.getByRole('button', { name: /trash/i }).first();
+        const secondDeleteButton = page.getByRole('button', { name: 'Delete' }).first();
         await secondDeleteButton.click();
 
         await waitForDeleteDialogReady(page);
@@ -251,13 +266,13 @@ test.describe('Portfolio Delete Workflow', () => {
     // Find current portfolio (has "Current" badge)
     const currentBadge = page.getByText(/current/i).first();
 
-    if (await currentBadge.isVisible()) {
+    if (await currentBadge.isVisible().catch(() => false)) {
       // Get the current portfolio name
       const currentRow = page.locator('tr').filter({ has: currentBadge });
       const currentName = await currentRow.getByRole('cell').first().textContent();
 
       // Delete the current portfolio
-      const deleteButton = currentRow.getByRole('button', { name: /trash/i });
+      const deleteButton = currentRow.getByRole('button', { name: 'Delete' });
       await deleteButton.click();
 
       await waitForDeleteDialogReady(page);
@@ -278,7 +293,7 @@ test.describe('Portfolio Delete Workflow', () => {
   });
 
   test('should show loading state during deletion', async ({ page }) => {
-    const deleteButton = page.getByRole('button', { name: /trash/i }).first();
+    const deleteButton = page.getByRole('button', { name: 'Delete' }).first();
     await deleteButton.click();
 
     await waitForDeleteDialogReady(page);
@@ -294,7 +309,7 @@ test.describe('Portfolio Delete Workflow', () => {
   });
 
   test('should show transaction count in delete warning', async ({ page }) => {
-    const deleteButtons = page.getByRole('button', { name: /trash/i });
+    const deleteButtons = page.getByRole('button', { name: 'Delete' });
     const count = await deleteButtons.count();
 
     for (let i = 0; i < count; i++) {
@@ -309,6 +324,7 @@ test.describe('Portfolio Delete Workflow', () => {
         break;
       } else {
         await page.getByRole('button', { name: /cancel/i }).click();
+        await expect(page.getByRole('heading', { name: /delete portfolio/i })).not.toBeVisible();
       }
     }
   });
@@ -316,8 +332,9 @@ test.describe('Portfolio Delete Workflow', () => {
 
 test.describe('Last Portfolio Warning', () => {
   test('should show warning when deleting last portfolio', async ({ page }) => {
+    await seedMockData(page);
     await page.goto('/portfolios');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     // Count portfolios
     const rows = page.getByRole('row');
@@ -325,7 +342,7 @@ test.describe('Last Portfolio Warning', () => {
 
     // If only one portfolio (plus header row = 2 total)
     if (rowCount === 2) {
-      const deleteButton = page.getByRole('button', { name: /trash/i }).first();
+      const deleteButton = page.getByRole('button', { name: 'Delete' }).first();
       await deleteButton.click();
 
       await expect(page.getByText(/last portfolio/i)).toBeVisible();

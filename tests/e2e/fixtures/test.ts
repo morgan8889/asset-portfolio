@@ -79,11 +79,27 @@ export const test = base.extend<{ mockPriceApi: void }>({
         return;
       }
 
-      // Register batch route first — Playwright matches in registration order,
-      // and the wildcard **/api/prices/* would also match /api/prices/batch.
+      // Single-symbol price requests: GET /api/prices/AAPL
+      // Registered FIRST so it sits lower in Playwright's LIFO route chain.
+      await page.route('**/api/prices/*', async (route) => {
+        const url = new URL(route.request().url());
+        const parts = url.pathname.split('/');
+        const symbol = parts[parts.length - 1];
+
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(buildPriceResponse(symbol)),
+        });
+      });
+
+      // Batch price requests: POST /api/prices/batch
+      // Registered LAST so Playwright evaluates it first (LIFO order).
+      // Without this ordering the wildcard route above would intercept
+      // /api/prices/batch and return a single-symbol response for "batch".
       await page.route('**/api/prices/batch', async (route) => {
         if (route.request().method() !== 'POST') {
-          await route.continue();
+          await route.fallback();
           return;
         }
 
@@ -107,35 +123,58 @@ export const test = base.extend<{ mockPriceApi: void }>({
         });
       });
 
-      // Single-symbol price requests: GET /api/prices/AAPL
-      await page.route('**/api/prices/*', async (route) => {
-        const url = new URL(route.request().url());
-        const parts = url.pathname.split('/');
-        const symbol = parts[parts.length - 1];
-
-        await route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify(buildPriceResponse(symbol)),
-        });
-      });
-
       await use();
     },
     { auto: true },
   ],
 });
 
-export { expect, type Page } from '@playwright/test';
-
 /**
- * Navigate to /test, generate mock portfolio data, and wait for completion.
- * Call this in beforeEach for tests that need portfolio/holdings/transaction data.
- * Does NOT wait for the auto-redirect — the caller's next page.goto() cancels it.
+ * Seeds mock data via the /test page UI button.
+ * Navigates to /test, clicks "Generate Mock Data", waits for completion,
+ * then sets currentPortfolio in localStorage so Zustand hydrates it on any page.
+ * Does NOT navigate afterward — the caller should navigate to the desired page.
  */
 export async function seedMockData(page: import('@playwright/test').Page) {
   await page.goto('/test');
+  await page.waitForLoadState('load');
   const btn = page.getByRole('button', { name: 'Generate Mock Data' });
+  await expect(btn).toBeVisible({ timeout: 10000 });
   await btn.click();
   await page.getByText('Done! Redirecting...').waitFor({ timeout: 15000 });
+
+  // Cancel the test page's pending 500ms redirect (window.location.replace('/'))
+  // to avoid ERR_ABORTED races with the caller's page.goto().
+  // Then read the first portfolio from IndexedDB and set it in localStorage
+  // so Zustand hydrates currentPortfolio on any page (not just the dashboard).
+  await page.evaluate(async () => {
+    // Clear all pending timeouts to prevent the auto-redirect
+    const id = window.setTimeout(() => {}, 0);
+    for (let i = 0; i <= id; i++) window.clearTimeout(i);
+
+    return new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('PortfolioTrackerDB');
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction(['portfolios'], 'readonly');
+        const store = tx.objectStore('portfolios');
+        const getAll = store.getAll();
+        getAll.onsuccess = () => {
+          const portfolios = getAll.result;
+          db.close();
+          if (portfolios.length > 0) {
+            localStorage.setItem('portfolio-store', JSON.stringify({
+              state: { currentPortfolio: portfolios[0] },
+              version: 0,
+            }));
+          }
+          resolve();
+        };
+        getAll.onerror = () => { db.close(); reject(getAll.error); };
+      };
+      request.onerror = () => reject(request.error);
+    });
+  });
 }
+
+export { expect, type Page } from '@playwright/test';

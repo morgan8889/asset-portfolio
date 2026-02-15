@@ -1,4 +1,4 @@
-import { test, expect, seedMockData } from './fixtures/test';
+import { test, expect } from './fixtures/test';
 
 /**
  * E2E tests for Dashboard Settings Dialog Viewport Constraints
@@ -8,9 +8,8 @@ import { test, expect, seedMockData } from './fixtures/test';
  */
 test.describe('Dashboard Settings Dialog Viewport', () => {
   test.beforeEach(async ({ page }) => {
-    await seedMockData(page);
     await page.goto('/');
-    await page.waitForLoadState('load');
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display title at top of dialog', async ({ page }) => {

@@ -2,10 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Decimal from 'decimal.js';
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -132,7 +129,8 @@ export function TaxAnalysisTab({
   // Paginate sorted lots
   const totalPages = Math.ceil(sortedLots.length / pageSize);
   const paginatedLots = useMemo(
-    () => sortedLots.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    () =>
+      sortedLots.slice((currentPage - 1) * pageSize, currentPage * pageSize),
     [sortedLots, currentPage, pageSize]
   );
 
@@ -149,7 +147,8 @@ export function TaxAnalysisTab({
 
   // Stable loading logic based on actual data state
   // Only show loading if we have holdings but no tax lots AND no prices yet
-  const isLoading = holdings.length > 0 && taxAnalysis.lots.length === 0 && prices.size === 0;
+  const isLoading =
+    holdings.length > 0 && taxAnalysis.lots.length === 0 && prices.size === 0;
 
   const SortButton = ({
     field,
@@ -198,11 +197,14 @@ export function TaxAnalysisTab({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Net Unrealized Gain/Loss</p>
+            <p className="text-sm text-muted-foreground">
+              Net Unrealized Gain/Loss
+            </p>
             <p
               className={cn(
                 'mt-1 text-2xl font-semibold',
-                taxAnalysis.netUnrealizedGain.lessThan(0) && 'text-red-600 dark:text-red-400'
+                taxAnalysis.netUnrealizedGain.lessThan(0) &&
+                  'text-red-600 dark:text-red-400'
               )}
             >
               ${taxAnalysis.netUnrealizedGain.toFixed(2)}
@@ -216,7 +218,9 @@ export function TaxAnalysisTab({
 
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Short-Term / Long-Term</p>
+            <p className="text-sm text-muted-foreground">
+              Short-Term / Long-Term
+            </p>
             <p className="mt-1 text-2xl font-semibold">
               <span className="text-yellow-600 dark:text-yellow-400">
                 ${taxAnalysis.shortTermGains.toFixed(0)}
@@ -235,11 +239,15 @@ export function TaxAnalysisTab({
 
         <Card>
           <CardContent className="p-4">
-            <p className="text-sm text-muted-foreground">Estimated Tax Liability</p>
+            <p className="text-sm text-muted-foreground">
+              Estimated Tax Liability
+            </p>
             <p className="mt-1 text-2xl font-semibold text-red-600 dark:text-red-400">
               ${taxAnalysis.totalEstimatedTax.toFixed(2)}
             </p>
-            <p className="mt-2 truncate text-sm text-muted-foreground">If all sold today</p>
+            <p className="mt-2 truncate text-sm text-muted-foreground">
+              If all sold today
+            </p>
           </CardContent>
         </Card>
       </div>
