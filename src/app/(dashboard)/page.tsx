@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   DashboardProvider,
   useDashboardContext,
@@ -16,6 +16,7 @@ import {
   usePortfolioStore,
   useDashboardStore,
 } from '@/lib/stores';
+import { PRICEABLE_ASSET_TYPES } from '@/types/portfolio';
 
 export default function DashboardPage() {
   return (
@@ -29,14 +30,30 @@ function DashboardContent() {
   const { currentPortfolio, loading, error, loadPortfolios } =
     useDashboardContext();
   const { holdings, assets } = usePortfolioStore();
+  const { loadConfig } = useDashboardStore();
+
+  // Get stable action references via getState() to avoid effect re-runs from devtools middleware
   const {
     loadPreferences,
     setWatchedSymbols,
     startPolling,
     stopPolling,
     refreshAllPrices,
-  } = usePriceStore();
-  const { loadConfig } = useDashboardStore();
+  } = usePriceStore.getState();
+
+  // Derive a stable symbol key so the price effect only re-runs when actual symbols change
+  const symbolsKey = useMemo(() => {
+    if (holdings.length === 0 || assets.length === 0) return '';
+    return holdings
+      .map((h) => {
+        const asset = assets.find((a) => a.id === h.assetId);
+        if (!asset || !PRICEABLE_ASSET_TYPES.has(asset.type)) return null;
+        return asset.symbol;
+      })
+      .filter(Boolean)
+      .sort()
+      .join(',');
+  }, [holdings, assets]);
 
   // Initialize dashboard config and price polling when dashboard mounts
   useEffect(() => {
@@ -54,26 +71,18 @@ function DashboardContent() {
       // Cleanup polling on unmount
       stopPolling();
     };
-  }, [loadConfig, loadPreferences, stopPolling]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- actions from getState() are stable
+  }, []);
 
-  // Update watched symbols when holdings change
+  // Update watched symbols when the set of priceable symbols changes
   useEffect(() => {
-    if (holdings.length > 0 && assets.length > 0) {
-      const symbols = holdings
-        .map((h) => {
-          const asset = assets.find((a) => a.id === h.assetId);
-          return asset?.symbol;
-        })
-        .filter((s): s is string => !!s);
-
-      if (symbols.length > 0) {
-        setWatchedSymbols(symbols);
-        // Fetch prices immediately and start polling
-        refreshAllPrices();
-        startPolling();
-      }
-    }
-  }, [holdings, assets, setWatchedSymbols, refreshAllPrices, startPolling]);
+    if (!symbolsKey) return;
+    const symbols = symbolsKey.split(',');
+    setWatchedSymbols(symbols);
+    refreshAllPrices();
+    startPolling();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- actions from getState() are stable
+  }, [symbolsKey]);
 
   if (loading) {
     return <DashboardLoadingState />;

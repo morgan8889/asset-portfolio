@@ -61,6 +61,7 @@ interface PriceState {
   pollingLock: boolean; // Prevents race conditions in polling restart
   pollingService: PricePollingService | null; // Encapsulated polling infrastructure
   symbolToAssetId: Map<string, string>; // Maps symbol -> assetId for snapshot persistence
+  _refreshInFlight: boolean; // Prevents duplicate concurrent refreshAllPrices() calls
 
   // Actions
   setPreferences: (
@@ -148,6 +149,7 @@ export const usePriceStore = create<PriceState>()(
       pollingLock: false,
       pollingService: null,
       symbolToAssetId: new Map(),
+      _refreshInFlight: false,
 
       // Preference management
       setPreferences: async (newPreferences) => {
@@ -372,6 +374,9 @@ export const usePriceStore = create<PriceState>()(
         const symbols = Array.from(get().watchedSymbols);
         if (symbols.length === 0) return;
 
+        // Skip if a refresh is already in-flight (prevents duplicate concurrent requests)
+        if (get()._refreshInFlight) return;
+
         // Skip fetch if offline - rely on cached data
         if (!get().isOnline) {
           logger.info('Offline: using cached prices');
@@ -384,7 +389,7 @@ export const usePriceStore = create<PriceState>()(
           return;
         }
 
-        set({ loading: true, error: null });
+        set({ loading: true, error: null, _refreshInFlight: true });
 
         try {
           // Use batch endpoint for efficiency
@@ -453,6 +458,8 @@ export const usePriceStore = create<PriceState>()(
 
           set({ prices, loading: false, error: message });
           logger.error('Error fetching prices:', error);
+        } finally {
+          set({ _refreshInFlight: false });
         }
       },
 
