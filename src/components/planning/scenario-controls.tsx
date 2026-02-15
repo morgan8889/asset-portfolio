@@ -48,10 +48,7 @@ const scenarioSchema = z
       'income_change',
       'one_time_expense',
     ]),
-    value: z.coerce
-      .number()
-      .min(-100, 'Value cannot be less than -100%')
-      .max(1000, 'Value cannot exceed 1000'),
+    value: z.coerce.number(),
     durationMonths: z.coerce
       .number()
       .min(0, 'Duration must be positive')
@@ -63,6 +60,18 @@ const scenarioSchema = z
     {
       message: 'Duration is required for one-time expenses',
       path: ['durationMonths'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.type === 'one_time_expense') {
+        return data.value >= 0 && data.value <= 10_000_000;
+      }
+      return data.value >= -100 && data.value <= 1000;
+    },
+    {
+      message: 'Value is out of valid range',
+      path: ['value'],
     }
   );
 
