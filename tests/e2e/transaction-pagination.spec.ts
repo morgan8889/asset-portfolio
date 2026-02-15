@@ -1,6 +1,5 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 import {
-  generateMockData,
   getFirstPortfolioId,
   addRecordsToStore,
   generateTransactionRecords,
@@ -9,7 +8,7 @@ import {
 test.describe('Transaction Pagination', () => {
   test.beforeEach(async ({ page }) => {
     // Generate base mock data (creates 1 portfolio with ~8 transactions)
-    await generateMockData(page);
+    await seedMockData(page);
 
     // Get the portfolio ID and seed 50 additional transactions for pagination
     const portfolioId = await getFirstPortfolioId(page);
@@ -21,7 +20,7 @@ test.describe('Transaction Pagination', () => {
 
     // Navigate to transactions page
     await page.goto('/transactions');
-    await page.waitForSelector('text=Transaction History', { timeout: 10000 });
+    await page.waitForLoadState('load');
 
     // Wait for the table to render with rows
     await page.waitForSelector('table tbody tr', { timeout: 10000 });
@@ -119,9 +118,9 @@ test.describe('Transaction Pagination', () => {
     // Get current info text
     const initialInfo = await page.locator('text=/Showing \\d+-\\d+ of \\d+ transactions/').textContent();
 
-    // Open page size selector and select 50
-    await page.click('[aria-label="Select page size"]');
-    await page.click('text=50');
+    // Open page size selector (shadcn/Radix Select) and select 50
+    await page.locator('[aria-label="Select page size"]').click();
+    await page.getByRole('option', { name: '50' }).click();
     await expect(page.locator('[aria-label="Select page size"]')).toContainText('50');
 
     // Info text should reflect new page size
@@ -134,24 +133,23 @@ test.describe('Transaction Pagination', () => {
     await expect(page.locator('text=Per page:')).toBeVisible({ timeout: 5000 });
 
     // Change to 100 per page - all ~58 transactions should fit on one page.
-    await page.click('[aria-label="Select page size"]');
-    await page.click('text=100');
+    await page.locator('[aria-label="Select page size"]').click();
+    await page.getByRole('option', { name: '100' }).click();
 
-    // Wait for the page size to update
-    await expect(page.locator('[aria-label="Select page size"]')).toContainText('100');
-
-    // With 100 per page and ~58 transactions, all should fit on one page
-    // Next button should be disabled since there's no next page
-    const nextButton = page.locator('button[aria-label="Go to next page"]');
-    await expect(nextButton).toBeDisabled();
+    // With 100 per page and ~58 transactions, the pagination controls are
+    // completely removed from the DOM (the component only renders when
+    // displayTransactions.length > pageSize).
+    await expect(page.locator('text=Per page:')).toBeHidden({ timeout: 5000 });
+    await expect(page.locator('button[aria-label="Go to next page"]')).toBeHidden();
+    await expect(page.locator('button[aria-label="Go to previous page"]')).toBeHidden();
   });
 
   test('should maintain page size selection across page navigation', async ({ page }) => {
     await expect(page.locator('text=Per page:')).toBeVisible({ timeout: 5000 });
 
     // Change page size to 50
-    await page.click('[aria-label="Select page size"]');
-    await page.click('text=50');
+    await page.locator('[aria-label="Select page size"]').click();
+    await page.getByRole('option', { name: '50' }).click();
     await expect(page.locator('[aria-label="Select page size"]')).toContainText('50');
 
     const nextButton = page.locator('button[aria-label="Go to next page"]');
@@ -198,8 +196,8 @@ test.describe('Transaction Pagination', () => {
     await expect(page.locator('text=Per page:')).toBeVisible({ timeout: 5000 });
 
     // Change page size to 50
-    await page.click('[aria-label="Select page size"]');
-    await page.click('text=50');
+    await page.locator('[aria-label="Select page size"]').click();
+    await page.getByRole('option', { name: '50' }).click();
     await expect(page.locator('[aria-label="Select page size"]')).toContainText('50');
 
     const nextButton = page.locator('button[aria-label="Go to next page"]');
@@ -210,11 +208,11 @@ test.describe('Transaction Pagination', () => {
     await expect(page.locator('button[aria-label="Go to previous page"]')).toBeEnabled();
 
     // Navigate away to Holdings page
-    await page.click('text=Holdings');
+    await page.getByRole('link', { name: 'Holdings' }).click();
     await page.waitForURL('**/holdings', { timeout: 10000 });
 
     // Navigate back to Transactions
-    await page.click('text=Transactions');
+    await page.getByRole('link', { name: 'Transactions' }).click();
     await page.waitForURL('**/transactions', { timeout: 10000 });
     await page.waitForSelector('table tbody tr', { timeout: 5000 });
 

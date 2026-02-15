@@ -6,6 +6,7 @@ test.describe('Portfolio Dashboard', () => {
     await page.goto('/');
 
     // Wait for the page to load completely
+    await page.waitForLoadState('networkidle');
   });
 
   test('should display dashboard with welcome message for new users', async ({ page }) => {
@@ -35,7 +36,7 @@ test.describe('Portfolio Dashboard', () => {
     // For now, we'll mock this scenario by navigating after adding data
 
     // Navigate to dashboard with mock data
-    await page.goto('/');
+    await page.goto('/', { waitUntil: 'networkidle' });
 
     // If we have portfolio data, we should see metrics cards
     const metricsCards = page.locator('[data-testid="metrics-card"]');
@@ -54,6 +55,7 @@ test.describe('Portfolio Dashboard', () => {
     await page.setViewportSize({ width: 375, height: 667 });
 
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // Check that content adapts to mobile
     const mainContent = page.locator('main');
@@ -77,6 +79,7 @@ test.describe('Portfolio Dashboard', () => {
 
     // Either loading appears briefly or content loads immediately
     // This is acceptable for both fast and slow loading scenarios
+    await page.waitForLoadState('networkidle');
 
     // Eventually should show either welcome message or dashboard content
     // Use heading role to avoid matching sidebar "Dashboard" button
@@ -97,6 +100,7 @@ test.describe('Portfolio Dashboard', () => {
     });
 
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // Should show error message
     const errorMessage = page.getByText(/error/i);
@@ -113,6 +117,7 @@ test.describe('Portfolio Dashboard', () => {
 
   test('should have accessible elements', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // Check for proper heading structure
     const h1 = page.locator('h1');
@@ -137,6 +142,7 @@ test.describe('Portfolio Dashboard', () => {
 
   test('should persist user preferences', async ({ page, context }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // If there's a theme toggle, test theme persistence
     const themeToggle = page.locator('[data-testid="theme-toggle"]');
@@ -144,7 +150,7 @@ test.describe('Portfolio Dashboard', () => {
       await themeToggle.click();
 
       // Reload page
-      await page.reload();
+      await page.reload({ waitUntil: 'networkidle' });
 
       // Theme preference should be maintained
       // This would be verified by checking for dark/light mode classes
@@ -156,6 +162,7 @@ test.describe('Portfolio Dashboard', () => {
 
   test('should handle keyboard navigation', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // Test tab navigation through interactive elements
     await page.keyboard.press('Tab');
@@ -174,6 +181,7 @@ test.describe('Portfolio Dashboard', () => {
 
   test('should show performance metrics correctly', async ({ page }) => {
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
 
     // If metrics are displayed, verify their format
     const currencyElements = page.locator('[data-testid*="currency"]');

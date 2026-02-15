@@ -1,4 +1,4 @@
-import { test, expect, seedMockData } from './fixtures/test';
+import { test, expect } from './fixtures/test';
 
 /**
  * E2E tests for React Grid Layout (RGL) Implementation
@@ -8,7 +8,18 @@ import { test, expect, seedMockData } from './fixtures/test';
  */
 test.describe('Dashboard React Grid Layout (RGL)', () => {
   test.beforeEach(async ({ page }) => {
-    await seedMockData(page);
+    // Navigate to test page and generate mock data for testing
+    await page.goto('/test');
+    await page.waitForLoadState('networkidle');
+
+    // Click generate mock data button if available
+    const generateBtn = page.getByRole('button', { name: /generate mock/i });
+    if (await generateBtn.isVisible({ timeout: 2000 })) {
+      await generateBtn.click();
+      // Wait for redirect to dashboard with data
+      await page.waitForURL('/', { timeout: 10000 });
+    }
+    await page.waitForLoadState('networkidle');
   });
 
   test.describe('Feature Flag Toggle', () => {
@@ -107,6 +118,7 @@ test.describe('Dashboard React Grid Layout (RGL)', () => {
 
           // Reload page
           await page.reload();
+          await page.waitForLoadState('networkidle');
 
           // Open settings again
           await settingsButton.click();
@@ -227,6 +239,7 @@ test.describe('Dashboard React Grid Layout (RGL)', () => {
 
         // Reload page
         await page.reload();
+        await page.waitForLoadState('networkidle');
 
         // Wait for widgets to load
         await page.waitForTimeout(1000);
@@ -318,6 +331,7 @@ test.describe('Dashboard React Grid Layout (RGL)', () => {
       // Set desktop viewport
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.reload();
+      await page.waitForLoadState('networkidle');
 
       // Enable RGL mode
       const settingsButton = page.locator('[data-testid="dashboard-settings-btn"]');
@@ -365,6 +379,7 @@ test.describe('Dashboard React Grid Layout (RGL)', () => {
       // Set tablet viewport
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.reload();
+      await page.waitForLoadState('networkidle');
 
       // Enable RGL mode
       const settingsButton = page.locator('[data-testid="dashboard-settings-btn"]');
@@ -401,6 +416,7 @@ test.describe('Dashboard React Grid Layout (RGL)', () => {
       // Set mobile viewport
       await page.setViewportSize({ width: 375, height: 667 });
       await page.reload();
+      await page.waitForLoadState('networkidle');
 
       // On mobile, check if widgets are stacked vertically
       const widgets = page.locator('[data-widget-id]');
@@ -491,6 +507,7 @@ test.describe('Dashboard React Grid Layout (RGL)', () => {
 
       // Reload page to verify persistence
       await page.reload();
+      await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1000);
 
       // RGL layout should be restored

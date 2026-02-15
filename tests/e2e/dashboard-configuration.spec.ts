@@ -1,4 +1,4 @@
-import { test, expect, seedMockData } from './fixtures/test';
+import { test, expect } from './fixtures/test';
 
 /**
  * E2E tests for Dashboard Widget Configuration (US3)
@@ -8,8 +8,8 @@ import { test, expect, seedMockData } from './fixtures/test';
  */
 test.describe('Dashboard Widget Configuration', () => {
   test.beforeEach(async ({ page }) => {
-    await seedMockData(page);
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
   });
 
   test.describe('Settings Modal', () => {
@@ -127,6 +127,7 @@ test.describe('Dashboard Widget Configuration', () => {
     test('should display drag handles on desktop', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       // Check for drag handles
       const dragHandles = page.locator('[data-testid="drag-handle"], [class*="drag"], [class*="grip"]');
@@ -140,6 +141,7 @@ test.describe('Dashboard Widget Configuration', () => {
     test('should not show drag handles on mobile', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       // Drag handles should be hidden on mobile
       const dragHandles = page.locator('[data-testid="drag-handle"]');
@@ -221,6 +223,7 @@ test.describe('Dashboard Widget Configuration', () => {
 
             // Reload page
             await page.reload();
+            await page.waitForLoadState('networkidle');
 
             // Open settings again
             const settingsBtn2 = page.locator('[data-testid="dashboard-settings-btn"]');
@@ -246,6 +249,7 @@ test.describe('Dashboard Widget Configuration', () => {
     test('should provide reorder controls on mobile settings', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       const settingsButton = page.locator('[data-testid="dashboard-settings-btn"]');
 

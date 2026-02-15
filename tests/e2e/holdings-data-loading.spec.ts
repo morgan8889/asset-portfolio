@@ -16,13 +16,12 @@ test.describe('Holdings Data Loading', () => {
     // Generate mock data first
     await page.goto('/test');
     await page.getByRole('button', { name: /generate mock data/i }).click();
-    await page.getByText('Done! Redirecting...').waitFor({ timeout: 10000 });
 
-    // Full page reload ensures Zustand stores hydrate from IndexedDB
-    await page.goto('/');
+    // Wait for redirect to dashboard
+    await page.waitForURL('/', { timeout: 10000 });
 
-    // Wait for portfolio store to fully load and persist currentPortfolio
-    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({ timeout: 15000 });
+    // Wait for loading to complete
+    await expect(page.getByText('Loading')).toBeHidden({ timeout: 10000 });
   });
 
   test('should load holdings data when navigating directly to /holdings', async ({ page }) => {

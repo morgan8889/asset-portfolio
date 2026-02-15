@@ -14,6 +14,7 @@ test.describe('Manual Price Update Dialog', () => {
 
     // Navigate to holdings page
     await page.goto('/holdings');
+    await page.waitForLoadState('networkidle');
 
     // Find first holding with dropdown menu
     // Look for a dropdown button (usually three dots or "Actions")
@@ -106,6 +107,7 @@ test.describe('Manual Price Update Dialog', () => {
 
     // Navigate to holdings
     await page.goto('/holdings');
+    await page.waitForLoadState('networkidle');
 
     // Find and click dropdown
     const dropdownButtons = page.locator('button[aria-label*="actions" i], button:has-text("⋮")');

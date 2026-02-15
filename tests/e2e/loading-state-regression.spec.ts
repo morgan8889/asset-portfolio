@@ -14,6 +14,7 @@ test.describe('Loading State Regression', () => {
   test.beforeEach(async ({ page }) => {
     // Generate fresh test data
     await page.goto('/test');
+    await page.waitForLoadState('networkidle');
 
     const generateButton = page.getByRole('button', {
       name: 'Generate Mock Data',
@@ -23,14 +24,14 @@ test.describe('Loading State Regression', () => {
       await expect(page.getByText('Done! Redirecting...')).toBeVisible({
         timeout: 10000,
       });
-      // Full page reload ensures Zustand stores hydrate from IndexedDB
-      await page.goto('/');
+      await page.waitForURL('/', { timeout: 10000 });
     } else {
       await page.goto('/');
     }
   });
 
   test('loading completes within 5 seconds', async ({ page }) => {
+    await page.waitForLoadState('networkidle');
 
     // CRITICAL: Hard assertion - FAILS if loading stuck
     await expect(page.getByText('Loading portfolio data')).not.toBeVisible({

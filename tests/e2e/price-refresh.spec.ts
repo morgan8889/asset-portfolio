@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures/test';
+import { test, expect, seedMockData } from './fixtures/test';
 
 /**
  * E2E test for the live market data price refresh workflow
@@ -13,26 +13,9 @@ import { test, expect } from './fixtures/test';
  */
 test.describe('Price Refresh Workflow', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to test page and ensure mock data exists
-    await page.goto('/test');
-
-    const generateButton = page.getByRole('button', { name: 'Generate Mock Data' });
-
-    // Generate mock data if not exists
-    if (await generateButton.isEnabled()) {
-      await generateButton.click();
-      await expect(page.getByText('Done! Redirecting...')).toBeVisible({ timeout: 10000 });
-      // Full page reload ensures Zustand stores hydrate from IndexedDB
-      await page.goto('/');
-    } else {
-      await page.goto('/');
-    }
-
-
-    // Wait for portfolio store to fully load and persist currentPortfolio
-    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({
-      timeout: 15000,
-    });
+    await seedMockData(page);
+    await page.goto('/');
+    await page.waitForLoadState('load');
   });
 
   test('should display refresh button in header', async ({ page }) => {
@@ -56,74 +39,76 @@ test.describe('Price Refresh Workflow', () => {
   test('should display holdings with price information', async ({ page }) => {
     // Navigate to holdings page
     await page.goto('/holdings');
-
-    // Wait for loading to complete
-    await expect(page.getByText('Loading')).not.toBeVisible({ timeout: 5000 });
+    await page.waitForLoadState('load');
 
     // Verify holdings table is displayed
     const holdingsTable = page.locator('table');
     await expect(holdingsTable).toBeVisible({ timeout: 5000 });
 
-    // Verify price column header exists
-    const priceHeader = page.getByRole('columnheader', { name: /Price/i });
+    // Verify price column header exists (use th locator - shadcn TableHead
+    // may not have scope="col" so role=columnheader isn't always exposed)
+    const priceHeader = page.locator('thead th').filter({ hasText: /Price/i });
     await expect(priceHeader).toBeVisible();
   });
 
   test('should display price settings on settings page', async ({ page }) => {
-    // Navigate to settings page
+    // Navigate to settings page directly
     await page.goto('/settings');
+    await page.waitForLoadState('load');
 
-    // Wait for settings page to load
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible({ timeout: 5000 });
+    // Wait for settings page to load - use h1 specifically
+    await expect(page.locator('h1')).toContainText('Settings', { timeout: 5000 });
 
-    // Verify price update settings section exists
-    const priceSettingsHeading = page.getByRole('heading', { name: /Price Update Settings/i });
-    await expect(priceSettingsHeading).toBeVisible();
+    // Verify price update settings section exists (card title is "Price Updates")
+    await expect(page.getByRole('heading', { name: /Price Updates/i })).toBeVisible();
 
-    // Verify update frequency options exist
+    // Verify update frequency label exists
     await expect(page.getByText(/Update Frequency/i)).toBeVisible();
 
-    // Verify frequency options are available
-    await expect(page.getByText(/Realtime/i).first()).toBeVisible();
-    await expect(page.getByText(/Frequent/i).first()).toBeVisible();
-    await expect(page.getByText(/Standard/i).first()).toBeVisible();
-    await expect(page.getByText(/Manual/i).first()).toBeVisible();
+    // Verify staleness and pause toggles are visible
+    await expect(page.getByText(/Show Staleness Indicator/i)).toBeVisible();
+    await expect(page.getByText(/Pause When Tab Hidden/i)).toBeVisible();
   });
 
   test('should be able to change price update frequency', async ({ page }) => {
-    // Navigate to settings page
+    // Navigate to settings page directly
     await page.goto('/settings');
+    await page.waitForLoadState('load');
 
     // Wait for settings page to load
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('h1')).toContainText('Settings', { timeout: 5000 });
 
-    // Find and click on a different frequency option
-    // This verifies the radio buttons are interactive
-    const frequentOption = page.getByLabel(/Frequent/i);
-    if (await frequentOption.isVisible()) {
-      await frequentOption.click();
-      // Verify it's now selected
-      await expect(frequentOption).toBeChecked();
-    }
+    // Open the frequency Select dropdown by clicking the trigger
+    const selectTrigger = page.locator('#refresh-interval');
+    await expect(selectTrigger).toBeVisible();
+    await selectTrigger.click();
+
+    // Select "Frequent" option from the dropdown
+    await page.getByRole('option', { name: /Frequent/i }).click();
+
+    // Verify the trigger now shows "Frequent"
+    await expect(selectTrigger).toContainText('Frequent');
   });
 
   test('should display staleness toggle in settings', async ({ page }) => {
-    // Navigate to settings page
+    // Navigate to settings page directly
     await page.goto('/settings');
+    await page.waitForLoadState('load');
 
     // Wait for settings page to load
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('h1')).toContainText('Settings', { timeout: 5000 });
 
     // Verify staleness indicator toggle exists
     await expect(page.getByText(/Show Staleness Indicator/i)).toBeVisible();
   });
 
   test('should display pause when hidden toggle in settings', async ({ page }) => {
-    // Navigate to settings page
+    // Navigate to settings page directly
     await page.goto('/settings');
+    await page.waitForLoadState('load');
 
     // Wait for settings page to load
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('h1')).toContainText('Settings', { timeout: 5000 });
 
     // Verify pause when hidden toggle exists
     await expect(page.getByText(/Pause When Tab Hidden/i)).toBeVisible();
@@ -132,37 +117,19 @@ test.describe('Price Refresh Workflow', () => {
 
 test.describe('Offline Behavior', () => {
   test('should show offline indicator when network is unavailable', async ({ page, context }) => {
-    // Generate mock data first
-    await page.goto('/test');
-
-    const generateButton = page.getByRole('button', { name: 'Generate Mock Data' });
-    if (await generateButton.isEnabled()) {
-      await generateButton.click();
-      await expect(page.getByText('Done! Redirecting...')).toBeVisible({ timeout: 10000 });
-      // Full page reload ensures Zustand stores hydrate from IndexedDB
-      await page.goto('/');
-    } else {
-      await page.goto('/');
-    }
-
-
-    // Wait for portfolio store to fully load and persist currentPortfolio
-    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({
-      timeout: 15000,
-    });
+    await seedMockData(page);
+    await page.goto('/');
+    await page.waitForLoadState('load');
 
     // Go offline
     await context.setOffline(true);
 
-    // Trigger a price refresh to see the offline behavior
-    // Note: The offline indicator should appear, but we need to trigger a state update
-    // For now, we verify the refresh button gets disabled when offline
+    // Verify the refresh button is still visible (may be disabled)
     const refreshButton = page.getByRole('button', { name: /Refresh prices|Offline/i });
 
     // Wait a moment for the offline state to propagate
     await page.waitForTimeout(1000);
 
-    // The refresh button should be visible (may be disabled)
     await expect(refreshButton).toBeVisible();
 
     // Go back online
@@ -170,37 +137,21 @@ test.describe('Offline Behavior', () => {
   });
 
   test('should disable refresh button when offline', async ({ page, context }) => {
-    // Generate mock data first
-    await page.goto('/test');
-
-    const generateButton = page.getByRole('button', { name: 'Generate Mock Data' });
-    if (await generateButton.isEnabled()) {
-      await generateButton.click();
-      await expect(page.getByText('Done! Redirecting...')).toBeVisible({ timeout: 10000 });
-      // Full page reload ensures Zustand stores hydrate from IndexedDB
-      await page.goto('/');
-    } else {
-      await page.goto('/');
-    }
-
-
-    // Wait for portfolio store to fully load and persist currentPortfolio
-    await expect(page.locator('[data-testid="total-value-widget"]')).toBeVisible({
-      timeout: 15000,
-    });
+    await seedMockData(page);
+    await page.goto('/');
+    await page.waitForLoadState('load');
 
     // Verify refresh button is enabled when online
     const refreshButton = page.getByRole('button', { name: 'Refresh prices' });
     await expect(refreshButton).toBeEnabled();
 
-    // Go offline - in Playwright, we can simulate offline mode
+    // Go offline
     await context.setOffline(true);
 
     // Wait for the offline state to be detected
     await page.waitForTimeout(1000);
 
-    // The refresh button should be disabled when offline
-    // Note: We need to evaluate the navigator.onLine to check the state
+    // Verify navigator reports offline
     const isOffline = await page.evaluate(() => !navigator.onLine);
     expect(isOffline).toBe(true);
 

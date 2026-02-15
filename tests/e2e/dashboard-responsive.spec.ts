@@ -1,4 +1,4 @@
-import { test, expect, seedMockData } from './fixtures/test';
+import { test, expect } from './fixtures/test';
 
 /**
  * E2E tests for Dashboard Responsive Layout (T060)
@@ -21,9 +21,9 @@ test.describe('Dashboard Responsive Layout', () => {
   for (const vp of viewports) {
     test.describe(`${vp.name} (${vp.width}x${vp.height})`, () => {
       test.beforeEach(async ({ page }) => {
-        await seedMockData(page);
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.goto('/');
+        await page.waitForLoadState('networkidle');
       });
 
       test('should render without horizontal overflow', async ({ page }) => {
@@ -108,6 +108,7 @@ test.describe('Dashboard Responsive Layout', () => {
     test('should show single column on mobile', async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       const widgets = page.locator('[data-testid$="-widget"]');
       const count = await widgets.count();
@@ -127,6 +128,7 @@ test.describe('Dashboard Responsive Layout', () => {
     test('should show multiple columns on desktop', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       const widgets = page.locator('[data-testid$="-widget"]');
       const count = await widgets.count();
@@ -151,6 +153,7 @@ test.describe('Dashboard Responsive Layout', () => {
     test('should be visible and usable on desktop', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 720 });
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       const periodSelector = page.locator('[data-testid="time-period-selector"]');
       if (await periodSelector.count() > 0) {
@@ -161,6 +164,7 @@ test.describe('Dashboard Responsive Layout', () => {
     test('should be hidden on small mobile', async ({ page }) => {
       await page.setViewportSize({ width: 320, height: 568 });
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
       // Time period selector may be hidden on very small screens
       const periodSelector = page.locator('[data-testid="time-period-selector"]');
@@ -181,6 +185,7 @@ test.describe('Dashboard Responsive Layout', () => {
       for (const size of sizes) {
         await page.setViewportSize(size);
         await page.goto('/');
+        await page.waitForLoadState('networkidle');
 
         const settingsBtn = page.locator('[data-testid="dashboard-settings-btn"]');
         if (await settingsBtn.count() > 0) {

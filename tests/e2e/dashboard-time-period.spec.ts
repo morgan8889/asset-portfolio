@@ -1,4 +1,4 @@
-import { test, expect, seedMockData } from './fixtures/test';
+import { test, expect } from './fixtures/test';
 
 /**
  * E2E tests for Time Period Selection (US5)
@@ -7,8 +7,8 @@ import { test, expect, seedMockData } from './fixtures/test';
  */
 test.describe('Dashboard Time Period Selection', () => {
   test.beforeEach(async ({ page }) => {
-    await seedMockData(page);
     await page.goto('/');
+    await page.waitForLoadState('networkidle');
   });
 
   test.describe('Time Period Selector', () => {
@@ -173,6 +173,7 @@ test.describe('Dashboard Time Period Selection', () => {
 
           // Reload page
           await page.reload();
+          await page.waitForLoadState('networkidle');
 
           // Check if month is still selected
           const newSelector = page.locator('[data-testid="time-period-selector"], [role="group"][aria-label*="time period"]');
@@ -320,6 +321,7 @@ test.describe('Dashboard Time Period Selection', () => {
           const hasLoadingState = (await skeleton.count()) > 0;
 
           // Wait for completion
+          await page.waitForLoadState('networkidle');
 
           // Loading state is optional - both having or not having it is valid
           expect(typeof hasLoadingState).toBe('boolean');

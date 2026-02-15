@@ -12,6 +12,7 @@ test.describe('Settings Page', () => {
 
     // Navigate to settings page
     await page.goto('/settings');
+    await page.waitForLoadState('networkidle');
 
     // Check that page title is present
     await expect(page.getByRole('heading', { name: 'Settings' }).first()).toBeVisible();
@@ -46,6 +47,7 @@ test.describe('Settings Page', () => {
 
   test('should toggle dark mode', async ({ page }) => {
     await page.goto('/settings');
+    await page.waitForLoadState('networkidle');
 
     // Find dark mode switch
     const darkModeSwitch = page.locator('[role="switch"]').first();
@@ -63,6 +65,7 @@ test.describe('Settings Page', () => {
 
   test('should show reset confirmation dialog', async ({ page }) => {
     await page.goto('/settings');
+    await page.waitForLoadState('networkidle');
 
     // Click Reset All Data button
     await page.getByRole('button', { name: /Reset All Data/i }).click();
