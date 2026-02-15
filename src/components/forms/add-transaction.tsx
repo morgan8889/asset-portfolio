@@ -227,7 +227,10 @@ function TransactionDialog({
     try {
       const quantity = new Decimal(data.quantity);
       const price = new Decimal(data.price);
-      const transactionData: Omit<Transaction, 'id' | 'portfolioId' | 'assetId' | 'currency'> = {
+      const transactionData: Omit<
+        Transaction,
+        'id' | 'portfolioId' | 'assetId' | 'currency'
+      > = {
         type: data.type as Transaction['type'],
         date: data.date,
         quantity,

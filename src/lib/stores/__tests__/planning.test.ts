@@ -13,17 +13,19 @@ vi.mock('@/lib/db/schema', () => ({
     addLiability: vi.fn(() => Promise.resolve()),
     updateLiability: vi.fn(() => Promise.resolve()),
     deleteLiability: vi.fn(() => Promise.resolve()),
-    getLiability: vi.fn((id: string) => Promise.resolve({
-      id,
-      portfolioId: 'portfolio-1',
-      name: 'Updated Name',
-      balance: 10000,
-      interestRate: 0.05,
-      payment: 200,
-      startDate: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    })),
+    getLiability: vi.fn((id: string) =>
+      Promise.resolve({
+        id,
+        portfolioId: 'portfolio-1',
+        name: 'Updated Name',
+        balance: 10000,
+        interestRate: 0.05,
+        payment: 200,
+        startDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+    ),
   },
 }));
 
@@ -110,9 +112,13 @@ describe('Planning Store', () => {
         ],
       });
 
-      await usePlanningStore.getState().updateLiability('liability-1', { name: 'New Name' });
+      await usePlanningStore
+        .getState()
+        .updateLiability('liability-1', { name: 'New Name' });
 
-      expect(db.updateLiability).toHaveBeenCalledWith('liability-1', { name: 'New Name' });
+      expect(db.updateLiability).toHaveBeenCalledWith('liability-1', {
+        name: 'New Name',
+      });
       expect(db.getLiability).toHaveBeenCalledWith('liability-1');
     });
   });
@@ -166,7 +172,7 @@ describe('Planning Store', () => {
           retirementAge: 70,
           annualExpenses: 100000,
           withdrawalRate: 0.05,
-          expectedReturn: 0.10,
+          expectedReturn: 0.1,
           inflationRate: 0.03,
           monthlySavings: 5000,
         },

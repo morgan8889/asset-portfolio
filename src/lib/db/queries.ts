@@ -60,7 +60,15 @@ export const portfolioQueries = {
   async delete(id: string): Promise<void> {
     await db.transaction(
       'rw',
-      [db.portfolios, db.holdings, db.transactions, db.performanceSnapshots, db.dividendRecords, db.liabilities, db.liabilityPayments],
+      [
+        db.portfolios,
+        db.holdings,
+        db.transactions,
+        db.performanceSnapshots,
+        db.dividendRecords,
+        db.liabilities,
+        db.liabilityPayments,
+      ],
       async () => {
         // Delete all related data in dependency order
         await db.holdings.where('portfolioId').equals(id).delete();
@@ -69,9 +77,15 @@ export const portfolioQueries = {
         await db.dividendRecords.where('portfolioId').equals(id).delete();
 
         // Delete liabilities and their payments
-        const liabilities = await db.liabilities.where('portfolioId').equals(id).toArray();
+        const liabilities = await db.liabilities
+          .where('portfolioId')
+          .equals(id)
+          .toArray();
         for (const liability of liabilities) {
-          await db.liabilityPayments.where('liabilityId').equals(liability.id).delete();
+          await db.liabilityPayments
+            .where('liabilityId')
+            .equals(liability.id)
+            .delete();
         }
         await db.liabilities.where('portfolioId').equals(id).delete();
 

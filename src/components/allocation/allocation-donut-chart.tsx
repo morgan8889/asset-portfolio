@@ -158,7 +158,7 @@ const AllocationDonutChartComponent = ({
         {/* Total value header positioned above donut chart with negative margin to create visual overlap.
             -mb-12 (48px) allows the total value text to sit in the donut center while remaining
             above the chart in DOM order, preventing text cutoff issues. */}
-        <div className="text-center -mb-12">
+        <div className="-mb-12 text-center">
           <div className="text-3xl font-bold md:text-4xl">
             {formatCurrency(totalValue)}
           </div>

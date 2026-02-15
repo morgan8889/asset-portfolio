@@ -62,7 +62,7 @@ describe('UI Store', () => {
           createPortfolio: false,
           editPortfolio: false,
           deleteConfirm: false,
-        }
+        },
       });
       useUIStore.getState().closeModal('addTransaction');
       expect(useUIStore.getState().modals.addTransaction).toBe(false);
@@ -85,7 +85,7 @@ describe('UI Store', () => {
           createPortfolio: false,
           editPortfolio: false,
           deleteConfirm: false,
-        }
+        },
       });
 
       useUIStore.getState().closeModal('editTransaction');
@@ -104,7 +104,7 @@ describe('UI Store', () => {
           createPortfolio: true,
           editPortfolio: true,
           deleteConfirm: true,
-        }
+        },
       });
 
       useUIStore.getState().closeAllModals();
@@ -125,7 +125,9 @@ describe('UI Store', () => {
       });
 
       expect(useUIStore.getState().notifications).toHaveLength(1);
-      expect(useUIStore.getState().notifications[0].message).toBe('Transaction saved');
+      expect(useUIStore.getState().notifications[0].message).toBe(
+        'Transaction saved'
+      );
       expect(useUIStore.getState().notifications[0].title).toBe('Success');
     });
 
@@ -145,8 +147,20 @@ describe('UI Store', () => {
     });
 
     it('should remove notification by id', () => {
-      const notif1 = { id: '1', type: 'success' as const, title: 'First', message: 'First', duration: 5000 };
-      const notif2 = { id: '2', type: 'info' as const, title: 'Second', message: 'Second', duration: 5000 };
+      const notif1 = {
+        id: '1',
+        type: 'success' as const,
+        title: 'First',
+        message: 'First',
+        duration: 5000,
+      };
+      const notif2 = {
+        id: '2',
+        type: 'info' as const,
+        title: 'Second',
+        message: 'Second',
+        duration: 5000,
+      };
 
       useUIStore.setState({
         notifications: [notif1, notif2],
@@ -159,8 +173,20 @@ describe('UI Store', () => {
     });
 
     it('should clear all notifications', () => {
-      const notif1 = { id: '1', type: 'success' as const, title: 'First', message: 'First', duration: 5000 };
-      const notif2 = { id: '2', type: 'error' as const, title: 'Second', message: 'Second', duration: 5000 };
+      const notif1 = {
+        id: '1',
+        type: 'success' as const,
+        title: 'First',
+        message: 'First',
+        duration: 5000,
+      };
+      const notif2 = {
+        id: '2',
+        type: 'error' as const,
+        title: 'Second',
+        message: 'Second',
+        duration: 5000,
+      };
 
       useUIStore.setState({
         notifications: [notif1, notif2],

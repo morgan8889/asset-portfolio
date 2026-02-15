@@ -51,7 +51,9 @@ export function estimateTaxLiability(
     const currentPrice = currentPrices.get(holding.assetId);
     if (!currentPrice) {
       // Log skipped holdings for debugging - helps identify missing price data
-      console.warn(`Tax estimator: Skipping ${holding.assetId} - no price available`);
+      console.warn(
+        `Tax estimator: Skipping ${holding.assetId} - no price available`
+      );
       continue;
     }
 

@@ -60,7 +60,9 @@ const migrations: Migration[] = [
         }
       }
 
-      logger.info(`Updated ${portfolios.length} portfolios with lastAccessedAt`);
+      logger.info(
+        `Updated ${portfolios.length} portfolios with lastAccessedAt`
+      );
     },
     down: async () => {
       logger.info('Removing lastAccessedAt field from portfolios...');
@@ -71,7 +73,9 @@ const migrations: Migration[] = [
       // Remove lastAccessedAt field
       for (const portfolio of portfolios) {
         // Use object destructuring with type assertion for migration rollback
-        const { lastAccessedAt, ...rest } = portfolio as Portfolio & { lastAccessedAt?: Date };
+        const { lastAccessedAt, ...rest } = portfolio as Portfolio & {
+          lastAccessedAt?: Date;
+        };
         await db.portfolios.put(rest);
       }
 
@@ -93,7 +97,9 @@ export class MigrationManager {
       const migrationState = state?.value as MigrationState | undefined;
       return migrationState?.version || 0;
     } catch (error) {
-      logger.warn('Could not get current migration version', { error: error instanceof Error ? error.message : String(error) });
+      logger.warn('Could not get current migration version', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return 0;
     }
   }
@@ -234,7 +240,9 @@ export class MigrationManager {
 
       return [];
     } catch (error) {
-      logger.warn('Could not get applied migrations', { error: error instanceof Error ? error.message : String(error) });
+      logger.warn('Could not get applied migrations', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return [];
     }
   }

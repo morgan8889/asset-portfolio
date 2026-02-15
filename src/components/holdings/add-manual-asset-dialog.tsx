@@ -182,7 +182,9 @@ export function AddManualAssetDialog({
       };
 
       // The database hooks will automatically serialize Decimal fields to strings
-      await db.holdings.add(holding as unknown as import('@/types').HoldingStorage);
+      await db.holdings.add(
+        holding as unknown as import('@/types').HoldingStorage
+      );
 
       // Create initial buy transaction
       const transaction: Transaction = {
@@ -200,7 +202,9 @@ export function AddManualAssetDialog({
       };
 
       // The database hooks will automatically serialize Decimal fields to strings
-      await db.transactions.add(transaction as unknown as import('@/types').TransactionStorage);
+      await db.transactions.add(
+        transaction as unknown as import('@/types').TransactionStorage
+      );
 
       toast({
         title: 'Asset Added',

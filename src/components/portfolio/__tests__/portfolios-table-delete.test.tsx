@@ -79,9 +79,7 @@ describe('PortfoliosTable - Delete Functionality', () => {
   });
 
   it('should render Delete button for each portfolio', async () => {
-    render(
-      <PortfoliosTable onView={vi.fn()} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} />);
 
     await waitFor(() => {
       const deleteButtons = screen.getAllByRole('button', { name: 'Delete' });
@@ -92,9 +90,7 @@ describe('PortfoliosTable - Delete Functionality', () => {
   it('should open delete dialog when Delete button is clicked', async () => {
     const user = userEvent.setup();
 
-    render(
-      <PortfoliosTable onView={vi.fn()} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} />);
 
     // Wait for portfolios to load
     await screen.findByText('Retirement Portfolio');
@@ -105,16 +101,16 @@ describe('PortfoliosTable - Delete Functionality', () => {
 
     // Dialog should open with delete confirmation
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /delete portfolio/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /delete portfolio/i })
+      ).toBeInTheDocument();
     });
   });
 
   it('should close delete dialog on cancel', async () => {
     const user = userEvent.setup();
 
-    render(
-      <PortfoliosTable onView={vi.fn()} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} />);
 
     await screen.findByText('Retirement Portfolio');
 
@@ -123,7 +119,9 @@ describe('PortfoliosTable - Delete Functionality', () => {
     await user.click(deleteButtons[0]);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /delete portfolio/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /delete portfolio/i })
+      ).toBeInTheDocument();
     });
 
     // Click cancel
@@ -132,7 +130,9 @@ describe('PortfoliosTable - Delete Functionality', () => {
 
     // Dialog should close
     await waitFor(() => {
-      expect(screen.queryByRole('heading', { name: /delete portfolio/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('heading', { name: /delete portfolio/i })
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -141,9 +141,7 @@ describe('PortfoliosTable - Delete Functionality', () => {
     const mockDeletePortfolio = vi.fn(() => Promise.resolve());
     mockStoreState.deletePortfolio = mockDeletePortfolio;
 
-    render(
-      <PortfoliosTable onView={vi.fn()} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} />);
 
     await screen.findByText('Retirement Portfolio');
 
@@ -152,11 +150,15 @@ describe('PortfoliosTable - Delete Functionality', () => {
     await user.click(deleteButtons[0]);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /delete portfolio/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /delete portfolio/i })
+      ).toBeInTheDocument();
     });
 
     // Confirm deletion
-    const confirmButton = screen.getByRole('button', { name: /delete portfolio/i });
+    const confirmButton = screen.getByRole('button', {
+      name: /delete portfolio/i,
+    });
     await user.click(confirmButton);
 
     await waitFor(() => {
@@ -170,9 +172,7 @@ describe('PortfoliosTable - Delete Functionality', () => {
     mockStoreState.portfolios = singlePortfolio;
     mockStoreState.currentPortfolio = singlePortfolio[0];
 
-    render(
-      <PortfoliosTable onView={vi.fn()} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} />);
 
     await screen.findByText('Retirement Portfolio');
 
@@ -182,16 +182,16 @@ describe('PortfoliosTable - Delete Functionality', () => {
 
     // Should show last portfolio warning
     await waitFor(() => {
-      expect(screen.getByText(/this is your last portfolio/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/this is your last portfolio/i)
+      ).toBeInTheDocument();
     });
   });
 
   it('should not show last portfolio warning when multiple portfolios exist', async () => {
     const user = userEvent.setup();
 
-    render(
-      <PortfoliosTable onView={vi.fn()} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} />);
 
     await screen.findByText('Retirement Portfolio');
 
@@ -200,20 +200,22 @@ describe('PortfoliosTable - Delete Functionality', () => {
     await user.click(deleteButtons[0]);
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /delete portfolio/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /delete portfolio/i })
+      ).toBeInTheDocument();
     });
 
     // Should not show last portfolio warning
-    expect(screen.queryByText(/this is your last portfolio/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/this is your last portfolio/i)
+    ).not.toBeInTheDocument();
   });
 
   it('should call onDelete with second portfolio id when clicking second delete button', async () => {
     const user = userEvent.setup();
     const mockOnDelete = vi.fn();
 
-    render(
-      <PortfoliosTable onView={vi.fn()} onDelete={mockOnDelete} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} onDelete={mockOnDelete} />);
 
     await screen.findByText('Trading Account');
 
@@ -228,9 +230,7 @@ describe('PortfoliosTable - Delete Functionality', () => {
     const user = userEvent.setup();
     const mockOnDelete = vi.fn();
 
-    render(
-      <PortfoliosTable onView={vi.fn()} onDelete={mockOnDelete} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} onDelete={mockOnDelete} />);
 
     await screen.findByText('Retirement Portfolio');
 
@@ -243,9 +243,7 @@ describe('PortfoliosTable - Delete Functionality', () => {
   it('should maintain table state after closing delete dialog', async () => {
     const user = userEvent.setup();
 
-    render(
-      <PortfoliosTable onView={vi.fn()} />
-    );
+    render(<PortfoliosTable onView={vi.fn()} />);
 
     await screen.findByText('Retirement Portfolio');
     await screen.findByText('Trading Account');

@@ -30,7 +30,7 @@ export const MAX_PAGE_SIZE = 100;
 /**
  * Type for valid page sizes
  */
-export type PageSize = typeof PAGE_SIZE_OPTIONS[number];
+export type PageSize = (typeof PAGE_SIZE_OPTIONS)[number];
 
 /**
  * Validates if a page size is valid

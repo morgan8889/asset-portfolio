@@ -91,7 +91,15 @@ const renderCustomizedLabel = ({
   );
 };
 
-const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { name: string; value: number; percentage: number; color: string } }> }) => {
+const CustomTooltip = ({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: Array<{
+    payload: { name: string; value: number; percentage: number; color: string };
+  }>;
+}) => {
   if (active && payload && payload[0]) {
     const data = payload[0].payload;
     return (

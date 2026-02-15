@@ -27,8 +27,12 @@ interface PortfolioSelectorProps {
 }
 
 export function PortfolioSelector({ className }: PortfolioSelectorProps) {
-  const { currentPortfolio, setCurrentPortfolio, getSortedPortfolios, portfolios } =
-    usePortfolioStore();
+  const {
+    currentPortfolio,
+    setCurrentPortfolio,
+    getSortedPortfolios,
+    portfolios,
+  } = usePortfolioStore();
   const { isProcessing } = useCsvImportStore();
 
   const sortedPortfolios = React.useMemo(
@@ -63,7 +67,8 @@ export function PortfolioSelector({ className }: PortfolioSelectorProps) {
       <div className="flex flex-col items-start">
         <span className="font-medium">{currentPortfolio.name}</span>
         <Badge variant="secondary" className="mt-1 text-xs">
-          {PORTFOLIO_TYPE_LABELS[currentPortfolio.type] || currentPortfolio.type}
+          {PORTFOLIO_TYPE_LABELS[currentPortfolio.type] ||
+            currentPortfolio.type}
         </Badge>
       </div>
       <ChevronDown className="ml-2 h-4 w-4 text-muted-foreground" />

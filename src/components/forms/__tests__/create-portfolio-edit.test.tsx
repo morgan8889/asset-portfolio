@@ -74,7 +74,9 @@ describe('CreatePortfolioDialog - Edit Mode', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Edit Portfolio')).toBeInTheDocument();
-      expect(screen.queryByText('Create New Portfolio')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Create New Portfolio')
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -102,7 +104,9 @@ describe('CreatePortfolioDialog - Edit Mode', () => {
     await user.clear(nameInput);
     await user.type(nameInput, 'Updated Portfolio');
 
-    const submitButton = screen.getByRole('button', { name: /update portfolio/i });
+    const submitButton = screen.getByRole('button', {
+      name: /update portfolio/i,
+    });
     await user.click(submitButton);
 
     await waitFor(() => {
@@ -124,7 +128,7 @@ describe('CreatePortfolioDialog - Edit Mode', () => {
     // (Dialog sets pointer-events:none on body). Covered by E2E: portfolio-edit.spec.ts
     const user = userEvent.setup();
     const mockCountTransactions = vi.fn(() => Promise.resolve(5));
-    
+
     (db.transactions.where as any).mockReturnValue({
       equals: vi.fn(() => ({
         count: mockCountTransactions,
@@ -153,8 +157,10 @@ describe('CreatePortfolioDialog - Edit Mode', () => {
     // Find the combobox by its content (it shows "Taxable Brokerage" initially)
     const typeSelect = screen.getAllByRole('combobox')[0]; // First combobox is the type selector
     await user.click(typeSelect);
-    
-    const iraOption = await screen.findByRole('option', { name: /traditional ira/i });
+
+    const iraOption = await screen.findByRole('option', {
+      name: /traditional ira/i,
+    });
     await user.click(iraOption);
 
     // Warning should appear
@@ -230,8 +236,12 @@ describe('CreatePortfolioDialog - Edit Mode', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /update portfolio/i })).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /create portfolio/i })).not.toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /update portfolio/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /create portfolio/i })
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -259,7 +269,9 @@ describe('CreatePortfolioDialog - Edit Mode', () => {
       />
     );
 
-    const submitButton = await screen.findByRole('button', { name: /update portfolio/i });
+    const submitButton = await screen.findByRole('button', {
+      name: /update portfolio/i,
+    });
     await user.click(submitButton);
 
     // Should show loading state

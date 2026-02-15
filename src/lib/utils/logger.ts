@@ -170,7 +170,11 @@ class Logger {
   }
 
   // Performance logging
-  performance(operation: string, duration: number, data?: Record<string, unknown>): void {
+  performance(
+    operation: string,
+    duration: number,
+    data?: Record<string, unknown>
+  ): void {
     const entry = this.createLogEntry(
       'info',
       `[PERFORMANCE] ${operation} took ${duration}ms`,

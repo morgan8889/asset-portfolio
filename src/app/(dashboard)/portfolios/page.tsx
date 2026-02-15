@@ -64,7 +64,7 @@ export default function PortfoliosPage() {
       {!error && portfolios.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
           <h3 className="text-lg font-semibold">No portfolios yet</h3>
-          <p className="text-sm text-muted-foreground mt-2 mb-4">
+          <p className="mb-4 mt-2 text-sm text-muted-foreground">
             Get started by creating your first portfolio
           </p>
           <Button onClick={() => setCreateDialogOpen(true)}>

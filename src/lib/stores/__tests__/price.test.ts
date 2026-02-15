@@ -675,7 +675,9 @@ describe('Price Store', () => {
       expect(afterTime).toBeDefined();
       expect(afterTime).not.toBeNull();
       if (beforeTime) {
-        expect(afterTime!.getTime()).toBeGreaterThanOrEqual(beforeTime.getTime());
+        expect(afterTime!.getTime()).toBeGreaterThanOrEqual(
+          beforeTime.getTime()
+        );
       }
     });
 
@@ -710,7 +712,9 @@ describe('Price Store', () => {
       expect(afterTime).toBeDefined();
       expect(afterTime).not.toBeNull();
       if (beforeTime) {
-        expect(afterTime!.getTime()).toBeGreaterThanOrEqual(beforeTime.getTime());
+        expect(afterTime!.getTime()).toBeGreaterThanOrEqual(
+          beforeTime.getTime()
+        );
       }
     });
 
@@ -745,7 +749,9 @@ describe('Price Store', () => {
       });
 
       const firstFetchTime = usePriceStore.getState().lastFetchTime;
-      const firstPrice = usePriceStore.getState().getPrice('AAPL')?.displayPrice;
+      const firstPrice = usePriceStore
+        .getState()
+        .getPrice('AAPL')?.displayPrice;
 
       // Wait a tiny bit to ensure time difference
       const wait = (ms: number) =>
@@ -763,7 +769,9 @@ describe('Price Store', () => {
       });
 
       const secondFetchTime = usePriceStore.getState().lastFetchTime;
-      const secondPrice = usePriceStore.getState().getPrice('AAPL')?.displayPrice;
+      const secondPrice = usePriceStore
+        .getState()
+        .getPrice('AAPL')?.displayPrice;
 
       // Verify both price and fetchTime changed
       expect(firstPrice).toBe('150');

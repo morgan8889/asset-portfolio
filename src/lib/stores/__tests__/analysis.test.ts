@@ -156,7 +156,9 @@ describe('Analysis Store', () => {
       });
       (holdingQueries.getByPortfolio as any).mockReturnValue(promise);
 
-      const calculatePromise = useAnalysisStore.getState().calculateHealth('portfolio-1');
+      const calculatePromise = useAnalysisStore
+        .getState()
+        .calculateHealth('portfolio-1');
 
       // Check calculating state
       expect(useAnalysisStore.getState().isCalculating).toBe(true);
@@ -170,7 +172,9 @@ describe('Analysis Store', () => {
 
     it('should handle calculation errors', async () => {
       const { holdingQueries } = await import('@/lib/db');
-      (holdingQueries.getByPortfolio as any).mockRejectedValue(new Error('Database error'));
+      (holdingQueries.getByPortfolio as any).mockRejectedValue(
+        new Error('Database error')
+      );
 
       await useAnalysisStore.getState().calculateHealth('portfolio-1');
 
@@ -208,7 +212,9 @@ describe('Analysis Store', () => {
         },
       ];
 
-      const { generateRecommendations } = await import('@/lib/services/analysis/recommendation-engine');
+      const { generateRecommendations } = await import(
+        '@/lib/services/analysis/recommendation-engine'
+      );
       (generateRecommendations as any).mockReturnValue(mockRecommendations);
 
       await useAnalysisStore.getState().generateRecommendations('portfolio-1');
@@ -220,7 +226,9 @@ describe('Analysis Store', () => {
 
     it('should handle recommendation generation errors', async () => {
       const { holdingQueries } = await import('@/lib/db');
-      (holdingQueries.getByPortfolio as any).mockRejectedValue(new Error('Database error'));
+      (holdingQueries.getByPortfolio as any).mockRejectedValue(
+        new Error('Database error')
+      );
 
       await useAnalysisStore.getState().generateRecommendations('portfolio-1');
 
@@ -287,7 +295,12 @@ describe('Analysis Store', () => {
       const mockPlan = {
         totalValue: new Decimal(100000),
         trades: [
-          { symbol: 'AAPL', action: 'buy' as const, shares: 10, value: new Decimal(1500) },
+          {
+            symbol: 'AAPL',
+            action: 'buy' as const,
+            shares: 10,
+            value: new Decimal(1500),
+          },
         ],
         impact: new Decimal(100),
       };
@@ -306,10 +319,14 @@ describe('Analysis Store', () => {
         ],
       });
 
-      const { calculateRebalancing } = await import('@/lib/services/analysis/rebalancing-service');
+      const { calculateRebalancing } = await import(
+        '@/lib/services/analysis/rebalancing-service'
+      );
       (calculateRebalancing as any).mockReturnValue(mockPlan);
 
-      await useAnalysisStore.getState().calculateRebalancing('portfolio-1', 'model-1');
+      await useAnalysisStore
+        .getState()
+        .calculateRebalancing('portfolio-1', 'model-1');
 
       const state = useAnalysisStore.getState();
       expect(state.rebalancingPlan).toEqual(mockPlan);
@@ -318,7 +335,9 @@ describe('Analysis Store', () => {
 
     it('should handle rebalancing calculation errors', async () => {
       const { holdingQueries, assetQueries } = await import('@/lib/db');
-      const { calculateRebalancing } = await import('@/lib/services/analysis/rebalancing-service');
+      const { calculateRebalancing } = await import(
+        '@/lib/services/analysis/rebalancing-service'
+      );
 
       // Mock successful database calls
       const mockHoldings = [
@@ -353,7 +372,9 @@ describe('Analysis Store', () => {
         throw new Error('Calculation failed');
       });
 
-      await useAnalysisStore.getState().calculateRebalancing('portfolio-1', 'model-1');
+      await useAnalysisStore
+        .getState()
+        .calculateRebalancing('portfolio-1', 'model-1');
 
       const state = useAnalysisStore.getState();
       expect(state.rebalancingPlan).toBeNull();

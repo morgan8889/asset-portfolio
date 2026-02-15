@@ -37,7 +37,11 @@ import {
   HoldingPerformance,
 } from '@/types/dashboard';
 import Decimal from 'decimal.js';
-import { YoYGrowthTable, ExportButton, HoldingsBreakdown } from '@/components/performance';
+import {
+  YoYGrowthTable,
+  ExportButton,
+  HoldingsBreakdown,
+} from '@/components/performance';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { usePriceStore } from '@/lib/stores/price';
 import { HoldingPerformanceData } from '@/types/performance';

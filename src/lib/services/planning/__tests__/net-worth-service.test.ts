@@ -23,10 +23,7 @@ vi.mock('@/lib/db/schema', () => ({
   },
 }));
 
-import {
-  getNetWorthHistory,
-  getCurrentNetWorth,
-} from '../net-worth-service';
+import { getNetWorthHistory, getCurrentNetWorth } from '../net-worth-service';
 import { db } from '@/lib/db/schema';
 
 describe('getNetWorthHistory', () => {
@@ -74,8 +71,24 @@ describe('getNetWorthHistory', () => {
     ]);
 
     vi.mocked(db.getPriceHistoryByAsset).mockResolvedValue([
-      { assetId, date: '2025-01-15', close: 140, open: 138, high: 142, low: 137, volume: 1000 },
-      { assetId, date: '2025-02-15', close: 150, open: 145, high: 155, low: 143, volume: 1200 },
+      {
+        assetId,
+        date: '2025-01-15',
+        close: 140,
+        open: 138,
+        high: 142,
+        low: 137,
+        volume: 1000,
+      },
+      {
+        assetId,
+        date: '2025-02-15',
+        close: 150,
+        open: 145,
+        high: 155,
+        low: 143,
+        volume: 1200,
+      },
     ] as any);
 
     const startDate = new Date(2025, 0, 1);
@@ -203,11 +216,24 @@ describe('getNetWorthHistory', () => {
     ]);
 
     vi.mocked(db.assets.bulkGet).mockResolvedValue([
-      { id: assetId, symbol: 'VTI', name: 'Vanguard Total', currentPrice: 200 } as any,
+      {
+        id: assetId,
+        symbol: 'VTI',
+        name: 'Vanguard Total',
+        currentPrice: 200,
+      } as any,
     ]);
 
     vi.mocked(db.getPriceHistoryByAsset).mockResolvedValue([
-      { assetId, date: '2025-01-10', close: 200, open: 198, high: 202, low: 197, volume: 500 },
+      {
+        assetId,
+        date: '2025-01-10',
+        close: 200,
+        open: 198,
+        high: 202,
+        low: 197,
+        volume: 500,
+      },
     ] as any);
 
     vi.mocked(db.getLiabilityPayments).mockResolvedValue([]);

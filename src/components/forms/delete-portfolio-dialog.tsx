@@ -67,8 +67,8 @@ export function DeletePortfolioDialog({
     transactionCount === 0
       ? 'simple' // Just a confirm button
       : transactionCount <= 10
-      ? 'checkbox' // Checkbox confirmation
-      : 'typed'; // Must type portfolio name
+        ? 'checkbox' // Checkbox confirmation
+        : 'typed'; // Must type portfolio name
 
   const canDelete =
     confirmationLevel === 'simple' ||
@@ -103,15 +103,13 @@ export function DeletePortfolioDialog({
             <AlertTriangle className="h-5 w-5" />
             Delete Portfolio
           </DialogTitle>
-          <DialogDescription>
-            This action cannot be undone.
-          </DialogDescription>
+          <DialogDescription>This action cannot be undone.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           {/* Last portfolio warning */}
           {isLastPortfolio && (
-            <div className="rounded-md bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 p-4">
+            <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <AlertTriangle className="h-5 w-5 text-yellow-400 dark:text-yellow-600" />
@@ -123,8 +121,8 @@ export function DeletePortfolioDialog({
                   <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
                     <p>
                       This is your last portfolio. Deleting it will leave you
-                      with no portfolios to track. You&apos;ll need to create a new
-                      portfolio to continue using the application.
+                      with no portfolios to track. You&apos;ll need to create a
+                      new portfolio to continue using the application.
                     </p>
                   </div>
                 </div>
@@ -133,7 +131,7 @@ export function DeletePortfolioDialog({
           )}
 
           {/* Portfolio info */}
-          <div className="rounded-md bg-gray-50 dark:bg-gray-900 p-4">
+          <div className="rounded-md bg-gray-50 p-4 dark:bg-gray-900">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               You are about to delete:
             </p>
@@ -155,11 +153,13 @@ export function DeletePortfolioDialog({
               <Checkbox
                 id="confirm-delete"
                 checked={confirmChecked}
-                onCheckedChange={(checked) => setConfirmChecked(checked === true)}
+                onCheckedChange={(checked) =>
+                  setConfirmChecked(checked === true)
+                }
               />
               <Label
                 htmlFor="confirm-delete"
-                className="text-sm font-normal cursor-pointer"
+                className="cursor-pointer text-sm font-normal"
               >
                 I understand that this will permanently delete this portfolio
                 and all its transactions.
@@ -192,7 +192,7 @@ export function DeletePortfolioDialog({
 
           {/* Error message */}
           {deleteError && (
-            <div className="rounded-md bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 p-4">
+            <div className="rounded-md border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <AlertTriangle className="h-5 w-5 text-red-400 dark:text-red-600" />

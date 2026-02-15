@@ -112,9 +112,7 @@ export function getCashImpact(transaction: Transaction): Decimal {
 
     default:
       // Unknown transaction type - assume no cash impact
-      logger.warn(
-        `Unknown transaction type: ${type}, assuming no cash impact`
-      );
+      logger.warn(`Unknown transaction type: ${type}, assuming no cash impact`);
       return new Decimal(0);
   }
 }

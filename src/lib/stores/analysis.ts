@@ -214,10 +214,9 @@ export const useAnalysisStore = create<AnalysisState>()(
               error instanceof Error
                 ? error.message
                 : `Failed to calculate rebalancing: ${String(error)}`;
-            logger.error(
-              '[Analysis Store] Rebalancing calculation error:',
-              { error }
-            );
+            logger.error('[Analysis Store] Rebalancing calculation error:', {
+              error,
+            });
             set({
               error: errorMessage,
               isCalculating: false,
@@ -256,10 +255,9 @@ export const useAnalysisStore = create<AnalysisState>()(
 
             set({ targetModels: models });
           } catch (error) {
-            logger.error(
-              '[Analysis Store] Failed to load target models:',
-              { error }
-            );
+            logger.error('[Analysis Store] Failed to load target models:', {
+              error,
+            });
             // Fallback to predefined models
             set({
               targetModels: PREDEFINED_TARGET_MODELS,

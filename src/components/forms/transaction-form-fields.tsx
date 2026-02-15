@@ -25,10 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { ESPPTransactionFormFields } from './espp-transaction-form';
 import { RSUTransactionFormFields } from './rsu-transaction-form';
-import {
-  TransactionFormValues,
-  transactionTypes,
-} from './transaction-schema';
+import { TransactionFormValues, transactionTypes } from './transaction-schema';
 
 interface TransactionFormFieldsProps {
   form: UseFormReturn<TransactionFormValues>;
@@ -57,7 +54,9 @@ export function TransactionFormFields({
         <Select
           value={watchedType}
           onValueChange={(value: string) =>
-            setValue('type', value as TransactionFormValues['type'], { shouldValidate: true })
+            setValue('type', value as TransactionFormValues['type'], {
+              shouldValidate: true,
+            })
           }
         >
           <SelectTrigger id="type">
@@ -95,9 +94,7 @@ export function TransactionFormFields({
             className={errors.assetSymbol ? 'border-red-500' : ''}
           />
           {errors.assetSymbol && (
-            <p className="text-sm text-red-600">
-              {errors.assetSymbol.message}
-            </p>
+            <p className="text-sm text-red-600">{errors.assetSymbol.message}</p>
           )}
         </div>
 
@@ -132,9 +129,7 @@ export function TransactionFormFields({
             <div className="p-4">
               <Input
                 type="date"
-                value={
-                  watchedDate ? format(watchedDate, 'yyyy-MM-dd') : ''
-                }
+                value={watchedDate ? format(watchedDate, 'yyyy-MM-dd') : ''}
                 onChange={(e) => {
                   if (e.target.value) {
                     setValue('date', new Date(e.target.value), {
@@ -168,9 +163,7 @@ export function TransactionFormFields({
             className={errors.quantity ? 'border-red-500' : ''}
           />
           {errors.quantity && (
-            <p className="text-sm text-red-600">
-              {errors.quantity.message}
-            </p>
+            <p className="text-sm text-red-600">{errors.quantity.message}</p>
           )}
         </div>
 
@@ -189,9 +182,7 @@ export function TransactionFormFields({
             className={errors.price ? 'border-red-500' : ''}
           />
           {errors.price && (
-            <p className="text-sm text-red-600">
-              {errors.price.message}
-            </p>
+            <p className="text-sm text-red-600">{errors.price.message}</p>
           )}
         </div>
       </div>
@@ -209,9 +200,7 @@ export function TransactionFormFields({
             className={errors.fees ? 'border-red-500' : ''}
           />
           {errors.fees && (
-            <p className="text-sm text-red-600">
-              {errors.fees.message}
-            </p>
+            <p className="text-sm text-red-600">{errors.fees.message}</p>
           )}
         </div>
 
