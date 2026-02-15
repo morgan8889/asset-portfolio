@@ -4,8 +4,8 @@
  */
 
 import { Page } from '@playwright/test';
+import { seedMockData } from './test';
 import {
-  generateMockData,
   makePortfolioConcentrated,
   makePortfolioHighCash,
   makePortfolioMultiIssue,
@@ -59,11 +59,10 @@ export async function createMultiIssuePortfolio(page: Page) {
 }
 
 /**
- * Helper to wait for mock data generation to complete.
- * Navigates to /test, generates data, and waits for redirect to dashboard.
+ * Helper to seed mock data via the standard fixture
  */
 export async function waitForMockDataGeneration(page: Page) {
-  await generateMockData(page);
+  await seedMockData(page);
 }
 
 /**
@@ -71,10 +70,10 @@ export async function waitForMockDataGeneration(page: Page) {
  */
 export async function navigateToAnalysisAndWait(page: Page) {
   await page.goto('/analysis');
+  await page.waitForLoadState('load');
 
   // Wait for the Health Score card to appear (indicates calculations started)
-  // CI runners need extra time for IndexedDB hydration + analysis calculations
-  await page.waitForSelector('text=Portfolio Health Score', { timeout: 30000 });
+  await page.waitForSelector('text=Portfolio Health Score', { timeout: 10000 });
 
   // Wait for calculations to complete - look for actual score number (not "Calculating...")
   await page.waitForFunction(
@@ -88,7 +87,7 @@ export async function navigateToAnalysisAndWait(page: Page) {
       const refreshButton = buttons.find(btn => btn.textContent?.includes('Refresh'));
       return refreshButton && !refreshButton.hasAttribute('disabled');
     },
-    { timeout: 30000 }
+    { timeout: 10000 }
   );
 
   // Additional small wait for UI to settle

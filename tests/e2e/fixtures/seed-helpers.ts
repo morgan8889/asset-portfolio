@@ -29,18 +29,21 @@ const DB_NAME = 'PortfolioTrackerDB';
  */
 export async function generateMockData(page: Page): Promise<void> {
   await page.goto('/test');
+  await page.waitForLoadState('networkidle');
 
-  await page.getByRole('button', { name: 'Generate Mock Data' }).click();
-  await page.waitForSelector('text=Done! Redirecting...', {
-    timeout: 10000,
+  const generateButton = page.getByRole('button', {
+    name: 'Generate Mock Data',
   });
-  // Full page reload ensures Zustand stores hydrate from IndexedDB.
-  // The app's client-side redirect preserves stale in-memory store state.
-  await page.goto('/');
-  // Wait for portfolio store to fully load and persist currentPortfolio.
-  // Without this, navigating to other pages before the store persists
-  // causes them to show "No Portfolio Selected".
-  await page.locator('[data-testid="total-value-widget"]').waitFor({ timeout: 15000 });
+
+  if (await generateButton.isEnabled()) {
+    await generateButton.click();
+    await page.waitForSelector('text=Done! Redirecting...', {
+      timeout: 10000,
+    });
+    await page.waitForURL('/', { timeout: 10000 });
+  }
+
+  await page.waitForLoadState('networkidle');
 }
 
 // ============================================================================
