@@ -715,6 +715,9 @@ export const navigationStructure: (NavItem | NavGroup)[] = [
 
 | Feature | Date | Impact |
 |---------|------|--------|
+| **Fix: Price Request Deduplication** | Feb 2026 | In-flight guard on refreshAllPrices(), filter non-priceable assets (real_estate/cash/other), stabilize dashboard effect deps |
+| **CI: E2E Sharding** | Feb 2026 | 4-shard matrix strategy, blob reporter, merged HTML reports — ~4x faster CI feedback |
+| **E2E Test Overhaul** | Feb 2026 | Fixed 198 failures across 49 files; fixed test infrastructure (route order, selectors, seed data); found 3 real app bugs |
 | **Feature #016: Portfolio Management** | Feb 2026 | Multi-portfolio switching, CRUD operations, data isolation, graduated delete confirmations |
 | **Phase 2: API Resilience Testing** | Feb 2026 | 18 tests for price-sources.ts, 0% → 98.26% coverage |
 | **Feature #014: FIRE Planning** | Feb 2026 | Net worth tracking, liabilities, cash ledger, DB schema v4 |
@@ -795,6 +798,42 @@ test.beforeEach(async ({ page }) => {
 
 - Use `waitForLoadState('load')`, **not** `'networkidle'` — `networkidle` adds ~500ms idle wait per call
 - `seedMockData` handles its own waiting internally; no extra `waitForLoadState` needed after it
+
+### Selector Reference (What the UI Actually Uses)
+
+Tests MUST use selectors that match the real DOM. These were validated against the running app:
+
+| UI Element | Correct Selector | Wrong (don't use) |
+|-----------|-----------------|-------------------|
+| Transaction form inputs | `page.locator('#assetSymbol')`, `#quantity`, `#price` | `getByLabel('Symbol')` — inputs have ids, not labels |
+| Portfolio selector | `getByRole('combobox').filter()` anchored to "Portfolio:" text | Bare `getByRole('combobox')` — strict mode violation (multiple comboboxes) |
+| Table headers | `thead th` | `role="columnheader"` — shadcn tables don't use ARIA column roles |
+| Date pickers | Click "Pick a date" button (Popover pattern) | `getByLabel('Date')` — there's no label on the trigger |
+| shadcn Select | Click trigger → click option in listbox | `selectOption()` — it's a Radix popover, not a native select |
+| Radix Switch | `onCheckedChange` + `setValue` | `register()` — doesn't work with Radix Switch |
+| Dashboard load | `data-testid="dashboard-container"` | Waiting for specific widget text |
+| Empty states | `.or()` for multiple possible messages | Single exact text match |
+
+### Route Registration Order
+
+Playwright route handlers are evaluated **LIFO** (last registered = first evaluated). When intercepting price APIs:
+
+```typescript
+// Register wildcard FIRST (evaluated last — fallback)
+await page.route('**/api/prices/*', (route) => route.fallback());
+// Register batch LAST (evaluated first — catches batch requests)
+await page.route('**/api/prices/batch', (route) => { ... });
+```
+
+Use `route.fallback()` (not `route.continue()`) for non-matching requests so the route chain processes correctly.
+
+### Common E2E Mistakes to Avoid
+
+1. **Testing on wrong page**: "Add Transaction" button is on `/transactions`, not the dashboard
+2. **Missing seed data**: Always call `seedMockData(page)` in `beforeEach` for tests needing data
+3. **Conditional logic masking failures**: Never use `if (await locator.isVisible())` — it hides real bugs
+4. **Testing non-existent features**: Verify the feature exists in the app before writing tests
+5. **Chasing infrastructure when tests are wrong**: If many tests fail, the tests are probably wrong — validate against the running app before adjusting CI config
 
 ## Common Debugging Scenarios
 
