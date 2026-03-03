@@ -8,11 +8,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Next.js public environment variables
-      # These are exposed to the browser client
-      - NEXT_PUBLIC_YAHOO_FINANCE_KEY=${NEXT_PUBLIC_YAHOO_FINANCE_KEY:-}
-      - NEXT_PUBLIC_ALPHA_VANTAGE_KEY=${NEXT_PUBLIC_ALPHA_VANTAGE_KEY:-}
-      - NEXT_PUBLIC_COINGECKO_KEY=${NEXT_PUBLIC_COINGECKO_KEY:-}
+      # API Keys (server-side only, not exposed to browser)
+      - YAHOO_FINANCE_KEY=${YAHOO_FINANCE_KEY:-}
+      - ALPHA_VANTAGE_KEY=${ALPHA_VANTAGE_KEY:-}
+      - COINGECKO_KEY=${COINGECKO_KEY:-}
 
       # Node environment
       - NODE_ENV=production
