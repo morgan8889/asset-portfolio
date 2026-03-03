@@ -82,7 +82,7 @@ export function AddManualAssetDialog({
 }: AddManualAssetDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { loadHoldings } = usePortfolioStore();
+  const loadHoldings = usePortfolioStore((s) => s.loadHoldings);
 
   const {
     register,

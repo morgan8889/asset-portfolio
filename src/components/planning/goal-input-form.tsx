@@ -44,8 +44,10 @@ const fireConfigSchema = z.object({
 type FireConfigFormData = z.infer<typeof fireConfigSchema>;
 
 export function GoalInputForm() {
-  const { fireConfig, setFireConfig, resetFireConfig } = usePlanningStore();
-  const { currentPortfolio } = usePortfolioStore();
+  const fireConfig = usePlanningStore((s) => s.fireConfig);
+  const setFireConfig = usePlanningStore((s) => s.setFireConfig);
+  const resetFireConfig = usePlanningStore((s) => s.resetFireConfig);
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
 
   const {
     register,

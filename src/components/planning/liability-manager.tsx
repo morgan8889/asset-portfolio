@@ -70,9 +70,11 @@ interface LiabilityManagerProps {
 }
 
 export function LiabilityManager({ portfolioId }: LiabilityManagerProps) {
-  const { currentPortfolio } = usePortfolioStore();
-  const { liabilities, addLiability, updateLiability, deleteLiability } =
-    usePlanningStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
+  const liabilities = usePlanningStore((s) => s.liabilities);
+  const addLiability = usePlanningStore((s) => s.addLiability);
+  const updateLiability = usePlanningStore((s) => s.updateLiability);
+  const deleteLiability = usePlanningStore((s) => s.deleteLiability);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingLiability, setEditingLiability] = useState<Liability | null>(
     null

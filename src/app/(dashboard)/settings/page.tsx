@@ -34,8 +34,10 @@ export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
-  const { modals, openModal, closeModal } = useUIStore();
-  const { currentPortfolio } = usePortfolioStore();
+  const modals = useUIStore((s) => s.modals);
+  const openModal = useUIStore((s) => s.openModal);
+  const closeModal = useUIStore((s) => s.closeModal);
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
 
   const [baseCurrency, setBaseCurrency] = useState<string>('USD');
   const [showResetDialog, setShowResetDialog] = useState(false);

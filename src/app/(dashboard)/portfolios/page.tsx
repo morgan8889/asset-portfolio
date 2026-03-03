@@ -10,7 +10,9 @@ import { CreatePortfolioDialog } from '@/components/forms/create-portfolio';
 
 export default function PortfoliosPage() {
   const router = useRouter();
-  const { portfolios, error, loading } = usePortfolioStore();
+  const portfolios = usePortfolioStore((s) => s.portfolios);
+  const error = usePortfolioStore((s) => s.error);
+  const loading = usePortfolioStore((s) => s.loading);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Load portfolios from IndexedDB on mount

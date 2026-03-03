@@ -35,7 +35,7 @@ export function DeletePortfolioDialog({
   onOpenChange,
   isLastPortfolio = false,
 }: DeletePortfolioDialogProps) {
-  const { deletePortfolio } = usePortfolioStore();
+  const deletePortfolio = usePortfolioStore((s) => s.deletePortfolio);
   const [isDeleting, setIsDeleting] = useState(false);
   const [transactionCount, setTransactionCount] = useState(0);
   const [confirmChecked, setConfirmChecked] = useState(false);

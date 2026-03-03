@@ -36,6 +36,7 @@ import {
   Globe2,
   Eye,
 } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import { usePortfolioStore, usePriceStore } from '@/lib/stores';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { PriceDisplay } from '@/components/dashboard/price-display';
@@ -85,14 +86,21 @@ const HoldingsTableComponent = () => {
   } | null>(null);
 
   const { holdings, assets, currentPortfolio, loading, error, clearError } =
-    usePortfolioStore();
+    usePortfolioStore(
+      useShallow((s) => ({
+        holdings: s.holdings,
+        assets: s.assets,
+        currentPortfolio: s.currentPortfolio,
+        loading: s.loading,
+        error: s.error,
+        clearError: s.clearError,
+      }))
+    );
 
   // Get live prices from the price store
-  const {
-    prices: livePrices,
-    loading: priceLoading,
-    preferences,
-  } = usePriceStore();
+  const livePrices = usePriceStore((s) => s.prices);
+  const priceLoading = usePriceStore((s) => s.loading);
+  const preferences = usePriceStore((s) => s.preferences);
 
   // Holdings are loaded by useDashboardData hook - no need to load here
 

@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { useAllocationStore } from '@/lib/stores/allocation';
+import { useShallow } from 'zustand/react/shallow';
 import { AllocationChartTabs } from '@/components/allocation/allocation-chart-tabs';
 import { AllocationDonutChart } from '@/components/allocation/allocation-donut-chart';
 import { UnclassifiedAlert } from '@/components/allocation/unclassified-alert';
@@ -30,8 +31,11 @@ import { calculateCurrentAllocation } from '@/lib/services/allocation/rebalancin
 import { AllocationDimension } from '@/types/allocation';
 
 export default function AllocationPage() {
-  const { currentPortfolio, portfolios, holdings, assets, loadHoldings } =
-    usePortfolioStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
+  const portfolios = usePortfolioStore((s) => s.portfolios);
+  const holdings = usePortfolioStore((s) => s.holdings);
+  const assets = usePortfolioStore((s) => s.assets);
+  const loadHoldings = usePortfolioStore((s) => s.loadHoldings);
 
   const {
     targetModels,
@@ -46,7 +50,22 @@ export default function AllocationPage() {
     togglePortfolioExclusion,
     setSelectedDimension,
     calculateRebalancing,
-  } = useAllocationStore();
+  } = useAllocationStore(
+    useShallow((s) => ({
+      targetModels: s.targetModels,
+      activeTargetModel: s.activeTargetModel,
+      excludedPortfolioIds: s.excludedPortfolioIds,
+      rebalancingPlan: s.rebalancingPlan,
+      selectedDimension: s.selectedDimension,
+      loadTargetModels: s.loadTargetModels,
+      setActiveTargetModel: s.setActiveTargetModel,
+      createTarget: s.createTarget,
+      loadExclusions: s.loadExclusions,
+      togglePortfolioExclusion: s.togglePortfolioExclusion,
+      setSelectedDimension: s.setSelectedDimension,
+      calculateRebalancing: s.calculateRebalancing,
+    }))
+  );
 
   const [showTargetEditor, setShowTargetEditor] = useState(false);
   const [showExclusions, setShowExclusions] = useState(false);

@@ -41,6 +41,7 @@ import {
 import { DuplicateReview } from './duplicate-review';
 import { useCsvImportStore } from '@/lib/stores/csv-import';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
+import { useShallow } from 'zustand/react/shallow';
 import { ensureValidPortfolio } from '@/lib/services/csv/portfolio-validation';
 import type { DuplicateHandling } from '@/types/csv-import';
 import type { TransactionField } from '@/types/csv-import';
@@ -73,7 +74,24 @@ export function CsvImportDialog({
     updateColumnMapping,
     setDuplicateHandling,
     applyBrokeragePreset,
-  } = useCsvImportStore();
+  } = useCsvImportStore(
+    useShallow((s) => ({
+      session: s.session,
+      parseResult: s.parseResult,
+      isProcessing: s.isProcessing,
+      progress: s.progress,
+      error: s.error,
+      validationResult: s.validationResult,
+      startImport: s.startImport,
+      confirmImport: s.confirmImport,
+      cancelImport: s.cancelImport,
+      downloadFailedRows: s.downloadFailedRows,
+      reset: s.reset,
+      updateColumnMapping: s.updateColumnMapping,
+      setDuplicateHandling: s.setDuplicateHandling,
+      applyBrokeragePreset: s.applyBrokeragePreset,
+    }))
+  );
 
   const [importResult, setImportResult] = useState<{
     success: boolean;
@@ -88,7 +106,7 @@ export function CsvImportDialog({
   >(null);
   const [portfolioAutoCreated, setPortfolioAutoCreated] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-  const { setCurrentPortfolio } = usePortfolioStore();
+  const setCurrentPortfolio = usePortfolioStore((s) => s.setCurrentPortfolio);
 
   const getCurrentStep = (): DialogStep => {
     if (importResult) return 'results';

@@ -367,8 +367,9 @@ export default function PerformancePage() {
     setSelectedPeriod,
   } = usePerformanceData();
 
-  const { currentPortfolio, holdings: portfolioHoldings } = usePortfolioStore();
-  const { refreshAllPrices } = usePriceStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
+  const portfolioHoldings = usePortfolioStore((s) => s.holdings);
+  const refreshAllPrices = usePriceStore((s) => s.refreshAllPrices);
 
   const handleRefresh = async () => {
     if (currentPortfolio?.id) {

@@ -69,7 +69,7 @@ export function TaxAnalysisTab({
   prices,
   assetSymbolMap,
 }: TaxAnalysisTabProps) {
-  const { taxSettings } = useTaxSettingsStore();
+  const taxSettings = useTaxSettingsStore((s) => s.taxSettings);
   const [sortField, setSortField] = useState<SortField>('purchaseDate');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);

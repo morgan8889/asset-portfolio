@@ -34,9 +34,11 @@ const { mockPortfolioStore, mockPriceStore, usePortfolioStoreMock } =
       },
     };
 
-    // Create store mock with getState
+    // Create store mock with getState and selector support
     const usePortfolioStoreMock = Object.assign(
-      vi.fn(() => mockPortfolioStore),
+      vi.fn((selector?: (s: any) => any) =>
+        selector ? selector(mockPortfolioStore) : mockPortfolioStore
+      ),
       {
         getState: vi.fn(() => ({
           ...mockPortfolioStore,
@@ -50,7 +52,9 @@ const { mockPortfolioStore, mockPriceStore, usePortfolioStoreMock } =
 
 vi.mock('@/lib/stores', () => ({
   usePortfolioStore: usePortfolioStoreMock,
-  usePriceStore: vi.fn(() => mockPriceStore),
+  usePriceStore: vi.fn((selector?: (s: any) => any) =>
+    selector ? selector(mockPriceStore) : mockPriceStore
+  ),
 }));
 
 // Mock child components

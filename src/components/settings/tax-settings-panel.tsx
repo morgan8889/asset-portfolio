@@ -33,8 +33,10 @@ import { showSuccessNotification } from '@/lib/stores/ui';
  * - Automatic persistence to IndexedDB
  */
 export function TaxSettingsPanel() {
-  const { taxSettings, setShortTermRate, setLongTermRate, resetToDefaults } =
-    useTaxSettingsStore();
+  const taxSettings = useTaxSettingsStore((s) => s.taxSettings);
+  const setShortTermRate = useTaxSettingsStore((s) => s.setShortTermRate);
+  const setLongTermRate = useTaxSettingsStore((s) => s.setLongTermRate);
+  const resetToDefaults = useTaxSettingsStore((s) => s.resetToDefaults);
 
   // Local state for UI (as percentages 0-100)
   const [shortTermPercent, setShortTermPercent] = useState(

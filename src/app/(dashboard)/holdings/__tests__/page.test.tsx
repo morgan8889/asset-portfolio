@@ -10,7 +10,9 @@ const mockPortfolioStore = {
 };
 
 vi.mock('@/lib/stores', () => ({
-  usePortfolioStore: vi.fn(() => mockPortfolioStore),
+  usePortfolioStore: vi.fn((selector?: (s: any) => any) =>
+    selector ? selector(mockPortfolioStore) : mockPortfolioStore
+  ),
 }));
 
 // Mock DashboardProvider to just render children

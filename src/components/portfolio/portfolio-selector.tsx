@@ -27,13 +27,11 @@ interface PortfolioSelectorProps {
 }
 
 export function PortfolioSelector({ className }: PortfolioSelectorProps) {
-  const {
-    currentPortfolio,
-    setCurrentPortfolio,
-    getSortedPortfolios,
-    portfolios,
-  } = usePortfolioStore();
-  const { isProcessing } = useCsvImportStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
+  const setCurrentPortfolio = usePortfolioStore((s) => s.setCurrentPortfolio);
+  const getSortedPortfolios = usePortfolioStore((s) => s.getSortedPortfolios);
+  const portfolios = usePortfolioStore((s) => s.portfolios);
+  const isProcessing = useCsvImportStore((s) => s.isProcessing);
 
   const sortedPortfolios = React.useMemo(
     () => getSortedPortfolios(),

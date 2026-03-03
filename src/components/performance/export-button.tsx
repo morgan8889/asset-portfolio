@@ -35,7 +35,9 @@ export function ExportButton({
   disabled = false,
   className,
 }: ExportButtonProps) {
-  const { isExporting, exportData, chartData } = usePerformanceStore();
+  const isExporting = usePerformanceStore((s) => s.isExporting);
+  const exportData = usePerformanceStore((s) => s.exportData);
+  const chartData = usePerformanceStore((s) => s.chartData);
   const [isOpen, setIsOpen] = useState(false);
 
   const handleExport = async (includeHoldings: boolean = false) => {

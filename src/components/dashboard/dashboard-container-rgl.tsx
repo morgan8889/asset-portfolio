@@ -143,15 +143,19 @@ const DashboardContainerRGLComponent = ({
   // Get container width for react-grid-layout v2.x
   const { containerRef, width: measuredWidth } = useContainerWidth();
 
-  const { config, setRGLLayouts, setWidgetSpan, setWidgetRowSpan } =
-    useDashboardStore();
+  const config = useDashboardStore((s) => s.config);
+  const setRGLLayouts = useDashboardStore((s) => s.setRGLLayouts);
+  const setWidgetSpan = useDashboardStore((s) => s.setWidgetSpan);
+  const setWidgetRowSpan = useDashboardStore((s) => s.setWidgetRowSpan);
 
   // Use full measured width for RGL container
   // RGL internally handles margin spacing between grid items
   // Margins are only applied BETWEEN items, not around the container edges
   const width = measuredWidth;
-  const { metrics, holdings, assets } = usePortfolioStore();
-  const { loading: priceLoading } = usePriceStore();
+  const metrics = usePortfolioStore((s) => s.metrics);
+  const holdings = usePortfolioStore((s) => s.holdings);
+  const assets = usePortfolioStore((s) => s.assets);
+  const priceLoading = usePriceStore((s) => s.loading);
   const setSymbolAssetMappings = usePriceStore(
     (state) => state.setSymbolAssetMappings
   );

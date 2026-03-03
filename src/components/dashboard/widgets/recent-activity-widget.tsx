@@ -160,7 +160,7 @@ export const RecentActivityWidget = memo(function RecentActivityWidget({
   limit = 5,
   isLoading: externalLoading = false,
 }: RecentActivityWidgetProps) {
-  const { currentPortfolio } = usePortfolioStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
   const effectivePortfolioId = portfolioId || currentPortfolio?.id;
   const currency = currentPortfolio?.currency || 'USD';
 

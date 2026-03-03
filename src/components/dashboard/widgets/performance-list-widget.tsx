@@ -237,8 +237,8 @@ export const PerformanceListWidget = memo(function PerformanceListWidget({
   data: externalData,
 }: PerformanceListWidgetProps) {
   const router = useRouter();
-  const { config: dashboardConfig } = useDashboardStore();
-  const { currentPortfolio } = usePortfolioStore();
+  const dashboardConfig = useDashboardStore((s) => s.config);
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
 
   const variantConfig = VARIANT_CONFIGS[variant];
   const Icon = variantConfig.icon;

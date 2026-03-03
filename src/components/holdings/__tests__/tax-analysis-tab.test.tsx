@@ -25,9 +25,10 @@ const mockTaxSettings = {
 };
 
 vi.mock('@/lib/stores/tax-settings', () => ({
-  useTaxSettingsStore: () => ({
-    taxSettings: mockTaxSettings,
-  }),
+  useTaxSettingsStore: (selector?: (s: any) => any) => {
+    const state = { taxSettings: mockTaxSettings };
+    return selector ? selector(state) : state;
+  },
 }));
 
 // Mock tooltip components for easier testing

@@ -61,7 +61,10 @@ function mapToTimePeriod(
  * @returns PerformancePageData with all metrics and state
  */
 export function usePerformanceData(): PerformancePageData {
-  const { holdings, assets, currentPortfolio, metrics } = usePortfolioStore();
+  const holdings = usePortfolioStore((s) => s.holdings);
+  const assets = usePortfolioStore((s) => s.assets);
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
+  const metrics = usePortfolioStore((s) => s.metrics);
   const liveMetrics = useLivePriceMetrics(holdings, assets);
 
   const [selectedPeriod, setSelectedPeriod] = useState<ChartTimePeriod>('ALL');

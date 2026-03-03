@@ -44,27 +44,36 @@ const mockStopPolling = vi.fn();
 const mockRefreshAllPrices = vi.fn();
 const mockLoadPreferences = vi.fn();
 
-// Mock the stores
+// Mock the stores - selector-aware for portfolioStore, full subscription for priceStore/assetStore
 vi.mock('@/lib/stores', () => ({
-  usePortfolioStore: () => ({
-    currentPortfolio: mockState.portfolio,
-    holdings: mockState.holdings,
-    loadHoldings: mockLoadHoldings,
-    loading: mockState.loading,
-  }),
-  useAssetStore: () => ({
-    assets: mockState.assets,
-    loadAssets: mockLoadAssets,
-  }),
-  usePriceStore: () => ({
-    prices: mockState.prices,
-    lastFetchTime: mockState.lastFetchTime,
-    setWatchedSymbols: mockSetWatchedSymbols,
-    startPolling: mockStartPolling,
-    stopPolling: mockStopPolling,
-    refreshAllPrices: mockRefreshAllPrices,
-    loadPreferences: mockLoadPreferences,
-  }),
+  usePortfolioStore: (selector?: (s: any) => any) => {
+    const state = {
+      currentPortfolio: mockState.portfolio,
+      holdings: mockState.holdings,
+      loadHoldings: mockLoadHoldings,
+      loading: mockState.loading,
+    };
+    return selector ? selector(state) : state;
+  },
+  useAssetStore: (selector?: (s: any) => any) => {
+    const state = {
+      assets: mockState.assets,
+      loadAssets: mockLoadAssets,
+    };
+    return selector ? selector(state) : state;
+  },
+  usePriceStore: (selector?: (s: any) => any) => {
+    const state = {
+      prices: mockState.prices,
+      lastFetchTime: mockState.lastFetchTime,
+      setWatchedSymbols: mockSetWatchedSymbols,
+      startPolling: mockStartPolling,
+      stopPolling: mockStopPolling,
+      refreshAllPrices: mockRefreshAllPrices,
+      loadPreferences: mockLoadPreferences,
+    };
+    return selector ? selector(state) : state;
+  },
 }));
 
 // Mock the TaxAnalysisTab component to simplify testing

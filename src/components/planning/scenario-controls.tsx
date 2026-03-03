@@ -96,8 +96,10 @@ const scenarioTypeDescriptions: Record<ScenarioType, string> = {
 };
 
 export function ScenarioControls() {
-  const { scenarios, addScenario, deleteScenario, toggleScenario } =
-    usePlanningStore();
+  const scenarios = usePlanningStore((s) => s.scenarios);
+  const addScenario = usePlanningStore((s) => s.addScenario);
+  const deleteScenario = usePlanningStore((s) => s.deleteScenario);
+  const toggleScenario = usePlanningStore((s) => s.toggleScenario);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [scenarioToDelete, setScenarioToDelete] = useState<string | null>(null);

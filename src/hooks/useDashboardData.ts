@@ -51,15 +51,13 @@ interface DashboardData {
  * Fetches data in parallel and provides loading/error states.
  */
 export function useDashboardData(): DashboardData {
-  const {
-    currentPortfolio,
-    portfolios,
-    metrics,
-    holdings,
-    loading: portfolioLoading,
-    error: portfolioError,
-    setCurrentPortfolio,
-  } = usePortfolioStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
+  const portfolios = usePortfolioStore((s) => s.portfolios);
+  const metrics = usePortfolioStore((s) => s.metrics);
+  const holdings = usePortfolioStore((s) => s.holdings);
+  const portfolioLoading = usePortfolioStore((s) => s.loading);
+  const portfolioError = usePortfolioStore((s) => s.error);
+  const setCurrentPortfolio = usePortfolioStore((s) => s.setCurrentPortfolio);
 
   // Get stable action references via getState() to avoid effect dependency issues with devtools middleware
   const {
@@ -69,12 +67,14 @@ export function useDashboardData(): DashboardData {
     refreshData: refreshPortfolioData,
   } = usePortfolioStore.getState();
 
-  const { transactions, loading: transactionsLoading } = useTransactionStore();
+  const transactions = useTransactionStore((s) => s.transactions);
+  const transactionsLoading = useTransactionStore((s) => s.loading);
 
   // Get stable action references via getState()
   const { loadTransactions } = useTransactionStore.getState();
 
-  const { assets, loading: assetsLoading } = useAssetStore();
+  const assets = useAssetStore((s) => s.assets);
+  const assetsLoading = useAssetStore((s) => s.loading);
 
   // Get stable action references via getState()
   const { loadAssets } = useAssetStore.getState();

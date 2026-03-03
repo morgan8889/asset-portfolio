@@ -22,7 +22,7 @@ export function DashboardHeader() {
   const router = useRouter();
   const { currentPortfolio, portfolios, setCurrentPortfolio } =
     useDashboardContext();
-  const { config } = useDashboardStore();
+  const config = useDashboardStore((s) => s.config);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const handleExportClick = () => {

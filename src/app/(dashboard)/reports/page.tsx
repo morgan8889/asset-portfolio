@@ -12,8 +12,9 @@ import { useToast } from '@/components/ui/use-toast';
 import type { DateRangePreset } from '@/types/export';
 
 export default function ReportsPage() {
-  const { currentPortfolio } = usePortfolioStore();
-  const { updateProgress, resetProgress } = useExportStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
+  const updateProgress = useExportStore((s) => s.updateProgress);
+  const resetProgress = useExportStore((s) => s.resetProgress);
   const { toast } = useToast();
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isGeneratingTransactionsCsv, setIsGeneratingTransactionsCsv] =

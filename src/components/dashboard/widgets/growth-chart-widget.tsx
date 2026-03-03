@@ -173,8 +173,9 @@ export const GrowthChartWidget = memo(function GrowthChartWidget({
   portfolioId,
   isLoading: externalLoading = false,
 }: GrowthChartWidgetProps) {
-  const { config, setTimePeriod } = useDashboardStore();
-  const { currentPortfolio } = usePortfolioStore();
+  const config = useDashboardStore((s) => s.config);
+  const setTimePeriod = useDashboardStore((s) => s.setTimePeriod);
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
   const effectivePortfolioId = portfolioId || currentPortfolio?.id;
 
   // Use global time period from dashboard config

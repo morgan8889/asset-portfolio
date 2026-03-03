@@ -11,7 +11,7 @@ import { usePortfolioStore } from '@/lib/stores/portfolio';
 
 export default function TransactionsPage() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const { currentPortfolio } = usePortfolioStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
 
   // Portfolio ID for import operations (null if none selected)
   const portfolioId = currentPortfolio?.id ?? null;

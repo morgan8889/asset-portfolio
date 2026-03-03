@@ -4,6 +4,7 @@ import { useMemo, useEffect } from 'react';
 import { Decimal } from 'decimal.js';
 import { TaxAnalysisTab } from '@/components/holdings/tax-analysis-tab';
 import { usePriceStore, useAssetStore, usePortfolioStore } from '@/lib/stores';
+import { useShallow } from 'zustand/react/shallow';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { InfoIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,8 +18,10 @@ import Link from 'next/link';
  * estimated tax liability, and detailed lot-level analysis.
  */
 export default function TaxAnalysisPage() {
-  const { currentPortfolio, holdings, loadHoldings, loading } =
-    usePortfolioStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
+  const holdings = usePortfolioStore((s) => s.holdings);
+  const loadHoldings = usePortfolioStore((s) => s.loadHoldings);
+  const loading = usePortfolioStore((s) => s.loading);
   const {
     prices,
     lastFetchTime,
@@ -27,8 +30,19 @@ export default function TaxAnalysisPage() {
     stopPolling,
     refreshAllPrices,
     loadPreferences,
-  } = usePriceStore();
-  const { assets, loadAssets } = useAssetStore();
+  } = usePriceStore(
+    useShallow((s) => ({
+      prices: s.prices,
+      lastFetchTime: s.lastFetchTime,
+      setWatchedSymbols: s.setWatchedSymbols,
+      startPolling: s.startPolling,
+      stopPolling: s.stopPolling,
+      refreshAllPrices: s.refreshAllPrices,
+      loadPreferences: s.loadPreferences,
+    }))
+  );
+  const assets = useAssetStore((s) => s.assets);
+  const loadAssets = useAssetStore((s) => s.loadAssets);
 
   // Load holdings and assets when portfolio changes
   useEffect(() => {

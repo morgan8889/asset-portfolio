@@ -30,7 +30,7 @@ export function ExportButton({
   variant = 'outline',
   size = 'sm',
 }: ExportButtonProps) {
-  const { progress } = useExportStore();
+  const progress = useExportStore((s) => s.progress);
   const isExporting =
     progress.status === 'preparing' || progress.status === 'generating';
 
