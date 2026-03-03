@@ -65,3 +65,8 @@ temp/
 .serena/
 .core.*
 core.*
+
+# Local tool configurations
+.claude/settings.local.json
+.specify/
+screenshots/
