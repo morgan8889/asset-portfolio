@@ -13,6 +13,7 @@ import { generateTransactionId } from '@/types/storage';
 import { transactionQueries, HoldingsCalculator } from '@/lib/db';
 import { showSuccessNotification, showErrorNotification } from './ui';
 import { handleSnapshotTrigger } from '@/lib/services/snapshot-service';
+import { getErrorMessage } from '@/lib/utils/error';
 
 // Optimistic ID prefix to identify temporary IDs
 const OPTIMISTIC_ID_PREFIX = 'optimistic-';
@@ -461,7 +462,7 @@ export const useTransactionStore = create<TransactionState>()(
               errors.push({
                 row: i + 1,
                 message:
-                  error instanceof Error ? error.message : 'Unknown error',
+                  getErrorMessage(error),
                 data: transactionDataList[i],
               });
             }

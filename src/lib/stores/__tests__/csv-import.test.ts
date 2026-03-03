@@ -315,7 +315,7 @@ describe('CSV Import Store', () => {
       await useCsvImportStore.getState().startImport(mockFile, 'portfolio-1');
 
       const state = useCsvImportStore.getState();
-      expect(state.error).toBe('Failed to parse CSV file');
+      expect(state.error).toBe('string error');
       expect(state.isProcessing).toBe(false);
     });
 

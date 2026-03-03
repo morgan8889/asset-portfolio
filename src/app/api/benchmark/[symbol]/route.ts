@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit } from '@/lib/utils/rate-limit';
 import { validateSymbol, sanitizeInput } from '@/lib/utils/validation';
 import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/error';
 
 // In-memory cache for benchmark data (in production, use Redis)
 const benchmarkCache = new Map<
@@ -85,7 +86,7 @@ async function fetchWithRetry(
       lastError = error as Error;
       logger.warn(
         `Failed to fetch benchmark data for ${symbol}, attempt ${attempt}:`,
-        { error: error instanceof Error ? error.message : String(error) }
+        { error: getErrorMessage(error) }
       );
 
       if (attempt < MAX_RETRIES) {
@@ -204,8 +205,7 @@ export async function GET(
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorMessage = getErrorMessage(error);
     logger.error(`Error fetching benchmark data for ${params.symbol}:`, error);
 
     // Return appropriate error response

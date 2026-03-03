@@ -28,6 +28,7 @@ import {
   RSUTransactionMetadata,
 } from '@/types';
 import { assetQueries } from '@/lib/db';
+import { getErrorMessage } from '@/lib/utils/error';
 import {
   transactionSchema,
   transactionTypes,
@@ -306,8 +307,7 @@ function TransactionDialog({
       const action = mode === 'edit' ? 'update' : 'add';
       console.error(`Failed to ${action} transaction:`, error);
 
-      const errorMessage =
-        error instanceof Error ? error.message : 'Please try again.';
+      const errorMessage = getErrorMessage(error);
 
       showErrorNotification(`Failed to ${action} transaction`, errorMessage);
     } finally {

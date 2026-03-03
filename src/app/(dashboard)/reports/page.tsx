@@ -10,6 +10,7 @@ import { ExportButton } from '@/components/reports/export-button';
 import { DateRangeSelect } from '@/components/reports/date-range-select';
 import { useToast } from '@/components/ui/use-toast';
 import type { DateRangePreset } from '@/types/export';
+import { getErrorMessage } from '@/lib/utils/error';
 
 export default function ReportsPage() {
   const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
@@ -52,8 +53,7 @@ export default function ReportsPage() {
     } catch (error) {
       toast({
         title: 'Export Failed',
-        description:
-          error instanceof Error ? error.message : 'Failed to generate PDF',
+        description: getErrorMessage(error),
         variant: 'destructive',
       });
     } finally {
@@ -91,10 +91,7 @@ export default function ReportsPage() {
     } catch (error) {
       toast({
         title: 'Export Failed',
-        description:
-          error instanceof Error
-            ? error.message
-            : 'Failed to export transactions',
+        description: getErrorMessage(error),
         variant: 'destructive',
       });
     } finally {
@@ -128,8 +125,7 @@ export default function ReportsPage() {
     } catch (error) {
       toast({
         title: 'Export Failed',
-        description:
-          error instanceof Error ? error.message : 'Failed to export holdings',
+        description: getErrorMessage(error),
         variant: 'destructive',
       });
     } finally {

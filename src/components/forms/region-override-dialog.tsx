@@ -25,6 +25,7 @@ import { Asset, Region } from '@/types/asset';
 import { useAssetStore } from '@/lib/stores';
 import { inferRegion } from '@/lib/utils/region-inference';
 import { Globe2 } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils/error';
 
 const formSchema = z.object({
   region: z.enum(['US', 'UK', 'EU', 'APAC', 'EMERGING', 'CA', 'OTHER']),
@@ -110,7 +111,7 @@ export function RegionOverrideDialog({
     } catch (error) {
       console.error('Failed to update region:', error);
       alert(
-        `Failed to update region: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to update region: ${getErrorMessage(error)}`
       );
     } finally {
       setIsSubmitting(false);

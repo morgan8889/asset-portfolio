@@ -23,6 +23,7 @@ import {
   showSuccessNotification,
   showErrorNotification,
 } from '@/lib/stores/ui';
+import { getErrorMessage } from '@/lib/utils/error';
 
 interface ExportButtonProps {
   portfolioId: string;
@@ -69,7 +70,7 @@ export function ExportButton({
     } catch (error) {
       showErrorNotification(
         'Export Failed',
-        error instanceof Error ? error.message : 'Failed to export data'
+        getErrorMessage(error)
       );
     }
   };

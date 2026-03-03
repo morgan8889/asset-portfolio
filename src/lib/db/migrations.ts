@@ -1,5 +1,6 @@
 import { db } from './schema';
 import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/error';
 import type { Portfolio } from '@/types/portfolio';
 
 // Migration interface
@@ -98,7 +99,7 @@ export class MigrationManager {
       return migrationState?.version || 0;
     } catch (error) {
       logger.warn('Could not get current migration version', {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
       return 0;
     }
@@ -241,7 +242,7 @@ export class MigrationManager {
       return [];
     } catch (error) {
       logger.warn('Could not get applied migrations', {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
       return [];
     }

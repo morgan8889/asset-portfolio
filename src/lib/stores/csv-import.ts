@@ -37,6 +37,7 @@ import {
   getBrokerageFormatById,
   getBrokerageColumnMappings,
 } from '@/lib/services/brokerage-formats';
+import { getErrorMessage } from '@/lib/utils/error';
 
 export interface CsvImportState {
   // Session state
@@ -124,7 +125,7 @@ export const useCsvImportStore = create<CsvImportState>((set, get) => ({
     } catch (error) {
       set({
         error:
-          error instanceof Error ? error.message : 'Failed to parse CSV file',
+          getErrorMessage(error),
         isProcessing: false,
       });
     }
@@ -272,7 +273,7 @@ export const useCsvImportStore = create<CsvImportState>((set, get) => ({
           ...session,
           status: 'error',
         },
-        error: error instanceof Error ? error.message : 'Import failed',
+        error: getErrorMessage(error),
         isProcessing: false,
       });
       throw error;

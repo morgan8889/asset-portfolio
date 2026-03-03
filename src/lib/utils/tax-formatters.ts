@@ -9,33 +9,6 @@ import { HoldingPeriod } from '@/types/tax';
 import { formatPercentage } from './currency';
 
 /**
- * @deprecated Use formatPercentage() from @/lib/utils/currency instead
- * Preserved for backward compatibility in tax exports
- *
- * Format percentage with appropriate precision
- *
- * @param percent - Decimal or number percentage (0.15 = 15%)
- * @param precision - Number of decimal places (default: 2)
- * @returns Formatted percentage string (e.g., "15.00%")
- */
-export function formatPercent(
-  percent: Decimal | number | string | undefined | null,
-  precision: number = 2
-): string {
-  if (percent === undefined || percent === null) {
-    return '0.00%';
-  }
-
-  const decimal =
-    percent instanceof Decimal ? percent : new Decimal(percent.toString());
-  const value = decimal.mul(100).toNumber(); // Convert 0.15 to 15
-
-  // Use the standard formatPercentage function for consistency
-  // formatPercentage expects the percentage value (not decimal), so pass value directly
-  return formatPercentage(value, precision, false, true);
-}
-
-/**
  * Format holding period for display
  *
  * @param period - Holding period classification
@@ -158,5 +131,12 @@ export function formatExportPercent(
     return '';
   }
 
-  return formatPercent(percent, 2);
+  if (percent === null) {
+    return '0.00%';
+  }
+
+  const decimal =
+    percent instanceof Decimal ? percent : new Decimal(percent.toString());
+  const value = decimal.mul(100).toNumber();
+  return formatPercentage(value, 2, false, true);
 }
