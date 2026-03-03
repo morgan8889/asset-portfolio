@@ -253,6 +253,17 @@ export default function TestPage() {
   const [includeInternational, setIncludeInternational] = useState(true);
   const [includeDividends, setIncludeDividends] = useState(true);
 
+  if (process.env.NODE_ENV !== 'development') {
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-2xl font-bold">Not Available</h1>
+        <p className="text-muted-foreground mt-2">
+          This page is only available in development mode.
+        </p>
+      </div>
+    );
+  }
+
   const handleSeed = async () => {
     setSeeding(true);
     try {
