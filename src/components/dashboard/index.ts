@@ -1,8 +1,5 @@
 export { DashboardProvider, useDashboardContext } from './DashboardProvider';
 export { DashboardHeader } from './DashboardHeader';
-export { MetricsCards } from './MetricsCards';
-export { ChartsRow } from './ChartsRow';
-export { RecentActivity } from './RecentActivity';
 export {
   DashboardLoadingState,
   DashboardErrorState,
@@ -14,6 +11,5 @@ export {
   TimePeriodSelector,
   TimePeriodSelectorCompact,
 } from './time-period-selector';
-export { WidgetWrapper } from './widget-wrapper';
 export { StaleDataBanner } from './stale-data-banner';
 export { PriceDisplay } from './price-display';
