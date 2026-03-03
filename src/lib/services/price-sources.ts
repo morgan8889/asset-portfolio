@@ -67,7 +67,7 @@ export async function fetchYahooPrice(symbol: string): Promise<PriceResult> {
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}`;
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; Portfolio-Tracker/1.0)',
