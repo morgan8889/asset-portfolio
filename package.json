@@ -1,7 +1,6 @@
 {
   "name": "portfolio-tracker",
   "version": "0.1.0",
-  "private": true,
   "description": "A modern, privacy-first financial portfolio tracking application with interactive visualizations",
   "keywords": [
     "portfolio",
@@ -15,7 +14,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/portfolio-tracker.git"
+    "url": "https://github.com/morgan8889/asset-portfolio.git"
   },
   "scripts": {
     "dev": "next dev",
