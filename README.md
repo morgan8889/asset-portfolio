@@ -4,8 +4,6 @@
 
 A modern, privacy-first financial portfolio tracking application with interactive visualizations for multi-asset investment management and financial planning.
 
-![Portfolio Tracker Dashboard](docs/designs/dashboard-preview.png)
-
 ## ✨ Features
 
 **Status Legend**: ✅ Ready | 🔄 In Progress | 📋 Planned
@@ -43,8 +41,8 @@ A modern, privacy-first financial portfolio tracking application with interactiv
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/portfolio-tracker.git
-cd portfolio-tracker
+git clone https://github.com/morgan8889/asset-portfolio.git
+cd asset-portfolio
 
 # Install dependencies
 npm install
@@ -374,11 +372,11 @@ curl http://localhost:3000/api/health
 
 ### Vercel (Recommended)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/portfolio-tracker)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/morgan8889/asset-portfolio)
 
 ### Netlify
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/yourusername/portfolio-tracker)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/morgan8889/asset-portfolio)
 
 ### Self-Hosted
 
@@ -506,14 +504,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 💬 Support
 
-- **Documentation**: [docs.portfoliotracker.app](https://docs.portfoliotracker.app)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/portfolio-tracker/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/portfolio-tracker/discussions)
-- **Email**: support@portfoliotracker.app
+- **Issues**: [GitHub Issues](https://github.com/morgan8889/asset-portfolio/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/morgan8889/asset-portfolio/discussions)
 
 ## ⭐ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/portfolio-tracker&type=Date)](https://star-history.com/#yourusername/portfolio-tracker&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=morgan8889/asset-portfolio&type=Date)](https://star-history.com/#morgan8889/asset-portfolio&Date)
 
 ---
 
