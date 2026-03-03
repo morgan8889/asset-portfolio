@@ -2,6 +2,7 @@
 const nextConfig = {
   experimental: {
     typedRoutes: true,
+    optimizePackageImports: ['recharts', 'date-fns', 'lucide-react'],
   },
   eslint: {
     dirs: ['src'],

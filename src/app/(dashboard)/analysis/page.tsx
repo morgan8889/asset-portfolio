@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { useAnalysisStore } from '@/lib/stores/analysis';
 import { useShallow } from 'zustand/react/shallow';
@@ -8,12 +9,16 @@ import { HealthScoreCard } from '@/components/analysis/health-score-card';
 import { MetricBreakdown } from '@/components/analysis/metric-breakdown';
 import { ProfileSelector } from '@/components/analysis/profile-selector';
 import { RecommendationList } from '@/components/analysis/recommendation-list';
-import { AllocationChart } from '@/components/analysis/allocation-chart';
 import { TargetModelSelector } from '@/components/analysis/target-model-selector';
 import { RebalancingTable } from '@/components/analysis/rebalancing-table';
 import { FormulaDisplay } from '@/components/analysis/formula-display';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+
+const AllocationChart = dynamic(
+  () => import('@/components/analysis/allocation-chart').then(mod => ({ default: mod.AllocationChart })),
+  { ssr: false, loading: () => <div className="h-[400px] animate-pulse rounded-lg bg-muted" /> }
+);
 
 export default function AnalysisPage() {
   const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);

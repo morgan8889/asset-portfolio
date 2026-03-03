@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Target, Plus, Settings } from 'lucide-react';
@@ -22,8 +23,12 @@ import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { useAllocationStore } from '@/lib/stores/allocation';
 import { useShallow } from 'zustand/react/shallow';
 import { AllocationChartTabs } from '@/components/allocation/allocation-chart-tabs';
-import { AllocationDonutChart } from '@/components/allocation/allocation-donut-chart';
 import { UnclassifiedAlert } from '@/components/allocation/unclassified-alert';
+
+const AllocationDonutChart = dynamic(
+  () => import('@/components/allocation/allocation-donut-chart').then(mod => ({ default: mod.AllocationDonutChart })),
+  { ssr: false, loading: () => <div className="h-[400px] animate-pulse rounded-lg bg-muted" /> }
+);
 import { TargetModelEditor } from '@/components/allocation/target-model-editor';
 import { RebalancingTable } from '@/components/allocation/rebalancing-table';
 import { ExclusionToggle } from '@/components/allocation/exclusion-toggle';
