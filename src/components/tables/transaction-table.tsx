@@ -32,6 +32,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useTransactionStore, usePortfolioStore } from '@/lib/stores';
+import { useShallow } from 'zustand/react/shallow';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Transaction, TransactionType } from '@/types';
 import { TransactionDialog } from '@/components/forms/add-transaction';
@@ -155,9 +156,20 @@ const TransactionTableComponent = ({
     filterTransactions,
     clearError,
     deleteTransaction: deleteTransactionAction,
-  } = useTransactionStore();
+  } = useTransactionStore(
+    useShallow((s) => ({
+      transactions: s.transactions,
+      filteredTransactions: s.filteredTransactions,
+      loading: s.loading,
+      error: s.error,
+      loadTransactions: s.loadTransactions,
+      filterTransactions: s.filterTransactions,
+      clearError: s.clearError,
+      deleteTransaction: s.deleteTransaction,
+    }))
+  );
 
-  const { currentPortfolio } = usePortfolioStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
 
   useEffect(() => {
     if (currentPortfolio?.id) {

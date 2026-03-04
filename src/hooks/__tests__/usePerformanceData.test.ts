@@ -5,13 +5,26 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { usePerformanceData } from '../usePerformanceData';
-import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { useLivePriceMetrics } from '../useLivePriceMetrics';
 import * as metricsService from '@/lib/services';
 import Decimal from 'decimal.js';
 
 // Mock the dependencies
-vi.mock('@/lib/stores/portfolio');
+// Create a mutable state object that the mock reads from
+const { mockPortfolioState } = vi.hoisted(() => ({
+  mockPortfolioState: {
+    holdings: [] as any[],
+    assets: [] as any[],
+    currentPortfolio: null as any,
+    metrics: null as any,
+  },
+}));
+
+vi.mock('@/lib/stores/portfolio', () => ({
+  usePortfolioStore: (selector?: (s: any) => any) => {
+    return selector ? selector(mockPortfolioState) : mockPortfolioState;
+  },
+}));
 vi.mock('../useLivePriceMetrics');
 vi.mock('@/lib/services', async () => {
   const actual = await vi.importActual('@/lib/services');
@@ -69,17 +82,15 @@ describe('usePerformanceData', () => {
   ];
 
   beforeEach(() => {
-    // Setup default mocks
-    vi.mocked(usePortfolioStore).mockReturnValue({
-      holdings: [],
-      assets: [],
-      currentPortfolio: mockPortfolio,
-      metrics: {
-        totalValue: new Decimal(10000),
-        totalGain: new Decimal(1000),
-        totalGainPercent: 10,
-      },
-    } as any);
+    // Setup default mocks via mutable state
+    mockPortfolioState.holdings = [];
+    mockPortfolioState.assets = [];
+    mockPortfolioState.currentPortfolio = mockPortfolio;
+    mockPortfolioState.metrics = {
+      totalValue: new Decimal(10000),
+      totalGain: new Decimal(1000),
+      totalGainPercent: 10,
+    };
 
     vi.mocked(useLivePriceMetrics).mockReturnValue(mockLiveMetrics as any);
 
@@ -170,12 +181,10 @@ describe('usePerformanceData', () => {
   });
 
   it('should handle portfolio without ID', async () => {
-    vi.mocked(usePortfolioStore).mockReturnValue({
-      holdings: [],
-      assets: [],
-      currentPortfolio: null,
-      metrics: null,
-    } as any);
+    mockPortfolioState.holdings = [];
+    mockPortfolioState.assets = [];
+    mockPortfolioState.currentPortfolio = null;
+    mockPortfolioState.metrics = null;
 
     const { result } = renderHook(() => usePerformanceData());
 
@@ -224,12 +233,10 @@ describe('usePerformanceData', () => {
     });
 
     // Change portfolio
-    vi.mocked(usePortfolioStore).mockReturnValue({
-      holdings: [],
-      assets: [],
-      currentPortfolio: { ...mockPortfolio, id: 'portfolio-2' },
-      metrics: null,
-    } as any);
+    mockPortfolioState.holdings = [];
+    mockPortfolioState.assets = [];
+    mockPortfolioState.currentPortfolio = { ...mockPortfolio, id: 'portfolio-2' };
+    mockPortfolioState.metrics = null;
 
     rerender();
 

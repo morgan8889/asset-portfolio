@@ -21,7 +21,7 @@ import { usePortfolioStore } from '@/lib/stores';
 function HoldingsPageContent() {
   const [showPropertyDialog, setShowPropertyDialog] = useState(false);
   const [showManualAssetDialog, setShowManualAssetDialog] = useState(false);
-  const { currentPortfolio } = usePortfolioStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
 
   const handleSuccess = () => {
     // Dialogs will handle reloading holdings

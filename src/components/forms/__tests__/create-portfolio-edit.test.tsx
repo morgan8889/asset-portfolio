@@ -5,8 +5,19 @@ import { CreatePortfolioDialog } from '../create-portfolio';
 import { usePortfolioStore } from '@/lib/stores';
 import { db } from '@/lib/db';
 
+const { mockPortfolioStoreState } = vi.hoisted(() => ({
+  mockPortfolioStoreState: {
+    createPortfolio: vi.fn(),
+    updatePortfolio: vi.fn(),
+  } as any,
+}));
+
 vi.mock('@/lib/stores', () => ({
-  usePortfolioStore: vi.fn(),
+  usePortfolioStore: vi.fn((selector?: (s: any) => any) =>
+    selector
+      ? selector(mockPortfolioStoreState)
+      : mockPortfolioStoreState
+  ),
 }));
 
 vi.mock('@/lib/db', () => ({
@@ -27,10 +38,8 @@ describe('CreatePortfolioDialog - Edit Mode', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (usePortfolioStore as any).mockReturnValue({
-      updatePortfolio: mockUpdatePortfolio,
-      createPortfolio: mockCreatePortfolio,
-    });
+    mockPortfolioStoreState.updatePortfolio = mockUpdatePortfolio;
+    mockPortfolioStoreState.createPortfolio = mockCreatePortfolio;
   });
 
   it('should render in edit mode with pre-filled values', async () => {

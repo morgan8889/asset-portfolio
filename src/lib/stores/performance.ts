@@ -30,6 +30,7 @@ import {
   getBenchmarkChartData,
 } from '@/lib/services/benchmark-service';
 import { usePortfolioStore } from './portfolio';
+import { getErrorMessage } from '@/lib/utils/error';
 
 // =============================================================================
 // Constants
@@ -317,7 +318,7 @@ export const usePerformanceStore = create<PerformanceState>()(
         } catch (error) {
           set({
             error:
-              error instanceof Error ? error.message : 'Failed to export data',
+              getErrorMessage(error),
             isExporting: false,
           });
           throw error;
@@ -332,7 +333,7 @@ export const usePerformanceStore = create<PerformanceState>()(
         } catch (error) {
           set({
             error:
-              error instanceof Error ? error.message : 'Failed to refresh data',
+              getErrorMessage(error),
             isLoading: false,
           });
         }

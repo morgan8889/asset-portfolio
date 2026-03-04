@@ -23,7 +23,6 @@ PageNotFoundError: Cannot find module for page: /reports
 
 **When Introduced**: Commit `73d5b52` (Jan 26, 2026)
 - Commit: `feat: implement grouped collapsible navigation structure`
-- Author: Nick Morgan
 
 **What Happened**:
 1. Navigation structure was refactored to use collapsible groups

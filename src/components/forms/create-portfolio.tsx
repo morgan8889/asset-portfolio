@@ -67,7 +67,8 @@ export function CreatePortfolioDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showTypeChangeWarning, setShowTypeChangeWarning] = useState(false);
   const [transactionCount, setTransactionCount] = useState(0);
-  const { createPortfolio, updatePortfolio } = usePortfolioStore();
+  const createPortfolio = usePortfolioStore((s) => s.createPortfolio);
+  const updatePortfolio = usePortfolioStore((s) => s.updatePortfolio);
 
   // Use controlled or internal state
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;

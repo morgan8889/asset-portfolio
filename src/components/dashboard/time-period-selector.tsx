@@ -36,7 +36,8 @@ export const TimePeriodSelector = memo(function TimePeriodSelector({
   className,
   size = 'sm',
 }: TimePeriodSelectorProps) {
-  const { config, setTimePeriod } = useDashboardStore();
+  const config = useDashboardStore((s) => s.config);
+  const setTimePeriod = useDashboardStore((s) => s.setTimePeriod);
   const currentPeriod = config?.timePeriod || 'ALL';
 
   const handlePeriodChange = useCallback(
@@ -96,7 +97,8 @@ export const TimePeriodSelectorCompact = memo(
     periods = ['WEEK', 'MONTH', 'QUARTER', 'YEAR', 'ALL'],
     className,
   }: Omit<TimePeriodSelectorProps, 'size'>) {
-    const { config, setTimePeriod } = useDashboardStore();
+    const config = useDashboardStore((s) => s.config);
+  const setTimePeriod = useDashboardStore((s) => s.setTimePeriod);
     const currentPeriod = config?.timePeriod || 'ALL';
 
     const handlePeriodChange = useCallback(

@@ -26,6 +26,7 @@ import {
 import { convertPenceToPounds, getExchange } from '@/lib/utils/market-utils';
 import { getMarketState } from '@/lib/services/market-hours';
 import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/error';
 import {
   priceResponseSchema,
   batchPriceResponseSchema,
@@ -343,8 +344,7 @@ export const usePriceStore = create<PriceState>()(
 
           set({ loading: false });
         } catch (error) {
-          const message =
-            error instanceof Error ? error.message : 'Failed to fetch price';
+          const message = getErrorMessage(error);
 
           // Keep cached data available - don't clear prices on error
           // Just set error state so UI can show staleness indicator
@@ -446,8 +446,7 @@ export const usePriceStore = create<PriceState>()(
 
           set({ loading: false });
         } catch (error) {
-          const message =
-            error instanceof Error ? error.message : 'Failed to fetch prices';
+          const message = getErrorMessage(error);
 
           // Keep cached data available - don't clear prices on error
           // Recalculate staleness for existing cached data

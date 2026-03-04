@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { notFound } from 'next/navigation';
 import { Decimal } from 'decimal.js';
 import { AddTransactionDialog } from '@/components/forms/add-transaction';
 import { CreatePortfolioDialog } from '@/components/forms/create-portfolio';
@@ -252,6 +253,10 @@ export default function TestPage() {
   const [years, setYears] = useState('5');
   const [includeInternational, setIncludeInternational] = useState(true);
   const [includeDividends, setIncludeDividends] = useState(true);
+
+  if (process.env.NODE_ENV !== 'development') {
+    notFound();
+  }
 
   const handleSeed = async () => {
     setSeeding(true);

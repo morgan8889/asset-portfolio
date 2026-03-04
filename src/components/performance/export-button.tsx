@@ -23,6 +23,7 @@ import {
   showSuccessNotification,
   showErrorNotification,
 } from '@/lib/stores/ui';
+import { getErrorMessage } from '@/lib/utils/error';
 
 interface ExportButtonProps {
   portfolioId: string;
@@ -35,7 +36,9 @@ export function ExportButton({
   disabled = false,
   className,
 }: ExportButtonProps) {
-  const { isExporting, exportData, chartData } = usePerformanceStore();
+  const isExporting = usePerformanceStore((s) => s.isExporting);
+  const exportData = usePerformanceStore((s) => s.exportData);
+  const chartData = usePerformanceStore((s) => s.chartData);
   const [isOpen, setIsOpen] = useState(false);
 
   const handleExport = async (includeHoldings: boolean = false) => {
@@ -67,7 +70,7 @@ export function ExportButton({
     } catch (error) {
       showErrorNotification(
         'Export Failed',
-        error instanceof Error ? error.message : 'Failed to export data'
+        getErrorMessage(error)
       );
     }
   };

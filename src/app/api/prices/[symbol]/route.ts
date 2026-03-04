@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit } from '@/lib/utils/rate-limit';
 import { validateSymbol, sanitizeInput } from '@/lib/utils/validation';
 import { logger } from '@/lib/utils/logger';
+import { getErrorMessage } from '@/lib/utils/error';
 import {
   sharedPriceCache,
   fetchPriceWithRetry,
@@ -95,8 +96,7 @@ export async function GET(
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorMessage = getErrorMessage(error);
     logger.error(`Error fetching price for ${params.symbol}:`, error);
 
     // Return appropriate error response

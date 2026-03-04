@@ -18,8 +18,10 @@ import { useUIStore, usePriceStore } from '@/lib/stores';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
-  const { setMobileMenuOpen } = useUIStore();
-  const { isOnline, refreshAllPrices, loading: priceLoading } = usePriceStore();
+  const setMobileMenuOpen = useUIStore((s) => s.setMobileMenuOpen);
+  const isOnline = usePriceStore((s) => s.isOnline);
+  const refreshAllPrices = usePriceStore((s) => s.refreshAllPrices);
+  const priceLoading = usePriceStore((s) => s.loading);
   const [mounted, setMounted] = useState(false);
 
   // useEffect only runs on the client, so now we can safely show the UI

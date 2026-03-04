@@ -144,13 +144,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     logger.error('Error in batch price request:', error);
-    if (error instanceof Error) {
-      console.error(error.stack);
-    }
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: error instanceof Error ? error.message : String(error),
+        ...(process.env.NODE_ENV === 'development' && {
+          details: error instanceof Error ? error.message : String(error),
+        }),
       },
       { status: 500 }
     );

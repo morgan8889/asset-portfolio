@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Settings, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useDashboardStore } from '@/lib/stores';
+import { useShallow } from 'zustand/react/shallow';
 import {
   WidgetId,
   WIDGET_DEFINITIONS,
@@ -63,7 +64,22 @@ export function DashboardSettings({ trigger }: DashboardSettingsProps) {
     toggleUseReactGridLayout,
     setCategoryBreakdownPieChart,
     resetToDefault,
-  } = useDashboardStore();
+  } = useDashboardStore(
+    useShallow((s) => ({
+      config: s.config,
+      setWidgetVisibility: s.setWidgetVisibility,
+      setWidgetOrder: s.setWidgetOrder,
+      setLayoutMode: s.setLayoutMode,
+      setGridColumns: s.setGridColumns,
+      setWidgetSpan: s.setWidgetSpan,
+      setDensePacking: s.setDensePacking,
+      setWidgetRowSpan: s.setWidgetRowSpan,
+      setRGLLayouts: s.setRGLLayouts,
+      toggleUseReactGridLayout: s.toggleUseReactGridLayout,
+      setCategoryBreakdownPieChart: s.setCategoryBreakdownPieChart,
+      resetToDefault: s.resetToDefault,
+    }))
+  );
 
   const handleVisibilityChange = useCallback(
     async (widgetId: WidgetId, visible: boolean) => {

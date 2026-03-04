@@ -1,14 +1,24 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { usePortfolioStore } from '@/lib/stores/portfolio';
 import { usePlanningStore } from '@/lib/stores/planning';
+import { useShallow } from 'zustand/react/shallow';
 import { LiabilityManager } from '@/components/planning/liability-manager';
-import { NetWorthChart } from '@/components/planning/net-worth-chart';
 import { GoalInputForm } from '@/components/planning/goal-input-form';
-import { FireProjectionChart } from '@/components/planning/fire-projection-chart';
 import { ScenarioControls } from '@/components/planning/scenario-controls';
 import { ErrorBoundary } from '@/components/error-boundary';
+
+const NetWorthChart = dynamic(
+  () => import('@/components/planning/net-worth-chart').then(mod => ({ default: mod.NetWorthChart })),
+  { ssr: false, loading: () => <div className="h-[400px] animate-pulse rounded-lg bg-muted" /> }
+);
+
+const FireProjectionChart = dynamic(
+  () => import('@/components/planning/fire-projection-chart').then(mod => ({ default: mod.FireProjectionChart })),
+  { ssr: false, loading: () => <div className="h-[400px] animate-pulse rounded-lg bg-muted" /> }
+);
 import {
   getNetWorthHistory,
   getCurrentNetWorth,
@@ -29,7 +39,7 @@ import {
 import { Label } from '@/components/ui/label';
 
 export default function PlanningPage() {
-  const { currentPortfolio } = usePortfolioStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
   const {
     fireConfig,
     scenarios,
@@ -41,7 +51,20 @@ export default function PlanningPage() {
     fireCalculation,
     setFireCalculation,
     loadLiabilities,
-  } = usePlanningStore();
+  } = usePlanningStore(
+    useShallow((s) => ({
+      fireConfig: s.fireConfig,
+      scenarios: s.scenarios,
+      liabilities: s.liabilities,
+      netWorthHistory: s.netWorthHistory,
+      setNetWorthHistory: s.setNetWorthHistory,
+      fireProjection: s.fireProjection,
+      setFireProjection: s.setFireProjection,
+      fireCalculation: s.fireCalculation,
+      setFireCalculation: s.setFireCalculation,
+      loadLiabilities: s.loadLiabilities,
+    }))
+  );
 
   const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'1Y' | '3Y' | '5Y' | 'ALL'>('5Y');

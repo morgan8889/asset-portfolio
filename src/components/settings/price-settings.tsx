@@ -59,7 +59,9 @@ const INTERVAL_OPTIONS: {
 ];
 
 export function PriceSettings() {
-  const { preferences, setPreferences, loadPreferences } = usePriceStore();
+  const preferences = usePriceStore((s) => s.preferences);
+  const setPreferences = usePriceStore((s) => s.setPreferences);
+  const loadPreferences = usePriceStore((s) => s.loadPreferences);
 
   useEffect(() => {
     loadPreferences();

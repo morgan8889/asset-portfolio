@@ -29,8 +29,9 @@ export default function DashboardPage() {
 function DashboardContent() {
   const { currentPortfolio, loading, error, loadPortfolios } =
     useDashboardContext();
-  const { holdings, assets } = usePortfolioStore();
-  const { loadConfig } = useDashboardStore();
+  const holdings = usePortfolioStore((s) => s.holdings);
+  const assets = usePortfolioStore((s) => s.assets);
+  const loadConfig = useDashboardStore((s) => s.loadConfig);
 
   // Get stable action references via getState() to avoid effect re-runs from devtools middleware
   const {

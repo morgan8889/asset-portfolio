@@ -314,38 +314,41 @@ export const transactionQueries = {
   },
 
   async getFiltered(filter: TransactionFilter): Promise<Transaction[]> {
-    let query = db.transactions.toCollection();
+    let collection;
 
+    // Use Dexie index for portfolioId (most common and restrictive filter)
     if (filter.portfolioId) {
-      query = query.filter((t) => t.portfolioId === filter.portfolioId);
+      collection = db.transactions.where('portfolioId').equals(filter.portfolioId);
+    } else {
+      collection = db.transactions.toCollection();
     }
 
     if (filter.assetId) {
-      query = query.filter((t) => t.assetId === filter.assetId);
+      collection = collection.filter((t) => t.assetId === filter.assetId);
     }
 
     if (filter.type && filter.type.length > 0) {
-      query = query.filter((t) => filter.type!.includes(t.type));
+      collection = collection.filter((t) => filter.type!.includes(t.type));
     }
 
     if (filter.dateFrom) {
-      query = query.filter((t) => new Date(t.date) >= filter.dateFrom!);
+      collection = collection.filter((t) => new Date(t.date) >= filter.dateFrom!);
     }
 
     if (filter.dateTo) {
-      query = query.filter((t) => new Date(t.date) <= filter.dateTo!);
+      collection = collection.filter((t) => new Date(t.date) <= filter.dateTo!);
     }
 
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
-      query = query.filter(
+      collection = collection.filter(
         (t) =>
           (t.notes?.toLowerCase().includes(searchLower) ?? false) ||
           (t.importSource?.toLowerCase().includes(searchLower) ?? false)
       );
     }
 
-    const transactions = await query.toArray();
+    const transactions = await collection.toArray();
     return transactions.map((t) => db.convertTransactionDecimals(t));
   },
 
@@ -391,13 +394,18 @@ export const transactionQueries = {
   },
 
   async getSummary(portfolioId?: string): Promise<TransactionSummary> {
-    let query = db.transactions.toCollection();
+    let transactions;
 
+    // Use Dexie index for portfolioId when available
     if (portfolioId) {
-      query = query.filter((t) => t.portfolioId === portfolioId);
+      transactions = await db.transactions
+        .where('portfolioId')
+        .equals(portfolioId)
+        .toArray();
+    } else {
+      transactions = await db.transactions.toArray();
     }
 
-    const transactions = await query.toArray();
     const convertedTransactions = transactions.map((t) =>
       db.convertTransactionDecimals(t)
     );

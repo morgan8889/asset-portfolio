@@ -13,6 +13,7 @@ import type {
   TransactionExportRow,
   ExportFormat,
 } from '@/types/export';
+import { getErrorMessage } from '@/lib/utils/error';
 
 /**
  * Export service interface
@@ -182,8 +183,7 @@ class ExportService implements IExportService {
       onProgress?.({
         status: 'error',
         progress: 0,
-        error:
-          error instanceof Error ? error.message : 'Failed to generate PDF',
+        error: getErrorMessage(error),
       });
       throw error;
     }
@@ -258,8 +258,7 @@ class ExportService implements IExportService {
       onProgress?.({
         status: 'error',
         progress: 0,
-        error:
-          error instanceof Error ? error.message : 'Failed to generate CSV',
+        error: getErrorMessage(error),
       });
       throw error;
     }
@@ -330,8 +329,7 @@ class ExportService implements IExportService {
       onProgress?.({
         status: 'error',
         progress: 0,
-        error:
-          error instanceof Error ? error.message : 'Failed to generate CSV',
+        error: getErrorMessage(error),
       });
       throw error;
     }

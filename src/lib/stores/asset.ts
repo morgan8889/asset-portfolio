@@ -4,6 +4,7 @@ import { Decimal } from 'decimal.js';
 
 import { Asset, PriceSnapshot } from '@/types';
 import { assetQueries, priceQueries } from '@/lib/db';
+import { getErrorMessage } from '@/lib/utils/error';
 
 interface AssetState {
   // State
@@ -49,8 +50,7 @@ export const useAssetStore = create<AssetState>()(
           set({ assets, loading: false });
         } catch (error) {
           set({
-            error:
-              error instanceof Error ? error.message : 'Failed to load assets',
+            error: getErrorMessage(error),
             loading: false,
           });
         }
@@ -68,10 +68,7 @@ export const useAssetStore = create<AssetState>()(
           set({ searchResults: results, loading: false });
         } catch (error) {
           set({
-            error:
-              error instanceof Error
-                ? error.message
-                : 'Failed to search assets',
+            error: getErrorMessage(error),
             loading: false,
           });
         }
@@ -93,8 +90,7 @@ export const useAssetStore = create<AssetState>()(
           return id;
         } catch (error) {
           set({
-            error:
-              error instanceof Error ? error.message : 'Failed to create asset',
+            error: getErrorMessage(error),
             loading: false,
           });
           throw error;
@@ -118,8 +114,7 @@ export const useAssetStore = create<AssetState>()(
           set({ loading: false });
         } catch (error) {
           set({
-            error:
-              error instanceof Error ? error.message : 'Failed to update asset',
+            error: getErrorMessage(error),
             loading: false,
           });
         }
@@ -146,8 +141,7 @@ export const useAssetStore = create<AssetState>()(
           set({ loading: false });
         } catch (error) {
           set({
-            error:
-              error instanceof Error ? error.message : 'Failed to delete asset',
+            error: getErrorMessage(error),
             loading: false,
           });
         }

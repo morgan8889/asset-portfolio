@@ -28,6 +28,7 @@ import {
   RSUTransactionMetadata,
 } from '@/types';
 import { assetQueries } from '@/lib/db';
+import { getErrorMessage } from '@/lib/utils/error';
 import {
   transactionSchema,
   transactionTypes,
@@ -73,9 +74,10 @@ function TransactionDialog({
   const [internalOpen, setInternalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadingAsset, setLoadingAsset] = useState(false);
-  const { createTransaction, updateTransaction, importing } =
-    useTransactionStore();
-  const { currentPortfolio } = usePortfolioStore();
+  const createTransaction = useTransactionStore((s) => s.createTransaction);
+  const updateTransaction = useTransactionStore((s) => s.updateTransaction);
+  const importing = useTransactionStore((s) => s.importing);
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
 
   // Use controlled state if provided, otherwise use internal state
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
@@ -305,8 +307,7 @@ function TransactionDialog({
       const action = mode === 'edit' ? 'update' : 'add';
       console.error(`Failed to ${action} transaction:`, error);
 
-      const errorMessage =
-        error instanceof Error ? error.message : 'Please try again.';
+      const errorMessage = getErrorMessage(error);
 
       showErrorNotification(`Failed to ${action} transaction`, errorMessage);
     } finally {

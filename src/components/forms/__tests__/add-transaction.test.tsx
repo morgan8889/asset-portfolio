@@ -27,15 +27,30 @@ const mockCurrentPortfolio = {
   updatedAt: new Date(),
 };
 
+// Mutable state for portfolio store that can be changed per-test
+const { mockPortfolioStoreState } = vi.hoisted(() => ({
+  mockPortfolioStoreState: { currentPortfolio: null as any },
+}));
+
+const { mockTransactionStoreState } = vi.hoisted(() => ({
+  mockTransactionStoreState: {
+    createTransaction: null as any,
+    updateTransaction: null as any,
+    importing: false,
+  },
+}));
+
 vi.mock('@/lib/stores', () => ({
-  useTransactionStore: vi.fn(() => ({
-    createTransaction: mockCreateTransaction,
-    updateTransaction: mockUpdateTransaction,
-    importing: mockImporting,
-  })),
-  usePortfolioStore: vi.fn(() => ({
-    currentPortfolio: mockCurrentPortfolio,
-  })),
+  useTransactionStore: vi.fn((selector?: (s: any) => any) =>
+    selector
+      ? selector(mockTransactionStoreState)
+      : mockTransactionStoreState
+  ),
+  usePortfolioStore: vi.fn((selector?: (s: any) => any) =>
+    selector
+      ? selector(mockPortfolioStoreState)
+      : mockPortfolioStoreState
+  ),
 }));
 
 // Mock assetQueries for asset resolution
@@ -66,9 +81,10 @@ vi.mock('decimal.js', () => ({
 describe('AddTransactionDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(usePortfolioStore).mockReturnValue({
-      currentPortfolio: mockCurrentPortfolio,
-    } as any);
+    mockPortfolioStoreState.currentPortfolio = mockCurrentPortfolio;
+    mockTransactionStoreState.createTransaction = mockCreateTransaction;
+    mockTransactionStoreState.updateTransaction = mockUpdateTransaction;
+    mockTransactionStoreState.importing = mockImporting;
   });
 
   afterEach(() => {
@@ -388,9 +404,7 @@ describe('AddTransactionDialog', () => {
     const user = userEvent.setup();
 
     // Mock no current portfolio
-    vi.mocked(usePortfolioStore).mockReturnValue({
-      currentPortfolio: null,
-    } as any);
+    mockPortfolioStoreState.currentPortfolio = null;
 
     render(<AddTransactionDialog />);
 
@@ -538,9 +552,10 @@ describe('TransactionDialog - Edit Mode', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(usePortfolioStore).mockReturnValue({
-      currentPortfolio: mockCurrentPortfolio,
-    } as any);
+    mockPortfolioStoreState.currentPortfolio = mockCurrentPortfolio;
+    mockTransactionStoreState.createTransaction = mockCreateTransaction;
+    mockTransactionStoreState.updateTransaction = mockUpdateTransaction;
+    mockTransactionStoreState.importing = mockImporting;
   });
 
   it('should load asset symbol when opening in edit mode', async () => {

@@ -19,7 +19,7 @@ function isNavGroup(item: unknown): item is NavGroup {
 
 function NavigationContent() {
   const pathname = usePathname();
-  const { sidebarOpen } = useUIStore();
+  const sidebarOpen = useUIStore((s) => s.sidebarOpen);
 
   return (
     <nav className="space-y-1 px-3">
@@ -45,7 +45,9 @@ function NavigationContent() {
 }
 
 export function Sidebar() {
-  const { sidebarOpen, mobileMenuOpen, setMobileMenuOpen } = useUIStore();
+  const sidebarOpen = useUIStore((s) => s.sidebarOpen);
+  const mobileMenuOpen = useUIStore((s) => s.mobileMenuOpen);
+  const setMobileMenuOpen = useUIStore((s) => s.setMobileMenuOpen);
 
   return (
     <>

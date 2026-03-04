@@ -4,68 +4,81 @@ import userEvent from '@testing-library/user-event';
 import { Portfolio, PortfolioSettings } from '@/types';
 import { PortfolioSelector } from '../portfolio-selector';
 
-// Mock stores
-const mockPortfolios: Portfolio[] = [
-  {
-    id: 'p1',
-    name: 'Taxable Account',
-    type: 'taxable',
-    currency: 'USD',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-    lastAccessedAt: new Date('2024-01-15'),
-    settings: {
-      rebalanceThreshold: 5,
-      taxStrategy: 'fifo',
-    } as PortfolioSettings,
-  },
-  {
-    id: 'p2',
-    name: 'IRA',
-    type: 'ira',
-    currency: 'USD',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-    lastAccessedAt: new Date('2024-01-10'),
-    settings: {
-      rebalanceThreshold: 5,
-      taxStrategy: 'fifo',
-    } as PortfolioSettings,
-  },
-  {
-    id: 'p3',
-    name: '401k',
-    type: '401k',
-    currency: 'USD',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
-    lastAccessedAt: new Date('2024-01-05'),
-    settings: {
-      rebalanceThreshold: 5,
-      taxStrategy: 'fifo',
-    } as PortfolioSettings,
-  },
-];
+// Hoist all state used in vi.mock factories (vi.mock is hoisted above declarations)
+const {
+  mockPortfolios,
+  mockSetCurrentPortfolio,
+  mockGetSortedPortfolios,
+  mockCsvState,
+  mockPortfolioStoreState,
+} = vi.hoisted(() => {
+  const portfolios = [
+    {
+      id: 'p1',
+      name: 'Taxable Account',
+      type: 'taxable' as const,
+      currency: 'USD',
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      lastAccessedAt: new Date('2024-01-15'),
+      settings: {
+        rebalanceThreshold: 5,
+        taxStrategy: 'fifo',
+      },
+    },
+    {
+      id: 'p2',
+      name: 'IRA',
+      type: 'ira' as const,
+      currency: 'USD',
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      lastAccessedAt: new Date('2024-01-10'),
+      settings: {
+        rebalanceThreshold: 5,
+        taxStrategy: 'fifo',
+      },
+    },
+    {
+      id: 'p3',
+      name: '401k',
+      type: '401k' as const,
+      currency: 'USD',
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
+      lastAccessedAt: new Date('2024-01-05'),
+      settings: {
+        rebalanceThreshold: 5,
+        taxStrategy: 'fifo',
+      },
+    },
+  ];
 
-const mockSetCurrentPortfolio = vi.fn();
-const mockGetSortedPortfolios = vi.fn(() => mockPortfolios);
+  const setCurrentPortfolio = vi.fn();
+  const getSortedPortfolios = vi.fn(() => portfolios);
 
-// Use a mutable variable for CSV import state
-const { mockCsvState } = vi.hoisted(() => ({
-  mockCsvState: { isProcessing: false },
-}));
+  return {
+    mockPortfolios: portfolios,
+    mockSetCurrentPortfolio: setCurrentPortfolio,
+    mockGetSortedPortfolios: getSortedPortfolios,
+    mockCsvState: { isProcessing: false } as { isProcessing: boolean },
+    mockPortfolioStoreState: {
+      portfolios,
+      currentPortfolio: portfolios[0],
+      setCurrentPortfolio,
+      getSortedPortfolios,
+    } as any,
+  };
+});
 
 vi.mock('@/lib/stores/portfolio', () => ({
-  usePortfolioStore: () => ({
-    portfolios: mockPortfolios,
-    currentPortfolio: mockPortfolios[0],
-    setCurrentPortfolio: mockSetCurrentPortfolio,
-    getSortedPortfolios: mockGetSortedPortfolios,
-  }),
+  usePortfolioStore: (selector?: (s: any) => any) =>
+    selector ? selector(mockPortfolioStoreState) : mockPortfolioStoreState,
 }));
 
 vi.mock('@/lib/stores/csv-import', () => ({
-  useCsvImportStore: () => mockCsvState,
+  useCsvImportStore: (selector?: (s: any) => any) =>
+    selector ? selector(mockCsvState) : mockCsvState,
 }));
 
 // Mock tooltip components to render directly in jsdom

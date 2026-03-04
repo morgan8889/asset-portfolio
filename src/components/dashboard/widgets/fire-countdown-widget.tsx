@@ -12,8 +12,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export function FireCountdownWidget() {
-  const { currentPortfolio } = usePortfolioStore();
-  const { fireConfig, scenarios } = usePlanningStore();
+  const currentPortfolio = usePortfolioStore((s) => s.currentPortfolio);
+  const fireConfig = usePlanningStore((s) => s.fireConfig);
+  const scenarios = usePlanningStore((s) => s.scenarios);
   const [currentNetWorth, setCurrentNetWorth] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 

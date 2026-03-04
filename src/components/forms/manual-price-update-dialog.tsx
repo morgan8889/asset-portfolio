@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Asset } from '@/types/asset';
 import { useAssetStore } from '@/lib/stores';
+import { getErrorMessage } from '@/lib/utils/error';
 
 const formSchema = z.object({
   price: z
@@ -76,7 +77,7 @@ export function ManualPriceUpdateDialog({
     } catch (error) {
       console.error('Failed to update price:', error);
       alert(
-        `Failed to update price: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to update price: ${getErrorMessage(error)}`
       );
     } finally {
       setIsSubmitting(false);
