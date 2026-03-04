@@ -55,7 +55,6 @@ const nextConfig = {
       {
         source: '/api/:path*',
         headers: [
-          ...securityHeaders,
           {
             key: 'Access-Control-Allow-Origin',
             value: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
