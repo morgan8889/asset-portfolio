@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { notFound } from 'next/navigation';
 import { Decimal } from 'decimal.js';
 import { AddTransactionDialog } from '@/components/forms/add-transaction';
 import { CreatePortfolioDialog } from '@/components/forms/create-portfolio';
@@ -254,14 +255,7 @@ export default function TestPage() {
   const [includeDividends, setIncludeDividends] = useState(true);
 
   if (process.env.NODE_ENV !== 'development') {
-    return (
-      <div className="p-8 text-center">
-        <h1 className="text-2xl font-bold">Not Available</h1>
-        <p className="text-muted-foreground mt-2">
-          This page is only available in development mode.
-        </p>
-      </div>
-    );
+    notFound();
   }
 
   const handleSeed = async () => {

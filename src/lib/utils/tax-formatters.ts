@@ -131,10 +131,6 @@ export function formatExportPercent(
     return '';
   }
 
-  if (percent === null) {
-    return '0.00%';
-  }
-
   const decimal =
     percent instanceof Decimal ? percent : new Decimal(percent.toString());
   const value = decimal.mul(100).toNumber();
