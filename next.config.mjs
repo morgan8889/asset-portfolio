@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   experimental: {
     typedRoutes: true,
     optimizePackageImports: ['recharts', 'date-fns', 'lucide-react'],
